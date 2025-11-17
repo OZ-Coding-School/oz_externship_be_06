@@ -24,7 +24,6 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "debug_toolbar",
     "rest_framework_simplejwt",
     "rest_framework",
     "corsheaders",
@@ -32,11 +31,13 @@ THIRD_PARTY_APPS = [
     "django_filters",
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS
+# 추가한 도메인별 앱을 줄바꿈, 쉼표를 사용하여 나열.
+CUSTOM_APPS = []
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + CUSTOM_APPS
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -47,6 +48,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+APPEND_SLASH = False
 
 TEMPLATES = [
     {
