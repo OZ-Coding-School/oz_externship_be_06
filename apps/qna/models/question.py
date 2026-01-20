@@ -26,4 +26,4 @@ class Question(TimeStampModel):
         verbose_name_plural = "질문 목록"
 
     def __str__(self) -> str:
-        return f"[{self.id}] {self.title}"
+        return f"[{self.pk}] {self.title}"

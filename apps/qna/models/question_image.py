@@ -17,4 +17,4 @@ class QuestionImage(TimeStampModel):
         verbose_name_plural = "질문 이미지 목록"
 
     def __str__(self) -> str:
-        return f"{self.question_id}번 질문의 이미지"
+        return f"{self.question.pk}번 질문의 이미지"
