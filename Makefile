@@ -29,10 +29,10 @@ run:
 	python manage.py runserver
 
 makemigrations:
-	python manage.py makemigrations
+	python manage.py makemigrations $(APP)
 
 migrate:
-	python manage.py migrate
+	python manage.py migrate $(APP)
 
 shell:
 	python manage.py shell
