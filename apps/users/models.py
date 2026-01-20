@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any, ClassVar
+
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
@@ -5,10 +9,15 @@ from django.db import models
 from apps.core.models import TimeStampModel
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager["User"]):
     use_in_migrations = True
 
-    def create_user(self, email: str, password: str | None = None, **extra_fields):
+    def create_user(
+        self,
+        email: str,
+        password: str | None = None,
+        **extra_fields: Any,
+    ) -> "User":
         if not email:
             raise ValueError("The Email must be set")
 
@@ -23,7 +32,12 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email: str, password: str, **extra_fields):
+    def create_superuser(
+        self,
+        email: str,
+        password: str,
+        **extra_fields: Any,
+    ) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -45,13 +59,20 @@ class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
         LC = "LC", "러닝코치"
         STUDENT = "STUDENT", "수강생"
 
+    class Gender(models.TextChoices):
+        MALE = "MALE", "남성"
+        FEMALE = "FEMALE", "여성"
+
     email = models.EmailField(unique=True)
 
     name = models.CharField(max_length=30)
     nickname = models.CharField(max_length=10)
     phone_number = models.CharField(max_length=20)
 
-    gender = models.CharField(max_length=6)
+    gender = models.CharField(
+        max_length=6,
+        choices=Gender.choices,
+    )
     birthday = models.DateField()
 
     profile_img_url = models.CharField(max_length=255, null=True, blank=True)
@@ -65,7 +86,7 @@ class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
         default=Role.USER,
     )
 
-    objects = UserManager()
+    objects: ClassVar[UserManager] = UserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
