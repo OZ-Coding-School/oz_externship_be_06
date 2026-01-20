@@ -1,10 +1,9 @@
-from django.conf import settings
 from django.db import models
 
 
 class ExamSubmission(models.Model):
     submitter = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        "users.User",
         on_delete=models.CASCADE,
         related_name="exam_submissions",
         verbose_name="응시자",
