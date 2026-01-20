@@ -2,7 +2,13 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
-from apps.core.models import TimeStampModel
+
+class TimeStampModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
 
 
 class UserManager(BaseUserManager):
@@ -38,15 +44,14 @@ class UserManager(BaseUserManager):
 
 class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
     class Role(models.TextChoices):
-        USER = "USER", "USER"
-        ADMIN = "ADMIN", "ADMIN"
-        TA = "TA", "TA"
-        OM = "OM", "OM"
-        LC = "LC", "LC"
-        STUDENT = "STUDENT", "STUDENT"
+        USER = "USER", "일반회원"
+        ADMIN = "ADMIN", "관리자"
+        TA = "TA", "조교"
+        OM = "OM", "운영매니저"
+        LC = "LC", "러닝코치"
+        STUDENT = "STUDENT", "수강생"
 
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128, db_column="hashed_password")
 
     name = models.CharField(max_length=30)
     nickname = models.CharField(max_length=10)
@@ -60,7 +65,11 @@ class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.USER)
+    role = models.CharField(
+        max_length=10,
+        choices=Role.choices,
+        default=Role.USER,
+    )
 
     objects = UserManager()
 
@@ -69,9 +78,3 @@ class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "user"
-
-    def __str__(self) -> str:
-        return self.email
-
-
-# Create your models here.
