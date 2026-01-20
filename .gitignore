@@ -7,6 +7,7 @@ __pycache__/
 .dmypy.json
 htmlcov/
 .coverage
+.vscode/
 media/
 static/
 staticfiles/
