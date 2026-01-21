@@ -1,7 +1,6 @@
 from typing import Any, cast
 
-from django.db import transaction
-from django.db.models import F
+from django.core.cache import cache
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -10,17 +9,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ExamStatus
-from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.exams.models import ExamDeployment
+from apps.exams.permissions import IsStudentRole
 from apps.exams.serializers.cheating_serializers import ExamCheatingResponseSerializer
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.exam_status_service import ensure_student_role, is_exam_closed
+from apps.exams.serializers.error_serializers import (
+    ErrorDetailSerializer,
+    ErrorResponseSerializer,
+)
+from apps.exams.services.exam_status_service import is_exam_active
 from apps.users.models import User
 
 
 class ExamCheatingUpdateAPIView(APIView):
     """부정행위 횟수를 증가시키고 종료 여부를 판단."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamCheatingResponseSerializer
 
     @extend_schema(
@@ -41,9 +44,8 @@ class ExamCheatingUpdateAPIView(APIView):
         ],
         responses={
             200: ExamCheatingResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 응시 세션"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="권한 없음"),
+            401: OpenApiResponse(ErrorDetailSerializer, description="인증 실패"),
+            403: OpenApiResponse(ErrorDetailSerializer, description="권한 없음"),
             404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
             410: OpenApiResponse(ErrorResponseSerializer, description="시험 종료"),
         },
@@ -55,41 +57,27 @@ class ExamCheatingUpdateAPIView(APIView):
             deployment_model = cast(Any, ExamDeployment)
             deployment = deployment_model.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
-            error = ErrorResponseSerializer(data={"error_detail": "해당 시험 정보를 찾을 수 없습니다."})
-            error.is_valid(raise_exception=True)
-            return Response(error.data, status=404)
+            return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
 
-        if not ensure_student_role(user):
-            error = ErrorResponseSerializer(data={"error_detail": "권한이 없습니다."})
-            error.is_valid(raise_exception=True)
-            return Response(error.data, status=403)
+        if not is_exam_active(deployment):
+            return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
-        with transaction.atomic():
-            submission_model = cast(Any, ExamSubmission)
-            locked_submission = (
-                submission_model.objects.select_for_update()
-                .filter(submitter=user, deployment=deployment)
-                .order_by("-created_at")
-                .first()
-            )
-            if not locked_submission:
-                error = ErrorResponseSerializer(data={"error_detail": "유효하지 않은 시험 응시 세션입니다."})
-                error.is_valid(raise_exception=True)
-                return Response(error.data, status=400)
+        cache_key = f"exam:cheating:{deployment.id}:{user.id}"
+        current_count = cache.get(cache_key)
+        if current_count is not None and current_count >= 3:
+            return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
-            if is_exam_closed(deployment, locked_submission):
-                error = ErrorResponseSerializer(data={"error_detail": "시험이 이미 종료되었습니다."})
-                error.is_valid(raise_exception=True)
-                return Response(error.data, status=410)
+        ttl_seconds = max(1, deployment.duration_time * 60)
+        if current_count is None:
+            cache.set(cache_key, 1, timeout=ttl_seconds)
+            cheating_count = 1
+        else:
+            cheating_count = cache.incr(cache_key)
 
-            locked_submission.cheating_count = F("cheating_count") + 1
-            locked_submission.save(update_fields=["cheating_count", "updated_at"])
-            locked_submission.refresh_from_db(fields=["cheating_count"])
-
-        is_closed = is_exam_closed(deployment, locked_submission)
+        is_closed = cheating_count >= 3
         serializer = self.serializer_class(
             data={
-                "cheating_count": locked_submission.cheating_count,
+                "cheating_count": cheating_count,
                 "exam_status": (ExamStatus.CLOSED if is_closed else ExamStatus.ACTIVATED).value,
                 "force_submit": is_closed,
             }

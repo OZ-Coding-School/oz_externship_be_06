@@ -9,20 +9,19 @@ from rest_framework.views import APIView
 
 from apps.exams.constants import ExamStatus
 from apps.exams.models import ExamDeployment
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.serializers.status_serializers import ExamStatusResponseSerializer
-from apps.exams.services.exam_status_service import (
-    ensure_student_role,
-    get_submission,
-    is_exam_closed,
+from apps.exams.permissions import IsStudentRole
+from apps.exams.serializers.error_serializers import (
+    ErrorDetailSerializer,
+    ErrorResponseSerializer,
 )
-from apps.users.models import User
+from apps.exams.serializers.status_serializers import ExamStatusResponseSerializer
+from apps.exams.services.exam_status_service import is_exam_active
 
 
 class ExamStatusCheckAPIView(APIView):
     """수강생 응시 세션의 현재 시험 상태를 조회."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamStatusResponseSerializer
 
     @extend_schema(
@@ -43,35 +42,19 @@ class ExamStatusCheckAPIView(APIView):
         ],
         responses={
             200: ExamStatusResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 응시 세션"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="권한 없음"),
+            401: OpenApiResponse(ErrorDetailSerializer, description="인증 실패"),
+            403: OpenApiResponse(ErrorDetailSerializer, description="권한 없음"),
             404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
         },
     )
     def get(self, request: Request, deployment_id: int) -> Response:
-        user = cast(User, request.user)
-
         try:
             deployment_model = cast(Any, ExamDeployment)
             deployment = deployment_model.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
-            error = ErrorResponseSerializer(data={"error_detail": "해당 시험 정보를 찾을 수 없습니다."})
-            error.is_valid(raise_exception=True)
-            return Response(error.data, status=404)
+            return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
 
-        if not ensure_student_role(user):
-            error = ErrorResponseSerializer(data={"error_detail": "권한이 없습니다."})
-            error.is_valid(raise_exception=True)
-            return Response(error.data, status=403)
-
-        submission = get_submission(user, deployment)
-        if not submission:
-            error = ErrorResponseSerializer(data={"error_detail": "유효하지 않은 시험 응시 세션입니다."})
-            error.is_valid(raise_exception=True)
-            return Response(error.data, status=400)
-
-        is_closed = is_exam_closed(deployment, submission)
+        is_closed = not is_exam_active(deployment)
         serializer = self.serializer_class(
             data={
                 "exam_status": (ExamStatus.CLOSED if is_closed else ExamStatus.ACTIVATED).value,
