@@ -5,13 +5,13 @@ from django.db import models
 from apps.core.models import TimeStampModel
 
 
-class ChatbotMessage(TimeStampModel):
+class ChatbotCompletions(TimeStampModel):
     class Role(models.TextChoices):
-        USER = "USER", "사용자"
-        AICB = "AICB", "AI챗봇"
+        USER = "User", "사용자"
+        ASSISTANT = "Assistant", "AI챗봇"
 
     session = models.ForeignKey(
-        "chatbot.ChatbotSession", on_delete=models.CASCADE, related_name="chatbot_messages", verbose_name="세션 ID"
+        "chatbot.ChatbotSession", on_delete=models.CASCADE, related_name="chatbot_completions", verbose_name="세션 ID"
     )
     content = models.TextField(verbose_name="메시지 내용")
     role = models.CharField(
@@ -22,7 +22,7 @@ class ChatbotMessage(TimeStampModel):
     )
 
     class Meta:
-        db_table = "chatbot_message"
+        db_table = "chatbot_completion"
         verbose_name = "챗봇 메세지"
         verbose_name_plural = "챗봇 메시지 목룍"
 
