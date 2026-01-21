@@ -1,7 +1,32 @@
+from __future__ import annotations
+
+from typing import Any, TypedDict
+
 from rest_framework import serializers
+
 from apps.exams.models.exam_submissions import ExamSubmission
 
-class ExamListSerializer(serializers.ModelSerializer):
+
+class SubjectDict(TypedDict):
+    id: int
+    title: str
+    thumbnail_img_url: str | None
+
+
+class ExamDict(TypedDict):
+    id: int
+    title: str
+    thumbnail_img_url: str | None
+    subject: SubjectDict
+
+
+class ExamInfoDict(TypedDict):
+    status: str
+    score: int
+    correct_answer_count: int
+
+
+class ExamListSerializer(serializers.ModelSerializer[ExamSubmission]):
     submission_id = serializers.IntegerField(source="id", read_only=True)
     exam = serializers.SerializerMethodField()
     question_count = serializers.SerializerMethodField()
@@ -21,35 +46,39 @@ class ExamListSerializer(serializers.ModelSerializer):
             "is_done",
         ]
 
-    def get_exam(self, obj):
+    def get_exam(self, obj: ExamSubmission) -> ExamDict:
         e = obj.deployment.exam
         s = e.subject
+        # thumbnail_img_url 타입이 확실치 않아서 None 가능성 포함(보수적으로)
         return {
-            "id": e.id,
-            "title": e.title,
-            "thumbnail_img_url": e.thumbnail_img_url,
+            "id": int(e.id),
+            "title": str(e.title),
+            "thumbnail_img_url": getattr(e, "thumbnail_img_url", None),
             "subject": {
-                "id": s.id,
-                "title": s.title,
-                "thumbnail_img_url": s.thumbnail_img_url,
+                "id": int(s.id),
+                "title": str(s.title),
+                "thumbnail_img_url": getattr(s, "thumbnail_img_url", None),
             },
         }
 
-    def get_question_count(self, obj):
+    def get_question_count(self, obj: ExamSubmission) -> int:
         e = obj.deployment.exam
-        return e.questions.count() if hasattr(e, "questions") else 0
+        # 보통 related_name="questions"면 항상 존재하지만, 기존 로직 유지
+        if hasattr(e, "questions"):
+            return int(e.questions.count())
+        return 0
 
-    def get_total_score(self, obj):
+    def get_total_score(self, obj: ExamSubmission) -> int:
         e = obj.deployment.exam
-        return getattr(e, "total_score", 0)
+        return int(getattr(e, "total_score", 0))
 
-    def get_exam_info(self, obj):
+    def get_exam_info(self, obj: ExamSubmission) -> ExamInfoDict:
         status = "pending" if obj.answers_json == {} else "done"
         return {
             "status": status,
-            "score": obj.score,
-            "correct_answer_count": obj.correct_answer_count,
+            "score": int(obj.score),
+            "correct_answer_count": int(obj.correct_answer_count),
         }
 
-    def get_is_done(self, obj):
-        return obj.answers_json != {}
+    def get_is_done(self, obj: ExamSubmission) -> bool:
+        return bool(obj.answers_json and obj.answers_json != {})
