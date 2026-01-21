@@ -38,6 +38,7 @@ CUSTOM_APPS: list[str] = [
     "apps.courses",
     "apps.users",
     "apps.qna",
+    "apps.chatbot",
     "apps.exams",
     "apps.posts",
 ]
