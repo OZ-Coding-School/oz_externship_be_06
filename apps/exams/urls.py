@@ -9,5 +9,5 @@ urlpatterns = [
     path("deployments/<int:deployment_id>/status/", ExamStatusCheckAPIView.as_view(), name="exam-status"),
     path("deployments/<int:deployment_id>/cheating/", ExamCheatingUpdateAPIView.as_view(), name="exam-cheating"),
     path("deployments", ExamListView.as_view(), name="exam-deployments"),
-
+    path("api/v1/exams/deployments", ExamListView.as_view(), name="exam-deployments"),
 ]
