@@ -13,7 +13,7 @@ class ExamDeployment(TimeStampModel):
     )
     exam = models.ForeignKey("exams.Exam", on_delete=models.CASCADE, related_name="deployments", verbose_name="시험")
 
-    duration_time = models.PositiveSmallIntegerField(null=False, verbose_name="제한 시간(분)")
+    duration_time = models.PositiveSmallIntegerField(null=False, verbose_name="제한 시간(분)", default=60)
     access_code = models.CharField(max_length=64, null=False, verbose_name="접근 코드")
     open_at = models.DateTimeField(null=False, verbose_name="오픈 일시")
     close_at = models.DateTimeField(null=False, verbose_name="마감 일시")
@@ -23,6 +23,7 @@ class ExamDeployment(TimeStampModel):
         choices=StatusChoices.choices,
         default=StatusChoices.DEACTIVATED,
         verbose_name="상태",
+        db_default="ACTIVATED",
     )
 
     def __str__(self) -> str:
