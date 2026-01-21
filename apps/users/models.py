@@ -1,98 +1,55 @@
-# mypy: ignore-errors
-
-
 from __future__ import annotations
 
-from typing import Any, ClassVar
-
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from apps.core.models import TimeStampModel
 
-
-class UserManager(BaseUserManager["User"]):
-    use_in_migrations = True
-
-    def create_user(
-        self,
-        email: str,
-        password: str | None = None,
-        **extra_fields: Any,
-    ) -> "User":
-        if not email:
-            raise ValueError("The Email must be set")
-
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-
-        if password:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
-
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(
-        self,
-        email: str,
-        password: str,
-        **extra_fields: Any,
-    ) -> "User":
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True.")
-
-        return self.create_user(email=email, password=password, **extra_fields)
+# class User(AbstractUser):
+#    pass
 
 
-class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
-    class Role(models.TextChoices):
-        USER = "USER", "일반회원"
-        ADMIN = "ADMIN", "관리자"
-        TA = "TA", "조교"
-        OM = "OM", "운영매니저"
-        LC = "LC", "러닝코치"
-        STUDENT = "STUDENT", "수강생"
+class VerificationChannel(models.TextChoices):
+    EMAIL = "EMAIL", "이메일"
+    PHONE = "PHONE", "휴대폰"
 
-    class Gender(models.TextChoices):
-        MALE = "MALE", "남성"
-        FEMALE = "FEMALE", "여성"
 
-    email = models.EmailField(unique=True)
+class VerificationPurpose(models.TextChoices):
+    SIGNUP_EMAIL = "SIGNUP_EMAIL", "이메일 회원가입"
+    SIGNUP_PHONE = "SIGNUP_PHONE", "휴대폰 회원가입"
+    PASSWORD_RESET = "PASSWORD_RESET", "비밀번호 재설정"
+    RESTORE_ACCOUNT = "RESTORE_ACCOUNT", "계정 복구"
 
-    name = models.CharField(max_length=30)
-    nickname = models.CharField(max_length=10)
-    phone_number = models.CharField(max_length=20)
 
-    gender = models.CharField(
-        max_length=6,
-        choices=Gender.choices,
-    )
-    birthday = models.DateField()
+class VerificationCode(TimeStampModel):
+    """
+    이메일/휴대폰 인증 코드 저장 테이블
+    - EMAIL: code는 base62 문자열
+    - PHONE: code는 6자리 난수 문자열 ("034921")
+    """
 
-    profile_img_url = models.CharField(max_length=255, null=True, blank=True)
-
-    is_active: bool = models.BooleanField(default=True)
-    is_staff: bool = models.BooleanField(default=False)
-
-    role = models.CharField(
+    channel = models.CharField(
         max_length=10,
-        choices=Role.choices,
-        default=Role.USER,
+        choices=VerificationChannel.choices,
+    )
+    purpose = models.CharField(
+        max_length=30,
+        choices=VerificationPurpose.choices,
     )
 
-    objects: ClassVar[UserManager] = UserManager()
+    # User 생성 전에도 인증이 가능해야 해서 문자열로 저장
+    target = models.CharField(max_length=255)
+    code = models.CharField(max_length=64)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS: list[str] = []
+    expires_at = models.DateTimeField()
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    attempt_count = models.PositiveSmallIntegerField(default=0)
+    last_attempt_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = "user"
+        db_table = "verification_code"
+        indexes = [
+            models.Index(fields=["channel", "purpose", "target", "consumed_at"]),
+            models.Index(fields=["expires_at"]),
+        ]
