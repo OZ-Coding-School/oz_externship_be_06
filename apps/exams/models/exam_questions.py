@@ -1,7 +1,9 @@
 from django.db import models
 
+from apps.core.models import TimeStampModel
 
-class ExamQuestion(models.Model):
+
+class ExamQuestion(TimeStampModel):
     class TypeChoices(models.TextChoices):
         FILL_IN_BLANK = "FILL_IN_BLANK", "빈칸 채우기"
         ORDERING = "ORDERING", "순서 정렬"
@@ -24,8 +26,6 @@ class ExamQuestion(models.Model):
     answer = models.JSONField(null=False, verbose_name="정답(JSON)")
     point = models.PositiveSmallIntegerField(null=False, verbose_name="배점")
     explanation = models.TextField(null=False, verbose_name="해설")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일시")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일시")
 
     def __str__(self) -> str:
         return f"{self.exam.title} - {self.question}"

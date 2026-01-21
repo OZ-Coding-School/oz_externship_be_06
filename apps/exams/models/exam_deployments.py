@@ -1,7 +1,9 @@
 from django.db import models
 
+from apps.core.models import TimeStampModel
 
-class ExamDeployment(models.Model):
+
+class ExamDeployment(TimeStampModel):
     class StatusChoices(models.TextChoices):
         ACTIVATED = "ACTIVATED", "시험 응시 가능"
         DEACTIVATED = "DEACTIVATED", "시험 비활성화"
@@ -22,8 +24,6 @@ class ExamDeployment(models.Model):
         default=StatusChoices.DEACTIVATED,
         verbose_name="상태",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일시")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일시")
 
     def __str__(self) -> str:
         return f"{self.exam.title} - {self.cohort.number}기"
