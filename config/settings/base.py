@@ -17,6 +17,7 @@ if not SECRET_KEY:
 # Application definition
 DJANGO_APPS = [
     "django.contrib.auth",
+    "django.contrib.admin",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -38,6 +39,7 @@ CUSTOM_APPS: list[str] = [
     "apps.users",
     "apps.qna",
     "apps.exams",
+    "apps.posts",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + CUSTOM_APPS
