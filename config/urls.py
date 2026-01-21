@@ -9,7 +9,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns: list[URLPattern | URLResolver] = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:

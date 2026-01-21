@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Post, PostCategory, PostComment, PostLike
 
 admin.site.register(Post)

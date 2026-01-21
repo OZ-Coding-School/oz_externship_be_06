@@ -1,5 +1,6 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 from apps.core.models import TimeStampModel
 
 
@@ -16,5 +17,5 @@ class PostCategory(TimeStampModel):
         verbose_name = "게시글 카테고리"
         verbose_name_plural = "게시글 카테고리 목록"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
