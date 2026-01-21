@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+
 from django.conf import settings
 from django.db import models
 
@@ -10,6 +11,7 @@ from apps.core.models import TimeStampModel
 # 회원 탈퇴 2주후 삭제
 def two_weeks_later() -> date:
     return date.today() + timedelta(days=14)
+
 
 class Withdrawal(TimeStampModel):
     class Reason(models.TextChoices):
@@ -35,4 +37,4 @@ class Withdrawal(TimeStampModel):
         db_table = "withdrawals"
 
     def __str__(self) -> str:
-        return f"{self.user} - {self.get_reason_display()} ({self.due_date})" # type: ignore
+        return f"{self.user} - {self.get_reason_display()} ({self.due_date})"
