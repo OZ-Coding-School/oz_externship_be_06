@@ -15,3 +15,7 @@ poetry run Isort .
 echo "OK"
 
 echo "${COLOR_GREEN}Code Formatting successfully!${COLOR_NC}"
+
+echo "${COLOR_BLUE}Starting mypy${COLOR_NC}"
+poetry run mypy .
+echo "OK"
