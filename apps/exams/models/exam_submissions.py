@@ -24,7 +24,7 @@ class ExamSubmission(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일시")
 
     def __str__(self) -> str:
-        return f"{self.deployment.exam.title} - {self.submitter_id}"
+        return f"{self.deployment.exam.title} - {self.submitter}"
 
     class Meta:
         db_table = "exam_submissions"

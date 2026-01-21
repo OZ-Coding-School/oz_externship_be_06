@@ -6,7 +6,9 @@ class ExamDeployment(models.Model):
         ACTIVATED = "ACTIVATED", "시험 응시 가능"
         DEACTIVATED = "DEACTIVATED", "시험 비활성화"
 
-    cohort = models.ForeignKey("courses.Cohort", on_delete=models.CASCADE, related_name="exam_deployments", verbose_name="기수")
+    cohort = models.ForeignKey(
+        "courses.Cohort", on_delete=models.CASCADE, related_name="exam_deployments", verbose_name="기수"
+    )
     exam = models.ForeignKey("exams.Exam", on_delete=models.CASCADE, related_name="deployments", verbose_name="시험")
 
     duration_time = models.PositiveSmallIntegerField(null=False, verbose_name="제한 시간(분)")
