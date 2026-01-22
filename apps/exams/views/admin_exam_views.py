@@ -23,6 +23,7 @@ from apps.exams.services.admin_exam_service import (
 
 class AdminExamCreateAPIView(APIView):
     """관리자 쪽지시험 생성 API."""
+
     permission_classes = [IsAuthenticated, IsExamStaff]
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = AdminExamCreateRequestSerializer

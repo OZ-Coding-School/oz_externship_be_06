@@ -17,8 +17,10 @@ from apps.users.models import User
 
 class AdminExamCreateAPITest(TestCase):
     """관리자 쪽지시험 생성 API 테스트."""
+
     _temp_media: ClassVar[tempfile.TemporaryDirectory[str]]
     _override: ClassVar[Any]
+
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
