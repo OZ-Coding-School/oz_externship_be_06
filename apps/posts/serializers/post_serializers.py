@@ -76,7 +76,7 @@ class PostListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         return first.img_url if first else None
 
     def get_content_preview(self, obj: Post) -> str:
-        preview = (obj.content or "")[:100]
+        preview = (obj.content or "")[:50]
         return preview
 
     def get_comment_count(self, obj: Post) -> int:
