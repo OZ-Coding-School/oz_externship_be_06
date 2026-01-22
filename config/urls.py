@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.urls import URLPattern, URLResolver, include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -13,6 +12,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/accounts/", include("apps.users.urls")),
     path("api/v1/exams/", include("apps.exams.urls")),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
