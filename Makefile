@@ -1,5 +1,5 @@
 .PHONY: help format test run makemigrations migrate shell dbshell \
-	up down restart logs ps build
+	up down restart logs ps build dtest
 
 COMPOSE_FILE := docker-compose.local.yml
 
@@ -18,6 +18,7 @@ help:
 	@echo "  restart          Restart Docker services"
 	@echo "  logs             Tail Docker logs"
 	@echo "  ps               List Docker services"
+	@echo "  dtest            Run tests in Docker (exec django)"
 
 format:
 	bash resources/scripts/code_formatting.sh
@@ -57,3 +58,6 @@ logs:
 
 ps:
 	docker compose -f $(COMPOSE_FILE) ps
+
+dtest:
+	docker compose -f $(COMPOSE_FILE) exec django make test

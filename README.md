@@ -26,3 +26,4 @@ make run # Django 개발 서버 실행
 - `make restart` - Docker 서비스 재시작
 - `make logs` - Docker 로그 확인
 - `make ps` - Docker 서비스 목록 확인
+- `make dtest` - Docker 컨테이너에서 테스트 실행
