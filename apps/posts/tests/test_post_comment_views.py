@@ -35,7 +35,7 @@ class PostCommentAPITestCase(TestCase):
 
     def test_comment_list_get(self) -> None:
         """댓글 목록 조회 테스트"""
-        response = self.client.get("/api/posts/comments/")
+        response = self.client.get("/api/v1/posts/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data: Any = getattr(response, "data", None)
         self.assertIsInstance(data, list)
@@ -43,12 +43,12 @@ class PostCommentAPITestCase(TestCase):
     def test_comment_create_post(self) -> None:
         """댓글 생성 테스트"""
         data = {"content": "새 댓글"}
-        response = self.client.post("/api/posts/comments/", data)
+        response = self.client.post("/api/v1/posts/comments/", data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_comment_retrieve_get(self) -> None:
         """댓글 상세 조회 테스트"""
-        response = self.client.get(f"/api/posts/comments/{self.comment.id}/")
+        response = self.client.get(f"/api/v1/posts/comments/{self.comment.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data: Any = getattr(response, "data", None)
         self.assertIn("content", data)
@@ -57,10 +57,10 @@ class PostCommentAPITestCase(TestCase):
         """댓글 수정 테스트"""
         self.client.force_authenticate(user=self.user)  # type: ignore[attr-defined]
         data = {"content": "수정된 댓글"}
-        response = self.client.put(f"/api/posts/comments/{self.comment.id}/", data)
+        response = self.client.put(f"/api/v1/posts/comments/{self.comment.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_comment_delete(self) -> None:
         """댓글 삭제 테스트"""
-        response = self.client.delete(f"/api/posts/comments/{self.comment.id}/")
+        response = self.client.delete(f"/api/v1/posts/comments/{self.comment.id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
