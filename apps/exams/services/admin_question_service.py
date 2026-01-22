@@ -7,27 +7,35 @@ from django.db.models import Sum
 from apps.exams.models import Exam, ExamQuestion
 
 
-def create_exam_question(exam_id: int, payload: dict[str, Any]) -> dict[str, Any] | dict[str, str]:
+class ExamNotFoundError(Exception):
+    """쪽지시험 정보가 없을 때 발생."""
+
+
+class ExamQuestionLimitError(Exception):
+    """문항 수/총점 제한을 초과했을 때 발생."""
+
+
+def create_exam_question(exam_id: int, payload: dict[str, Any]) -> dict[str, Any]:
     try:
         exam = Exam.objects.get(id=exam_id)
-    except Exam.DoesNotExist:
-        return {"error_detail": "해당 쪽지시험 정보를 찾을 수 없습니다."}
+    except Exam.DoesNotExist as exc:
+        raise ExamNotFoundError from exc
+
+    question_count = exam.questions.count()
+    if question_count >= 20:
+        raise ExamQuestionLimitError
+
+    total_points = exam.questions.aggregate(total=Sum("point"))["total"] or 0
+    point = payload["point"]
+    if total_points + point > 100:
+        raise ExamQuestionLimitError
+
+    options = payload.get("options")
+    blank_count = payload.get("blank_count")
+    prompt = payload.get("prompt")
+    explanation = payload.get("explanation") or ""
 
     with transaction.atomic():
-        question_count = exam.questions.count()
-        if question_count >= 20:
-            return {"error_detail": "해당 쪽지시험에 등록 가능한 문제 수 또는 총 배점을 초과했습니다."}
-
-        total_points = exam.questions.aggregate(total=Sum("point"))["total"] or 0
-        point = payload["point"]
-        if total_points + point > 100:
-            return {"error_detail": "해당 쪽지시험에 등록 가능한 문제 수 또는 총 배점을 초과했습니다."}
-
-        options = payload.get("options")
-        blank_count = payload.get("blank_count")
-        prompt = payload.get("prompt")
-        explanation = payload.get("explanation") or ""
-
         exam_question = ExamQuestion.objects.create(
             exam=exam,
             type=payload["model_type"],

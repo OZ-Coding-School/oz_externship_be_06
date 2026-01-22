@@ -8,6 +8,14 @@ from apps.exams.models import ExamQuestion
 class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
     """쪽지시험 문제 등록 요청 스키마."""
 
+    TYPE_MAP = {
+        "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
+        "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
+        "ordering": ExamQuestion.TypeChoices.ORDERING,
+        "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
+        "ox": ExamQuestion.TypeChoices.OX,
+    }
+
     type = serializers.CharField()
     question = serializers.CharField()
     prompt = serializers.CharField(required=False, allow_blank=True, allow_null=True)
@@ -18,16 +26,8 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
     explanation = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        type_map = {
-            "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
-            "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
-            "ordering": ExamQuestion.TypeChoices.ORDERING,
-            "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
-            "ox": ExamQuestion.TypeChoices.OX,
-        }
-
         exam_type = attrs.get("type")
-        if exam_type not in type_map:
+        if exam_type not in self.TYPE_MAP:
             raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
 
         point = attrs.get("point")
@@ -62,7 +62,7 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
             elif correct_answer not in {"O", "X"}:
                 raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
 
-        attrs["model_type"] = type_map[exam_type]
+        attrs["model_type"] = self.TYPE_MAP[exam_type]
         return attrs
 
 
