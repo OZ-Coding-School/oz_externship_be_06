@@ -1,5 +1,5 @@
 .PHONY: help format test run makemigrations migrate shell dbshell \
-	up down restart logs ps build dtest
+	up down restart logs ps build dtest dmypy-reset push-force fetch rebase-develop
 
 COMPOSE_FILE := docker-compose.local.yml
 
@@ -19,6 +19,10 @@ help:
 	@echo "  logs             Tail Docker logs"
 	@echo "  ps               List Docker services"
 	@echo "  dtest            Run tests in Docker (exec django)"
+	@echo "  dmypy-reset      Stop dmypy and clear cache"
+	@echo "  push-force       Force push with lease"
+	@echo "  fetch            Fetch from origin"
+	@echo "  rebase-develop   Rebase onto origin/develop"
 
 format:
 	bash resources/scripts/code_formatting.sh
@@ -61,3 +65,17 @@ ps:
 
 dtest:
 	docker compose -f $(COMPOSE_FILE) exec django make test
+
+dmypy-reset:
+	poetry run dmypy stop || true
+	rm -f .dmypy.json
+
+push-force:
+	git push --force-with-lease
+
+fetch:
+	git fetch origin
+
+rebase-develop:
+	git fetch origin
+	git rebase origin/develop
