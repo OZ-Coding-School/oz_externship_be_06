@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDenied
@@ -24,13 +24,14 @@ class PostCommentListSerializer(serializers.ModelSerializer):  # type: ignore[ty
         model = PostComment
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
 
-    def get_tagged_users(self, obj: PostComment) -> list[dict[str, Any]]:
+    def get_tagged_users(self, obj: PostComment) -> List[Dict[str, Any]]:
         tags = obj.tags.select_related("tagged_user").all()
-        return TaggedUserSerializer(tags, many=True).data
+        return TaggedUserSerializer(tags, many=True).data  # type: ignore[return-value]
 
 
 class PostCommentDetailSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     """댓글 상세 조회용 시리얼라이저"""
+
     author = AuthorSimpleSerializer(read_only=True)
     tagged_users = serializers.SerializerMethodField()
 
@@ -38,9 +39,9 @@ class PostCommentDetailSerializer(serializers.ModelSerializer):  # type: ignore[
         model = PostComment
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
 
-    def get_tagged_users(self, obj: PostComment) -> list[dict[str, Any]]:
+    def get_tagged_users(self, obj: PostComment) -> List[Dict[str, Any]]:
         tags = obj.tags.select_related("tagged_user").all()
-        return TaggedUserSerializer(tags, many=True).data
+        return TaggedUserSerializer(tags, many=True).data  # type: ignore[return-value]
 
 
 class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
@@ -79,7 +80,7 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
-        if self.instance is not None and self.instance.author != user:
+        if self.instance is not None and self.instance.author != user:  # type: ignore[union-attr]
             raise PermissionDenied(detail="권한이 없습니다.")
 
         return attrs
