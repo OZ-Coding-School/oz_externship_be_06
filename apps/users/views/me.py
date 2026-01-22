@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 class Meview(APIView):
     permission_classes = [IsAuthenticated]
+
     @extend_schema(responses=MeResponseSerializer)
     def get(self, request: Request) -> Response:
         user = cast("UserModel", request.user)  # type: ignore[attr-defined]
