@@ -48,7 +48,7 @@ services:
       POSTGRES_ROOT_USER: postgres
       POSTGRES_DB: ozcoding_externship
     ports:
-      - 5432:5432
+      - 15432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
