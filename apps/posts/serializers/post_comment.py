@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDenied
@@ -80,7 +80,7 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
-        if self.instance is not None and self.instance.author != user:  # type: ignore[union-attr]
+        if self.instance is not None and cast(PostComment, self.instance).author != user:
             raise PermissionDenied(detail="권한이 없습니다.")
 
         return attrs
