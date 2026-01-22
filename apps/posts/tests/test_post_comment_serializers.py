@@ -59,7 +59,7 @@ class PostCommentSerializerTestCase(TestCase):
     def test_post_comment_create_serializer_no_auth(self) -> None:
         """PostCommentCreateSerializer 인증 실패 테스트"""
         request = self.factory.post("/api/posts/1/comments/")
-        request.user = None
+        request.user = None  # type: ignore[assignment]
 
         data = {"content": "새 댓글"}
         serializer = PostCommentCreateSerializer(data=data, context={"request": request, "post": self.post})
@@ -108,7 +108,7 @@ class PostCommentSerializerTestCase(TestCase):
     def test_post_comment_update_serializer_no_auth(self) -> None:
         """PostCommentUpdateSerializer 인증 실패 테스트"""
         request = self.factory.put(f"/api/posts/1/comments/{self.comment.id}/")
-        request.user = None
+        request.user = None  # type: ignore[assignment]
 
         data = {"content": "수정된 댓글"}
         serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})

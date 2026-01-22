@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
@@ -27,7 +29,8 @@ class PostCommentAPITestCase(TestCase):
         """댓글 목록 조회 테스트"""
         response = self.client.get("/api/posts/1/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.data, list)
+        data: Any = getattr(response, "data", None)
+        self.assertIsInstance(data, list)
 
     def test_comment_create_post(self) -> None:
         """댓글 생성 테스트"""
@@ -39,7 +42,8 @@ class PostCommentAPITestCase(TestCase):
         """댓글 상세 조회 테스트"""
         response = self.client.get(f"/api/posts/1/comments/{self.comment.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("content", response.data)
+        data: Any = getattr(response, "data", None)
+        self.assertIn("content", data)
 
     def test_comment_update_put(self) -> None:
         """댓글 수정 테스트"""
