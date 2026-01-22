@@ -35,8 +35,7 @@ class ExamListView(ListAPIView[ExamDeployment]):
         user_id = self.request.user.id
         # 🔥 여기 추가
         cohort_id = (
-            CohortStudent.objects
-            .filter(user_id=user_id)
+            CohortStudent.objects.filter(user_id=user_id)  # type: ignore[attr-defined]
             .order_by("created_at")
             .values_list("cohort_id", flat=True)
             .first()
@@ -60,8 +59,7 @@ class ExamListView(ListAPIView[ExamDeployment]):
         empty_json = Value({}, output_field=models.JSONField())
 
         qs = (
-            ExamDeployment.objects
-            .filter(cohort_id=cohort_id)
+            ExamDeployment.objects.filter(cohort_id=cohort_id)
             .select_related("exam__subject")
             .annotate(
                 question_count=Count("exam__questions", distinct=True),

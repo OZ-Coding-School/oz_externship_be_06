@@ -1,6 +1,8 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 from .cohorts import Cohort
+
 
 class CohortStudent(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -30,6 +32,3 @@ class CohortStudent(models.Model):
         ]
         verbose_name = "코호트 수강생"
         verbose_name_plural = "코호트 수강생들"
-
-    def __str__(self):
-        return f"user={self.user_id}, cohort={self.cohort_id}"
