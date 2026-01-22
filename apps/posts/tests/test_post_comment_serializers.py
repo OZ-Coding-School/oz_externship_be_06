@@ -20,9 +20,7 @@ class PostCommentSerializerTestCase(TestCase):
 
     def setUp(self) -> None:
         """테스트 데이터 설정"""
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="testpass123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpass123")
         self.other_user = User.objects.create_user(
             username="otheruser", email="other@example.com", password="testpass123"
         )
@@ -88,9 +86,7 @@ class PostCommentSerializerTestCase(TestCase):
         request.user = self.user
 
         data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(
-            instance=self.comment, data=data, context={"request": request}
-        )
+        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
 
         self.assertTrue(serializer.is_valid())
         updated_comment = serializer.save()
@@ -104,9 +100,7 @@ class PostCommentSerializerTestCase(TestCase):
         request.user = self.other_user
 
         data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(
-            instance=self.comment, data=data, context={"request": request}
-        )
+        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
 
         with self.assertRaises(PermissionDenied):
             serializer.is_valid(raise_exception=True)
@@ -117,9 +111,7 @@ class PostCommentSerializerTestCase(TestCase):
         request.user = None
 
         data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(
-            instance=self.comment, data=data, context={"request": request}
-        )
+        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
 
         with self.assertRaises(NotAuthenticated):
             serializer.is_valid(raise_exception=True)
