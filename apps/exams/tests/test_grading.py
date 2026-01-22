@@ -54,6 +54,24 @@ class JudgeLogicTests(SimpleTestCase):
 
         self.assertEqual(judge(q, [4, 5]), 0)
 
+    def test_multi_select_invalid_user_answer_type(self) -> None:
+        q = ExamQuestion(
+            type=ExamQuestion.TypeChoices.MULTI_SELECT,
+            answer=[1, 2],
+            point=4
+        )
+
+        self.assertEqual(judge(q, {"a": 1}), 0)
+
+    def test_multi_select_single_correct_answer(self) -> None:
+        q = ExamQuestion(
+            type=ExamQuestion.TypeChoices.MULTI_SELECT,
+            answer=1,
+            point=4
+        )
+
+        self.assertEqual(judge(q, [1]), 4)
+
     def test_ordering_correct(self) -> None:
         q = ExamQuestion(
             type=ExamQuestion.TypeChoices.ORDERING,
@@ -107,3 +125,7 @@ class JudgeLogicTests(SimpleTestCase):
         )
 
         self.assertEqual(judge(q, ["java", "spring"]), 0)
+
+    def test_fill_in_blank_single_value(self) -> None:
+        q = ExamQuestion(type=ExamQuestion.TypeChoices.FILL_IN_BLANK, answer="django", point=5)
+        self.assertEqual(judge(q, "Django"), 5)
