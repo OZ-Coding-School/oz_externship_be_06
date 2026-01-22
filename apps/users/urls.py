@@ -4,8 +4,8 @@ from apps.users.views.email_verification_view import (
     SendEmailVerificationAPIView,
     VerifyEmailAPIView,
 )
-from apps.users.views.me import MeView
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
+from apps.users.views.me import MeView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
 
 urlpatterns = [
