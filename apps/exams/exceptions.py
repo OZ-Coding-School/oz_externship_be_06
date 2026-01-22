@@ -4,7 +4,6 @@ from rest_framework.exceptions import APIException
 
 
 class ErrorDetailException(APIException):
-    status_code = 500
     http_status: int
 
     def __init__(self, detail: str, http_status: int) -> None:
