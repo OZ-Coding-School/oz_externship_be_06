@@ -24,7 +24,7 @@ class ChatbotCompletions(TimeStampModel):
     class Meta:
         db_table = "chatbot_completion"
         verbose_name = "챗봇 메세지"
-        verbose_name_plural = "챗봇 메시지 목룍"
+        verbose_name_plural = "챗봇 메시지 목록"
 
     def __str__(self) -> str:
         return f"[{self.session.pk}] {self.get_role_display()}: {self.content[:20]}..."
