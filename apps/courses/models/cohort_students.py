@@ -2,9 +2,10 @@ from django.conf import settings
 from django.db import models
 
 from .cohorts import Cohort
+from ...core.models import TimeStampModel
 
 
-class CohortStudent(models.Model):
+class CohortStudent(TimeStampModel):
     id = models.BigAutoField(primary_key=True)
 
     user = models.ForeignKey(
@@ -20,9 +21,6 @@ class CohortStudent(models.Model):
         related_name="cohort_students",
         db_column="cohort_id",
     )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "cohort_students"
