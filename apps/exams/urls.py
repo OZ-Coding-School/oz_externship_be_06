@@ -1,12 +1,11 @@
 from django.urls import path
 
-from apps.exams.views.cheating_views import ExamCheatingUpdateAPIView
-from apps.exams.views.exam_list import ExamListView
-from apps.exams.views.status_views import ExamStatusCheckAPIView
+from apps.exams.views import CheckCodeAPIView, ExamListView, TakeExamAPIView
+
+app_name = "exams"
 
 urlpatterns = [
-    path("deployments/<int:deployment_id>/status/", ExamStatusCheckAPIView.as_view(), name="exam-status"),
-    path("deployments/<int:deployment_id>/cheating/", ExamCheatingUpdateAPIView.as_view(), name="exam-cheating"),
     path("deployments", ExamListView.as_view(), name="exam-deployments"),
-    path("api/v1/exams/deployments", ExamListView.as_view(), name="exam-deployments"),
+    path("deployments/<int:deployment_id>", TakeExamAPIView.as_view(), name="take-exam"),
+    path("deployments/<int:deployment_id>/check_code", CheckCodeAPIView.as_view(), name="check-code"),
 ]

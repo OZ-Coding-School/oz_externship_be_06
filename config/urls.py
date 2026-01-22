@@ -9,14 +9,11 @@ from drf_spectacular.views import (
 )
 
 urlpatterns: list[URLPattern | URLResolver] = [
-    path("api/exams/", include("apps.exams.urls")),
     path("admin/", admin.site.urls),
     path("api/v1/accounts/", include("apps.users.urls")),
-    path("", include("apps.exams.urls")),
     path("api/v1/admin/exams/", include("apps.exams.admin_urls")),
     path("api/v1/exams/", include("apps.exams.urls")),
 ]
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
