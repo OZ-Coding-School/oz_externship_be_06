@@ -32,10 +32,6 @@ def judge(question: ExamQuestion, user_answer: Any) -> int:
         correct_set = set(correct_answer)
         user_set = set(user_answer)
 
-        wrong_selections = user_set - correct_set
-        if wrong_selections:
-            return 0
-
         matched = len(correct_set & user_set)
         total = len(correct_set)
 
@@ -74,8 +70,8 @@ def judge(question: ExamQuestion, user_answer: Any) -> int:
         if not isinstance(correct_answer, (list, tuple)):
             return 0
 
-        if len(user_answer) != len(correct_answer):
-            return 0
+        # if len(user_answer) != len(correct_answer):
+        #     return 0
 
         matched = 0
         total = len(correct_answer)
