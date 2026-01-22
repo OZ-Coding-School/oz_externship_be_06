@@ -20,8 +20,24 @@ class PostCommentSerializerTestCase(TestCase):
 
     def setUp(self) -> None:
         """테스트 데이터 설정"""
-        self.user = User.objects.create_user(email="test@example.com", password="testpass123")
-        self.other_user = User.objects.create_user(email="other@example.com", password="testpass123")
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            name="테스트유저",
+            nickname="테스터",
+            phone_number="01012345678",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
+        self.other_user = User.objects.create_user(
+            email="other@example.com",
+            password="testpass123",
+            name="다른유저",
+            nickname="다른이",
+            phone_number="01087654321",
+            gender="FEMALE",
+            birthday="1995-05-05",
+        )
         self.category = PostCategory.objects.create(name="테스트 카테고리", status=True)
         self.post = Post.objects.create(
             title="테스트 게시글", content="테스트 내용", author=self.user, category=self.category
