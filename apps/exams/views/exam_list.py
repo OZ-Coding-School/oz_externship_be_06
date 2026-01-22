@@ -37,7 +37,7 @@ from apps.exams.serializers.exam_list import ExamDeploymentListSerializer
 
 
 @extend_schema(
-    tags=["/exams/*"],
+    tags=["exams"],
     summary="시험 배포 목록 조회",
     description="현재 로그인한 사용자의 코호트 기준으로 시험 목록을 조회합니다.",
     parameters=[
