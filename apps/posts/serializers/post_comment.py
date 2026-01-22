@@ -24,7 +24,21 @@ class PostCommentListSerializer(serializers.ModelSerializer):  # type: ignore[ty
         model = PostComment
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
 
-    def get_tagged_users(self, obj: PostComment) -> Any:
+    def get_tagged_users(self, obj: PostComment) -> list[dict[str, Any]]:
+        tags = obj.tags.select_related("tagged_user").all()
+        return TaggedUserSerializer(tags, many=True).data
+
+
+class PostCommentDetailSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
+    """댓글 상세 조회용 시리얼라이저"""
+    author = AuthorSimpleSerializer(read_only=True)
+    tagged_users = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostComment
+        fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
+
+    def get_tagged_users(self, obj: PostComment) -> list[dict[str, Any]]:
         tags = obj.tags.select_related("tagged_user").all()
         return TaggedUserSerializer(tags, many=True).data
 
@@ -42,23 +56,10 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
+        # View에서 post를 context로 전달해야 함
         post = self.context.get("post")
-        if post is not None and not isinstance(post, Post):
-            raise serializers.ValidationError({"detail": "게시글이 제공되지 않았습니다."})
-
-        if post is None:
-            view = self.context.get("view")
-            post_id = None
-            if view is not None:
-                post_id = view.kwargs.get("post_id") or view.kwargs.get("pk")
-
-            if post_id is None:
-                raise serializers.ValidationError({"detail": "게시글이 제공되지 않았습니다."})
-
-            try:
-                post = Post.objects.get(pk=post_id)
-            except Post.DoesNotExist as e:
-                raise NotFound(detail="해당 게시글을 찾을 수 없습니다.") from e
+        if post is None or not isinstance(post, Post):
+            raise serializers.ValidationError({"detail": "게시글 정보가 필요합니다."})
 
         return PostComment.objects.create(author=user, post=post, **validated_data)
 
@@ -78,9 +79,8 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
-        if getattr(self, "instance", None) is not None:
-            if getattr(self.instance, "author", None) != user:
-                raise PermissionDenied(detail="권한이 없습니다.")
+        if self.instance is not None and self.instance.author != user:
+            raise PermissionDenied(detail="권한이 없습니다.")
 
         return attrs
 

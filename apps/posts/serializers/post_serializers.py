@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
 
 from rest_framework import serializers
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
@@ -77,7 +78,7 @@ class PostListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         return first.img_url if first else None
 
     def get_content_preview(self, obj: Post) -> str:
-        preview = (obj.content or "")[:50]
+        preview = (obj.content or "")[:100]
         return preview
 
     def get_comment_count(self, obj: Post) -> int:
@@ -112,6 +113,14 @@ class PostDetailSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
             "updated_at",
         )
 
+    def get_category(self, obj: Post) -> Optional[Dict[str, Any]]:
+        if obj.category is None:
+            return None
+        return {
+            "id": obj.category.id,
+            "name": obj.category.name,
+        }
+
     def get_like_count(self, obj: Post) -> int:
         return obj.likes.filter(is_liked=True).count()
 
@@ -131,20 +140,14 @@ class PostUpdateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         request = self.context.get("request")
         if request is None:
-            from rest_framework.exceptions import NotAuthenticated
-
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
         user = getattr(request, "user", None)
         if not user or user.is_anonymous:
-            from rest_framework.exceptions import NotAuthenticated
-
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
         # 수정 시 작성자 소유권을 확인합니다
         if getattr(self, "instance", None) is not None:
             if getattr(self.instance, "author", None) != request.user:
-                from rest_framework.exceptions import PermissionDenied
-
                 raise PermissionDenied(detail="권한이 없습니다.")
 
         return attrs

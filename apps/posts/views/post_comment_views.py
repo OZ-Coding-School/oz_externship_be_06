@@ -1,14 +1,70 @@
+from typing import Any
+
+from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
-from rest_framework import parsers, status
+from rest_framework import generics, parsers, status
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.posts.models.post import Post
+from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.post_comment import (
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
 )
+
+
+class PostCommentListAPIView(generics.ListAPIView):  # type: ignore[type-arg]
+    """
+    특정 게시글의 댓글 목록 조회 API
+
+    GET /api/v1/posts/{post_id}/comments
+
+    Query Parameters:
+        - page (int, optional): 페이지 번호
+        - page_size (int, optional): 페이지당 항목 수
+    """
+
+    serializer_class = PostCommentListSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self) -> QuerySet[PostComment]:
+        """
+        특정 게시글의 댓글 목록을 반환합니다.
+        """
+        post_id = self.kwargs.get("post_id")
+
+        # 게시글 존재 여부 확인
+        try:
+            Post.objects.get(pk=post_id, is_visible=True)
+        except Post.DoesNotExist as e:
+            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.") from e
+
+        # 댓글 조회 (작성일 기준 오름차순)
+        queryset = (
+            PostComment.objects.filter(post_id=post_id)
+            .select_related("author")
+            .prefetch_related("tags__tagged_user")
+            .order_by("created_at")
+        )
+
+        return queryset
+
+    @extend_schema(
+        operation_id="v1_post_comments_list",
+        tags=["Comments"],
+        summary="게시글 댓글 목록 조회 API",
+        responses={200: PostCommentListSerializer(many=True), 404: {"description": "해당 게시글을 찾을 수 없습니다."}},
+    )
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        특정 게시글의 댓글 목록을 페이지네이션하여 반환합니다.
+        """
+        return super().get(request, *args, **kwargs)
 
 
 class _EmptyTags:
@@ -24,9 +80,6 @@ class _MockAuthor:
         self.id = id
         self.nickname = nickname
         self.profile_img_url = profile_img_url
-
-
-from rest_framework.request import Request
 
 
 class PostCommentListCreateAPIView(APIView):
