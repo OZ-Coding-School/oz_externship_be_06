@@ -4,7 +4,7 @@ from django.db import models
 from apps.core.models import TimeStampModel
 
 
-#운매
+# 운매
 class OperationManager(TimeStampModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="managed_courses")

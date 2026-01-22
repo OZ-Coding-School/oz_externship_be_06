@@ -4,7 +4,7 @@ from django.db import models
 from apps.core.models import TimeStampModel
 
 
-#조교
+# 조교
 class TrainingAssistant(TimeStampModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="assisted_cohorts")

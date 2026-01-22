@@ -4,7 +4,7 @@ from django.db import models
 from apps.core.models import TimeStampModel
 
 
-#러닝코치
+# 러닝코치
 class LearningCoach(TimeStampModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="coached_courses")
