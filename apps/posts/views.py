@@ -84,7 +84,13 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
 
     @extend_schema(tags=["Comments"], summary="댓글 수정 API")
     def put(self, request: Request, comment_id: int) -> Response:
-        serializer = self.serializer_class(data=request.data)
+        # Mock comment 객체 생성 (UpdateSerializer의 validate를 통과하기 위해)
+        mock_comment = type("Comment", (), {})()
+        mock_comment.id = comment_id
+        mock_comment.content = "Mock comment"
+        mock_comment.author = request.user if hasattr(request, "user") else _MockAuthor()
+
+        serializer = self.serializer_class(instance=mock_comment, data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         obj = type("Comment", (), {})()
         obj.id = comment_id
