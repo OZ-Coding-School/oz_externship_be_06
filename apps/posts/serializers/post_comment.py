@@ -1,9 +1,10 @@
 from __future__ import annotations
-"""
-Serializers for PostComment (comments).
 
-All comment-related serializers live here. `post_serializers.py` contains
-post-related serializers only.
+"""
+PostComment(댓글)에 대한 Serializer들.
+
+모든 댓글 관련 serializer는 여기에 위치합니다.
+`post_serializers.py`는 게시글 관련 serializer만 포함합니다.
 """
 
 from __future__ import annotations

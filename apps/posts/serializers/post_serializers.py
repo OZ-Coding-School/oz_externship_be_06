@@ -4,7 +4,8 @@ from rest_framework import serializers
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
-# (주석) PostCategorySerializer 임포트는 사용하지 않음 (모듈 누락 회피)
+
+# PostCategorySerializer 임포트는 사용하지 않음 (모듈 누락 회피)
 
 
 class PostCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
@@ -71,7 +72,7 @@ class PostListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         first_image = getattr(obj, "images", None)
         if first_image is None:
             return None
-        # images는 RelatedManager입니다; 존재하면 첫 번째 이미지를 가져옵니다
+        # images는 RelatedManager이므로 첫 번째 이미지를 가져옵니다
         first = obj.images.first()
         return first.img_url if first else None
 
@@ -92,7 +93,7 @@ class DeleteResponseSerializer(serializers.Serializer):  # type: ignore[type-arg
 
 class PostDetailSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     author = AuthorSimpleSerializer(source="author", read_only=True)
-    # PostCategorySerializer 모듈이 없을 수 있으므로 가져오기 오류를 피하기 위해
+    # PostCategorySerializer 모듈이 없을 수 있으므로
     # SerializerMethodField로 처리합니다
     category = serializers.SerializerMethodField()
     like_count = serializers.SerializerMethodField()
@@ -139,7 +140,7 @@ class PostUpdateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
 
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
-        # 인스턴스가 제공된 경우(수정), 작성자 소유권을 확인합니다
+        # 수정 시 작성자 소유권을 확인합니다
         if getattr(self, "instance", None) is not None:
             if getattr(self.instance, "author", None) != request.user:
                 from rest_framework.exceptions import PermissionDenied
