@@ -55,6 +55,7 @@ class PostCommentAPITestCase(TestCase):
 
     def test_comment_update_put(self) -> None:
         """댓글 수정 테스트"""
+        self.client.force_authenticate(user=self.user)  # type: ignore[attr-defined]
         data = {"content": "수정된 댓글"}
         response = self.client.put(f"/api/posts/comments/{self.comment.id}/", data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -12,7 +12,10 @@ from apps.posts.serializers.post_comment import (
 
 
 class _EmptyTags:
-    def select_related(self, *args: object, **kwargs: object) -> list[object]:
+    def select_related(self, *args: object, **kwargs: object) -> "_EmptyTags":
+        return self
+
+    def all(self) -> list[object]:
         return []
 
 
