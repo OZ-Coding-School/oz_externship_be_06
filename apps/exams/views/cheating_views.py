@@ -51,28 +51,31 @@ class ExamCheatingUpdateAPIView(APIView):
         },
     )
     def post(self, request: Request, deployment_id: int) -> Response:
-        user = cast(User, request.user)
+        user = request.user
 
         try:
-            deployment_model = cast(Any, ExamDeployment)
-            deployment = deployment_model.objects.select_related("exam", "cohort").get(id=deployment_id)
+            deployment = ExamDeployment.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
             return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
 
         if not is_exam_active(deployment):
             return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
-        cache_key = f"exam:cheating:{deployment.id}:{user.id}"
-        current_count = cache.get(cache_key)
+        cheating_key = f"exam:cheating:{deployment.id}:{user.id}"
+        submitted_key = f"exam:submitted:{deployment.id}:{user.id}"
+        if cache.get(submitted_key) is not None:
+            return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
+
+        current_count = cache.get(cheating_key)
         if current_count is not None and current_count >= 3:
             return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
         ttl_seconds = max(1, deployment.duration_time * 60)
         if current_count is None:
-            cache.set(cache_key, 1, timeout=ttl_seconds)
             cheating_count = 1
+            cache.set(cheating_key, 1, timeout=ttl_seconds)
         else:
-            cheating_count = cache.incr(cache_key)
+            cheating_count = cache.incr(cheating_key)
 
         is_closed = cheating_count >= 3
         serializer = self.serializer_class(

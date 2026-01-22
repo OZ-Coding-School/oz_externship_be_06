@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -49,8 +47,7 @@ class ExamStatusCheckAPIView(APIView):
     )
     def get(self, request: Request, deployment_id: int) -> Response:
         try:
-            deployment_model = cast(Any, ExamDeployment)
-            deployment = deployment_model.objects.select_related("exam", "cohort").get(id=deployment_id)
+            deployment = ExamDeployment.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
             return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
 
