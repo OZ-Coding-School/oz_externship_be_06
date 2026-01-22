@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-class MeResponseSerializer(serializers.Serializer):
+class MeResponseSerializer(serializers.Serializer): # type: ignore[type-arg]
     id = serializers.IntegerField()
     email = serializers.EmailField()
     nickname = serializers.CharField()

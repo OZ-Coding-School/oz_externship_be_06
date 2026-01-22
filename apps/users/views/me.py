@@ -17,7 +17,7 @@ class Meview(APIView):
 
     @extend_schema(responses=MeResponseSerializer)
     def get(self, request: Request) -> Response:
-        user = cast("UserModel", request.user)  # type: ignore[attr-defined]
+        user = cast("UserModel", request.user)
         return Response(
             {
                 "id": user.id,
