@@ -99,10 +99,14 @@ def grade_submission(submission: ExamSubmission) -> None:
 
     # 리스트 → dict 변환: {qid: submitted_answer}
     answers = {}
+
     for ans in answers_list:
-        question_id = ans.get("question_id")
+        if not isinstance(ans, dict):
+            continue
+        question_id = ans.get('question_id')
         if question_id is None:
             continue
+
 
         qid = str(ans.get("question_id"))
         submitted_answer = ans.get("submitted_answer")

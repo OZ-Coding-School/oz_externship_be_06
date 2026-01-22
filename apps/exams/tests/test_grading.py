@@ -1,10 +1,11 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
+from django.template.defaultfilters import title
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 
-from apps.courses.models import Course
+from apps.courses.models import Course, Subject, Cohort
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.exams.services.grading import grade_submission, judge
 
@@ -154,15 +155,30 @@ class GradeSubmissionTests(TestCase):
         )
 
         course = Course.objects.create(name="테스트 강좌", tag="TST")
-        self.exam = Exam.objects.create(title="시험", subject_id=1)
+
+        subject = Subject.objects.create(
+            title="테스트과목",
+            course=course,
+            number_of_days=1,
+            number_of_hours=1,
+        )
+        self.exam = Exam.objects.create(title="시험", subject=subject)
+        cohort = Cohort.objects.create(
+            course=course,
+            number=1,
+            max_student=1,
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 1, 1),
+        )
         self.deployment = ExamDeployment.objects.create(
             exam=self.exam,
-            cohort_id=1,
+            cohort=cohort,
             duration_time=60,
             access_code="ABC123",
             open_at=timezone.now(),
             close_at=timezone.now(),
             status=ExamDeployment.StatusChoices.ACTIVATED,
+            questions_snapshot_json=[],
         )
         self.submission = ExamSubmission.objects.create(
             submitter=self.user,
