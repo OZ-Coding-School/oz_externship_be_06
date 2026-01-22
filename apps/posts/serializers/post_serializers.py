@@ -40,7 +40,7 @@ class PostCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
 
 
 class AuthorSimpleSerializer(serializers.Serializer):  # type: ignore[type-arg]
-    id = serializers.IntegerField(source="id")
+    id = serializers.IntegerField()
     nickname = serializers.CharField()
     profile_img_url = serializers.CharField(allow_null=True)
 
