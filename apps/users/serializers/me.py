@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.users.models import User
 
 
-class MeResponseSerializer(serializers.ModelSerializer):
+class MeResponseSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     birthday = serializers.DateField(format="%Y-%m-%d", required=False, allow_null=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S%z", required=False, allow_null=True)
     gender = serializers.SerializerMethodField()
