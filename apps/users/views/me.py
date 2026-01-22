@@ -12,22 +12,16 @@ if TYPE_CHECKING:
     from apps.users.models import User as UserModel
 
 
-class Meview(APIView):
+class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=MeResponseSerializer)
+    @extend_schema(
+        tags=["Accounts"],
+        summary="내 정보 조회",
+        responses=MeResponseSerializer,
+    )
     def get(self, request: Request) -> Response:
         user = cast("UserModel", request.user)
-        return Response(
-            {
-                "id": user.id,
-                "email": user.email,
-                "nickname": user.nickname,
-                "name": user.name,
-                "phone_number": user.phone_number,
-                "birthday": user.birthday.isoformat() if user.birthday else None,
-                "gender": "M" if user.gender == "MALE" else "F",
-                "profile_img_url": user.profile_img_url,
-                "created_at": user.created_at.isoformat() if user.created_at else None,
-            }
-        )
+
+        serializer = MeResponseSerializer(user, context={"request": request})
+        return Response(serializer.data)
