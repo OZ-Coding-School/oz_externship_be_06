@@ -3,7 +3,7 @@ from __future__ import annotations
 from rest_framework import serializers
 
 
-class TakeExamRequestSerializer(serializers.Serializer):
+class TakeExamRequestSerializer(serializers.Serializer[dict[str, str]]):
     access_code = serializers.CharField(
         required=True,
         allow_blank=False,
@@ -12,7 +12,7 @@ class TakeExamRequestSerializer(serializers.Serializer):
     )
 
 
-class TakeExamResponseSerializer(serializers.Serializer):
+class TakeExamResponseSerializer(serializers.Serializer[dict[str, int | str]]):
     submission_id = serializers.IntegerField()
     started_at = serializers.DateTimeField()
 

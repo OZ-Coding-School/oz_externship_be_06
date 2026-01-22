@@ -41,7 +41,9 @@ class TakeExamAPITest(APITestCase):
 
         # Course, Subject, Cohort 생성
         self.course = Course.objects.create(name="테스트 강좌")
-        self.subject = Subject.objects.create(course=self.course, name="테스트 과목")
+        self.subject = Subject.objects.create(
+            course=self.course, title="테스트 과목", number_of_days=30, number_of_hours=120
+        )
         self.cohort = Cohort.objects.create(
             course=self.course,
             number=1,

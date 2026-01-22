@@ -45,8 +45,8 @@ def take_exam(*, user: User, access_code: str) -> TakeExamResult:
     )
 
     # answers_json은 JSONField(null=False)라 빈 dict로라도 보장
-    if submission.answers_json is None:  # type: ignore[truthy-bool]
-        submission.answers_json = {}  # type: ignore[assignment]
+    if not submission.answers_json:
+        submission.answers_json = {}
         submission.save(update_fields=["answers_json"])
 
     return TakeExamResult(submission=submission, deployment=deployment)

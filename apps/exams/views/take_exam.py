@@ -16,6 +16,11 @@ class TakeExamAPIView(APIView):
         req_serializer = TakeExamRequestSerializer(data=request.data)
         req_serializer.is_valid(raise_exception=True)
 
+        if not request.user.is_authenticated or not hasattr(request.user, "role"):
+            from rest_framework.exceptions import AuthenticationFailed
+
+            raise AuthenticationFailed("인증이 필요합니다.")
+
         result = take_exam(user=request.user, access_code=req_serializer.validated_data["access_code"])
         payload = build_take_exam_response(result=result)
 
