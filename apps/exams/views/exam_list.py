@@ -1,79 +1,100 @@
 from __future__ import annotations
 
-from typing import Any
-
-from django.db.models import QuerySet
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from django.db import models
+from django.db.models import (
+    BooleanField,
+    Case,
+    CharField,
+    Count,
+    IntegerField,
+    OuterRef,
+    QuerySet,
+    Subquery,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.functions import Coalesce
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.request import Request
-from rest_framework.response import Response
 
+from apps.courses.models.cohort_students import CohortStudent
+from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
 from apps.exams.pagination import SimplePagePagination
-from apps.exams.serializers.error import ErrorDetailSerializer
-from apps.exams.serializers.exam_list import ExamListSerializer
+from apps.exams.serializers.exam_list import ExamDeploymentListSerializer
 
 
-class ExamListView(ListAPIView[ExamSubmission]):
-    permission_classes = [AllowAny]
-    serializer_class = ExamListSerializer
+class ExamListView(ListAPIView[ExamDeployment]):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ExamDeploymentListSerializer
     pagination_class = SimplePagePagination
 
-    @extend_schema(
-        summary="시험 목록",
-        parameters=[],
-        responses={
-            200: ExamListSerializer,
-            401: OpenApiResponse(
-                response=ErrorDetailSerializer,
-                description="Unauthorized",
-                examples=[
-                    OpenApiExample(
-                        "401 Unauthorized",
-                        value={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
-                    )
-                ],
-            ),
-            403: OpenApiResponse(
-                response=ErrorDetailSerializer,
-                description="Forbidden",
-                examples=[
-                    OpenApiExample(
-                        "403 Forbidden",
-                        value={"error_detail": "권한이 없습니다."},
-                    )
-                ],
-            ),
-            404: OpenApiResponse(
-                response=ErrorDetailSerializer,
-                description="Not Found",
-                examples=[
-                    OpenApiExample(
-                        "404 Not Found",
-                        value={"error_detail": "사용자 정보를 찾을 수 없습니다."},
-                    )
-                ],
-            ),
-        },
-    )
-    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        return super().get(request, *args, **kwargs)
+    def get_queryset(self) -> QuerySet[ExamDeployment]:
+        user_id = self.request.user.id
+        # 🔥 여기 추가
+        cohort_id = (
+            CohortStudent.objects
+            .filter(user_id=user_id)
+            .order_by("created_at")
+            .values_list("cohort_id", flat=True)
+            .first()
+        )
 
-    def get_queryset(self: "ExamListView") -> QuerySet[ExamSubmission]:
+        if not cohort_id:
+            raise ValidationError("해당 유저의 코호트 정보가 없습니다.")
+
         status_param = self.request.query_params.get("status", "all").lower()
         if status_param not in ("all", "done", "pending"):
             raise ValidationError({"status": "status는 all/done/pending 중 하나여야 합니다."})
 
-        qs = ExamSubmission.objects.select_related("deployment__exam__subject").order_by("-created_at")
+        latest_sub = ExamSubmission.objects.filter(submitter_id=user_id, deployment_id=OuterRef("pk")).order_by(
+            "-created_at"
+        )
 
-        if self.request.user.is_authenticated:
-            qs = qs.filter(submitter=self.request.user)
+        submission_id_sq = Subquery(latest_sub.values("id")[:1])
+        score_sq = Subquery(latest_sub.values("score")[:1])
+        correct_sq = Subquery(latest_sub.values("correct_answer_count")[:1])
+        answers_json_sq = Subquery(latest_sub.values("answers_json")[:1])
+        empty_json = Value({}, output_field=models.JSONField())
+
+        qs = (
+            ExamDeployment.objects
+            .filter(cohort_id=cohort_id)
+            .select_related("exam__subject")
+            .annotate(
+                question_count=Count("exam__questions", distinct=True),
+                total_score=Coalesce(
+                    Sum("exam__questions__point", distinct=True),
+                    Value(0),
+                    output_field=IntegerField(),
+                ),
+                submission_id=submission_id_sq,
+                score=Coalesce(score_sq, Value(0), output_field=IntegerField()),
+                correct_answer_count=Coalesce(correct_sq, Value(0), output_field=IntegerField()),
+                answers_json=answers_json_sq,
+            )
+            .annotate(
+                exam_status=Case(
+                    When(submission_id__isnull=True, then=Value("pending")),
+                    When(answers_json=empty_json, then=Value("pending")),
+                    default=Value("done"),
+                    output_field=CharField(),
+                ),
+                is_done=Case(
+                    When(submission_id__isnull=True, then=Value(False)),
+                    When(answers_json=empty_json, then=Value(False)),
+                    default=Value(True),
+                    output_field=BooleanField(),
+                ),
+            )
+            .order_by("-created_at")
+        )
 
         if status_param == "done":
-            qs = qs.exclude(answers_json={})
+            qs = qs.filter(exam_status="done")
         elif status_param == "pending":
-            qs = qs.filter(answers_json={})
+            qs = qs.filter(exam_status="pending")
 
         return qs
