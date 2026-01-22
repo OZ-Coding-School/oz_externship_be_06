@@ -32,6 +32,10 @@ def judge(question: ExamQuestion, user_answer: Any) -> int:
         correct_set = set(correct_answer)
         user_set = set(user_answer)
 
+        wrong_selections = user_set - correct_set
+        if wrong_selections:
+            return 0
+
         matched = len(correct_set & user_set)
         total = len(correct_set)
 
@@ -96,6 +100,10 @@ def grade_submission(submission: ExamSubmission) -> None:
     # 리스트 → dict 변환: {qid: submitted_answer}
     answers = {}
     for ans in answers_list:
+        question_id = ans.get("question_id")
+        if question_id is None:
+            continue
+
         qid = str(ans.get("question_id"))
         submitted_answer = ans.get("submitted_answer")
         if qid is not None:
