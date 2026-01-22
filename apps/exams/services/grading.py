@@ -103,10 +103,9 @@ def grade_submission(submission: ExamSubmission) -> None:
     for ans in answers_list:
         if not isinstance(ans, dict):
             continue
-        question_id = ans.get('question_id')
+        question_id = ans.get("question_id")
         if question_id is None:
             continue
-
 
         qid = str(ans.get("question_id"))
         submitted_answer = ans.get("submitted_answer")

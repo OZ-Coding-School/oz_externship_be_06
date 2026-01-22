@@ -5,7 +5,7 @@ from django.template.defaultfilters import title
 from django.test import SimpleTestCase, TestCase
 from django.utils import timezone
 
-from apps.courses.models import Course, Subject, Cohort
+from apps.courses.models import Cohort, Course, Subject
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.exams.services.grading import grade_submission, judge
 
