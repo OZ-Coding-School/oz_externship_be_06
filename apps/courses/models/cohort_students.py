@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.db import models
 
-from .cohorts import Cohort
 from ...core.models import TimeStampModel
+from .cohorts import Cohort
 
 
 class CohortStudent(TimeStampModel):
