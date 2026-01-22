@@ -4,7 +4,7 @@ from django.db import models
 
 from apps.core.models import TimeStampModel
 
-from .question import Question
+from apps.qna.models.question import Question
 
 
 class QuestionAIAnswer(TimeStampModel):

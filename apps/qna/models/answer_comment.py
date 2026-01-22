@@ -5,7 +5,7 @@ from django.db import models
 from apps.core.models import TimeStampModel
 from apps.users.models import User
 
-from .answer import Answer
+from apps.qna.models.answer import Answer
 
 
 class AnswerComment(TimeStampModel):
