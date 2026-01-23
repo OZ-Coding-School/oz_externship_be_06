@@ -29,7 +29,7 @@ class AdminExamCreateAPIView(APIView):
     serializer_class = AdminExamCreateRequestSerializer
 
     @extend_schema(
-        tags=["관리자-쪽지시험"],
+        tags=["admin_exams"],
         summary="관리자 쪽지시험 생성 API",
         description="""
         관리자/스태프 권한으로 쪽지시험을 생성합니다.
