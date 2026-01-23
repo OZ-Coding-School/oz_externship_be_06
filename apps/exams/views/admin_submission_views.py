@@ -165,7 +165,9 @@ class AdminExamSubmissionListAPIView(APIView):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
 
         # Serializer를 사용하여 응답 데이터 생성
-        serializer = AdminExamSubmissionListResponseSerializer(paginated_queryset or [], many=True)
+        serializer = AdminExamSubmissionListResponseSerializer(
+            paginated_queryset or [], many=True
+        )
 
         # 페이지네이션 응답 생성
         response = paginator.get_paginated_response(serializer.data)
