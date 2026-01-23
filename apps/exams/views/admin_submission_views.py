@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
