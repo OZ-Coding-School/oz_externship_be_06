@@ -23,7 +23,6 @@ class ExamDeployment(TimeStampModel):
         choices=StatusChoices.choices,
         default=StatusChoices.DEACTIVATED,
         verbose_name="상태",
-        db_default="ACTIVATED",
     )
 
     def __str__(self) -> str:
