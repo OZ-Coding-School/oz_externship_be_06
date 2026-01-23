@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
-from apps.exams.models import Exam, ExamDeployment
+from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
 
 
@@ -112,6 +112,41 @@ class ExamCheatingUpdateAPITest(TestCase):
         data = response.json()
         self.assertEqual(data["exam_status"], "closed")
         self.assertTrue(data["force_submit"])
+
+    def test_cheating_creates_submission_when_cache_already_closed(self) -> None:
+        cache.set(self._cache_key(), 3, timeout=60)
+
+        response = self.client.post(
+            f"/api/exams/deployments/{self.deployment.id}/cheating/",
+            data={"answers_json": []},
+            content_type="application/json",
+            headers=self._auth_headers(self.student),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["force_submit"])
+        self.assertTrue(
+            ExamSubmission.objects.filter(submitter=self.student, deployment=self.deployment).exists()
+        )
+
+    def test_cheating_returns_410_when_submission_exists(self) -> None:
+        ExamSubmission.objects.create(
+            submitter=self.student,
+            deployment=self.deployment,
+            started_at=timezone.now(),
+            cheating_count=3,
+            answers_json=[],
+        )
+
+        response = self.client.post(
+            f"/api/exams/deployments/{self.deployment.id}/cheating/",
+            headers=self._auth_headers(self.student),
+        )
+
+        self.assertEqual(response.status_code, 410)
+        data = response.json()
+        self.assertEqual(data["error_detail"], "이미 제출된 시험입니다.")
 
     def test_cheating_returns_403_for_non_student(self) -> None:
         self._clear_cache()
