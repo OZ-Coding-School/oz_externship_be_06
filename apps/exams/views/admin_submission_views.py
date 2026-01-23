@@ -112,8 +112,7 @@ class AdminExamSubmissionListAPIView(APIView):
         # 필터링: 검색 키워드
         if search_keyword:
             queryset = queryset.filter(
-                Q(submitter__nickname__icontains=search_keyword)
-                | Q(submitter__name__icontains=search_keyword)
+                Q(submitter__nickname__icontains=search_keyword) | Q(submitter__name__icontains=search_keyword)
             )
 
         # 필터링: 기수 ID
