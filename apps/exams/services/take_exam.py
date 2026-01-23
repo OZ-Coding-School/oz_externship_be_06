@@ -6,7 +6,6 @@ from typing import Any
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.users.models import User
 
@@ -102,21 +101,3 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
         "cheating_count": submission.cheating_count,
         "questions": questions,
     }
-
-
-def check_code(*, user: User, deployment_id: int, code: str) -> None:
-    """참가코드 검증"""
-    if user.role != User.Role.STUDENT:
-        raise ErrorDetailException("시험에 응시할 권한이 없습니다.", 403)
-
-    try:
-        deployment = ExamDeployment.objects.get(id=deployment_id)
-    except ExamDeployment.DoesNotExist:
-        raise ErrorDetailException("배포 정보를 찾을 수 없습니다.", 404)
-
-    if deployment.access_code != code:
-        raise ErrorDetailException("응시 코드가 일치하지 않습니다.", 400)
-
-    now = timezone.now()
-    if now < deployment.open_at:
-        raise ErrorDetailException("아직 응시할 수 없습니다.", 423)
