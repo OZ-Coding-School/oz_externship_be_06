@@ -83,10 +83,18 @@ class AdminExamSubmissionListAPIView(APIView):
         ],
         responses={
             200: AdminExamSubmissionListResponseSerializer(many=True),
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 조회 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="특정시험 응시 내역 조회 권한이 없습니다"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="조회된 응시 내역이 없습니다"),
+            400: OpenApiResponse(
+                ErrorResponseSerializer, description="유효하지 않은 조회 요청"
+            ),
+            401: OpenApiResponse(
+                ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다"
+            ),
+            403: OpenApiResponse(
+                ErrorResponseSerializer, description="특정시험 응시 내역 조회 권한이 없습니다"
+            ),
+            404: OpenApiResponse(
+                ErrorResponseSerializer, description="조회된 응시 내역이 없습니다"
+            ),
         },
     )
     def get(self, request: Request) -> Response:
