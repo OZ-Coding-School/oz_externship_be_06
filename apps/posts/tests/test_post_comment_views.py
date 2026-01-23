@@ -15,6 +15,8 @@ User = get_user_model()
 class PostCommentAPITestCase(TestCase):
     """PostComment API 뷰 테스트 (명세 준수 URL)"""
 
+    AUTH_MSG = "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
+
     def setUp(self) -> None:
         self.client = APIClient()
 
@@ -95,12 +97,20 @@ class PostCommentAPITestCase(TestCase):
         self.assertTrue(PostComment.objects.filter(post=self.post, author=self.user, content="새 댓글").exists())
 
     def test_comment_create_post_unauthorized(self) -> None:
-        """댓글 생성 - 인증 없음(401)"""
+        """댓글 생성 - 인증 없음(401)
+
+        인증 실패는 permission(IsAuthenticated)에서 처리하므로,
+        응답 바디의 키(detail/error_detail)나 메시지는 프로젝트 전역 핸들러에 따라 달라질 수 있다.
+        """
         url = f"/api/v1/posts/{self.post.id}/comments/"
         payload = {"content": "새 댓글"}
         response = self.client.post(url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        data: Any = getattr(response, "data", None)
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data["detail"], self.AUTH_MSG)
 
     def test_comment_create_post_not_found(self) -> None:
         """댓글 생성 - 게시글 없음(404)"""

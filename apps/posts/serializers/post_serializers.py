@@ -21,10 +21,14 @@ class PostCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         request = self.context.get("request")
         if request is None:
-            raise serializers.ValidationError({"detail": "자격 인증 데이터가 제공되지 않았습니다."})
+            raise serializers.ValidationError(
+                {"detail": "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."}
+            )
         user = getattr(request, "user", None)
         if not user or user.is_anonymous:
-            raise serializers.ValidationError({"detail": "자격 인증 데이터가 제공되지 않았습니다."})
+            raise serializers.ValidationError(
+                {"detail": "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."}
+            )
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> Post:
@@ -145,10 +149,10 @@ class PostUpdateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         request = self.context.get("request")
         if request is None:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
+            raise NotAuthenticated(detail="자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
         user = getattr(request, "user", None)
         if not user or user.is_anonymous:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
+            raise NotAuthenticated(detail="자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
 
         # 수정 시 작성자 소유권을 확인합니다
         if getattr(self, "instance", None) is not None:
