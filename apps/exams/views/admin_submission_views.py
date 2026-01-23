@@ -111,8 +111,8 @@ class AdminExamSubmissionListAPIView(APIView):
         # 필터링: 기수 ID
         if cohort_id:
             try:
-                cohort_id = int(cohort_id)
-                queryset = queryset.filter(deployment__cohort_id=cohort_id)
+                cohort_id_int = int(cohort_id)
+                queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
             except ValueError:
                 return Response(
                     {"error_detail": "유효하지 않은 조회 요청입니다."},
@@ -122,8 +122,8 @@ class AdminExamSubmissionListAPIView(APIView):
         # 필터링: 시험 ID
         if exam_id:
             try:
-                exam_id = int(exam_id)
-                queryset = queryset.filter(deployment__exam_id=exam_id)
+                exam_id_int = int(exam_id)
+                queryset = queryset.filter(deployment__exam_id=exam_id_int)
             except ValueError:
                 return Response(
                     {"error_detail": "유효하지 않은 조회 요청입니다."},
