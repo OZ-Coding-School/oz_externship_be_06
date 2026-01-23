@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
             name="status",
             field=models.CharField(
                 choices=[("ACTIVATED", "시험 응시 가능"), ("DEACTIVATED", "시험 비활성화")],
-                db_default="ACTIVATED",
                 default="DEACTIVATED",
                 max_length=20,
                 verbose_name="상태",

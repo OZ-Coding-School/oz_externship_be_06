@@ -64,6 +64,4 @@ class AdminExamQuestionCreateAPIView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        response_serializer = AdminExamQuestionCreateResponseSerializer(data=result)
-        response_serializer.is_valid(raise_exception=True)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(AdminExamQuestionCreateResponseSerializer(result).data, status=status.HTTP_201_CREATED)
