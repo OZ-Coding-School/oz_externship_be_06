@@ -9,15 +9,6 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
 
-REST_FRAMEWORK.update(
-    {
-        "DEFAULT_AUTHENTICATION_CLASSES": (
-            "rest_framework.authentication.SessionAuthentication",  # 로컬에서 테스트 코드 동작시 force_login 작동을 위함
-            "rest_framework_simplejwt.authentication.JWTAuthentication",
-        ),
-    }
-)
-
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
