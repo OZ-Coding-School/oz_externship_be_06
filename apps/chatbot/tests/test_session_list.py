@@ -26,6 +26,7 @@ class TestChatbotSessionList(APITestCase):
         self.question = Question.objects.create(
             title="테스트 질문",
             content="테스트 내용",
+            author=self.user,  # ✅ 필수 FK
         )
 
         ChatbotSession.objects.bulk_create(
@@ -60,4 +61,9 @@ class TestChatbotSessionList(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 10)
         self.assertIsNotNone(response.data["next"])
-        self.assertTrue(all(item["user"] == self.user.id for item in response.data["results"]))
+        self.assertTrue(
+            all(
+                item["user"] == self.user.id
+                for item in response.data["results"]
+            )
+        )
