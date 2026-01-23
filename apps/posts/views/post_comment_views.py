@@ -1,13 +1,15 @@
-from typing import Any
+from typing import Any, cast
 
+from django.db.models import QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, parsers, serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 
 from apps.posts.models.post import Post
@@ -36,7 +38,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
     pagination_class = PostCommentPagination
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
-    def get_permissions(self):
+    def get_permissions(self) -> list[BasePermission]:
         if self.request.method == "GET":
             return [AllowAny()]
         return [IsAuthenticated()]
@@ -48,7 +50,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         except Post.DoesNotExist as e:
             raise NotFound(detail="해당 게시글을 찾을 수 없습니다.") from e
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[PostComment]:
         post = self._get_post()
         return (
             PostComment.objects.filter(post=post)
@@ -57,7 +59,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
             .order_by("created_at")
         )
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[BaseSerializer[Any]]:
         if self.request.method == "GET":
             return PostCommentListSerializer
         return PostCommentCreateSerializer
@@ -68,10 +70,10 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
             ctx["post"] = self._get_post()
         return ctx
 
-    def perform_create(self, serializer: PostCommentCreateSerializer) -> None:
+    def perform_create(self, serializer: BaseSerializer[Any]) -> None:
         # DB에 실제 생성
         post = self._get_post()
-        serializer.save(author=self.request.user, post=post)
+        cast(PostCommentCreateSerializer, serializer).save(author=self.request.user, post=post)
 
     @extend_schema(
         operation_id="v1_post_comments_list",
