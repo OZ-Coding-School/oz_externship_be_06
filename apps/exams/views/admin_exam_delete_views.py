@@ -1,11 +1,14 @@
+from typing import NoReturn
+
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.permissions import IsExamDeleteStaff
+from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin_exam_delete_serializers import (
     AdminExamDeleteResponseSerializer,
 )
@@ -20,8 +23,13 @@ from apps.exams.services.admin_exam_delete_service import (
 class AdminExamDeleteAPIView(APIView):
     """어드민 쪽지시험 삭제 API."""
 
-    permission_classes = [IsAuthenticated, IsExamDeleteStaff]
+    permission_classes = [IsAuthenticated, IsExamStaff]
     serializer_class = AdminExamDeleteResponseSerializer
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated()
+        raise PermissionDenied(detail="쪽지시험 삭제 권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_exams"],
@@ -59,6 +67,5 @@ class AdminExamDeleteAPIView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        serializer = self.serializer_class(data={"id": deleted_id})
-        serializer.is_valid(raise_exception=True)
+        serializer = self.serializer_class({"id": deleted_id})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
