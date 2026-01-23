@@ -128,3 +128,15 @@ class CheckCodeAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_423_LOCKED)
         self.assertIn("error_detail", response.data)
         self.assertIn("아직 응시할 수 없습니다", str(response.data["error_detail"]))
+
+    def test_check_code_after_close_time(self) -> None:
+        """응시 종료 시간 후 테스트"""
+        now = timezone.now()
+        self.deployment.open_at = now - timedelta(hours=2)
+        self.deployment.close_at = now - timedelta(hours=1)
+        self.deployment.save()
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.post(self._check_code_url(), {"code": "testcode123"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", response.data)
+        self.assertIn("시험이 이미 종료되었습니다", str(response.data["error_detail"]))

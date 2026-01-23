@@ -16,3 +16,10 @@ class SubmitExamRequestSerializer(serializers.Serializer[Any]):
     deployment_id = serializers.IntegerField(required=True)
     started_at = serializers.DateTimeField(required=False, allow_null=True)
     answers = AnswerItemSerializer(many=True, required=True)
+
+
+class SubmitExamResponseSerializer(serializers.Serializer[Any]):
+    submission_id = serializers.IntegerField(help_text="제출 ID")
+    correct_answer_count = serializers.IntegerField(help_text="정답 개수")
+    score = serializers.IntegerField(help_text="획득 점수")
+    redirect_url = serializers.CharField(help_text="결과 페이지 URL")
