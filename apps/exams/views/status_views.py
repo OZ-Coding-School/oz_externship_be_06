@@ -23,7 +23,7 @@ class ExamStatusCheckAPIView(APIView):
     serializer_class = ExamStatusResponseSerializer
 
     @extend_schema(
-        tags=["쪽지시험"],
+        tags=["exams"],
         summary="쪽지시험 상태 확인 API",
         description="""
         수강생이 쪽지시험 응시 중인 상태를 확인합니다.

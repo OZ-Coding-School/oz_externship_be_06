@@ -30,7 +30,7 @@ class ExamCheatingUpdateAPIView(APIView):
     serializer_class = ExamCheatingResponseSerializer
 
     @extend_schema(
-        tags=["쪽지시험"],
+        tags=["exams"],
         summary="쪽지시험 부정행위 카운트 업데이트 API",
         description="""
         시험 응시 중 화면 이탈 등 부정행위가 발생했을 때 카운트를 증가시킵니다.
