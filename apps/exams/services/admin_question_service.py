@@ -2,7 +2,7 @@ import json
 from typing import Any
 
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 
 from apps.exams.models import Exam, ExamQuestion
 
@@ -16,26 +16,26 @@ class ExamQuestionLimitError(Exception):
 
 
 def create_exam_question(exam_id: int, payload: dict[str, Any]) -> dict[str, Any]:
-    try:
-        exam = Exam.objects.get(id=exam_id)
-    except Exam.DoesNotExist as exc:
-        raise ExamNotFoundError from exc
-
-    question_count = exam.questions.count()
-    if question_count >= 20:
-        raise ExamQuestionLimitError
-
-    total_points = exam.questions.aggregate(total=Sum("point"))["total"] or 0
-    point = payload["point"]
-    if total_points + point > 100:
-        raise ExamQuestionLimitError
-
-    options = payload.get("options")
-    blank_count = payload.get("blank_count")
-    prompt = payload.get("prompt")
-    explanation = payload.get("explanation") or ""
-
     with transaction.atomic():
+        try:
+            exam = Exam.objects.select_for_update().get(id=exam_id)
+        except Exam.DoesNotExist as exc:
+            raise ExamNotFoundError from exc
+
+        stats = exam.questions.aggregate(count=Count("id"), total=Sum("point"))
+        question_count = stats["count"] or 0
+        total_points = stats["total"] or 0
+        if question_count >= 20:
+            raise ExamQuestionLimitError
+        point = payload["point"]
+        if total_points + point > 100:
+            raise ExamQuestionLimitError
+
+        options = payload.get("options")
+        blank_count = payload.get("blank_count")
+        prompt = payload.get("prompt")
+        explanation = payload.get("explanation") or ""
+
         exam_question = ExamQuestion.objects.create(
             exam=exam,
             type=payload["model_type"],
