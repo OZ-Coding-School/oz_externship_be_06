@@ -11,6 +11,15 @@ class CheckCodeRequestSerializer(serializers.Serializer):
     )
 
 
+class TakeExamRequestSerializer(serializers.Serializer):
+    access_code = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        max_length=64,
+        help_text="참가코드(Base62 인코딩된 값)",
+    )
+
+
 class QuestionSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     number = serializers.IntegerField()
