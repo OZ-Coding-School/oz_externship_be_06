@@ -15,25 +15,98 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import Coalesce
-from rest_framework.exceptions import ValidationError
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
+from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from apps.core.utils.pagination import SimplePagePagination
 from apps.courses.models.cohort_students import CohortStudent
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
+from apps.exams.serializers.error import ErrorDetailSerializer
 from apps.exams.serializers.exam_list import ExamDeploymentListSerializer
 
 
+@extend_schema(
+    tags=["exams"],
+    summary="시험 배포 목록 조회",
+    description="현재 로그인한 사용자의 코호트 기준으로 시험 목록을 조회합니다.",
+    parameters=[
+        OpenApiParameter(
+            name="status",
+            description="시험 상태 필터",
+            required=False,
+            type=str,
+            enum=["all", "done", "pending"],
+            default="all",
+        ),
+    ],
+    responses={
+        200: ExamDeploymentListSerializer,
+        401: OpenApiResponse(
+            response=ErrorDetailSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
+                )
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorDetailSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": "권한이 없습니다."},
+                )
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorDetailSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "코호트 없음/잘못된 요청",
+                    value={"error_detail": "사용자 정보를 찾을 수 없습니다."},
+                ),
+                OpenApiExample(
+                    "잘못된 status",
+                    value={"error_detail": "요청 코드가 일치하지 않습니다."},
+                ),
+            ],
+        ),
+    },
+)
 class ExamListView(ListAPIView[ExamDeployment]):
     permission_classes = [IsAuthenticated]
     serializer_class = ExamDeploymentListSerializer
     pagination_class = SimplePagePagination
 
+    def handle_exception(self, exc: Exception) -> Response:
+        if isinstance(exc, NotAuthenticated):
+            exc = ErrorDetailException("자격 인증 데이터가 제공되지 않았습니다.", status.HTTP_401_UNAUTHORIZED)
+
+        elif isinstance(exc, PermissionDenied):
+            exc = ErrorDetailException("권한이 없습니다.", status.HTTP_403_FORBIDDEN)
+
+        if isinstance(exc, ErrorDetailException):
+            return Response({"error_detail": str(exc.detail)}, status=exc.http_status)
+
+        return super().handle_exception(exc)
+
     def get_queryset(self) -> QuerySet[ExamDeployment]:
         user_id = self.request.user.id
-        # 🔥 여기 추가
         cohort_id = (
             CohortStudent.objects.filter(user_id=user_id)  # type: ignore[attr-defined]
             .order_by("created_at")
@@ -41,12 +114,12 @@ class ExamListView(ListAPIView[ExamDeployment]):
             .first()
         )
 
-        if not cohort_id:
-            raise ValidationError("해당 유저의 코호트 정보가 없습니다.")
+        if cohort_id is None:
+            raise ErrorDetailException("사용자 정보를 찾을 수 없습니다.", status.HTTP_404_NOT_FOUND)
 
         status_param = self.request.query_params.get("status", "all").lower()
         if status_param not in ("all", "done", "pending"):
-            raise ValidationError({"status": "status는 all/done/pending 중 하나여야 합니다."})
+            raise ErrorDetailException("요청 코드가 일치하지 않습니다.", status.HTTP_404_NOT_FOUND)
 
         latest_sub = ExamSubmission.objects.filter(submitter_id=user_id, deployment_id=OuterRef("pk")).order_by(
             "-created_at"
