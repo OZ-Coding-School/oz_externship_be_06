@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.courses.models.cohort_students import CohortStudent  # ✅ 실제 경로
+from apps.courses.models.cohort_students import CohortStudent
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
@@ -59,7 +59,7 @@ class ExamDeploymentListAPITest(TestCase):
             status=ExamDeployment.StatusChoices.ACTIVATED,
         )
 
-        self.url = "/api/v1/exams/deployments"  # 끝 슬래시 X
+        self.url = "/api/v1/exams/deployments"
 
     def _bearer(self, user: User) -> str:
         token = AccessToken.for_user(user)
@@ -71,5 +71,4 @@ class ExamDeploymentListAPITest(TestCase):
 
     def test_list_requires_authentication(self) -> None:
         res = self.client.get(self.url)
-        # 프로젝트에 따라 401/403 중 하나일 수 있어서 안전하게 처리
         self.assertIn(res.status_code, [401, 403])
