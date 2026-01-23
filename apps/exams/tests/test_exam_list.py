@@ -12,12 +12,9 @@ from apps.users.models import User
 
 
 class ExamDeploymentListAPITest(TestCase):
-    """시험 배포 목록 조회 API 테스트."""
 
     def setUp(self) -> None:
-        self.course = Course.objects.create(
-            name="코스", tag="CS", description="설명", thumbnail_img_url="course.png"
-        )
+        self.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
         self.subject = Subject.objects.create(
             course=self.course,
             title="과목",
@@ -32,13 +29,11 @@ class ExamDeploymentListAPITest(TestCase):
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-
         self.exam = Exam.objects.create(
             subject=self.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-
         self.student = User.objects.create_user(
             email="student@example.com",
             password="password123",
@@ -50,10 +45,6 @@ class ExamDeploymentListAPITest(TestCase):
             role=User.Role.STUDENT,
         )
 
-        # NOTE: 코호트-수강생 매핑 모델이 따로 있으면 여기서 연결해줘야 함.
-        # 예) CohortStudent.objects.create(user=self.student, cohort=self.cohort)
-
-        # 배포 2개 만들어서 필터 테스트
         self.deployment_active = ExamDeployment.objects.create(
             cohort=self.cohort,
             exam=self.exam,
@@ -75,38 +66,38 @@ class ExamDeploymentListAPITest(TestCase):
             status=ExamDeployment.StatusChoices.DEACTIVATED,
         )
 
+        # ✅ 끝 슬래시 없는 URL을 상수로
+        self.base_url = "/api/v1/exams/deployments"
+
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)
         return {"Authorization": f"Bearer {token}"}
 
     def test_list_returns_200(self) -> None:
         response = self.client.get(
-            "/api/v1/exams/deployments/",
+            self.base_url,
             headers=self._auth_headers(self.student),
         )
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        # ✅ 너희 응답이 list가 아니라 {results: []}면 여기만 바꿔주면 됨.
         self.assertTrue(isinstance(data, (list, dict)))
 
     def test_list_filter_status_all(self) -> None:
         response = self.client.get(
-            "/api/v1/exams/deployments/?status=all",
+            f"{self.base_url}?status=all",
             headers=self._auth_headers(self.student),
         )
         self.assertEqual(response.status_code, 200)
 
     def test_list_filter_status_done_or_pending(self) -> None:
-        # 프로젝트마다 done/pending 기준이 다름(제출 존재 여부 등)
-        # 우선 엔드포인트가 정상 동작/분기 코드가 실행되게만 해도 커버리지 오름
         for status in ["done", "pending"]:
             response = self.client.get(
-                f"/api/v1/exams/deployments/?status={status}",
+                f"{self.base_url}?status={status}",
                 headers=self._auth_headers(self.student),
             )
             self.assertEqual(response.status_code, 200)
 
     def test_list_requires_authentication(self) -> None:
-        response = self.client.get("/api/v1/exams/deployments/")
+        response = self.client.get(self.base_url)
         self.assertEqual(response.status_code, 401)

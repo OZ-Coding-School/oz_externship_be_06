@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -12,12 +13,9 @@ from apps.users.models import User
 
 
 class ExamResultRetrieveAPITest(TestCase):
-    """시험 제출 결과 상세 조회 API 테스트."""
 
     def setUp(self) -> None:
-        self.course = Course.objects.create(
-            name="코스", tag="CS", description="설명", thumbnail_img_url="course.png"
-        )
+        self.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
         self.subject = Subject.objects.create(
             course=self.course,
             title="과목",
@@ -62,36 +60,31 @@ class ExamResultRetrieveAPITest(TestCase):
             submitter=self.student,
             deployment=self.deployment,
             started_at=timezone.now() - timedelta(minutes=10),
-            created_at=timezone.now(),
-            score=80,  # 필드 없으면 제거/수정
-            correct_answer_count=8,  # 필드 없으면 제거/수정
             cheating_count=0,
             answers_json=[],
         )
+
+        self.detail_url = reverse("exam-result", kwargs={"submission_id": self.submission.id})
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)
         return {"Authorization": f"Bearer {token}"}
 
     def test_result_retrieve_success(self) -> None:
-        # ⚠️ 너희 URL이 /submissions/{id}/ 이런 형태면 여기만 바꿔줘
         response = self.client.get(
-            f"/api/v1/exams/submissions/{self.submission.id}/",
+            self.detail_url,
             headers=self._auth_headers(self.student),
         )
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        # 아래 키는 너희 serializer 필드명대로 맞춰
         self.assertEqual(data["id"], self.submission.id)
 
     def test_result_requires_authentication(self) -> None:
-        response = self.client.get(f"/api/v1/exams/submissions/{self.submission.id}/")
+        response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, 401)
 
     def test_result_returns_404_when_missing(self) -> None:
-        response = self.client.get(
-            "/api/v1/exams/submissions/999999/",
-            headers=self._auth_headers(self.student),
-        )
+        url = reverse("exam-result", kwargs={"submission_id": 999999})
+        response = self.client.get(url, headers=self._auth_headers(self.student))
         self.assertEqual(response.status_code, 404)
