@@ -11,7 +11,9 @@ from rest_framework.views import APIView
 from apps.exams.models import ExamSubmission
 from apps.exams.pagination import SimplePagePagination
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_submission_serializers import AdminExamSubmissionListResponseSerializer
+from apps.exams.serializers.admin_submission_serializers import (
+    AdminExamSubmissionListResponseSerializer,
+)
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 
 
@@ -98,14 +100,22 @@ class AdminExamSubmissionListAPIView(APIView):
         order = request.query_params.get("order", "desc")
 
         # QuerySet 생성
-        queryset = ExamSubmission.objects.select_related(
-            "submitter", "deployment", "deployment__exam", "deployment__exam__subject", "deployment__cohort", "deployment__cohort__course"
-        ).all()
+        queryset = (
+            ExamSubmission.objects.select_related(
+                "submitter",
+                "deployment",
+                "deployment__exam",
+                "deployment__exam__subject",
+                "deployment__cohort",
+                "deployment__cohort__course",
+            ).all()
+        )
 
         # 필터링: 검색 키워드
         if search_keyword:
             queryset = queryset.filter(
-                Q(submitter__nickname__icontains=search_keyword) | Q(submitter__name__icontains=search_keyword)
+                Q(submitter__nickname__icontains=search_keyword)
+                | Q(submitter__name__icontains=search_keyword)
             )
 
         # 필터링: 기수 ID
@@ -157,7 +167,9 @@ class AdminExamSubmissionListAPIView(APIView):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
 
         # Serializer를 사용하여 응답 데이터 생성
-        serializer = AdminExamSubmissionListResponseSerializer(paginated_queryset or [], many=True)
+        serializer = AdminExamSubmissionListResponseSerializer(
+            paginated_queryset or [], many=True
+        )
 
         # 페이지네이션 응답 생성
         response = paginator.get_paginated_response(serializer.data)
