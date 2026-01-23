@@ -27,7 +27,7 @@ class AdminExamQuestionCreateAPIView(APIView):
     serializer_class = AdminExamQuestionCreateRequestSerializer
 
     @extend_schema(
-        tags=["쪽지시험 관리"],
+        tags=["admin_exams"],
         summary="어드민 쪽지시험 문제 등록 API",
         description="""
         스태프(조교, 러닝 코치, 운영매니저), 관리자 권한을 가진 유저가
