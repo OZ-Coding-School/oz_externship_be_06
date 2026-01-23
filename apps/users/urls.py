@@ -5,6 +5,7 @@ from apps.users.views.email_verification_view import (
     VerifyEmailAPIView,
 )
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
+from apps.users.views.me import MeView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
 
 urlpatterns = [
@@ -14,6 +15,8 @@ urlpatterns = [
     # 이메일 인증
     path("verification/send-email/", SendEmailVerificationAPIView.as_view(), name="send-email-verification"),
     path("verification/verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
+    # 내 정보
+    path("me/", MeView.as_view(), name="me"),
     # 로그인/로그아웃
     path("login/", LoginAPIView.as_view(), name="login"),
     path("logout/", LogoutAPIView.as_view(), name="logout"),
