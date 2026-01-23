@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
 from rest_framework import serializers
 
 
-class CheckCodeRequestSerializer(serializers.Serializer):
+class CheckCodeRequestSerializer(serializers.Serializer[Any]):
     code = serializers.CharField(
         required=True,
         allow_blank=False,
@@ -11,7 +13,7 @@ class CheckCodeRequestSerializer(serializers.Serializer):
     )
 
 
-class TakeExamRequestSerializer(serializers.Serializer):
+class TakeExamRequestSerializer(serializers.Serializer[Any]):
     access_code = serializers.CharField(
         required=True,
         allow_blank=False,
@@ -20,7 +22,7 @@ class TakeExamRequestSerializer(serializers.Serializer):
     )
 
 
-class QuestionSerializer(serializers.Serializer):
+class QuestionSerializer(serializers.Serializer[Any]):
     question_id = serializers.IntegerField()
     number = serializers.IntegerField()
     type = serializers.CharField()
@@ -32,7 +34,7 @@ class QuestionSerializer(serializers.Serializer):
     answer_input = serializers.CharField(allow_null=True, required=False)
 
 
-class TakeExamResponseSerializer(serializers.Serializer):
+class TakeExamResponseSerializer(serializers.Serializer[Any]):
     exam_id = serializers.IntegerField()
     exam_name = serializers.CharField()
     duration_time = serializers.IntegerField()

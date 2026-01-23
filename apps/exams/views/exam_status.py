@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -8,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.users.models import User
 
 
 class ExamStatusAPIView(APIView):
@@ -22,8 +25,9 @@ class ExamStatusAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        user = cast(User, request.user)
         submission = ExamSubmission.objects.filter(
-            submitter=request.user,
+            submitter=user,
             deployment=deployment,
         ).first()
 

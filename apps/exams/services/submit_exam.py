@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
@@ -8,8 +10,8 @@ from apps.users.models import User
 
 
 def _grade_answers(
-    snapshot: list[dict],
-    answers: list[dict],
+    snapshot: list[dict[str, Any]],
+    answers: list[dict[str, Any]],
 ) -> tuple[int, int]:
     """채점 후 (correct_count, score_earned) 반환."""
     by_id = {int(a["question_id"]): a for a in answers if "question_id" in a}
@@ -43,7 +45,7 @@ def submit_exam(
     user: User,
     deployment_id: int,
     started_at: str | None,
-    answers: list[dict],
+    answers: list[dict[str, Any]],
 ) -> ExamSubmission:
     if user.role != User.Role.STUDENT:
         raise ValidationError({"detail": "수강생 권한이 필요합니다."})

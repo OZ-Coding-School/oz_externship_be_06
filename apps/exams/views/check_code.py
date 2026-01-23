@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -35,7 +37,8 @@ class CheckCodeAPIView(APIView):
             )
 
         # 권한 확인 (수강생만)
-        if request.user.role != User.Role.STUDENT:
+        user = cast(User, request.user)
+        if user.role != User.Role.STUDENT:
             return Response(
                 {"error_detail": "시험에 응시할 권한이 없습니다."},
                 status=status.HTTP_403_FORBIDDEN,
