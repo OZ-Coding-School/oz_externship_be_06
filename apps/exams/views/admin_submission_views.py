@@ -83,10 +83,20 @@ class AdminExamSubmissionListAPIView(APIView):
         ],
         responses={
             200: AdminExamSubmissionListResponseSerializer(many=True),
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 조회 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="특정시험 응시 내역 조회 권한이 없습니다"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="조회된 응시 내역이 없습니다"),
+            400: OpenApiResponse(
+                ErrorResponseSerializer, description="유효하지 않은 조회 요청"
+            ),
+            401: OpenApiResponse(
+                ErrorResponseSerializer,
+                description="자격 인증 데이터가 제공되지 않았습니다",
+            ),
+            403: OpenApiResponse(
+                ErrorResponseSerializer,
+                description="특정시험 응시 내역 조회 권한이 없습니다",
+            ),
+            404: OpenApiResponse(
+                ErrorResponseSerializer, description="조회된 응시 내역이 없습니다"
+            ),
         },
     )
     def get(self, request: Request) -> Response:
@@ -173,12 +183,12 @@ class AdminExamSubmissionListAPIView(APIView):
 
         # 페이지네이션 응답 생성
         response = paginator.get_paginated_response(serializer.data)
-        
+
         # 결과가 비어있을 경우 404 반환
         if not serializer.data:
             return Response(
                 {"error_detail": "조회된 응시 내역이 없습니다."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         return response
