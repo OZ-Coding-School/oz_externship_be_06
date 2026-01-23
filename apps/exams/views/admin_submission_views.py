@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
