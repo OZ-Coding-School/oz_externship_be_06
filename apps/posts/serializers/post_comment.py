@@ -79,7 +79,6 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-
         if self.instance is not None and cast(PostComment, self.instance).author != user:
             raise PermissionDenied(detail="권한이 없습니다.")
 
