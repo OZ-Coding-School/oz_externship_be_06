@@ -20,7 +20,7 @@ class IsStudentRole(BasePermission):
 class IsExamStaff(BasePermission):
     """쪽지시험 관리자 API용 권한 검사."""
 
-    message = "쪽지시험 문제 등록 권한이 없습니다."
+    message = "쪽지시험 관리 권한이 없습니다."
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user = request.user
@@ -32,21 +32,3 @@ class IsExamStaff(BasePermission):
             User.Role.LC,
             User.Role.OM,
         }
-
-
-class IsExamDeleteStaff(BasePermission):
-    message = "쪽지시험 삭제 권한이 없습니다."
-
-    def has_permission(self, request: Any, view: Any) -> bool:
-        user = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and user.role
-            in {
-                User.Role.ADMIN,
-                User.Role.TA,
-                User.Role.LC,
-                User.Role.OM,
-            }
-        )
