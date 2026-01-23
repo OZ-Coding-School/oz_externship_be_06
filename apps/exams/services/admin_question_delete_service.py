@@ -11,8 +11,8 @@ class ExamQuestionDeleteConflictError(Exception):
     """문제 삭제 중 충돌 발생 시."""
 
 
-def delete_exam_question(exam_id: int, question_id: int) -> dict[str, int]:
-    question = ExamQuestion.objects.filter(id=question_id, exam_id=exam_id).first()
+def delete_exam_question(question_id: int) -> dict[str, int]:
+    question = ExamQuestion.objects.filter(id=question_id).first()
     if not question:
         raise ExamQuestionDeleteNotFoundError
 
@@ -22,4 +22,4 @@ def delete_exam_question(exam_id: int, question_id: int) -> dict[str, int]:
     except Exception as exc:
         raise ExamQuestionDeleteConflictError from exc
 
-    return {"exam_id": exam_id, "question_id": question_id}
+    return {"exam_id": question.exam_id, "question_id": question_id}
