@@ -1,6 +1,5 @@
 from typing import cast
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
@@ -14,6 +13,7 @@ from apps.chatbot.serializers.session import (
     ChatbotSessionSerializer,
 )
 from apps.chatbot.services.session_create import create_chatbot_session
+from apps.users.models import User
 
 
 class ChatbotSessionCreateAPIView(APIView):
@@ -32,7 +32,9 @@ class ChatbotSessionCreateAPIView(APIView):
         serializer = ChatbotSessionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        # IsAuthenticated permission에서 인증된 사용자만 진입
         user = cast(User, request.user)
+
         try:
             session = create_chatbot_session(
                 user=user,

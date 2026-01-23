@@ -27,7 +27,7 @@ def activate_session(*, user: Any, question_id: int) -> Tuple[ChatbotSession, bo
             user=user,
             question_id=question_id,
             title="새 채팅",
-            using_model=ChatbotSession.UsingModel.GPT,  # type: ignore[attr-defined]
+            using_model=ChatbotSession.AIModel.GPT,
             status=ChatbotSession.SessionStatus.IDLE,  # type: ignore[misc]
         )
         return session, True
