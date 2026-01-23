@@ -70,12 +70,14 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
 
     def create(self, validated_data: Dict[str, Any]) -> PostComment:
         request = self.context["request"]
-        post = self.context["post"]
-        return PostComment.objects.create(
-            author=request.user,
-            post=post,
-            **validated_data,
-        )
+        context_post = self.context["post"]
+
+        # ListCreateAPIView.perform_create 에서 save(author=..., post=...) 형태로 넘길 수 있으므로
+        # validated_data에 author/post가 섞여 들어오는 케이스를 방어한다.
+        author = validated_data.pop("author", request.user)
+        post = validated_data.pop("post", context_post)
+
+        return PostComment.objects.create(author=author, post=post, **validated_data)
 
 
 class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
