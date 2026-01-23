@@ -164,3 +164,22 @@ class AdminExamCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error_detail"], "유효하지 않은 시험 생성 요청입니다.")
+
+    def test_admin_exam_create_returns_400_when_invalid_image_type(self) -> None:
+        image_file = SimpleUploadedFile(
+            name="thumbnail.gif",
+            content=b"GIF89a",
+            content_type="image/gif",
+        )
+
+        response = self._auth_client(self.admin_user).post(
+            "/api/v1/admin/exams",
+            data={
+                "title": "Python Basic Exam",
+                "subject_id": self.subject.id,
+                "thumbnail_img": image_file,
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error_detail"], "유효하지 않은 시험 생성 요청입니다.")
