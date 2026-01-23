@@ -11,7 +11,7 @@ poetry run black .
 echo "OK"
 
 echo "${COLOR_BLUE}Starting isort${COLOR_NC}"
-poetry run Isort .
+poetry run isort .
 echo "OK"
 
 echo "${COLOR_GREEN}Code Formatting successfully!${COLOR_NC}"
