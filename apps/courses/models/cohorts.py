@@ -1,7 +1,9 @@
 from django.db import models
 
+from apps.core.models import TimeStampModel
 
-class Cohort(models.Model):
+
+class Cohort(TimeStampModel):
     class StatusChoices(models.TextChoices):
         PREPARING = "PREPARING", "모집중"
         IN_PROGRESS = "IN_PROGRESS", "진행중"
@@ -17,9 +19,6 @@ class Cohort(models.Model):
     status = models.CharField(
         max_length=20, choices=StatusChoices.choices, default=StatusChoices.PREPARING, verbose_name="상태"
     )
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일시")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정일시")
 
     def __str__(self) -> str:
         return f"{self.course.name} - {self.number}기"

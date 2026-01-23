@@ -27,7 +27,7 @@ class AdminExamQuestionCreateAPIView(APIView):
     serializer_class = AdminExamQuestionCreateRequestSerializer
 
     @extend_schema(
-        tags=["쪽지시험 관리"],
+        tags=["admin_exams"],
         summary="어드민 쪽지시험 문제 등록 API",
         description="""
         스태프(조교, 러닝 코치, 운영매니저), 관리자 권한을 가진 유저가
@@ -64,6 +64,4 @@ class AdminExamQuestionCreateAPIView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        response_serializer = AdminExamQuestionCreateResponseSerializer(data=result)
-        response_serializer.is_valid(raise_exception=True)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(AdminExamQuestionCreateResponseSerializer(result).data, status=status.HTTP_201_CREATED)
