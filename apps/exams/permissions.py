@@ -32,3 +32,21 @@ class IsExamStaff(BasePermission):
             User.Role.LC,
             User.Role.OM,
         }
+
+
+class IsExamDeleteStaff(BasePermission):
+    message = "쪽지시험 삭제 권한이 없습니다."
+
+    def has_permission(self, request: Any, view: Any) -> bool:
+        user = request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and user.role
+            in {
+                User.Role.ADMIN,
+                User.Role.TA,
+                User.Role.LC,
+                User.Role.OM,
+            }
+        )
