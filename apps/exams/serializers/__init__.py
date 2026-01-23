@@ -1,6 +1,6 @@
-from .take_exam import TakeExamRequestSerializer, TakeExamResponseSerializer
+from .take_exam import CheckCodeRequestSerializer, TakeExamResponseSerializer
 
 __all__ = [
-    "TakeExamRequestSerializer",
+    "CheckCodeRequestSerializer",
     "TakeExamResponseSerializer",
 ]
