@@ -9,7 +9,6 @@ PostCommentListAPIView = PostCommentListCreateAPIView
 from .post_category_views import PostCategoryListAPIView
 
 __all__ = [
-    "PostCommentListAPIView",
     "PostCommentListCreateAPIView",
     "PostCommentRetrieveUpdateDestroyAPIView",
     "PostCategoryListAPIView",

@@ -246,3 +246,5 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         if post.author_id != request.user.id:
             raise PermissionDenied(detail="권한이 없습니다.")
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
+
+

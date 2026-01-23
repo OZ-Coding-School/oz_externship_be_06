@@ -3,6 +3,8 @@ from django.urls import path
 from .views import PostCommentListCreateAPIView, PostCommentRetrieveUpdateDestroyAPIView
 from apps.posts.views.post_category_views import PostCategoryListAPIView
 
+from .views import PostCommentListCreateAPIView, PostCommentRetrieveUpdateDestroyAPIView
+
 urlpatterns = [
     # 댓글 목록 / 생성
     path(
