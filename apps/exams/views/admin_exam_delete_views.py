@@ -24,7 +24,7 @@ class AdminExamDeleteAPIView(APIView):
     serializer_class = AdminExamDeleteResponseSerializer
 
     @extend_schema(
-        tags=["관리자-쪽지시험"],
+        tags=["admin_exams"],
         summary="어드민 쪽지시험 삭제 API",
         description="""
         스태프/관리자가 쪽지시험을 삭제합니다.
