@@ -2,8 +2,6 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.exams.models import ExamSubmission
-
 
 class AdminExamSubmissionListResponseSerializer(serializers.Serializer[Any]):
     """어드민 쪽지시험 응시 내역 목록 조회 응답 스키마."""
