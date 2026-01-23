@@ -74,6 +74,7 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
 
         # ListCreateAPIView.perform_create 에서 save(author=..., post=...) 형태로 넘길 수 있으므로
         # validated_data에 author/post가 섞여 들어오는 케이스를 방어한다.
+        # 추후 실구현하면서 수정/삭제 예정
         author = validated_data.pop("author", request.user)
         post = validated_data.pop("post", context_post)
 

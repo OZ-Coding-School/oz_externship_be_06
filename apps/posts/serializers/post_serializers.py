@@ -6,8 +6,6 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
 
-# PostCategorySerializer 임포트는 사용하지 않음 (모듈 누락 회피)
-
 
 class PostCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     category_id = serializers.PrimaryKeyRelatedField(
