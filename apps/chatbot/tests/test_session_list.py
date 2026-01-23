@@ -11,12 +11,10 @@ User = get_user_model()
 class TestChatbotSessionList(APITestCase):
     def setUp(self) -> None:
         self.user = User.objects.create_user(
-            username="user1",
             email="user1@test.com",
             password="pw1234",
         )
         self.other = User.objects.create_user(
-            username="user2",
             email="user2@test.com",
             password="pw1234",
         )
@@ -58,4 +56,6 @@ class TestChatbotSessionList(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 10)
         self.assertIsNotNone(response.data["next"])
-        self.assertTrue(all(item["user"] == self.user.id for item in response.data["results"]))
+        self.assertTrue(
+            all(item["user"] == self.user.id for item in response.data["results"])
+        )
