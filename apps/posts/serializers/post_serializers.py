@@ -30,13 +30,9 @@ class PostCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> Post:
-        request = self.context.get("request")
-        if request is None:
-            raise serializers.ValidationError({"detail": "자격 인증 데이터가 제공되지 않았습니다."})
-        user = getattr(request, "user", None)
-        if not user or user.is_anonymous:
-            raise serializers.ValidationError({"detail": "자격 인증 데이터가 제공되지 않았습니다."})
-        author = user
+        # validate()에서 request/user 인증을 이미 검증한다.
+        request = self.context["request"]
+        author = request.user
         return Post.objects.create(author=author, **validated_data)
 
 
@@ -47,7 +43,7 @@ class AuthorSimpleSerializer(serializers.Serializer):  # type: ignore[type-arg]
 
 
 class PostListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
-    author = AuthorSimpleSerializer(source="author", read_only=True)
+    author = AuthorSimpleSerializer(read_only=True)
     thumbnail_img_url = serializers.SerializerMethodField()
     content_preview = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
@@ -82,9 +78,17 @@ class PostListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         return preview
 
     def get_comment_count(self, obj: Post) -> int:
+        # 목록 조회 queryset에서 annotate(comment_count=Count("comments"))로 붙이면 N+1 없이 사용 가능
+        annotated_count = getattr(obj, "comment_count", None)
+        if annotated_count is not None:
+            return int(annotated_count)
         return obj.comments.count()
 
     def get_like_count(self, obj: Post) -> int:
+        # 목록 조회 queryset에서 annotate(like_count=Count("likes", filter=Q(likes__is_liked=True)))로 붙이면 N+1 없이 사용 가능
+        annotated_count = getattr(obj, "like_count", None)
+        if annotated_count is not None:
+            return int(annotated_count)
         return obj.likes.filter(is_liked=True).count()
 
 
@@ -122,6 +126,9 @@ class PostDetailSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
         }
 
     def get_like_count(self, obj: Post) -> int:
+        annotated_count = getattr(obj, "like_count", None)
+        if annotated_count is not None:
+            return int(annotated_count)
         return obj.likes.filter(is_liked=True).count()
 
 

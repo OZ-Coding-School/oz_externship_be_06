@@ -78,9 +78,8 @@ class PostCommentSerializerTestCase(TestCase):
         data = {"content": "새 댓글"}
         serializer = PostCommentCreateSerializer(data=data, context={"request": request, "post": self.post})
 
-        self.assertTrue(serializer.is_valid())
         with self.assertRaises(NotAuthenticated):
-            serializer.save()
+            serializer.is_valid(raise_exception=True)
 
     def test_post_comment_create_serializer_no_post(self) -> None:
         """PostCommentCreateSerializer 게시글 없음 테스트"""
@@ -90,9 +89,8 @@ class PostCommentSerializerTestCase(TestCase):
         data = {"content": "새 댓글"}
         serializer = PostCommentCreateSerializer(data=data, context={"request": request})
 
-        self.assertTrue(serializer.is_valid())
         with self.assertRaises(Exception):  # ValidationError 또는 NotFound
-            serializer.save()
+            serializer.is_valid(raise_exception=True)
 
     def test_post_comment_update_serializer_success(self) -> None:
         """PostCommentUpdateSerializer 성공 테스트"""
