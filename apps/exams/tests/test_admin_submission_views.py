@@ -71,7 +71,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             phone_number="01011112223",
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
-            role=User.Role.STAFF,
+            role=User.Role.TA,
         )
         self.student = User.objects.create_user(
             email="student@example.com",
