@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
@@ -13,10 +15,12 @@ class TestChatbotSessionList(APITestCase):
         self.user = User.objects.create_user(
             email="user1@test.com",
             password="pw1234",
+            birthday=date(2000, 1, 1),
         )
         self.other = User.objects.create_user(
             email="user2@test.com",
             password="pw1234",
+            birthday=date(2000, 1, 2),
         )
 
         self.question = Question.objects.create(
@@ -56,6 +60,4 @@ class TestChatbotSessionList(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 10)
         self.assertIsNotNone(response.data["next"])
-        self.assertTrue(
-            all(item["user"] == self.user.id for item in response.data["results"])
-        )
+        self.assertTrue(all(item["user"] == self.user.id for item in response.data["results"]))
