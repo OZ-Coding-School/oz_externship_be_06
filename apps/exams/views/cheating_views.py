@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
@@ -65,17 +66,17 @@ class ExamCheatingUpdateAPIView(APIView):
             return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
         cheating_key = f"exam:cheating:{deployment.id}:{user.id}"
+        submit_lock_key = f"exam:submit-lock:{deployment.id}:{user.id}"
         if ExamSubmission.objects.filter(submitter=user, deployment=deployment).exists():
             return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
 
         current_count = cache.get(cheating_key)
-        if current_count is not None and current_count >= 3:
-            return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
-
         ttl_seconds = max(1, deployment.duration_time * 60)
         if current_count is None:
             cheating_count = 1
             cache.set(cheating_key, 1, timeout=ttl_seconds)
+        elif current_count >= 3:
+            cheating_count = int(current_count)
         else:
             cheating_count = cache.incr(cheating_key)
 
@@ -84,20 +85,24 @@ class ExamCheatingUpdateAPIView(APIView):
             request_serializer = ExamCheatingRequestSerializer(data=request.data)
             request_serializer.is_valid(raise_exception=True)
             answers_json = request_serializer.validated_data.get("answers_json", [])
-            submission, created = ExamSubmission.objects.get_or_create(
-                submitter=user,
-                deployment=deployment,
-                defaults={
-                    "started_at": timezone.now(),
-                    "cheating_count": cheating_count,
-                    "answers_json": answers_json,
-                },
-            )
-            if not created:
-                submission.cheating_count = cheating_count
-                submission.answers_json = answers_json
-                submission.save(update_fields=["cheating_count", "answers_json"])
-            grade_submission(submission)
+
+            if cache.add(submit_lock_key, "1", timeout=5):
+                with transaction.atomic():
+                    submission, created = ExamSubmission.objects.select_for_update().get_or_create(
+                        submitter=user,
+                        deployment=deployment,
+                        defaults={
+                            "started_at": timezone.now(),
+                            "cheating_count": cheating_count,
+                            "answers_json": answers_json,
+                        },
+                    )
+                    if not created:
+                        submission.cheating_count = cheating_count
+                        submission.answers_json = answers_json
+                        submission.save(update_fields=["cheating_count", "answers_json"])
+                    grade_submission(submission)
+                cache.delete(submit_lock_key)
         serializer = self.serializer_class(
             data={
                 "cheating_count": cheating_count,
