@@ -14,7 +14,5 @@ urlpatterns = [
     path("deployments/<int:deployment_id>/check_code", CheckCodeAPIView.as_view(), name="check-code"),
     path("deployments/<int:deployment_id>/status/", ExamStatusCheckAPIView.as_view(), name="exam-status"),
     path("deployments/<int:deployment_id>/cheating/", ExamCheatingUpdateAPIView.as_view(), name="exam-cheating"),
-    path("deployments", ExamListView.as_view(), name="exam-deployments"),
-    path("api/v1/exams/deployments", ExamListView.as_view(), name="exam-deployments"),
     path("submissions/<int:submission_id>", ExamSubmissionDetailView.as_view(), name="exam-result"),
 ]
