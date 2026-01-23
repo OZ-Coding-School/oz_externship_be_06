@@ -26,3 +26,8 @@ make run # Django 개발 서버 실행
 - `make restart` - Docker 서비스 재시작
 - `make logs` - Docker 로그 확인
 - `make ps` - Docker 서비스 목록 확인
+- `make dtest` - Docker 컨테이너에서 테스트 실행
+- `make dmypy-reset` - dmypy 데몬 중지 및 캐시 삭제
+- `make push-force` - 안전한 강제 푸시 실행
+- `make fetch` - 원격(origin) 최신 내역 가져오기
+- `make rebase-develop` - origin/develop 기준으로 리베이스
