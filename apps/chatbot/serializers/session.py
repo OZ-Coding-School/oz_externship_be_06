@@ -18,7 +18,6 @@ class ChatbotSessionSerializer(serializers.ModelSerializer[Any]):
             "question",
             "title",
             "using_model",
-            "status",
             "created_at",
             "updated_at",
         ]
