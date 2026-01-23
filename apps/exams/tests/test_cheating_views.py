@@ -126,9 +126,7 @@ class ExamCheatingUpdateAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertTrue(data["force_submit"])
-        self.assertTrue(
-            ExamSubmission.objects.filter(submitter=self.student, deployment=self.deployment).exists()
-        )
+        self.assertTrue(ExamSubmission.objects.filter(submitter=self.student, deployment=self.deployment).exists())
 
     def test_cheating_returns_410_when_submission_exists(self) -> None:
         ExamSubmission.objects.create(

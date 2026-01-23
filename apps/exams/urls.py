@@ -1,9 +1,8 @@
 from django.urls import path
 
 from apps.exams.views.cheating_views import ExamCheatingUpdateAPIView
-from apps.exams.views.status_views import ExamStatusCheckAPIView
 from apps.exams.views.exam_list import ExamListView
-
+from apps.exams.views.status_views import ExamStatusCheckAPIView
 
 urlpatterns = [
     path("deployments/<int:deployment_id>/status/", ExamStatusCheckAPIView.as_view(), name="exam-status"),
