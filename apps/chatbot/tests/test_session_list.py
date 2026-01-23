@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.qna.models import Question
+from apps.qna.models.question_category import QuestionCategory
 
 User = get_user_model()
 
@@ -23,10 +24,15 @@ class TestChatbotSessionList(APITestCase):
             birthday=date(2000, 1, 2),
         )
 
+        self.category = QuestionCategory.objects.create(
+            name="테스트 카테고리",
+        )
+
         self.question = Question.objects.create(
+            category=self.category,
+            author=self.user,
             title="테스트 질문",
             content="테스트 내용",
-            author=self.user,  # ✅ 필수 FK
         )
 
         ChatbotSession.objects.bulk_create(
@@ -61,9 +67,4 @@ class TestChatbotSessionList(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 10)
         self.assertIsNotNone(response.data["next"])
-        self.assertTrue(
-            all(
-                item["user"] == self.user.id
-                for item in response.data["results"]
-            )
-        )
+        self.assertTrue(all(item["user"] == self.user.id for item in response.data["results"]))
