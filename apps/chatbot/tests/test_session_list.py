@@ -28,18 +28,21 @@ class TestChatbotSessionList(APITestCase):
             name="테스트 카테고리",
         )
 
-        self.question = Question.objects.create(
-            category=self.category,
-            author=self.user,
-            title="테스트 질문",
-            content="테스트 내용",
-        )
+        self.questions = [
+            Question.objects.create(
+                category=self.category,
+                author=self.user,
+                title=f"테스트 질문 {i}",
+                content="테스트 내용",
+            )
+            for i in range(15)
+        ]
 
         ChatbotSession.objects.bulk_create(
             [
                 ChatbotSession(
                     user=self.user,
-                    question=self.question,
+                    question=self.questions[i],
                     title=f"title-{i}",
                     using_model=ChatbotSession.AIModel.GPT,
                 )
@@ -51,7 +54,7 @@ class TestChatbotSessionList(APITestCase):
             [
                 ChatbotSession(
                     user=self.other,
-                    question=self.question,
+                    question=self.questions[i],
                     title=f"other-{i}",
                     using_model=ChatbotSession.AIModel.GPT,
                 )
