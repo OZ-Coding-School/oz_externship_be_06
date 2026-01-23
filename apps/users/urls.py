@@ -7,6 +7,10 @@ from apps.users.views.email_verification_view import (
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
 from apps.users.views.me import MeView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
+from apps.users.views.sms_verification_view import (
+    SendSmsVerificationAPIView,
+    VerifySmsAPIView,
+)
 
 urlpatterns = [
     # 회원가입
@@ -15,6 +19,9 @@ urlpatterns = [
     # 이메일 인증
     path("verification/send-email/", SendEmailVerificationAPIView.as_view(), name="send-email-verification"),
     path("verification/verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
+    # SMS 인증
+    path("verification/send-sms/", SendSmsVerificationAPIView.as_view(), name="send-sms-verification"),
+    path("verification/verify-sms/", VerifySmsAPIView.as_view(), name="verify-sms"),
     # 내 정보
     path("me/", MeView.as_view(), name="me"),
     # 로그인/로그아웃

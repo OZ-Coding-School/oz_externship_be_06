@@ -26,6 +26,14 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
     explanation = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        type_map = {
+            "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
+            "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
+            "ordering": ExamQuestion.TypeChoices.ORDERING,
+            "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
+            "ox": ExamQuestion.TypeChoices.OX,
+        }
+
         exam_type = attrs.get("type")
         if exam_type not in self.TYPE_MAP:
             raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
