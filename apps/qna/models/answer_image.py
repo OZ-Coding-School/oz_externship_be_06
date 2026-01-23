@@ -3,8 +3,7 @@ from __future__ import annotations
 from django.db import models
 
 from apps.core.models import TimeStampModel
-
-from .answer import Answer
+from apps.qna.models.answer import Answer
 
 
 class AnswerImage(TimeStampModel):

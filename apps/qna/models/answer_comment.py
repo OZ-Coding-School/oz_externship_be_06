@@ -3,9 +3,8 @@ from __future__ import annotations
 from django.db import models
 
 from apps.core.models import TimeStampModel
+from apps.qna.models.answer import Answer
 from apps.users.models import User
-
-from .answer import Answer
 
 
 class AnswerComment(TimeStampModel):
