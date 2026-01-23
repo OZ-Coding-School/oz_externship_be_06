@@ -1,8 +1,5 @@
-from typing import Any, cast
-
-from django.db import transaction
-from django.db.models import F
 from django.core.cache import cache
+from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -11,15 +8,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ExamStatus
-from apps.exams.models import ExamDeployment
+from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
-from apps.exams.serializers.cheating_serializers import ExamCheatingResponseSerializer
+from apps.exams.serializers.cheating_serializers import (
+    ExamCheatingRequestSerializer,
+    ExamCheatingResponseSerializer,
+)
 from apps.exams.serializers.error_serializers import (
     ErrorDetailSerializer,
     ErrorResponseSerializer,
 )
 from apps.exams.services.exam_status_service import is_exam_active
-from apps.users.models import User
+from apps.exams.services.grading import grade_submission
 
 
 class ExamCheatingUpdateAPIView(APIView):
@@ -35,6 +35,7 @@ class ExamCheatingUpdateAPIView(APIView):
         시험 응시 중 화면 이탈 등 부정행위가 발생했을 때 카운트를 증가시킵니다.
         부정행위 3회 이상이면 force_submit=True로 종료 처리 응답을 반환합니다.
         """,
+        request=ExamCheatingRequestSerializer,
         parameters=[
             OpenApiParameter(
                 name="deployment_id",
@@ -64,13 +65,12 @@ class ExamCheatingUpdateAPIView(APIView):
             return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
 
         cheating_key = f"exam:cheating:{deployment.id}:{user.id}"
-        submitted_key = f"exam:submitted:{deployment.id}:{user.id}"
-        if cache.get(submitted_key) is not None:
+        if ExamSubmission.objects.filter(submitter=user, deployment=deployment).exists():
             return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
 
         current_count = cache.get(cheating_key)
         if current_count is not None and current_count >= 3:
-            return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
+            return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
 
         ttl_seconds = max(1, deployment.duration_time * 60)
         if current_count is None:
@@ -80,6 +80,24 @@ class ExamCheatingUpdateAPIView(APIView):
             cheating_count = cache.incr(cheating_key)
 
         is_closed = cheating_count >= 3
+        if is_closed:
+            request_serializer = ExamCheatingRequestSerializer(data=request.data)
+            request_serializer.is_valid(raise_exception=True)
+            answers_json = request_serializer.validated_data.get("answers_json", [])
+            submission, created = ExamSubmission.objects.get_or_create(
+                submitter=user,
+                deployment=deployment,
+                defaults={
+                    "started_at": timezone.now(),
+                    "cheating_count": cheating_count,
+                    "answers_json": answers_json,
+                },
+            )
+            if not created:
+                submission.cheating_count = cheating_count
+                submission.answers_json = answers_json
+                submission.save(update_fields=["cheating_count", "answers_json"])
+            grade_submission(submission)
         serializer = self.serializer_class(
             data={
                 "cheating_count": cheating_count,
