@@ -19,7 +19,7 @@ class IsStudent(BasePermission):
             raise QuestionAuthenticationRequiredException()
 
         user_role = getattr(request.user, "role", None)
-        if not user_role or str(user_role).lower() != "student":
+        if not user_role or str(user_role) != "STUDENT":
             raise QuestionPermissionDeniedException()
 
         return True  # user_role이 STUDENT일때 True
