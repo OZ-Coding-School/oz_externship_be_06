@@ -3,19 +3,23 @@ from typing import Any
 from django.test import TestCase
 
 from apps.users.models import User
-from apps.users.utils.redis_utils import save_email_token
+from apps.users.utils.redis_utils import save_email_token, save_sms_token
 
 
 class SignUpAPIViewTest(TestCase):
     def setUp(self) -> None:
         self.url = "/api/v1/accounts/signup/"
         self.email = "test@example.com"
+        self.phone_number = "01012345678"
         self.email_token = "test_email_token_12345"
+        self.sms_token = "test_sms_token_12345"
         save_email_token(self.email_token, self.email)
+        save_sms_token(self.sms_token, self.phone_number)
 
     def test_signup_success(self) -> None:
         data = {
             "email_token": self.email_token,
+            "sms_token": self.sms_token,
             "password": "TestPassword123!",
             "password_confirm": "TestPassword123!",
             "nickname": "testuser",
@@ -38,6 +42,7 @@ class SignUpAPIViewTest(TestCase):
     def test_signup_password_mismatch(self) -> None:
         data = {
             "email_token": self.email_token,
+            "sms_token": self.sms_token,
             "password": "TestPassword123!",
             "password_confirm": "DifferentPassword123!",
             "nickname": "testuser",
@@ -51,6 +56,7 @@ class SignUpAPIViewTest(TestCase):
     def test_signup_invalid_email_token(self) -> None:
         data = {
             "email_token": "invalid_token",
+            "sms_token": self.sms_token,
             "password": "TestPassword123!",
             "password_confirm": "TestPassword123!",
             "nickname": "testuser",
@@ -69,10 +75,11 @@ class SignUpAPIViewTest(TestCase):
             name="기존유저",
             birthday="1990-01-01",
             gender="MALE",
-            phone_number="01012345678",
+            phone_number="01099999999",
         )
         data = {
             "email_token": self.email_token,
+            "sms_token": self.sms_token,
             "password": "TestPassword123!",
             "password_confirm": "TestPassword123!",
             "nickname": "existing",
