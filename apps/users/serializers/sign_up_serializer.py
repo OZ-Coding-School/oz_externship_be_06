@@ -35,8 +35,8 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
     )
     sms_token = serializers.CharField(
         write_only=True,
-        required=False,
-        allow_blank=True,
+        required=True,
+        error_messages={"required": "SMS 인증 토큰은 필수 항목입니다."},
     )
 
     class Meta:
@@ -63,8 +63,6 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
         return value
 
     def validate_sms_token(self, value: str) -> str:
-        if not value:
-            return value
         if not cache.get(f"sms_verified:{value}"):
             raise serializers.ValidationError("유효하지 않거나 만료된 SMS 인증 토큰입니다.")
         return value
@@ -85,7 +83,7 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
 
         # 토큰에서 email, phone_number 추출
         email_token: str = attrs["email_token"]
-        sms_token = attrs.get("sms_token")
+        sms_token: str = attrs["sms_token"]
 
         email = get_email_by_token(email_token)
 
@@ -94,22 +92,21 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
 
         attrs["email"] = email
 
-        # SMS 인증이 있는 경우에만 phone_number 처리
-        if sms_token:
-            phone_number = cache.get(f"sms_verified:{sms_token}")
-            phone_number = normalize_phone_number(phone_number)
+        # SMS 토큰에서 phone_number 추출
+        phone_number = cache.get(f"sms_verified:{sms_token}")
+        phone_number = normalize_phone_number(phone_number)
 
-            if User.objects.filter(phone_number=phone_number).exists():
-                raise serializers.ValidationError({"sms_token": "이미 가입된 휴대폰 번호입니다."})
+        if User.objects.filter(phone_number=phone_number).exists():
+            raise serializers.ValidationError({"sms_token": "이미 가입된 휴대폰 번호입니다."})
 
-            attrs["phone_number"] = phone_number
+        attrs["phone_number"] = phone_number
 
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> User:
         # 토큰 제거
         email_token = validated_data.pop("email_token")
-        sms_token = validated_data.pop("sms_token", None)
+        sms_token = validated_data.pop("sms_token")
 
         gender_map = {"M": User.Gender.MALE, "F": User.Gender.FEMALE}
         validated_data["gender"] = gender_map[validated_data["gender"]]
@@ -126,8 +123,7 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
 
         # 인증 토큰 캐시 삭제
         delete_email_token(email_token)
-        if sms_token:
-            cache.delete(f"sms_verified:{sms_token}")
+        cache.delete(f"sms_verified:{sms_token}")
 
         return user
 
