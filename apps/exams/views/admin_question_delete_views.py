@@ -1,11 +1,14 @@
+from typing import NoReturn
+
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.permissions import IsExamQuestionDeleteStaff
+from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin_question_delete_serializers import (
     AdminExamQuestionDeleteResponseSerializer,
 )
@@ -20,8 +23,13 @@ from apps.exams.services.admin_question_delete_service import (
 class AdminExamQuestionDeleteAPIView(APIView):
     """어드민 쪽지시험 문제 삭제 API."""
 
-    permission_classes = [IsAuthenticated, IsExamQuestionDeleteStaff]
+    permission_classes = [IsAuthenticated, IsExamStaff]
     serializer_class = AdminExamQuestionDeleteResponseSerializer
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated()
+        raise PermissionDenied(detail="쪽지시험 문제 삭제 권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_exams"],
@@ -30,13 +38,6 @@ class AdminExamQuestionDeleteAPIView(APIView):
         스태프/관리자가 쪽지시험 문제를 삭제합니다.
         """,
         parameters=[
-            OpenApiParameter(
-                name="exam_id",
-                type=int,
-                location=OpenApiParameter.PATH,
-                required=True,
-                description="쪽지시험 ID",
-            ),
             OpenApiParameter(
                 name="question_id",
                 type=int,
@@ -54,15 +55,15 @@ class AdminExamQuestionDeleteAPIView(APIView):
             409: OpenApiResponse(ErrorResponseSerializer, description="삭제 충돌"),
         },
     )
-    def delete(self, request: Request, exam_id: int, question_id: int) -> Response:
-        if exam_id <= 0 or question_id <= 0:
+    def delete(self, request: Request, question_id: int) -> Response:
+        if question_id <= 0:
             return Response(
                 {"error_detail": "유효하지 않은 문제 삭제 요청입니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            result = delete_exam_question(exam_id, question_id)
+            result = delete_exam_question(question_id)
         except ExamQuestionDeleteNotFoundError:
             return Response(
                 {"error_detail": "삭제할 문제 정보를 찾을 수 없습니다."},

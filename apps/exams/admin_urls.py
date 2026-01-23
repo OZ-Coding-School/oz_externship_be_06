@@ -11,8 +11,9 @@ urlpatterns = [
     path("exams/<int:exam_id>/", AdminExamDeleteAPIView.as_view(), name="admin-exam-delete"),
     path("exams", AdminExamCreateAPIView.as_view(), name="admin-exam-create"),
     path("submissions/", AdminExamSubmissionListAPIView.as_view(), name="admin-exam-submission-list"),
+    path("exams/<int:exam_id>/questions/", AdminExamQuestionCreateAPIView.as_view(), name="admin-exam-question-create"),
     path(
-        "exams/<int:exam_id>/questions/<int:question_id>/",
+        "exams/questions/<int:question_id>/",
         AdminExamQuestionDeleteAPIView.as_view(),
         name="admin-exam-question-delete",
     ),
