@@ -67,7 +67,7 @@ class ExamCheatingUpdateAPIView(APIView):
 
         cheating_key = f"exam:cheating:{deployment.id}:{user.id}"
         submit_lock_key = f"exam:submit-lock:{deployment.id}:{user.id}"
-        if ExamSubmission.objects.filter(submitter=user, deployment=deployment).exists():
+        if ExamSubmission.objects.filter(submitter_id=user.id, deployment=deployment).exists():
             return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
 
         current_count = cache.get(cheating_key)
@@ -89,7 +89,7 @@ class ExamCheatingUpdateAPIView(APIView):
             if cache.add(submit_lock_key, "1", timeout=5):
                 with transaction.atomic():
                     submission, created = ExamSubmission.objects.select_for_update().get_or_create(
-                        submitter=user,
+                        submitter_id=user.id,
                         deployment=deployment,
                         defaults={
                             "started_at": timezone.now(),
