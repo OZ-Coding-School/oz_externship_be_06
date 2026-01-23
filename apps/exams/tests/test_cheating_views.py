@@ -159,7 +159,7 @@ class ExamCheatingUpdateAPITest(TestCase):
 
     def test_cheating_requires_authentication(self) -> None:
         self._clear_cache()
-        response = self.client.post(f"/api/exams/deployments/{self.deployment.id}/cheating/")
+        response = self.client.post(f"/api/v1/exams/deployments/{self.deployment.id}/cheating/")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
