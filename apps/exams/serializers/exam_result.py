@@ -1,12 +1,15 @@
+from typing import Any
+
 from rest_framework import serializers
 
-from apps.exams.models import ExamSubmission
-from apps.exams.models import Exam
+from apps.exams.models import Exam, ExamSubmission
+
 
 class ExamSimpleSerializer(serializers.ModelSerializer[Exam]):
     class Meta:
         model = Exam
         fields = ["id", "title", "thumbnail_img_url"]
+
 
 class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
     total_score = serializers.IntegerField(source="score", read_only=True)
@@ -17,7 +20,6 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
     exam = ExamSimpleSerializer(source="deployment.exam", read_only=True)
 
     questions = serializers.SerializerMethodField()
-
 
     class Meta:
         model = ExamSubmission
@@ -63,18 +65,18 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
                 obj.answers_json = data["answers"]
                 return self._answers_map(obj)
 
-            m: dict[int, object] = {}
+            m2: dict[int, Any] = {}
             for k, v in data.items():
                 try:
                     qid_int = int(k)
                 except (TypeError, ValueError):
                     continue
-                m[qid_int] = v
-            return m
+                m2[qid_int] = v
+            return m2
 
         return {}
 
-    def get_questions(self, obj: ExamSubmission):
+    def get_questions(self, obj: ExamSubmission) -> list[dict[str, Any]]:
         exam = getattr(obj.deployment, "exam", None)
         if not exam:
             return []
@@ -107,6 +109,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             if q.options_json:
                 try:
                     import json
+
                     options = json.loads(q.options_json)
                 except Exception:
                     options = []

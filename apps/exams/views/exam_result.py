@@ -1,15 +1,16 @@
 from django.http import Http404
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
+from apps.exams.exceptions import ErrorDetailException
+from apps.exams.models import ExamSubmission
 from apps.exams.serializers.error import ErrorDetailSerializer
 from apps.exams.serializers.exam_result import ExamSubmissionSerializer
-from apps.exams.models import ExamSubmission
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from apps.exams.exceptions import ErrorDetailException
+
 
 @extend_schema(
     tags=["exams"],
@@ -17,7 +18,6 @@ from apps.exams.exceptions import ErrorDetailException
     description="submission_id로 시험 제출(결과) 상세 정보를 조회합니다.",
     responses={
         200: ExamSubmissionSerializer,
-
         400: OpenApiResponse(
             response=ErrorDetailSerializer,
             description="Bad Request",
@@ -60,7 +60,7 @@ from apps.exams.exceptions import ErrorDetailException
         ),
     },
 )
-class ExamSubmissionDetailView(RetrieveAPIView):
+class ExamSubmissionDetailView(RetrieveAPIView[ExamSubmission]):
     permission_classes = [IsAuthenticated]
     serializer_class = ExamSubmissionSerializer
 
@@ -78,7 +78,7 @@ class ExamSubmissionDetailView(RetrieveAPIView):
 
         return super().handle_exception(exc)
 
-    def get_object(self):
+    def get_object(self) -> ExamSubmission:
         submission_id = self.kwargs["submission_id"]
         user_id = self.request.user.id
 
