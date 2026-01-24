@@ -2,7 +2,9 @@ import json
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import Client, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -47,21 +49,15 @@ class QuestionCreateAPITest(TestCase):
         )
 
         # URL 설정 이름 확인
-        self.url = reverse("question-create")
+        self.url = reverse("question-list-create")
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        """
-        유저 객체를 받아 JWT 액세스 토큰을 생성하고,
-        Django Client가 인식할 수 있는 HTTP_AUTHORIZATION 헤더 딕셔너리를 반환합니다.
-        반환 타입을 dict[str, Any]로 변경하여 mypy 호환성을 높입니다.
-        """
+        """유저 객체를 받아 JWT 액세스 토큰을 생성, HTTP_AUTHORIZATION 헤더 딕셔너리를 반환"""
         refresh = RefreshToken.for_user(user)
         return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
 
     def test_create_question_success(self) -> None:
-        """
-        [성공] 수강생 권한으로 유효한 데이터를 전송하면 질문이 등록되어야 함
-        """
+        """[성공] 수강생 권한으로 유효한 데이터를 전송하면 질문이 등록되어야 함"""
         auth_header = self._get_auth_header(self.student_user)
 
         data = {
@@ -78,9 +74,7 @@ class QuestionCreateAPITest(TestCase):
         self.assertEqual(response.json()["message"], "질문이 성공적으로 등록되었습니다.")
 
     def test_create_question_unauthorized(self) -> None:
-        """
-        [실패] 로그인하지 않은 경우 (토큰이 없는 경우) 401 에러를 반환해야 함
-        """
+        """[실패] 로그인하지 않은 경우 (토큰이 없는 경우) 401 에러를 반환해야 함"""
         data = {"title": "비회원 질문", "content": "내용", "category_id": self.category.id}
 
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
@@ -88,9 +82,7 @@ class QuestionCreateAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_question_forbidden(self) -> None:
-        """
-        [실패] 수강생이 아닌 유저가 요청하면 403 에러를 반환해야 함
-        """
+        """[실패] 수강생이 아닌 유저가 요청하면 403 에러를 반환해야 함"""
         auth_header = self._get_auth_header(self.general_user)
 
         data = {"title": "일반인 질문", "content": "내용", "category_id": self.category.id}
@@ -102,9 +94,7 @@ class QuestionCreateAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_question_invalid_category(self) -> None:
-        """
-        [실패] 존재하지 않는 카테고리 ID 전송 시 400 에러 발생 확인
-        """
+        """[실패] 존재하지 않는 카테고리 ID 전송 시 400 에러 발생 확인"""
         auth_header = self._get_auth_header(self.student_user)
 
         data = {"title": "에러 질문", "content": "내용", "category_id": 9999}
@@ -117,9 +107,7 @@ class QuestionCreateAPITest(TestCase):
         self.assertIn("질문 등록 중 오류가 발생했습니다", response.json()["detail"])
 
     def test_create_question_bad_request(self) -> None:
-        """
-        [실패] 필수 데이터 누락 시 400 에러 발생 확인
-        """
+        """[실패] 필수 데이터 누락 시 400 에러 발생 확인"""
         auth_header = self._get_auth_header(self.student_user)
 
         # 필수 필드인 title 누락
@@ -131,3 +119,21 @@ class QuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(len(response.json()) > 0)
+
+    def test_create_question_performance(self) -> None:
+        """[성공] 질문 등록 시 발생하는 쿼리 수 검증"""
+
+        auth_header = self._get_auth_header(self.student_user)
+        data = {
+            "title": "성능 테스트 질문",
+            "content": "내용",
+            "category_id": self.category.id,
+        }
+
+        # 쿼리 발생 내역 캡처
+        with CaptureQueriesContext(connection) as context:
+            self.client.post(
+                self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
+            )
+
+        self.assertLessEqual(len(context), 5, f"Expected 5 or fewer queries, but got {len(context)}")
