@@ -9,7 +9,8 @@ from apps.users.models import User
 from apps.users.serializers.find_email_serializer import FindEmailSerializer
 from apps.users.utils.redis_utils import delete_sms_token, get_phone_by_token
 
-#이메일 마스킹 처리
+
+# 이메일 마스킹 처리
 def mask_email(email: str) -> str:
     try:
         local, domain = email.split("@")
@@ -31,7 +32,8 @@ def mask_email(email: str) -> str:
 
     return f"{masked_local}@{masked_domain}.{domain_ext}"
 
-#이메일 찾기
+
+# 이메일 찾기
 class FindEmailAPIView(APIView):
 
     permission_classes = [AllowAny]

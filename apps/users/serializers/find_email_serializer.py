@@ -2,7 +2,8 @@ from typing import Any
 
 from rest_framework import serializers
 
-#이메일 찾기
+
+# 이메일 찾기
 class FindEmailSerializer(serializers.Serializer[dict[str, Any]]):
 
     name = serializers.CharField(

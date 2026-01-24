@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 
-#비밀번호 변경 (로그인 상태)
+# 비밀번호 변경 (로그인 상태)
 class ChangePasswordSerializer(serializers.Serializer[dict[str, Any]]):
 
     old_password = serializers.CharField(
@@ -27,7 +27,7 @@ class ChangePasswordSerializer(serializers.Serializer[dict[str, Any]]):
         return value
 
 
-#비밀번호 분실 재설정 요청 스키마
+# 비밀번호 분실 재설정 요청 스키마
 class FindPasswordSerializer(serializers.Serializer[dict[str, Any]]):
 
     email_token = serializers.CharField(

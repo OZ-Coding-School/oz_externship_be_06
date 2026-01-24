@@ -2,7 +2,8 @@ from typing import Any
 
 from rest_framework import serializers
 
-#JWT 토큰 재발급 요청
+
+# JWT 토큰 재발급 요청
 class TokenRefreshRequestSerializer(serializers.Serializer[dict[str, Any]]):
 
     refresh_token = serializers.CharField(

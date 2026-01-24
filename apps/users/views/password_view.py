@@ -12,7 +12,8 @@ from apps.users.serializers.password_serializer import (
 )
 from apps.users.utils.redis_utils import delete_email_token, get_email_by_token
 
-#비밀번호 변경 API (로그인 상태)
+
+# 비밀번호 변경 API (로그인 상태)
 class ChangePasswordAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -60,7 +61,8 @@ class ChangePasswordAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-#비밀번호 분실 시 재설정
+
+# 비밀번호 분실 시 재설정
 class FindPasswordAPIView(APIView):
 
     permission_classes = [AllowAny]

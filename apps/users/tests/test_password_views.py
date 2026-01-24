@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.test import TestCase
+from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.users.models import User
@@ -20,20 +21,19 @@ class ChangePasswordAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
         )
-
-    def _auth_headers(self, user: User) -> dict[str, str]:
-        token = AccessToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
+        self.api_client = APIClient()
 
     def test_change_password_success(self) -> None:
-        response = self.client.post(
+        token = AccessToken.for_user(self.user)
+        self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        response = self.api_client.post(
             "/api/v1/accounts/change-password/",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "NewPass456@",
             },
-            content_type="application/json",
-            **self._auth_headers(self.user),
+            format="json",
         )
 
         self.assertEqual(response.status_code, 200)
@@ -44,41 +44,45 @@ class ChangePasswordAPITest(TestCase):
         self.assertTrue(self.user.check_password("NewPass456@"))
 
     def test_change_password_wrong_old_password(self) -> None:
-        response = self.client.post(
+        token = AccessToken.for_user(self.user)
+        self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        response = self.api_client.post(
             "/api/v1/accounts/change-password/",
             data={
                 "old_password": "WrongPass123!",
                 "new_password": "NewPass456@",
             },
-            content_type="application/json",
-            **self._auth_headers(self.user),
+            format="json",
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("old_password", response.json()["error_detail"])
 
     def test_change_password_invalid_new_password(self) -> None:
-        response = self.client.post(
+        token = AccessToken.for_user(self.user)
+        self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        response = self.api_client.post(
             "/api/v1/accounts/change-password/",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "weak",
             },
-            content_type="application/json",
-            **self._auth_headers(self.user),
+            format="json",
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("new_password", response.json()["error_detail"])
 
     def test_change_password_unauthenticated(self) -> None:
-        response = self.client.post(
+        response = self.api_client.post(
             "/api/v1/accounts/change-password/",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "NewPass456@",
             },
-            content_type="application/json",
+            format="json",
         )
 
         self.assertEqual(response.status_code, 401)

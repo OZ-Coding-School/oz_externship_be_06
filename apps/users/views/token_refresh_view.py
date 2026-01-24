@@ -7,10 +7,12 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.users.serializers.token_refresh_serializer import TokenRefreshRequestSerializer
+from apps.users.serializers.token_refresh_serializer import (
+    TokenRefreshRequestSerializer,
+)
 
 
-#JWT 토큰 재발급 API
+# JWT 토큰 재발급 API
 class TokenRefreshAPIView(APIView):
 
     permission_classes = [AllowAny]
