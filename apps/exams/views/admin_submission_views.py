@@ -91,8 +91,6 @@ class AdminExamSubmissionListAPIView(APIView):
     )
     def get(self, request: Request) -> Response:
         # Query parameters
-        page = request.query_params.get("page", 1)
-        size = request.query_params.get("size", 10)
         search_keyword = request.query_params.get("search_keyword", "")
         cohort_id = request.query_params.get("cohort_id")
         exam_id = request.query_params.get("exam_id")
@@ -149,18 +147,15 @@ class AdminExamSubmissionListAPIView(APIView):
 
         queryset = queryset.order_by(sort_field)
 
+        # 결과가 비어있을 경우 404 반환
+        if not queryset.exists():
+            return Response(
+                {"error_detail": "조회된 응시 내역이 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         # 페이지네이션
         paginator = self.pagination_class()
-        try:
-            paginator.page_size = int(size) if size else paginator.page_size
-        except ValueError:
-            paginator.page_size = 10
-
-        try:
-            page = int(page)
-        except ValueError:
-            page = 1
-
         paginated_queryset = paginator.paginate_queryset(queryset, request)
 
         # Serializer를 사용하여 응답 데이터 생성
@@ -168,12 +163,5 @@ class AdminExamSubmissionListAPIView(APIView):
 
         # 페이지네이션 응답 생성
         response = paginator.get_paginated_response(serializer.data)
-
-        # 결과가 비어있을 경우 404 반환
-        if not serializer.data:
-            return Response(
-                {"error_detail": "조회된 응시 내역이 없습니다."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
 
         return response
