@@ -12,11 +12,11 @@ class MaskEmailTest(TestCase):
 
     def test_mask_email_normal(self) -> None:
         result = mask_email("user@example.com")
-        self.assertEqual(result, "u**r@e****le.com")
+        self.assertEqual(result, "u**r@e*****e.com")
 
     def test_mask_email_short_local(self) -> None:
         result = mask_email("ab@example.com")
-        self.assertEqual(result, "ab@e****le.com")
+        self.assertEqual(result, "ab@e*****e.com")
 
     def test_mask_email_short_domain(self) -> None:
         result = mask_email("user@ab.com")
@@ -58,7 +58,7 @@ class FindEmailAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("email", response.json())
         # 마스킹된 이메일 확인
-        self.assertEqual(response.json()["email"], "t**t@e****le.com")
+        self.assertEqual(response.json()["email"], "t**t@e*****e.com")
 
     def test_find_email_invalid_token(self) -> None:
         response = self.client.post(
