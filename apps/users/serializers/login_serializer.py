@@ -2,7 +2,7 @@ from typing import Any
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import User
 
@@ -35,5 +35,8 @@ class LoginSerializer(serializers.Serializer[dict[str, Any]]):
 
     def create(self, validated_data: dict[str, Any]) -> dict[str, str]:
         user: User = validated_data["user"]
-        access_token = AccessToken.for_user(user)
-        return {"access_token": str(access_token)}
+        refresh = RefreshToken.for_user(user)
+        return {
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh),
+        }
