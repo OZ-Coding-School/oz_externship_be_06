@@ -27,7 +27,7 @@ help:
 	@echo "  dmypy-reset      Stop dmypy and clear cache"
 	@echo "  push-force       Force push with lease"
 	@echo "  fetch            Fetch from origin"
-	@echo "  sync-develop     Fetch, checkout develop, and pull origin develop"
+	@echo "  sync-develop     Fetch, switch to develop, and pull origin develop"
 	@echo "  rebase-develop   Rebase onto origin/develop"
 
 run:
@@ -100,7 +100,7 @@ fetch:
 
 sync-develop:
 	git fetch origin
-	git checkout develop
+	git switch develop
 	git pull origin develop
 
 rebase-develop:
