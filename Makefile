@@ -89,7 +89,11 @@ dmypy-reset:
 	rm -f .dmypy.json
 
 push-force:
-	git push --force-with-lease
+	@if [ -n "$(ARGS)" ]; then \
+		git push origin $(ARGS) --force-with-lease; \
+	else \
+		git push --force-with-lease; \
+	fi
 
 fetch:
 	git fetch origin
