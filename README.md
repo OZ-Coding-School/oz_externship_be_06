@@ -36,7 +36,7 @@ make logs django # Docker django service 로그만 확인
    - `make ps` - Docker 서비스 목록 확인
 4. 기타 유틸리티
    - `make dmypy-reset` - dmypy 데몬 중지 및 캐시 삭제
-   - `make push-force` - 안전한 강제 푸시 실행
+   - `make push-force [branch_name]` - 안전한 강제 푸시 실행 [특정 브랜치 지정]
    - `make fetch` - 원격(origin) 최신 내역 가져오기
    - `make sync-develop` - 원격 최신 내역 가져오기 + develop 브랜치 이동&pull
    - `make rebase-develop` - origin/develop 기준으로 리베이스
