@@ -34,10 +34,12 @@ class QuestionService:
             queryset = queryset.filter(answer_count__gt=0)
 
         sort = filters.get("sort")
-        if sort == "oldest":
-            queryset = queryset.order_by("created_at")
-        else:
+        if sort == "latest":
             queryset = queryset.order_by("-created_at")
+        elif sort == "oldest":
+            queryset = queryset.order_by("created_at")
+        elif sort == "most_views":
+            queryset = queryset.order_by("-view_count")  # 조회수 내림차순
 
         return queryset
 
