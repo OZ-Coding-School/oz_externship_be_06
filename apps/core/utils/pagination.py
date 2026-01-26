@@ -4,6 +4,7 @@ from typing import Any
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.response import Response
 
+
 class ChatbotSessionCursorPagination(CursorPagination):
     page_size = 10
     ordering = "-created_at"
@@ -15,7 +16,6 @@ class SimplePagePagination(PageNumberPagination):
     page_query_param = "page"
     page_size_query_param = "size"
     max_page_size = 100
-
 
 
 class QnAPagination(PageNumberPagination):
