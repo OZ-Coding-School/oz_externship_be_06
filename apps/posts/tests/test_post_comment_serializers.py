@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDenied
+from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.test import APIRequestFactory
 
 from apps.posts.models.post import Post
@@ -16,10 +17,9 @@ User = get_user_model()
 
 
 class PostCommentSerializerTestCase(TestCase):
-    """PostComment Serializer 테스트"""
+    """PostComment Serializer 테스트 (옵션 1: 인증은 view/permission 레이어에서만)"""
 
     def setUp(self) -> None:
-        """테스트 데이터 설정"""
         self.user = User.objects.create_user(
             email="test@example.com",
             password="testpass123",
@@ -40,13 +40,16 @@ class PostCommentSerializerTestCase(TestCase):
         )
         self.category = PostCategory.objects.create(name="테스트 카테고리", status=True)
         self.post = Post.objects.create(
-            title="테스트 게시글", content="테스트 내용", author=self.user, category=self.category
+            title="테스트 게시글",
+            content="테스트 내용",
+            author=self.user,
+            category=self.category,
         )
         self.comment = PostComment.objects.create(author=self.user, post=self.post, content="테스트 댓글")
         self.factory = APIRequestFactory()
 
     def test_post_comment_list_serializer(self) -> None:
-        """PostCommentListSerializer 테스트"""
+        """PostCommentListSerializer 기본 필드/author 포함 확인"""
         serializer = PostCommentListSerializer(self.comment)
         data = serializer.data
 
@@ -54,76 +57,77 @@ class PostCommentSerializerTestCase(TestCase):
         self.assertEqual(data["content"], "테스트 댓글")
         self.assertEqual(data["author"]["id"], self.user.id)
         self.assertEqual(data["author"]["nickname"], self.user.nickname)
+        self.assertIn("tagged_users", data)
 
     def test_post_comment_create_serializer_success(self) -> None:
-        """PostCommentCreateSerializer 성공 테스트"""
+        """PostCommentCreateSerializer 성공: content만 검증 + create 동작"""
         request = self.factory.post("/api/posts/1/comments/")
         request.user = self.user
 
-        data = {"content": "새 댓글"}
-        serializer = PostCommentCreateSerializer(data=data, context={"request": request, "post": self.post})
+        serializer = PostCommentCreateSerializer(
+            data={"content": "새 댓글"},
+            context={"request": request, "post": self.post},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
-        self.assertTrue(serializer.is_valid())
         comment = serializer.save()
-
         self.assertEqual(comment.content, "새 댓글")
         self.assertEqual(comment.author, self.user)
         self.assertEqual(comment.post, self.post)
 
-    def test_post_comment_create_serializer_no_auth(self) -> None:
-        """PostCommentCreateSerializer 인증 실패 테스트"""
+    def test_post_comment_create_serializer_missing_author_save_fails(self) -> None:
+        """PostCommentCreateSerializer - author 없음: 옵션1 기준으로 is_valid는 통과 가능, save에서 실패"""
         request = self.factory.post("/api/posts/1/comments/")
         request.user = None  # type: ignore[assignment]
 
-        data = {"content": "새 댓글"}
-        serializer = PostCommentCreateSerializer(data=data, context={"request": request, "post": self.post})
+        serializer = PostCommentCreateSerializer(
+            data={"content": "새 댓글"},
+            context={"request": request, "post": self.post},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
-        with self.assertRaises(NotAuthenticated):
-            serializer.is_valid(raise_exception=True)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.save()
 
-    def test_post_comment_create_serializer_no_post(self) -> None:
-        """PostCommentCreateSerializer 게시글 없음 테스트"""
+    def test_post_comment_create_serializer_missing_post_save_fails(self) -> None:
+        """PostCommentCreateSerializer - post 컨텍스트 없음: save에서 실패"""
         request = self.factory.post("/api/posts/1/comments/")
         request.user = self.user
 
-        data = {"content": "새 댓글"}
-        serializer = PostCommentCreateSerializer(data=data, context={"request": request})
+        serializer = PostCommentCreateSerializer(
+            data={"content": "새 댓글"},
+            context={"request": request},  # post 없음
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
-        with self.assertRaises(Exception):  # ValidationError 또는 NotFound
-            serializer.is_valid(raise_exception=True)
+        with self.assertRaises(serializers.ValidationError):
+            serializer.save()
 
     def test_post_comment_update_serializer_success(self) -> None:
-        """PostCommentUpdateSerializer 성공 테스트"""
+        """PostCommentUpdateSerializer 성공: 작성자만 수정 가능"""
         request = self.factory.put(f"/api/posts/1/comments/{self.comment.id}/")
         request.user = self.user
 
-        data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
+        serializer = PostCommentUpdateSerializer(
+            instance=self.comment,
+            data={"content": "수정된 댓글"},
+            context={"request": request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
 
-        self.assertTrue(serializer.is_valid())
-        updated_comment = serializer.save()
-
-        self.assertEqual(updated_comment.content, "수정된 댓글")
-        self.assertEqual(updated_comment.author, self.user)
+        updated = serializer.save()
+        self.assertEqual(updated.content, "수정된 댓글")
+        self.assertEqual(updated.author, self.user)
 
     def test_post_comment_update_serializer_permission_denied(self) -> None:
-        """PostCommentUpdateSerializer 권한 없음 테스트"""
+        """PostCommentUpdateSerializer - 권한 없음(작성자 아님)"""
         request = self.factory.put(f"/api/posts/1/comments/{self.comment.id}/")
         request.user = self.other_user
 
-        data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
-
+        serializer = PostCommentUpdateSerializer(
+            instance=self.comment,
+            data={"content": "수정된 댓글"},
+            context={"request": request},
+        )
         with self.assertRaises(PermissionDenied):
-            serializer.is_valid(raise_exception=True)
-
-    def test_post_comment_update_serializer_no_auth(self) -> None:
-        """PostCommentUpdateSerializer 인증 실패 테스트"""
-        request = self.factory.put(f"/api/posts/1/comments/{self.comment.id}/")
-        request.user = None  # type: ignore[assignment]
-
-        data = {"content": "수정된 댓글"}
-        serializer = PostCommentUpdateSerializer(instance=self.comment, data=data, context={"request": request})
-
-        with self.assertRaises(NotAuthenticated):
             serializer.is_valid(raise_exception=True)
