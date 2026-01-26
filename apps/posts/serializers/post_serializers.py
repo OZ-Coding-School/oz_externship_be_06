@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from apps.posts.models import Post
+from apps.posts.models import Post, PostCategory
 
 User = get_user_model()
 
@@ -17,7 +17,6 @@ class PostAuthorSerializer(serializers.ModelSerializer):
 
 class PostListSerializer(serializers.ModelSerializer):
     author = PostAuthorSerializer(read_only=True)
-    author = PostAuthorSerializer(read_only=True)  # 중첩된 작성자 정보
     content_preview = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True)
     like_count = serializers.IntegerField(read_only=True)
@@ -65,3 +64,14 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
     def get_category(self, obj):
         return {"id": obj.category.id, "name": obj.category.name}
+
+class PostCreateUpdateSerializer(serializers.ModelSerializer):
+    # category_id를 통해 카테고리를 설정할 수 있게 합니다.
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=PostCategory.objects.filter(status=True),
+        source='category'
+    )
+
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'category_id', 'is_notice', 'is_visible']
