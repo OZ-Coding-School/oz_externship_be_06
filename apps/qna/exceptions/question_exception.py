@@ -22,13 +22,3 @@ class QuestionPermissionDeniedException(QuestionBaseException):
     status_code: int = status.HTTP_403_FORBIDDEN
     default_detail = "해당 질문에 대한 권한이 없습니다."
     default_code = "permission_denied"
-
-
-class QuestionAuthenticationRequiredException(QuestionBaseException):
-    """
-    인증 필요 예외 (401 Unauthorized)
-    """
-
-    status_code: int = status.HTTP_401_UNAUTHORIZED
-    default_detail = "인증 정보가 유효하지 않습니다."
-    default_code = "authentication_failed"
