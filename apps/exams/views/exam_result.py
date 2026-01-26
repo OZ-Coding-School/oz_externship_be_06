@@ -83,7 +83,7 @@ class ExamSubmissionDetailView(RetrieveAPIView[ExamSubmission]):
         user_id = self.request.user.id
 
         submission = get_object_or_404(
-            ExamSubmission.objects.select_related("deployment", "deployment__exam"),
+            ExamSubmission.objects.select_related("deployment__exam").prefetch_related("deployment__exam__questions"),
             id=submission_id,
         )
 
