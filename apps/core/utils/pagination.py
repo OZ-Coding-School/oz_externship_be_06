@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.response import Response
 
@@ -39,4 +40,3 @@ class QnAPagination(PageNumberPagination):
                 "results": data,
             }
         )
-
