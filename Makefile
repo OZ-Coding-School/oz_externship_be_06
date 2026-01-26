@@ -116,9 +116,28 @@ fetch:
 	git fetch origin
 
 sync-develop:
+	@if [ -n "$$(git status --porcelain)" ]; then \
+		echo "⚠️  경고: 커밋되지 않은 변경 사항이 있습니다."; \
+		echo "⚠️  브랜치를 이동하면 작업 내용이 꼬일 수 있습니다."; \
+		read -p "⚠️  계속 진행하시겠습니까? [y/N]: " CONFIRM < /dev/tty; \
+		if [ "$$CONFIRM" != "y" ] && [ "$$CONFIRM" != "Y" ]; then \
+			echo "❌ 작업을 중단합니다. 기존 작업한 내역을 commit 또는 stash한 후에 다시 시도하세요."; \
+			exit 1; \
+		fi; \
+	fi
+	@echo ""
+	@echo "---sync-develop 실행"
 	git fetch origin
+	@echo ""
+	@echo "---develop 브랜치로 이동합니다."
 	git switch develop
+	@echo ""
+	@echo "---🔄 develop 브랜치 최신화 중..."
 	git pull origin develop
+	@echo ""
+	@echo "---develop 브랜치가 최신화 되었습니다."
+	@echo "---현재 브랜치는 develop 입니다"
+	@echo "🚨 🚨 🚨 🚨 🚨 작업할 브랜치로 이동하세요🚨 🚨 🚨 🚨 🚨"
 
 rebase-develop:
 	git fetch origin
