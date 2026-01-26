@@ -10,6 +10,7 @@ from apps.users.views.login_view import LoginAPIView, LogoutAPIView
 from apps.users.views.me import MeView
 from apps.users.views.password_view import ChangePasswordAPIView, FindPasswordAPIView
 from apps.users.views.profile_image_view import ProfileImageView
+from apps.users.views.restore_view import RestoreAPIView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
 from apps.users.views.sms_verification_view import (
     SendSmsVerificationAPIView,
@@ -43,4 +44,5 @@ urlpatterns = [
     # 휴대폰 번호 변경
     path("change-phone/", ChangePhoneView.as_view(), name="change-phone"),
     path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
+    path("restore/", RestoreAPIView.as_view(), name="restore"),
 ]
