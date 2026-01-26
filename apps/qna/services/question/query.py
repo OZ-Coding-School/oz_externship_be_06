@@ -1,18 +1,17 @@
 from typing import Any
 
-from django.db import transaction
 from django.db.models import Count, Q, QuerySet
 
 from apps.qna.exceptions.question_exception import (
     QuestionBaseException,
     QuestionNotFoundException,
 )
-from apps.qna.models import Question, QuestionCategory
+from apps.qna.models import Question
 
 
-class QuestionService:
+class QuestionQueryService:
     """
-    Question 비즈니스 로직 처리 서비스
+    질문 데이터 조회(Read) 로직 처리 서비스
     """
 
     @staticmethod
@@ -54,16 +53,3 @@ class QuestionService:
             raise
         except Exception as e:
             raise QuestionBaseException(detail=f"질문 목록 조회 중 오류가 발생했습니다: {str(e)}")
-
-    @staticmethod
-    @transaction.atomic
-    def create_question(author: Any, data: dict[str, Any]) -> Question:
-        """질문 생성 로직"""
-        try:
-            category_id = data.pop("category_id")
-            category = QuestionCategory.objects.get(id=category_id)  # 카테고리 획득
-            question = Question.objects.create(author=author, category=category, **data)  # 질문 생성
-            return question
-
-        except Exception as e:  # 발생하는 모든 예외를 최상위 예외인 QuestionBaseException으로 전환
-            raise QuestionBaseException(detail=f"질문 등록 중 오류가 발생했습니다: {str(e)}")
