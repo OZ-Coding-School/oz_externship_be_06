@@ -1,17 +1,17 @@
 from typing import Any
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
 from apps.users.models import User, Withdrawal
+
 
 class AdminUserListViewTest(APITestCase):
     def setUp(self) -> None:
         # 1. 어드민 유저 생성 (birthday 추가)
         self.admin_user = User.objects.create_superuser(
-            email="admin@test.com",
-            password="password123",
-            nickname="admin",
-            birthday="1990-01-01"
+            email="admin@test.com", password="password123", nickname="admin", birthday="1990-01-01"
         )
         # 2. 필터 테스트용 일반 유저들 생성 (birthday 추가)
         self.active_user = User.objects.create_user(
@@ -20,7 +20,7 @@ class AdminUserListViewTest(APITestCase):
             nickname="active",
             is_active=True,
             role="USER",
-            birthday="1990-01-01"
+            birthday="1990-01-01",
         )
         self.inactive_user = User.objects.create_user(
             email="inactive@test.com",
@@ -28,14 +28,10 @@ class AdminUserListViewTest(APITestCase):
             nickname="inactive",
             is_active=False,
             role="STUDENT",
-            birthday="1990-01-01"
+            birthday="1990-01-01",
         )
         self.withdrawn_user = User.objects.create_user(
-            email="withdrew@test.com",
-            password="password123",
-            nickname="withdrew",
-            role="USER",
-            birthday="1990-01-01"
+            email="withdrew@test.com", password="password123", nickname="withdrew", role="USER", birthday="1990-01-01"
         )
         Withdrawal.objects.create(user=self.withdrawn_user, reason="Test reason")
 
@@ -61,12 +57,7 @@ class AdminUserListViewTest(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
 
         # staff(TA) 필터
-        User.objects.create_user(
-            email="ta@test.com",
-            password="password123",
-            role="TA",
-            birthday="1990-01-01"
-        )
+        User.objects.create_user(email="ta@test.com", password="password123", role="TA", birthday="1990-01-01")
         response: Any = self.client.get(self.url, {"role": "staff"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
