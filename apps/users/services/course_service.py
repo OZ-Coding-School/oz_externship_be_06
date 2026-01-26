@@ -4,11 +4,10 @@ from apps.courses.models import Cohort
 from apps.courses.models.cohort_students import CohortStudent
 from apps.users.models import User
 
-#수강신청 가능한 기수 목록 조회
+
+# 수강신청 가능한 기수 목록 조회
 def get_available_courses() -> list[dict[str, Any]]:
-    cohorts = Cohort.objects.filter(
-        status=Cohort.StatusChoices.PREPARING
-    ).select_related("course")
+    cohorts = Cohort.objects.filter(status=Cohort.StatusChoices.PREPARING).select_related("course")
 
     return [
         {
@@ -27,11 +26,12 @@ def get_available_courses() -> list[dict[str, Any]]:
         for cohort in cohorts
     ]
 
-#내 수강목록 조회
+
+# 내 수강목록 조회
 def get_enrolled_courses(*, user: User) -> list[dict[str, Any]]:
-    cohort_students = CohortStudent.objects.filter(
-        user=user
-    ).select_related("cohort__course")
+    cohort_students = CohortStudent.objects.filter(user=user).select_related(  # type: ignore[attr-defined]
+        "cohort__course"
+    )
 
     return [
         {

@@ -2,11 +2,11 @@ from django.urls import path
 
 from apps.users.views.change_phone_view import ChangePhoneView
 from apps.users.views.course_view import AvailableCoursesAPIView, EnrolledCoursesAPIView
-from apps.users.views.enroll_student_view import EnrollStudentAPIView
 from apps.users.views.email_verification_view import (
     SendEmailVerificationAPIView,
     VerifyEmailAPIView,
 )
+from apps.users.views.enroll_student_view import EnrollStudentAPIView
 from apps.users.views.find_email_view import FindEmailAPIView
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
 from apps.users.views.me import MeView
