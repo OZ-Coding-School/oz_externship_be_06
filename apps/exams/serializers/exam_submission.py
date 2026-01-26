@@ -3,7 +3,7 @@ from typing import Any, Dict
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.exams.models import ExamSubmission, ExamQuestion
+from apps.exams.models import ExamQuestion, ExamSubmission
 
 
 class ExamAnswerSerializer(serializers.Serializer[Any]):
@@ -20,6 +20,9 @@ class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
     - 답안 저장
     """
 
+    deployment_id = serializers.IntegerField()
+    started_at = serializers.DateTimeField()
+    cheating_count = serializers.IntegerField(default=0)
     answers = ExamAnswerSerializer(many=True, allow_empty=False)  # 아예 하나도 안푼것에 대한 방지
 
     def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -36,9 +39,10 @@ class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
         submission: ExamSubmission = self.context["submission"]
 
         submission.answers_json = self.validated_data["answers"]
+        submission.started_at = self.validated_data.get("started_at", submission.started_at)
         submission.cheating_count = self.validated_data.get("cheating_count", submission.cheating_count)
 
-        submission.save(update_fields=["answers_json", "cheating_count"])
+        submission.save(update_fields=["answers_json", "started_at", "cheating_count"])
 
         return submission
 
