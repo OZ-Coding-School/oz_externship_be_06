@@ -23,7 +23,6 @@ class MeResponseSerializer(serializers.ModelSerializer):  # type: ignore[type-ar
         )
 
     def get_gender(self, obj: User) -> str:
-        # 기존 뷰 로직 그대로 반영
         return "M" if obj.gender == "MALE" else "F"
 
 
