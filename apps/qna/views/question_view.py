@@ -7,13 +7,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.qna.serializers.question_serializer import (
+from apps.qna.serializers.question.request import QuestionCreateSerializer
+from apps.qna.serializers.question.response import (
     QuestionCreateResponseSerializer,
-    QuestionCreateSerializer,
     QuestionListSerializer,
     QuestionQuerySerializer,
 )
-from apps.qna.services.question_service import QuestionService
+from apps.qna.services.question.command import QuestionCommandService
+from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.question_list_pagination import QnAPaginator
 
@@ -59,7 +60,7 @@ class QuestionCreateListAPIView(APIView):
         query_serializer.is_valid(raise_exception=True)
 
         # 데이터 조회
-        queryset = QuestionService.get_question_list(query_serializer.validated_data)
+        queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
         # Response 생성
         return QnAPaginator.get_paginated_data_response(
@@ -91,7 +92,7 @@ class QuestionCreateListAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        question = QuestionService.create_question(author=request.user, data=serializer.validated_data)
+        question = QuestionCommandService.create_question(author=request.user, data=serializer.validated_data)
 
         # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
