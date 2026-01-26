@@ -16,6 +16,7 @@ from apps.users.views.sms_verification_view import (
     VerifySmsAPIView,
 )
 from apps.users.views.token_refresh_view import TokenRefreshAPIView
+from apps.users.views.withdrawal_view import WithdrawalAPIView
 
 urlpatterns = [
     # 회원가입
@@ -41,4 +42,5 @@ urlpatterns = [
     path("find-email/", FindEmailAPIView.as_view(), name="find-email"),
     # 휴대폰 번호 변경
     path("change-phone/", ChangePhoneView.as_view(), name="change-phone"),
+    path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
 ]
