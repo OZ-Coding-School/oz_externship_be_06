@@ -1,58 +1,67 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from django.utils import timezone
+from rest_framework import viewsets, filters
+from django.db.models import Count, Q
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from ..serializers.post_serializers import PostSerializer
+from ..models.post import Post
+from ..serializers.post_serializers import PostListSerializer, PostDetailSerializer
 
-# 클래스 전체를 'Community - Post' 그룹으로 묶습니다.
+
 @extend_schema(tags=["Community - Post"])
-class PostViewSet(viewsets.ViewSet):
-    # Swagger가 입력 데이터 형식을 알 수 있도록 시리얼라이저를 등록합니다.
-    serializer_class = PostSerializer
-
-    @extend_schema(summary="게시글 목록 조회")
-    def list(self, request):
-        mock_posts = [
-            {
-                "id": 1,
-                "title": "Mock 데이터 테스트입니다.",
-                "content": "내용입니다.",
-            }
-        ]
-        # 여기서 'serializer' 변수를 정의해야 'Unresolved reference' 오류가 안 납니다.
-        serializer = PostSerializer(mock_posts, many=True)
-        return Response(serializer.data)
-
-    @extend_schema(
-        summary="게시글 상세 조회",
-        parameters=[
-            # {id} 부분이 숫자(int)임을 Swagger에 알려줍니다.
-            OpenApiParameter(name='pk', type=int, location=OpenApiParameter.PATH)
-        ]
+class PostViewSet(viewsets.ModelViewSet):
+    # comment_count와 like_count를 DB에서 미리 계산해서 가져옴 (성능 최적화)
+    queryset = Post.objects.annotate(
+        comment_count=Count('comments', distinct=True),
+        like_count=Count('likes', filter=Q(likes__is_liked=True), distinct=True)
     )
-    def retrieve(self, request, pk=None):
-        mock_post = {
-            "id": int(pk),
-            "category_name": "자유게시판",
-            "author_name": "코딩파트너",
-            "title": f"{pk}번 게시글 상세 조회",
-            "content": "상세 내용입니다.",
-            "view_count": 11,
-            "is_notice": False,
-            "created_at": timezone.now()
-        }
-        # 여기서도 'serializer'를 새로 정의합니다.
-        serializer = PostSerializer(mock_post)
-        return Response(serializer.data)
+    serializer_class = PostListSerializer
 
-    @extend_schema(summary="게시글 작성")
-    def create(self, request):
-        return Response({"message": "게시글이 작성되었습니다. (Mock)"}, status=status.HTTP_201_CREATED)
+    # 필터링 및 정렬 기능 활성화
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 
-    @extend_schema(summary="게시글 수정")
-    def update(self, request, pk=None):
-        return Response({"message": f"{pk}번 게시글이 수정되었습니다. (Mock)"})
+    # ?search= 키워드로 검색할 필드 지정
+    search_fields = ['title', 'content', 'author__nickname']
 
-    @extend_schema(summary="게시글 삭제")
-    def destroy(self, request, pk=None):
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    # ?ordering= 키워드로 정렬할 필드 지정 (기본값: 최신순)
+    ordering_fields = ['created_at', 'view_count', 'like_count', 'comment_count']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # 1. 카테고리 필터링 (?category_id=1)
+        category_id = self.request.query_params.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        # 2. 정렬 조건 커스텀 매핑 (?sort=most_views 등)
+        sort_param = self.request.query_params.get('sort')
+        if sort_param == 'latest':
+            queryset = queryset.order_by('-created_at')
+        elif sort_param == 'oldest':
+            queryset = queryset.order_by('created_at')
+        elif sort_param == 'most_views':
+            queryset = queryset.order_by('-view_count')
+        elif sort_param == 'most_likes':
+            queryset = queryset.order_by('-like_count')
+        elif sort_param == 'most_comments':
+            queryset = queryset.order_by('-comment_count')
+
+        # 3. 검색 필터 상세 구현 (?search_filter=title 등)
+        search_keyword = self.request.query_params.get('search')
+        search_filter = self.request.query_params.get('search_filter')
+
+        if search_keyword and search_filter:
+            if search_filter == 'title':
+                queryset = queryset.filter(title__icontains=search_keyword)
+            elif search_filter == 'content':
+                queryset = queryset.filter(content__icontains=search_keyword)
+            elif search_filter == 'author':
+                queryset = queryset.filter(author__nickname__icontains=search_keyword)
+            elif search_filter == 'title_or_content':
+                queryset = queryset.filter(Q(title__icontains=search_keyword) | Q(content__icontains=search_keyword))
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return PostDetailSerializer
+        return PostListSerializer
