@@ -34,6 +34,7 @@ class QuestionListAPITest(TestCase):
             name="김테스터",
             nickname="테스터",
             role="STUDENT",
+            gender="MALE",
             birthday="1990-01-01",
         )
 
