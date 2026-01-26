@@ -11,7 +11,7 @@ from apps.core.utils.pagination import ChatbotSessionCursorPagination
 
 
 @extend_schema(
-    tags=["Chatbot"],
+    tags=["chatbot"],
     summary="챗봇 세션 목록 조회",
     description="사용자의 챗봇 세션 목록을 조회합니다. (Cursor Pagination 적용)",
 )

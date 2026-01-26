@@ -27,7 +27,7 @@ def activate_session(*, user: Any, question_id: int) -> Tuple[ChatbotSession, bo
             user=user,
             question_id=question_id,
             title="새 채팅",
-            using_model=ChatbotSession.AIModel.GPT,
+            using_model=ChatbotSession.AIModel.GEMINI,
         )
         return session, True
 

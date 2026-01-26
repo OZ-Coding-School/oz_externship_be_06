@@ -44,7 +44,7 @@ class TestChatbotSessionList(APITestCase):
                     user=self.user,
                     question=self.questions[i],
                     title=f"title-{i}",
-                    using_model=ChatbotSession.AIModel.GPT,
+                    using_model=ChatbotSession.AIModel.GEMINI,
                 )
                 for i in range(12)
             ]
@@ -56,7 +56,7 @@ class TestChatbotSessionList(APITestCase):
                     user=self.other,
                     question=self.questions[i],
                     title=f"other-{i}",
-                    using_model=ChatbotSession.AIModel.GPT,
+                    using_model=ChatbotSession.AIModel.GEMINI,
                 )
                 for i in range(3)
             ]

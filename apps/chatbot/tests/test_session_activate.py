@@ -1,49 +1,81 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
 
 from apps.chatbot.models.chatbot_session import ChatbotSession
-from apps.chatbot.services.session_activate import activate_session
 from apps.qna.models import Question, QuestionCategory
 
 User = get_user_model()
 
 
-class TestChatbotSessionActivate(TestCase):
+class ChatbotSessionActivateAPITest(TestCase):
     def setUp(self) -> None:
+        self.client: APIClient = APIClient()
+
         self.user = User.objects.create_user(
-            email="user@test.com",
-            password="pw1234",
+            email="user1@test.com",
+            password="password",
             birthday="2000-01-01",
         )
 
-        self.category = QuestionCategory.objects.create(name="테스트 카테고리")
+        self.category = QuestionCategory.objects.create(
+            name="dummy-category",
+        )
 
         self.question = Question.objects.create(
-            category=self.category,
             author=self.user,
-            title="테스트 질문",
-            content="테스트 내용",
+            category=self.category,
+            title="dummy",
+            content="dummy",
         )
 
-    def test_activate_new_session(self) -> None:
-        session, created = activate_session(user=self.user, question_id=self.question.id)
+        self.activate_url = reverse("chatbot-session-activate")
 
-        self.assertTrue(created)
-        self.assertEqual(session.user, self.user)
-        self.assertEqual(session.question, self.question)
+    def test_activate_session_creates_new_session(self) -> None:
+        self.client.force_authenticate(user=self.user)
 
-    def test_activate_existing_session(self) -> None:
-        ChatbotSession.objects.create(
+        response = self.client.post(
+            self.activate_url,
+            data={"question_id": self.question.id},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data["created"])
+        self.assertTrue(
+            ChatbotSession.objects.filter(
+                user=self.user,
+                question_id=self.question.id,
+            ).exists()
+        )
+
+    def test_activate_existing_session_returns_existing(self) -> None:
+        self.client.force_authenticate(user=self.user)
+
+        existing_session = ChatbotSession.objects.create(
             user=self.user,
-            question=self.question,
+            question_id=self.question.id,
             title="기존 세션",
-            using_model=ChatbotSession.AIModel.GPT,
+            using_model=ChatbotSession.AIModel.GEMINI,
         )
 
-        session, created = activate_session(user=self.user, question_id=self.question.id)
+        response = self.client.post(
+            self.activate_url,
+            data={"question_id": self.question.id},
+        )
 
-        self.assertFalse(created)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["created"])
+        self.assertEqual(
+            response.data["session"]["id"],
+            existing_session.id,
+        )
 
-        existing = ChatbotSession.objects.first()
-        assert existing is not None
-        self.assertEqual(session.id, existing.id)
+    def test_activate_requires_authentication(self) -> None:
+        response = self.client.post(
+            self.activate_url,
+            data={"question_id": self.question.id},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

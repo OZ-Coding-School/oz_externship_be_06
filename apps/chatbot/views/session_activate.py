@@ -23,12 +23,14 @@ class ChatbotSessionActivateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
+        tags=["chatbot"],
         summary="챗봇 세션 활성화",
         description=(
-            "채팅 진입 시 사용자와 질문 기준으로 세션을 조회 또는 생성합니다.\n"
-            "- 기존 세션이 있으면 반환합니다. (200)\n"
+            "채팅 진입 시 사용자와 질문 기준으로 세션을 조회하거나 생성합니다.\n"
+            "- 기존 세션이 존재하면 해당 세션을 반환합니다. (200)\n"
             "- 세션이 없으면 새로 생성하여 반환합니다. (201)\n"
-            "- 이미 응답 중(RESPONDING)인 세션은 차단합니다. (409)"
+            "- 응답 본문은 `created`와 `session` 필드를 포함하며,\n"
+            "  `session`은 ChatbotSessionSerializer 형식입니다."
         ),
         request=ChatbotActivateSerializer,
         responses={
@@ -36,7 +38,6 @@ class ChatbotSessionActivateAPIView(APIView):
             201: _ActivateSessionResponseSerializer,
             409: OpenApiResponse(description="이미 응답이 진행 중인 세션입니다."),
         },
-        tags=["chatbot"],
     )
     def post(self, request: Request) -> Response:
         # 입력값 검증

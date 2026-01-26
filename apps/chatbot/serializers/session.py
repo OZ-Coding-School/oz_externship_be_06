@@ -32,9 +32,25 @@ class ChatbotSessionCreateSerializer(serializers.Serializer[Any]):
     title = serializers.CharField(
         max_length=255,
         required=False,
-        allow_blank=True,
     )
     using_model = serializers.CharField(
         required=False,
         max_length=50,
     )
+
+    def validate_using_model(self, value: str) -> str:
+        """
+        using_model 값 정규화 및 검증
+        - 대소문자 혼용 방지
+        """
+        normalized = value.lower()
+
+        allowed_models = {
+            "gemini",
+            "gemini-2.5-flash",
+        }
+
+        if normalized not in allowed_models:
+            raise serializers.ValidationError("지원하지 않는 모델입니다.")
+
+        return normalized
