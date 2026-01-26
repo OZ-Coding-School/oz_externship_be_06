@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from rest_framework import serializers
@@ -108,8 +109,6 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             options = []
             if q.options_json:
                 try:
-                    import json
-
                     options = json.loads(q.options_json)
                 except Exception:
                     options = []
