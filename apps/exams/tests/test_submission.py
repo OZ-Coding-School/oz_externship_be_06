@@ -3,12 +3,14 @@ from datetime import date, timedelta
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.courses.models import Cohort, Course, Subject
 from apps.exams.models import (
     Exam,
     ExamDeployment,
     ExamQuestion,
+    ExamSubmission,
 )
 
 User = get_user_model()
@@ -44,7 +46,13 @@ class ExamSubmissionTest(APITestCase):
             name="테스트 이름",
             phone_number="010-0000-0000",
         )
-        self.client.force_authenticate(self.user)
+
+        # JWT 토큰 생성
+        refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(refresh.access_token)
+
+        # 클라이언트에 Authorization 헤더 설정
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
 
         self.exam = Exam.objects.create(
             title="쪽지시험",
@@ -76,6 +84,13 @@ class ExamSubmissionTest(APITestCase):
                 }
             ],
             status=ExamDeployment.StatusChoices.ACTIVATED,
+        )
+
+        self.submission = ExamSubmission.objects.create(
+            submitter=self.user,
+            deployment=self.deployment,
+            started_at=self.deployment.open_at,
+            answers_json={},
         )
 
     def test_submission_exam_success(self) -> None:
