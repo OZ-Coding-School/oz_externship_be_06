@@ -33,6 +33,7 @@ class QuestionCreateAPITest(TestCase):
             name="test1",
             nickname="수강생",
             role="STUDENT",
+            gender="MAIL",
             birthday="1990-01-01",
             is_active=True,
         )
@@ -44,6 +45,7 @@ class QuestionCreateAPITest(TestCase):
             name="test2",
             nickname="일반유저",
             role="USER",
+            gender="FEMAIL",
             birthday="1995-05-05",
             is_active=True,
         )
