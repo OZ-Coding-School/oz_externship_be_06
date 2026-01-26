@@ -94,18 +94,22 @@ class ExamSubmissionTest(APITestCase):
         )
 
     def test_submission_exam_success(self) -> None:
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [
+                {
+                    "question_id": self.question.id,
+                    "type": self.question.type,
+                    "submitted_answer": "O",
+                }
+            ],
+        }
+
         response = self.client.post(
             f"/api/v1/exams/submissions",
-            {
-                "deployment": self.deployment.id,
-                "answers": [
-                    {
-                        "question_id": self.question.id,
-                        "submitted_answer": "O",
-                        "type": self.question.type,
-                    }
-                ],
-            },
+            data,
             format="json",
         )
 

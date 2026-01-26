@@ -48,17 +48,11 @@ class ExamSubmissionCreateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if isinstance(request.user, AnonymousUser):
-            return Response(
-                {"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
         # 응시한 submission 조회
         # 학생이 아직 시험을 시작하지 않았거나, 배포 ID가 잘못돼서 존재하지 않는 세션일 때
         try:
             submission = ExamSubmission.objects.get(
-                submitter=request.user,
+                submitter=request.user,  # type: ignore
                 deployment_id=deployment_id,
             )
         except ExamSubmission.DoesNotExist:
