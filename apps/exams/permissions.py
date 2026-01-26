@@ -20,7 +20,7 @@ class IsStudentRole(BasePermission):
 class IsExamStaff(BasePermission):
     """쪽지시험 관리자 API용 권한 검사."""
 
-    message = "쪽지시험 문제 등록 권한이 없습니다."
+    message = "쪽지시험 관리 권한이 없습니다."
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user = request.user
