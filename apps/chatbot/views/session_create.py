@@ -20,8 +20,14 @@ class ChatbotSessionCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Chatbot"],
+        tags=["chatbot"],
         summary="챗봇 세션 생성",
+        description=(
+            "챗봇 세션을 생성합니다.\n"
+            "- 세션 생성 성공 시 응답은 ChatbotSessionSerializer 형식입니다.\n"
+            "- 동일한 질문에 대한 세션이 이미 존재하는 경우 409를 반환합니다.\n"
+            "- 단일 세션 응답 포맷은 다른 세션 API와 동일합니다."
+        ),
         request=ChatbotSessionCreateSerializer,
         responses={
             201: ChatbotSessionSerializer,
