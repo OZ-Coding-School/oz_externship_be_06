@@ -1,6 +1,8 @@
 from django.urls import path
 
 from apps.users.views.change_phone_view import ChangePhoneView
+from apps.users.views.course_view import AvailableCoursesAPIView, EnrolledCoursesAPIView
+from apps.users.views.enroll_student_view import EnrollStudentAPIView
 from apps.users.views.email_verification_view import (
     SendEmailVerificationAPIView,
     VerifyEmailAPIView,
@@ -42,5 +44,10 @@ urlpatterns = [
     path("find-email/", FindEmailAPIView.as_view(), name="find-email"),
     # 휴대폰 번호 변경
     path("change-phone/", ChangePhoneView.as_view(), name="change-phone"),
+    # 수강생 등록 신청
+    path("enroll-student/", EnrollStudentAPIView.as_view(), name="enroll-student"),
+    # 수강 관련
+    path("available-courses/", AvailableCoursesAPIView.as_view(), name="available-courses"),
+    path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
     path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
 ]
