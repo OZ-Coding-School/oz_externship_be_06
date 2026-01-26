@@ -22,9 +22,9 @@ make logs django # Docker django service 로그만 확인
    - `make shell` - Django 셸 실행
    - `make dbshell` - 데이터베이스 셸 실행
 2. Docker 환경 커맨드
-   - `make dtest [app_name|path]` - 컨테이너에서 테스트 실행 [특정 앱 | 폴더 지정]
+   - `make dtest [app_name|path]` - 컨테이너에서 테스트 & 커버리지 실행 [특정 앱 | 폴더 지정]
    - `make dmakemigrations [app_name]` - 컨테이너에서 마이그레이션 생성 [특정 앱 지정]
-   - `make dmakemigrations [app_name]` - 컨테이너에서 마이그레이션 적용 [특정 앱 지정]
+   - `make dmigrate [app_name]` - 컨테이너에서 마이그레이션 적용 [특정 앱 지정]
    - `make dshell` - 컨테이너에서 Django 셸 실행
    - `make ddbshell` - 컨테이너에서 데이터베이스 셸 실행
 3. Docker 관리
@@ -38,5 +38,5 @@ make logs django # Docker django service 로그만 확인
    - `make dmypy-reset` - dmypy 데몬 중지 및 캐시 삭제
    - `make push-force [branch_name]` - 안전한 강제 푸시 실행 [특정 브랜치 지정]
    - `make fetch` - 원격(origin) 최신 내역 가져오기
-   - `make sync-develop` - 원격 최신 내역 가져오기 + develop 브랜치 이동&pull
+   - `make sync-develop` - 원격 최신 내역 가져오기 + develop 브랜치로 이동 + pull develop 브랜치
    - `make rebase-develop` - origin/develop 기준으로 리베이스
