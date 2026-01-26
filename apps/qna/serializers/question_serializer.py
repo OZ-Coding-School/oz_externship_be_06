@@ -16,7 +16,7 @@ class QuestionQuerySerializer(QnAVersionedValidationMixin, serializers.Serialize
     search_keyword = serializers.CharField(required=False, allow_blank=True)
     category_id = serializers.IntegerField(required=False)
     answer_status = serializers.ChoiceField(choices=["waiting", "answered"], required=False)
-    sort = serializers.CharField(default="latest")
+    sort = serializers.ChoiceField(choices=["latest", "oldest", "most_views"], default="latest")
     page = serializers.IntegerField(default=1)
     size = serializers.IntegerField(default=10)
 
@@ -90,8 +90,8 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
         ]
 
     def get_content_preview(self, obj: Question) -> str:
-        """본문 텍스트 앞 100자 프리뷰 생성"""
-        return obj.content[:100] + "..." if len(obj.content) > 100 else obj.content
+        """본문 프리뷰 생성"""
+        return obj.content[:50] + "..." if len(obj.content) > 100 else obj.content
 
     def get_thumbnail_img_url(self, obj: Question) -> Any:
         """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
