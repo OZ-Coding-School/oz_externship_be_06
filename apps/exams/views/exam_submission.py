@@ -40,7 +40,7 @@ class ExamSubmissionCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]  # 로그인한 유저만 제출 가능
 
     def post(self, request: Request) -> Response:
-        deployment_id = request.data.get("deployment")
+        deployment_id = request.data.get("deployment_id")
 
         if not deployment_id:
             return Response(

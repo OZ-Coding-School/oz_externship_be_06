@@ -3,13 +3,13 @@ from typing import Any, Dict
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.exams.models import ExamSubmission
+from apps.exams.models import ExamSubmission, ExamQuestion
 
 
 class ExamAnswerSerializer(serializers.Serializer[Any]):
     # 개별 문제 답안 구조를 정의, 검증
     question_id = serializers.IntegerField()
-    type = serializers.ChoiceField(choices=["OX", "MULTI_SELECT", "SHORT_ANSWER", "FILL_IN_BLANK", "ORDERING"])
+    type = serializers.ChoiceField(choices=ExamQuestion.TypeChoices.choices)
     submitted_answer = serializers.JSONField()  # 답의 자료형이 제각각이라 JSONField
 
 
@@ -31,21 +31,6 @@ class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
             raise serializers.ValidationError("유효하지 않은 시험 응시 세션입니다.")
 
         return data
-
-    # def create(self, validated_data: Dict[str, Any]) -> ExamSubmission:
-    #     # 검증된 시험 제출 데이터를 기반으로 ExamSubmission을 실제로 생성하고 저장
-    #     deployment: ExamDeployment = self.context["deployment"]
-    #     user = self.context["request"].user  # 보안 문제로 context로 받음
-    #     # 이미 응시 시작 기록이 있는지 확인
-    #     submission = ExamSubmission.objects.get_or_create(
-    #         submitter=user,
-    #         deployment=deployment,
-    #         started_at=validated_data["started_at"],
-    #         cheating_count=validated_data["cheating_count"],
-    #         answers_json=validated_data["answers"],
-    #     )
-    #
-    #     return submission
 
     def save(self, **kwargs: Any) -> ExamSubmission:
         submission: ExamSubmission = self.context["submission"]
