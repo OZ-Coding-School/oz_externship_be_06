@@ -1,4 +1,5 @@
 from .admin_submission_serializers import AdminExamSubmissionListResponseSerializer
+from .error_serializers import ErrorDetailSerializer, ErrorResponseSerializer
 from .exam_status import ExamStatusResponseSerializer
 from .exam_submission import (
     ExamSubmissionCreateResponseSerializer,
@@ -26,4 +27,6 @@ __all__ = [
     "TakeExamResponseSerializer",
     "ExamSubmissionCreateSerializer",
     "ExamSubmissionCreateResponseSerializer",
+    "ErrorResponseSerializer",
+    "ErrorDetailSerializer",
 ]
