@@ -7,7 +7,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.models import Withdrawal
-from apps.users.serializers import WithdrawalRequestSerializer
+from apps.users.serializers.withdrawal_serializer import (
+    WithdrawalRequestSerializer,
+    WithdrawalResponseSerializer,
+)
 
 
 class WithdrawalAPIView(APIView):
@@ -17,14 +20,14 @@ class WithdrawalAPIView(APIView):
         tags=["accounts"],
         summary="회원 탈퇴 요청",
         request=WithdrawalRequestSerializer,
-        responses={201: "None"},
+        responses={201: WithdrawalResponseSerializer},
     )
     def post(self, request: Request) -> Response:
         user = request.user
 
         if not user.is_active:
             return Response(
-                {"error_detail": {"detail": "이미 탈퇴 처리된 계정입니다."}},
+                {"error_detail": "이미 탈퇴 처리된 계정입니다."},
                 status=status.HTTP_409_CONFLICT,
             )
 
