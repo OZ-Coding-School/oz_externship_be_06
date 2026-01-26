@@ -4,6 +4,7 @@ from .post_comment import (
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
 )
+from .post_category import PostCategorySerializer
 from .post_serializers import (
     DeleteResponseSerializer,
     PostCreateSerializer,
@@ -13,6 +14,7 @@ from .post_serializers import (
 )
 
 __all__ = [
+    "PostCategorySerializer",
     "PostCreateSerializer",
     "PostListSerializer",
     "PostDetailSerializer",
