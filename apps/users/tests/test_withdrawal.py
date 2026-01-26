@@ -1,13 +1,16 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
-from apps.users.models.withdrawal import Withdrawal
 from datetime import date
 
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from apps.users.models.withdrawal import Withdrawal
+
+
 class WithdrawalAPITests(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.client = APIClient()
         self.withdrawal_url = "/api/v1/accounts/withdrawal/"
 
@@ -27,7 +30,7 @@ class WithdrawalAPITests(TestCase):
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
-    def test_withdrawal_success_201_and_user_inactive(self):
+    def test_withdrawal_success_201_and_user_inactive(self) -> None:
         res = self.client.post(
             self.withdrawal_url,
             {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트 탈퇴"},
@@ -44,7 +47,7 @@ class WithdrawalAPITests(TestCase):
         self.assertFalse(self.user.is_active)
         self.assertTrue(Withdrawal.objects.filter(user=self.user).exists())
 
-    def test_withdrawal_invalid_reason_400(self):
+    def test_withdrawal_invalid_reason_400(self) -> None:
         res = self.client.post(
             self.withdrawal_url,
             {"reason": "INVALID", "reason_detail": "테스트"},
