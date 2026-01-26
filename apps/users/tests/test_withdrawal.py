@@ -10,6 +10,8 @@ from apps.users.models.withdrawal import Withdrawal
 
 
 class WithdrawalAPITests(TestCase):
+    client: APIClient
+
     def setUp(self) -> None:
         self.client = APIClient()
         self.withdrawal_url = "/api/v1/accounts/withdrawal/"
@@ -54,3 +56,41 @@ class WithdrawalAPITests(TestCase):
             format="json",
         )
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_withdrawal_already_inactive_409(self) -> None:
+        self.user.is_active = False
+        self.user.save()
+
+        res = self.client.post(
+            self.withdrawal_url,
+            {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트"},
+            format="json",
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+        data = res.json()
+        self.assertIn("error_detail", data)
+
+    def test_withdrawal_already_requested_409(self) -> None:
+        Withdrawal.objects.create(user=self.user, reason="SERVICE_DISSATISFACTION")
+
+        res = self.client.post(
+            self.withdrawal_url,
+            {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트"},
+            format="json",
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+        data = res.json()
+        self.assertIn("expire_at", data)
+
+    def test_withdrawal_unauthenticated_401(self) -> None:
+        self.client.credentials()
+
+        res = self.client.post(
+            self.withdrawal_url,
+            {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트"},
+            format="json",
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
