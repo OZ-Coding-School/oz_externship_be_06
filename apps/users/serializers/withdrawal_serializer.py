@@ -10,5 +10,5 @@ class WithdrawalRequestSerializer(serializers.Serializer):  # type: ignore[type-
 
 class WithdrawalResponseSerializer(serializers.Serializer):  # type: ignore[type-arg]
     message = serializers.CharField()
-    due_date = serializers.DateTimeField()
+    due_date = serializers.DateField()
     reason = serializers.ChoiceField(choices=Withdrawal.Reason.choices)

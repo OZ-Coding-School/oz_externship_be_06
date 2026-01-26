@@ -35,10 +35,8 @@ class WithdrawalAPIView(APIView):
         if existing:
             return Response(
                 {
-                    "error_detail": {
-                        "detail": "이미 탈퇴 신청한 계정입니다.",
-                        "expire_at": existing.due_date,
-                    }
+                    "error_detail": "이미 탈퇴 신청한 계정입니다.",
+                    "expire_at": existing.due_date,
                 },
                 status=status.HTTP_409_CONFLICT,
             )
@@ -51,11 +49,11 @@ class WithdrawalAPIView(APIView):
             user.is_active = False
             user.save(update_fields=["is_active"])
 
-        return Response(
+        response_serializer = WithdrawalResponseSerializer(
             {
                 "message": "회원 탈퇴 요청이 완료 되었습니다.",
                 "due_date": withdrawal.due_date,
                 "reason": withdrawal.reason,
-            },
-            status=status.HTTP_201_CREATED,
+            }
         )
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
