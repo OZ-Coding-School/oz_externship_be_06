@@ -37,7 +37,24 @@ format:
 	bash resources/scripts/code_formatting.sh
 
 test:
-	bash resources/scripts/test.sh $(ARGS)
+	@if [ -z "$(ARGS)" ]; then \
+		bash resources/scripts/test.sh; \
+	else \
+		TARGET="$(ARGS)"; \
+		case "$$TARGET" in \
+			apps/*) ;; \
+			*) TARGET="apps/$$TARGET" ;; \
+		esac; \
+		SOURCE=$$(echo $$TARGET | cut -d'/' -f1,2); \
+		echo "Starting Mypy for $$TARGET..."; \
+		poetry run mypy $$TARGET || true; \
+		echo "Starting Django Test with coverage (Target: $$TARGET)"; \
+		echo "- Coverage Source: $$SOURCE"; \
+		echo "- Test Target: $$TARGET"; \
+		poetry run coverage run --source="$$SOURCE" manage.py test "$$TARGET"; \
+		poetry run coverage report -m; \
+		poetry run coverage html; \
+	fi
 
 makemigrations:
 	python manage.py makemigrations $(ARGS)
@@ -52,7 +69,7 @@ dbshell:
 	python manage.py dbshell
 
 dtest:
-	docker compose -f $(COMPOSE_FILE) exec django make test $(ARGS)
+	docker compose -f $(COMPOSE_FILE) exec django make test ARGS="$(ARGS)"
 
 dmakemigrations:
 	docker compose -f $(COMPOSE_FILE) exec django make makemigrations $(ARGS)
