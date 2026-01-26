@@ -27,11 +27,11 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core.utils.pagination import SimplePagePagination
 from apps.courses.models.cohort_students import CohortStudent
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
-from apps.exams.pagination import SimplePagePagination
 from apps.exams.serializers.error import ErrorDetailSerializer
 from apps.exams.serializers.exam_list import ExamDeploymentListSerializer
 

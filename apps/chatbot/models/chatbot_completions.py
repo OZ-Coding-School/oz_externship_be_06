@@ -13,7 +13,7 @@ class ChatbotCompletions(TimeStampModel):
     session = models.ForeignKey(
         "chatbot.ChatbotSession", on_delete=models.CASCADE, related_name="chatbot_completions", verbose_name="세션 ID"
     )
-    content = models.TextField(verbose_name="메시지 내용")
+    content = models.TextField(verbose_name="메시지 내용")  # ERD상 Message 필드
     role = models.CharField(
         max_length=10,
         choices=Role.choices,
