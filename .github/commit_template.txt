@@ -15,6 +15,7 @@
 # <이모지> <타입>: <간결한 커밋 메시지 요약>
 #
 # 예시:
+# ✨ feat: 사용자 로그인 기능 추가
 # 🐛 fix: 댓글 생성 시 발생하는 NullPointerException 수정
 # 💡 chore: 불필요한 로그 제거 및 변수명 수정
 # 🎨 style: black, isort 코드 포매터 실행
