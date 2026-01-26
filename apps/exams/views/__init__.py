@@ -3,6 +3,7 @@ from .exam_list import ExamListView
 from .exam_status import ExamStatusAPIView
 from .submit_exam import SubmitExamAPIView
 from .take_exam import TakeExamAPIView
+from .exam_submission import ExamSubmissionCreateAPIView
 
 __all__ = [
     "CheckCodeAPIView",
@@ -10,4 +11,5 @@ __all__ = [
     "ExamStatusAPIView",
     "SubmitExamAPIView",
     "TakeExamAPIView",
+    "ExamSubmissionCreateAPIView",
 ]
