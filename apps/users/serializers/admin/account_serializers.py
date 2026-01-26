@@ -14,6 +14,7 @@ class AdminAccountListSerializer(serializers.ModelSerializer[Any]):
     status = serializers.SerializerMethodField()
     # 명세서의 role (user, staff, admin, student) 소문자 대응
     role = serializers.SerializerMethodField()
+    birthday = serializers.DateField(format="%Y-%m-%d")
     created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S.%f%z")
 
     class Meta:
@@ -31,7 +32,7 @@ class AdminAccountListSerializer(serializers.ModelSerializer[Any]):
 
     def get_status(self, obj: User) -> str:
         # Withdrawal 모델과 OneToOne 관계를 확인하여 탈퇴 여부 판단
-        if hasattr(obj, "withdrawal") and obj.withdrawal:
+        if hasattr(obj, "withdrawal") and obj.withdrawal is not None:
             return "withdrew"
         return "active" if obj.is_active else "inactive"
 
