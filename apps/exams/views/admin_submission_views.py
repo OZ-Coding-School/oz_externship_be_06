@@ -8,13 +8,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-<<<<<<< HEAD
-from apps.exams.models import ExamSubmission
-from apps.exams.pagination import SimplePagePagination
-=======
 from apps.core.utils.pagination import SimplePagePagination
 from apps.exams.models import ExamSubmission
->>>>>>> c782965 (fix: ci 테스트 수정)
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin_submission_serializers import (
     AdminExamSubmissionListResponseSerializer,
