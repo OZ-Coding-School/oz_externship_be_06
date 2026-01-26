@@ -18,10 +18,9 @@ from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.question_list_pagination import QnAPaginator
 
 
-# 질문 등록 & 조회
 class QuestionCreateListAPIView(APIView):
     """
-    질의응답 질문 등록 및 목록 조회 API
+    질문 등록 및 목록 조회 API View
     """
 
     def get_permissions(self) -> list[Any]:
@@ -51,7 +50,7 @@ class QuestionCreateListAPIView(APIView):
             400: OpenApiResponse(description="Bad Request"),
             404: OpenApiResponse(description="Not Found"),
         },
-        tags=["QnA"],
+        tags=["qna"],
     )
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
@@ -84,7 +83,7 @@ class QuestionCreateListAPIView(APIView):
             401: OpenApiResponse(description="Unauthorized"),
             403: OpenApiResponse(description="Forbidden"),
         },
-        tags=["QnA"],
+        tags=["qna"],
     )
     def post(self, request: Request) -> Response:
         """질문 생성"""
