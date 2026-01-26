@@ -9,9 +9,13 @@ from apps.users.serializers.course_serializer import (
     AvailableCourseResponseSerializer,
     EnrolledCourseResponseSerializer,
 )
-from apps.users.services.course_service import get_available_courses, get_enrolled_courses
+from apps.users.services.course_service import (
+    get_available_courses,
+    get_enrolled_courses,
+)
 
-#수강신청 가능한 기수 조회
+
+# 수강신청 가능한 기수 조회
 class AvailableCoursesAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -27,7 +31,8 @@ class AvailableCoursesAPIView(APIView):
         serializer = AvailableCourseResponseSerializer(courses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-#내 수강목록 조회
+
+# 내 수강목록 조회
 class EnrolledCoursesAPIView(APIView):
 
     permission_classes = [IsAuthenticated]

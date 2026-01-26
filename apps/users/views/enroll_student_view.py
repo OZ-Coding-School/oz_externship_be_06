@@ -16,7 +16,8 @@ from apps.users.services.enroll_student_service import (
     enroll_student,
 )
 
-#수강생 등록 신청
+
+# 수강생 등록 신청
 class EnrollStudentAPIView(APIView):
 
     permission_classes = [IsAuthenticated]

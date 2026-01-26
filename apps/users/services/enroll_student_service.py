@@ -1,7 +1,8 @@
 from apps.courses.models import Cohort
 from apps.users.models import StudentEnrollmentRequest, User
 
-#이미 해당 기수에 신청을 한 경우
+
+# 이미 해당 기수에 신청을 한 경우
 class AlreadyEnrolledError(Exception):
     """이미 해당 기수에 등록 신청한 경우"""
 
