@@ -1,18 +1,17 @@
-from django.contrib.auth.models import AnonymousUser
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from apps.exams.models import ExamSubmission
 from apps.exams.serializers import (
     ErrorDetailSerializer,
     ErrorResponseSerializer,
     ExamSubmissionCreateResponseSerializer,
     ExamSubmissionCreateSerializer,
 )
+from apps.exams.services.exam_submission_service import submit_exam
 from apps.exams.services.grading import grade_submission
 
 
@@ -26,11 +25,11 @@ from apps.exams.services.grading import grade_submission
     request=ExamSubmissionCreateSerializer,
     responses={
         201: ExamSubmissionCreateResponseSerializer,
-        400: ErrorResponseSerializer,
-        401: ErrorDetailSerializer,
-        403: ErrorDetailSerializer,
-        404: ErrorResponseSerializer,
-        409: ErrorResponseSerializer,
+        400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 응시 세션 또는 요청 데이터 오류"),
+        401: OpenApiResponse(ErrorDetailSerializer, description="인증 정보가 제공되지 않음"),
+        403: OpenApiResponse(ErrorDetailSerializer, description="시험 제출 권한 없음"),
+        404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 또는 응시 세션을 찾을 수 없음"),
+        409: OpenApiResponse(ErrorResponseSerializer, description="이미 제출된 시험"),
     },
 )
 class ExamSubmissionCreateAPIView(APIView):
@@ -40,44 +39,53 @@ class ExamSubmissionCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]  # 로그인한 유저만 제출 가능
 
     def post(self, request: Request) -> Response:
-        deployment_id = request.data.get("deployment_id")
+        # deployment_id = request.data.get("deployment_id")
 
-        if not deployment_id:
-            return Response(
-                {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # if not deployment_id:
+        #     return Response(
+        #         {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
 
         # 응시한 submission 조회
         # 학생이 아직 시험을 시작하지 않았거나, 배포 ID가 잘못돼서 존재하지 않는 세션일 때
-        try:
-            submission = ExamSubmission.objects.get(
-                submitter=request.user,  # type: ignore
-                deployment_id=deployment_id,
-            )
-        except ExamSubmission.DoesNotExist:
-            return Response(
-                {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # try:
+        #     submission = ExamSubmission.objects.get(
+        #         submitter=request.user,  # type: ignore
+        #         deployment_id=deployment_id,
+        #     )
+        # except ExamSubmission.DoesNotExist:
+        #     return Response(
+        #         {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
 
         # 409 이미 제출됨
-        if submission.answers_json:
-            return Response(
-                {"error_detail": "이미 제출된 시험입니다."},
-                status=status.HTTP_409_CONFLICT,
-            )
+        # if submission.answers_json:
+        #     return Response(
+        #         {"error_detail": "이미 제출된 시험입니다."},
+        #         status=status.HTTP_409_CONFLICT,
+        #     )
 
         serializer = ExamSubmissionCreateSerializer(
             data=request.data,
-            context={
-                "request": request,
-                "submission": submission,
-            },
+            # context={
+            #     "request": request,
+            #     "submission": submission,
+            # },
         )
 
         serializer.is_valid(raise_exception=True)
-        submission = serializer.save()
+        # submission = serializer.save()
+
+        cheating_count = int(serializer.validated_data["cheating_count"])
+        submission = submit_exam(
+            user=request.user,  # type: ignore
+            deployment_id=serializer.validated_data["deployment_id"],
+            started_at=serializer.validated_data["started_at"],
+            cheating_count=serializer.validated_data["cheating_count"],
+            answers=serializer.validated_data["answers"],
+        )
 
         # 채점 호출
         grade_submission(submission)
@@ -89,7 +97,7 @@ class ExamSubmissionCreateAPIView(APIView):
                 "submission_id": submission.id,
                 "score": submission.score,
                 "correct_answer_count": submission.correct_answer_count,
-                "redirect_url": f"/api/v1/exams/submissions/{submission.id}",
+                "redirect_url": f"/exam/result/{submission.id}",
             }
         )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
