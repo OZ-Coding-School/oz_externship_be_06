@@ -7,6 +7,7 @@ from .cohorts import Cohort
 
 class CohortStudent(TimeStampModel):
     id = models.BigAutoField(primary_key=True)
+    objects: models.Manager["CohortStudent"] = models.Manager()
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
