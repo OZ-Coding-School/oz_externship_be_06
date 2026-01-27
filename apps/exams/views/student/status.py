@@ -12,8 +12,8 @@ from apps.exams.serializers.error_serializers import (
     ErrorDetailSerializer,
     ErrorResponseSerializer,
 )
-from apps.exams.serializers.status_serializers import ExamStatusResponseSerializer
-from apps.exams.services.exam_status_service import is_exam_active
+from apps.exams.serializers.student.status import ExamStatusResponseSerializer
+from apps.exams.services.student.status import is_exam_active
 
 
 class ExamStatusCheckAPIView(APIView):

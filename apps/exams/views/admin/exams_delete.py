@@ -9,11 +9,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_exam_delete_serializers import (
+from apps.exams.serializers.admin.exams_delete import (
     AdminExamDeleteResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_exam_delete_service import (
+from apps.exams.services.admin.exams_delete import (
     ExamDeleteConflictError,
     ExamDeleteNotFoundError,
     delete_exam,

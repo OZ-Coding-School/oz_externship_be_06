@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.serializers.exam_status import ExamStatusResponseSerializer
+from apps.exams.serializers.student.exam_status import ExamStatusResponseSerializer
 from apps.users.models import User
 
 

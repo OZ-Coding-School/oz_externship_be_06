@@ -2,7 +2,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.exams.serializers.status_serializers import ExamBaseResponseSerializer
+from apps.exams.serializers.student.status import ExamBaseResponseSerializer
 
 
 class ExamCheatingResponseSerializer(ExamBaseResponseSerializer):

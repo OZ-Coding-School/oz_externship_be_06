@@ -33,7 +33,7 @@ from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
 from apps.exams.serializers.error import ErrorDetailSerializer
-from apps.exams.serializers.exam_list import ExamDeploymentListSerializer
+from apps.exams.serializers.student.deployments import ExamDeploymentListSerializer
 
 
 @extend_schema(

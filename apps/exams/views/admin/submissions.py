@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 from apps.core.utils.pagination import SimplePagePagination
 from apps.exams.models import ExamSubmission
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_submission_serializers import (
+from apps.exams.serializers.admin.submissions import (
     AdminExamSubmissionListResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer

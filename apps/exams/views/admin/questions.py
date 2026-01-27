@@ -8,12 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_question_serializers import (
+from apps.exams.serializers.admin.questions import (
     AdminExamQuestionCreateRequestSerializer,
     AdminExamQuestionCreateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_question_service import (
+from apps.exams.services.admin.questions import (
     ExamNotFoundError,
     ExamQuestionLimitError,
     create_exam_question,

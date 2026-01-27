@@ -9,12 +9,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_exam_deployment_status_serializers import (
+from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusRequestSerializer,
     AdminExamDeploymentStatusResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_exam_deployment_status_service import (
+from apps.exams.services.admin.deployments_status import (
     ExamDeploymentStatusConflictError,
     ExamDeploymentStatusNotFoundError,
     update_deployment_status,
