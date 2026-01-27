@@ -14,6 +14,13 @@ class PostCategoryListView(APIView):
         description="활성화된 모든 게시글 카테고리 목록을 조회합니다.",
         responses={200: PostCategorySerializer(many=True)},
     )
+    def handle_exception(self, exc: Exception) -> Response:
+        response = super().handle_exception(exc)
+        if isinstance(response.data, dict):
+            detail = response.data.get('detail', response.data)
+            response.data = {"error_detail": detail}
+        return response
+
     def get(self, request: Request) -> Response:
         categories = PostCategory.objects.filter(status=True)
         serializer = PostCategorySerializer(categories, many=True)
