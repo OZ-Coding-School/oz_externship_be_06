@@ -4,23 +4,27 @@ from typing import Any, Dict, List
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ErrorDetail
 
 from apps.exams.models import ExamSubmission
+from apps.exams.serializers import ErrorResponseSerializer
 from apps.users.models import User
 
 
 class InvalidSubmissionError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "유효하지 않은 시험 응시 세션입니다."
+
+    def __init__(self, message: str = "유효하지 않은 시험 응시 세션입니다.") -> None:
+        self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
 
 
 class AlreadySubmittedError(APIException):
     status_code = status.HTTP_409_CONFLICT
-    default_detail = "이미 제출된 시험입니다."
+
+    def __init__(self, message: str = "이미 제출된 시험입니다.") -> None:
+        self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
 
 
-#
 @transaction.atomic
 # 답안 저장, started_at과 cheating_count 갱신
 # 시험 제출
@@ -56,6 +60,6 @@ def submit_exam(
     submission.answers_json = answers
     submission.started_at = started_at
     submission.cheating_count = cheating_count
-    submission.save(update_fields=["answers_json", "started_at", "cheating_count"])
+    submission.save(update_fields=["answers_json", "started_at", "cheating_count", "updated_at"])
 
     return submission
