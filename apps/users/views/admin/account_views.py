@@ -16,13 +16,12 @@ class AdminAccountPagination(PageNumberPagination):
     """
     명세서의 page_size 대응을 위한 커스텀 페이지네이션
     """
-
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 100
 
 
-class AdminUserListView(generics.ListAPIView[Any]):  # Generic 타입 힌트 [User]는 생략 가능
+class AdminUserListView(generics.ListAPIView[Any]):
     """
     GET api/v1/admin/accounts
     어드민 페이지 회원 목록 조회 API
@@ -33,8 +32,7 @@ class AdminUserListView(generics.ListAPIView[Any]):  # Generic 타입 힌트 [Us
     pagination_class = AdminAccountPagination
 
     def get_queryset(self) -> QuerySet[User]:
-        # ✅ 피드백 반영: select_related("withdrawal")를 추가하여 N+1 문제 해결
-        # User를 가져올 때 Withdrawal 정보를 JOIN으로 한 번에 가져옵니다.
+        # N+1 문제 해결을 위한 select_related 적용 및 최신순 정렬
         queryset = User.objects.select_related("withdrawal").all().order_by("-created_at")
 
         # 쿼리 파라미터 추출
@@ -42,31 +40,37 @@ class AdminUserListView(generics.ListAPIView[Any]):  # Generic 타입 힌트 [Us
         status_param = self.request.query_params.get("status")
         role_param = self.request.query_params.get("role")
 
-        # 1. 검색 필터
+        # 1. 검색 필터 (이메일, 닉네임, 이름)
         if search:
             queryset = queryset.filter(
-                Q(email__icontains=search) | Q(nickname__icontains=search) | Q(name__icontains=search)
+                Q(email__icontains=search) |
+                Q(nickname__icontains=search) |
+                Q(name__icontains=search)
             )
 
         # 2. 상태 필터 (active, inactive, withdrew)
         if status_param:
             if status_param == "active":
-                # withdrawal 정보가 없는(null) 활성 유저
                 queryset = queryset.filter(is_active=True, withdrawal__isnull=True)
             elif status_param == "inactive":
-                # 이메일 인증 전이거나 차단된 유저
                 queryset = queryset.filter(is_active=False)
             elif status_param == "withdrew":
-                # withdrawal 레코드가 존재하는 탈퇴 유저
                 queryset = queryset.filter(withdrawal__isnull=False)
 
-        # 3. 역할 필터
+        # 3. 역할 필터 (✅ 피드백 반영: staff 묶음을 제거하고 개별 역할로 분리)
         if role_param:
-            role_map = {"admin": "ADMIN", "staff": ["TA", "OM", "LC"], "user": "USER", "student": "STUDENT"}
+            # 모델에 정의된 Role 상수와 1:1로 매핑
+            role_map = {
+                "admin": "ADMIN",
+                "ta": "TA",           # 조교
+                "om": "OM",           # 운영매니저
+                "lc": "LC",           # 러닝코치
+                "user": "USER",       # 일반유저
+                "student": "STUDENT"  # 수강생
+            }
+
             target_role = role_map.get(role_param.lower())
-            if isinstance(target_role, list):
-                queryset = queryset.filter(role__in=target_role)
-            elif target_role:
+            if target_role:
                 queryset = queryset.filter(role=target_role)
 
         return queryset
@@ -81,15 +85,12 @@ class AdminUserListView(generics.ListAPIView[Any]):  # Generic 타입 힌트 [Us
 
     def handle_exception(self, exc: Exception) -> Response:
         """
-        명세서의 에러 응답 형식 (error_detail) 커스터마이징
+        명세서의 에러 응답 형식 커스터마이징
         """
         response = super().handle_exception(exc)
 
-        # 401 Unauthorized
         if response.status_code == 401:
             response.data = {"error_detail": "자격 인증 데이터가 제공되지 않았습니다."}
-
-        # 403 Forbidden
         elif response.status_code == 403:
             response.data = {"error_detail": "권한이 없습니다."}
 
