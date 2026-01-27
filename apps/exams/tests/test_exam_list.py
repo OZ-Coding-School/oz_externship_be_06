@@ -46,7 +46,7 @@ class ExamDeploymentListAPITest(TestCase):
             role=User.Role.STUDENT,
         )
 
-        CohortStudent.objects.create(user=self.student, cohort=self.cohort)  # type: ignore[attr-defined]
+        CohortStudent.objects.create(user=self.student, cohort=self.cohort)
 
         ExamDeployment.objects.create(
             cohort=self.cohort,

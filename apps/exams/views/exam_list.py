@@ -28,7 +28,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.utils.pagination import SimplePagePagination
-from apps.courses.models.cohort_students import CohortStudent
+from apps.courses.models import CohortStudent
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
@@ -107,8 +107,9 @@ class ExamListView(ListAPIView[ExamDeployment]):
 
     def get_queryset(self) -> QuerySet[ExamDeployment]:
         user_id = self.request.user.id
+        assert user_id is not None
         cohort_id = (
-            CohortStudent.objects.filter(user_id=user_id)  # type: ignore[attr-defined]
+            CohortStudent.objects.filter(user_id=user_id)
             .order_by("created_at")
             .values_list("cohort_id", flat=True)
             .first()
