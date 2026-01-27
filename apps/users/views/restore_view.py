@@ -34,22 +34,32 @@ class RestoreAPIView(APIView):
     )
     def post(self, request: Request) -> Response:
         serializer = RestoreSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(
+                {"error_detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         email_token = serializer.validated_data["email_token"]
         email = get_email_by_token(email_token)
 
         if not email:
             return Response({"error_detail": "유효하지 않은 인증 토큰입니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        user = User.objects.filter(email=email).first()
-
-        if not user:
-            return Response({"error_detail": "복구할 계정을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-
-        withdrawal = Withdrawal.objects.filter(user=user).first()
+        withdrawal = Withdrawal.objects.select_related("user").filter(user__email=email).first()
 
         if not withdrawal:
-            return Response({"error_detail": "복구할 탈퇴 계정을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error_detail": "복구할 탈퇴 계정을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user = withdrawal.user
+
+        if user is None:
+            return Response(
+                {"error_detail": "복구할 계정을 찾을 수 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if withdrawal.due_date < date.today():
             return Response(
