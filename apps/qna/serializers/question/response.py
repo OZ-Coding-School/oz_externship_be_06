@@ -11,8 +11,9 @@ from apps.qna.serializers.question.common import (
 )
 from apps.qna.utils.content_parser import ContentParser
 
+
 # ==============================================================================
-# QUESTION LIST (GET /api/v1/qna/questions)
+# Question List [GET] (/api/v1/qna/questions)
 # ==============================================================================
 class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
@@ -56,7 +57,7 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
 
     def get_content_preview(self, obj: Question) -> str:
         """본문 프리뷰 생성"""
-        return obj.content[:50] + "..." if len(obj.content) > 100 else obj.content
+        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
 
     def get_thumbnail_img_url(self, obj: Question) -> Any:
         """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
