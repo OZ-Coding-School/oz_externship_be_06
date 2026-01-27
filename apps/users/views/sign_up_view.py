@@ -21,8 +21,22 @@ class SignUpAPIView(APIView):
         tags=["accounts"],
         summary="회원가입 API",
         description="""
-        회원가입을 진행합니다.
-        이메일 인증과 SMS 인증이 완료된 토큰이 필요
+신규 회원가입을 진행합니다.
+
+## 사전 조건
+회원가입 전에 아래 인증 절차를 완료해야 합니다:
+
+1. **이메일 인증**
+   - `POST /api/v1/accounts/verification/send-email` - 인증 코드 발송
+   - `POST /api/v1/accounts/verification/verify-email` - 인증 코드 확인 → `email_token` 반환
+
+2. **SMS 인증**
+   - `POST /api/v1/accounts/verification/send-sms` - 인증 코드 발송
+   - `POST /api/v1/accounts/verification/verify-sms` - 인증 코드 확인 → `sms_token` 반환
+
+3. **닉네임 중복 확인**
+   - `POST /api/v1/accounts/signup/check-nickname` - 닉네임 사용 가능 여부 확인
+
         """,
         request=SignUpSerializer,
         responses={
@@ -62,7 +76,20 @@ class SignupNicknameCheckAPIView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="닉네임 중복 확인 API",
-        description="닉네임 중복 여부를 확인합니다.",
+        description="""
+회원가입 시 사용할 닉네임의 중복 여부를 확인합니다.
+
+## 요청 필드
+- `nickname`: 확인할 닉네임 (최대 10자)
+
+## 응답
+- **200**: 사용 가능한 닉네임
+- **409**: 이미 사용 중인 닉네임
+
+## 주의사항
+- 회원가입 전에 반드시 닉네임 중복 확인을 해주세요.
+- 특수문자 사용 제한이 있을 수 있습니다.
+        """,
         request=SignupNicknameCheckSerializer,
         responses={
             200: OpenApiResponse(description="사용 가능한 닉네임"),

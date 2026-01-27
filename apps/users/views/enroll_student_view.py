@@ -26,8 +26,18 @@ class EnrollStudentAPIView(APIView):
         tags=["accounts"],
         summary="수강생 등록 신청 API",
         description="""
-로그인 유저 중 일반 회원 권한을 가진 유저들은 수강생 등록 신청을 통해 수강생 권한을 얻을 수 있습니다.
-추후 운영진의 검토 후에 수강생 권한을 부여합니다.
+수강생 등록을 신청합니다. 일반 회원(`USER`)만 신청 가능하며, 운영진 검토 후 수강생 권한이 부여됩니다.
+
+## 플로우
+
+1. `GET /api/v1/accounts/courses/available` - 수강신청 가능한 기수 목록 조회
+2. `POST /api/v1/accounts/enroll-student` - 원하는 기수에 수강 신청 (현재 API)
+3. 운영진 검토 후 승인 시 수강생(`STUDENT`) 권한 부여
+
+## 주의사항
+- 동일한 기수에 중복 신청은 불가능합니다.
+- 신청 후 승인 전까지는 대기 상태입니다.
+- 승인/거절 결과는 별도로 안내됩니다.
         """,
         request=EnrollStudentRequestSerializer,
         responses={
