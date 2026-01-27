@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from rest_framework.pagination import CursorPagination, PageNumberPagination
 from rest_framework.response import Response
@@ -38,5 +38,24 @@ class QnAPagination(PageNumberPagination):
                 "next": self.get_next_link(),
                 "previous": self.get_previous_link(),
                 "results": data,
+            }
+        )
+
+
+class AdminExamPagination(PageNumberPagination):
+    page_query_param = "page"
+    page_size_query_param = "size"
+    page_size = 10
+
+    def get_paginated_response(self, data: List[Any]) -> Response:
+        if self.page is None or self.request is None:
+            return Response(data)
+
+        return Response(
+            {
+                "page": self.page.number,
+                "size": self.get_page_size(self.request),
+                "total_count": self.page.paginator.count,
+                "exams": data,
             }
         )
