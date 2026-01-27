@@ -239,6 +239,3 @@ AWS_S3_REGION = os.getenv("AWS_S3_REGION", "")
 AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID", "")
 AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY", "")
 AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME", "")
-
-# Data Using Settings
-USE_EXAM_MOCK = os.getenv("USE_EXAM_MOCK", "false").lower() == "true"
