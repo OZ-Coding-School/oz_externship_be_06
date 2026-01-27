@@ -81,7 +81,7 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
             question_type = type_mapping.get(question_data.get("type", ""), question_data.get("type", "").lower())
 
             question = {
-                "question_id": question_data.get("id"),
+                "question_id": question_data.get("question_id"),
                 "number": idx,
                 "type": question_type,
                 "question": question_data.get("question", ""),

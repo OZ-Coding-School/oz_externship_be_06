@@ -11,16 +11,16 @@ from rest_framework.views import APIView
 from apps.exams.constants import ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
-from apps.exams.serializers.student.cheating import (
-    ExamCheatingRequestSerializer,
-    ExamCheatingResponseSerializer,
-)
 from apps.exams.serializers.error_serializers import (
     ErrorDetailSerializer,
     ErrorResponseSerializer,
 )
-from apps.exams.services.student.status import is_exam_active
+from apps.exams.serializers.student.cheating import (
+    ExamCheatingRequestSerializer,
+    ExamCheatingResponseSerializer,
+)
 from apps.exams.services.grading import grade_submission
+from apps.exams.services.student.status import is_exam_active
 
 
 class ExamCheatingUpdateAPIView(APIView):

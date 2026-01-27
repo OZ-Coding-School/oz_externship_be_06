@@ -4,7 +4,7 @@ from .exam_submission import (
     ExamSubmissionCreateResponseSerializer,
     ExamSubmissionCreateSerializer,
 )
-from .student.exam_status import ExamStatusResponseSerializer
+from .student.status import ExamStatusResponseSerializer
 from .student.submit_exam import (
     AnswerItemSerializer,
     SubmitExamRequestSerializer,

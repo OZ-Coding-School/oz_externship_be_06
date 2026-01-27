@@ -1,15 +1,15 @@
 from django.urls import path
 
-from apps.exams.views.admin.exams_delete import AdminExamDeleteAPIView
-from apps.exams.views.admin.deployments_status import (
-    AdminExamDeploymentStatusAPIView,
-)
 from apps.exams.views.admin.deployments import (
     AdminExamDeploymentCreateAPIView,
 )
+from apps.exams.views.admin.deployments_status import (
+    AdminExamDeploymentStatusAPIView,
+)
 from apps.exams.views.admin.exams import AdminExamCreateAPIView
-from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
+from apps.exams.views.admin.exams_delete import AdminExamDeleteAPIView
 from apps.exams.views.admin.questions import AdminExamQuestionCreateAPIView
+from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
 from apps.exams.views.admin.submissions import AdminExamSubmissionListAPIView
 from apps.exams.views.admin_exam_deployment_detail_views import (
     AdminExamDeploymentDetailAPIView,

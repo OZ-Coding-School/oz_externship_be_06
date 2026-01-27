@@ -44,6 +44,7 @@ def _build_question_snapshot(exam: Exam) -> list[dict[str, Any]]:
                 "prompt": question.prompt,
                 "blank_count": question.blank_count,
                 "options": options,
+                "answer": question.answer,
                 "point": question.point,
             }
         )

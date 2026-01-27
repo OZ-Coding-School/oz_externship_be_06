@@ -5,7 +5,7 @@ from typing import Any
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.exams.models import ExamDeployment, ExamQuestion, ExamSubmission
 from apps.users.models import User
 
 
@@ -14,18 +14,31 @@ def _grade_answers(
     answers: list[dict[str, Any]],
 ) -> tuple[int, int]:
     """채점 후 (correct_count, score_earned) 반환."""
-    by_id = {int(a["question_id"]): a for a in answers if "question_id" in a}
+    by_id: dict[int, dict[str, Any]] = {}
+    for a in answers:
+        if not isinstance(a, dict):
+            continue
+        qid = a.get("question_id")
+        if qid is None:
+            continue
+        try:
+            by_id[int(qid)] = a
+        except (TypeError, ValueError):
+            continue
     correct = 0
     score_earned = 0
     for q in snapshot or []:
-        qid = q.get("id")
-        if qid is None:
+        qid_raw = q.get("question_id")
+        if qid_raw is None:
             continue
-        qid = int(qid) if isinstance(qid, (int, float)) else None
-        if qid is None or qid not in by_id:
+        try:
+            qid = int(qid_raw)
+        except (TypeError, ValueError):
+            continue
+        if qid not in by_id:
             continue
         point = int(q.get("point") or 0)
-        ans = q.get("answer")
+        ans = q.get("answer") or q.get("correct_answer")
         q_type = q.get("type", "")
         sub = by_id[qid]
         val = sub.get("submitted_answer") or sub.get("answer_input") or ""
@@ -156,6 +169,35 @@ def submit_exam(
     snapshot = deployment.questions_snapshot_json
     if not isinstance(snapshot, list):
         snapshot = []
+    else:
+        missing_answer_ids: set[int] = set()
+        for q in snapshot:
+            if not isinstance(q, dict):
+                continue
+            qid = q.get("question_id")
+            if qid is None or q.get("answer") is not None:
+                continue
+            try:
+                missing_answer_ids.add(int(qid))
+            except (TypeError, ValueError):
+                continue
+        if missing_answer_ids:
+            answer_map = {
+                row["id"]: row["answer"]
+                for row in ExamQuestion.objects.filter(id__in=missing_answer_ids).values("id", "answer")
+            }
+            for q in snapshot:
+                if not isinstance(q, dict):
+                    continue
+                qid = q.get("question_id")
+                if qid is None or q.get("answer") is not None:
+                    continue
+                try:
+                    qid_int = int(qid)
+                except (TypeError, ValueError):
+                    continue
+                if qid_int in answer_map:
+                    q["answer"] = answer_map[qid_int]
     correct_count, score_earned = _grade_answers(snapshot, answers_json)
 
     submission.answers_json = answers_json
