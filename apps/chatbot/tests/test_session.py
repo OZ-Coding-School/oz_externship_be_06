@@ -65,7 +65,7 @@ class TestChatbotSessionList(APITestCase):
     def test_list_only_my_sessions_and_pagination(self) -> None:
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.get(reverse("chatbot-session-list"))
+        response = self.client.get(reverse("chatbot-session"))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 10)

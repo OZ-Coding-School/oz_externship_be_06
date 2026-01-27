@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from django.shortcuts import get_object_or_404
+from typing import cast
+
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.users.models import User
 
 
 class ChatbotSessionDeleteAPIView(APIView):
@@ -30,12 +32,19 @@ class ChatbotSessionDeleteAPIView(APIView):
         },
     )
     def delete(self, request: Request, session_id: int) -> Response:
+        user = cast(User, request.user)
+
         # 본인 세션만 조회 (없거나 권한 없으면 404)
-        session = get_object_or_404(
-            ChatbotSession,
+        session = ChatbotSession.objects.filter(
             pk=session_id,
-            user=request.user,
-        )
+            user=user,
+        ).first()
+
+        if session is None:
+            return Response(
+                {"detail": "존재하지 않거나 접근 권한이 없는 세션입니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # 세션 삭제 (연관 메시지는 CASCADE)
         session.delete()

@@ -18,15 +18,12 @@ def create_chatbot_session(
     if not Question.objects.filter(id=question_id).exists():
         raise ValidationError("존재하지 않는 질문입니다.")
 
-    # 기본 모델은 Gemini로 고정
-    using_model_value = ChatbotSession.AIModel.GEMINI
-
     try:
         return ChatbotSession.objects.create(
             user=user,
             question_id=question_id,
             title=title or "새 채팅",
-            using_model=using_model_value,
+            using_model=ChatbotSession.AIModel.GEMINI,
         )
     except IntegrityError as exc:
         # user + question 유니크 제약
