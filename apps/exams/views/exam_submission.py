@@ -39,46 +39,12 @@ class ExamSubmissionCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]  # 로그인한 유저만 제출 가능
 
     def post(self, request: Request) -> Response:
-        # deployment_id = request.data.get("deployment_id")
-
-        # if not deployment_id:
-        #     return Response(
-        #         {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
-
-        # 응시한 submission 조회
-        # 학생이 아직 시험을 시작하지 않았거나, 배포 ID가 잘못돼서 존재하지 않는 세션일 때
-        # try:
-        #     submission = ExamSubmission.objects.get(
-        #         submitter=request.user,  # type: ignore
-        #         deployment_id=deployment_id,
-        #     )
-        # except ExamSubmission.DoesNotExist:
-        #     return Response(
-        #         {"error_detail": "유효하지 않은 시험 응시 세션입니다."},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
-
-        # 409 이미 제출됨
-        # if submission.answers_json:
-        #     return Response(
-        #         {"error_detail": "이미 제출된 시험입니다."},
-        #         status=status.HTTP_409_CONFLICT,
-        #     )
-
         serializer = ExamSubmissionCreateSerializer(
             data=request.data,
-            # context={
-            #     "request": request,
-            #     "submission": submission,
-            # },
         )
 
         serializer.is_valid(raise_exception=True)
-        # submission = serializer.save()
 
-        cheating_count = int(serializer.validated_data["cheating_count"])
         submission = submit_exam(
             user=request.user,  # type: ignore
             deployment_id=serializer.validated_data["deployment_id"],

@@ -19,27 +19,6 @@ class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
     cheating_count = serializers.IntegerField(default=0)
     answers = ExamAnswerSerializer(many=True, allow_empty=False)  # 아예 하나도 안푼것에 대한 방지
 
-    # def validate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    #     # 이 제출 요청이 유효한 시험에 대해 유효한 시간 안에 들어온 요청인지 검사
-    #     submission: ExamSubmission = self.context["submission"]
-    #
-    #     # 400에러
-    #     if timezone.now() > submission.deployment.close_at:
-    #         raise serializers.ValidationError("유효하지 않은 시험 응시 세션입니다.")
-    #
-    #     return data
-    #
-    # def save(self, **kwargs: Any) -> ExamSubmission:
-    #     submission: ExamSubmission = self.context["submission"]
-    #
-    #     submission.answers_json = self.validated_data["answers"]
-    #     submission.started_at = self.validated_data.get("started_at", submission.started_at)
-    #     submission.cheating_count = self.validated_data.get("cheating_count", submission.cheating_count)
-    #
-    #     submission.save(update_fields=["answers_json", "started_at", "cheating_count"])
-    #
-    #     return submission
-
 
 class ExamSubmissionCreateResponseSerializer(serializers.Serializer[Any]):
     submission_id = serializers.IntegerField()
