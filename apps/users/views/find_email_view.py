@@ -50,8 +50,20 @@ class FindEmailAPIView(APIView):
         tags=["accounts"],
         summary="이메일 찾기 API",
         description="""
-        이름과 SMS 인증 토큰을 사용하여 가입된 이메일을 찾습니다.
-        이메일은 마스킹 처리되어 반환됩니다. (예: u**r@e*****e.com)
+가입된 이메일을 찾습니다. SMS 인증이 완료된 상태에서 사용합니다.
+
+## 플로우
+
+1. `POST /api/v1/accounts/verification/send-sms` - 가입 시 등록한 휴대폰 번호로 인증 코드 발송
+2. `POST /api/v1/accounts/verification/verify-sms` - 인증 코드 확인 → `sms_token` 반환
+3. `POST /api/v1/accounts/find-email` - 이메일 찾기 (현재 API)
+
+## 응답
+- `email`: 마스킹 처리된 이메일 (예: `u**r@e*****e.com`)
+
+## 마스킹 규칙
+- 이메일 로컬 파트: 첫 글자와 마지막 글자만 표시, 중간은 `*`로 대체
+- 도메인 파트: 첫 글자와 마지막 글자만 표시, 중간은 `*`로 대체
         """,
         request=FindEmailSerializer,
         responses={

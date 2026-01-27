@@ -21,8 +21,12 @@ class TokenRefreshAPIView(APIView):
         tags=["accounts"],
         summary="JWT 토큰 재발급 API",
         description="""
-        refresh_token을 사용하여 새로운 access_token을 발급받습니다.
-        access_token이 만료되었을 때 재로그인 없이 토큰을 갱신할 수 있습니다.
+`refresh_token`을 사용하여 새로운 `access_token`을 발급받습니다.
+
+## 사용 시점
+- `access_token`이 만료되었을 때 (401 Unauthorized 응답)
+- 재로그인 없이 세션을 유지하고 싶을 때
+
         """,
         request=TokenRefreshRequestSerializer,
         responses={
