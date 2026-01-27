@@ -136,7 +136,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], "쪽지시험 배포 생성 권한이 없습니다.")
+        self.assertEqual(data["detail"], "쪽지시험 관리 권한이 없습니다.")
 
     def test_returns_404_when_exam_missing(self) -> None:
         payload = {

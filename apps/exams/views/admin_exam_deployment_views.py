@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.permissions import IsExamDeploymentCreateStaff
+from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin_exam_deployment_serializers import (
     AdminExamDeploymentCreateRequestSerializer,
     AdminExamDeploymentCreateResponseSerializer,
@@ -21,7 +21,7 @@ from apps.exams.services.admin_exam_deployment_service import (
 class AdminExamDeploymentCreateAPIView(APIView):
     """어드민 쪽지시험 배포 생성 API."""
 
-    permission_classes = [IsAuthenticated, IsExamDeploymentCreateStaff]
+    permission_classes = [IsAuthenticated, IsExamStaff]
     serializer_class = AdminExamDeploymentCreateRequestSerializer
 
     @extend_schema(
