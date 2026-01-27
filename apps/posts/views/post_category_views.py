@@ -17,7 +17,7 @@ class PostCategoryListView(APIView):
     def handle_exception(self, exc: Exception) -> Response:
         response = super().handle_exception(exc)
         if isinstance(response.data, dict):
-            detail = response.data.get('detail', response.data)
+            detail = response.data.get("detail", response.data)
             response.data = {"error_detail": detail}
         return response
 
