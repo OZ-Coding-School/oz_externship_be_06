@@ -12,9 +12,11 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),
     path("api/v1/accounts/", include("apps.users.urls")),
     path("api/v1/admin/", include("apps.exams.admin_urls")),
+    path("api/v1/admin/courses/", include("apps.courses.admin_urls")),
     path("api/v1/exams/", include("apps.exams.urls")),
     path("api/v1/qna/", include("apps.qna.urls.question_urls")),
     path("api/v1/chatbot/", include("apps.chatbot.urls")),
+    path("api/v1/course/", include("apps.courses.urls")),
 ]
 
 

@@ -29,9 +29,7 @@ def get_available_courses() -> list[dict[str, Any]]:
 
 # 내 수강목록 조회
 def get_enrolled_courses(*, user: User) -> list[dict[str, Any]]:
-    cohort_students = CohortStudent.objects.filter(user=user).select_related(  # type: ignore[attr-defined]
-        "cohort__course"
-    )
+    cohort_students = CohortStudent.objects.filter(user=user).select_related("cohort__course")
 
     return [
         {

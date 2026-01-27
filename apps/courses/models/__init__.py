@@ -1,3 +1,4 @@
+from .cohort_students import CohortStudent
 from .cohorts import Cohort
 from .courses import Course
 from .learning_coachs import LearningCoach
@@ -7,6 +8,7 @@ from .training_assistants import TrainingAssistant
 
 __all__ = [
     "Cohort",
+    "CohortStudent",
     "Course",
     "LearningCoach",
     "OperationManager",
