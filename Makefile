@@ -105,11 +105,11 @@ dmypy-reset:
 	poetry run dmypy stop || true
 	rm -f .dmypy.json
 
-push-force:
+push-f:
 	@if [ -n "$(ARGS)" ]; then \
-		git push origin $(ARGS) --force-with-lease; \
+		git push origin $(ARGS) --force; \
 	else \
-		git push --force-with-lease; \
+		git push --force; \
 	fi
 
 fetch:
@@ -139,9 +139,9 @@ sync-develop:
 	@echo "---현재 브랜치는 develop 입니다"
 	@echo "🚨 🚨 🚨 🚨 🚨 작업할 브랜치로 이동하세요🚨 🚨 🚨 🚨 🚨"
 
-rebase-develop:
+rebase:
 	git fetch origin
-	git rebase origin/develop
+	git rebase develop
 
 %:
 	@:
