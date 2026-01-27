@@ -16,6 +16,7 @@ class AdminAccountPagination(PageNumberPagination):
     """
     명세서의 page_size 대응을 위한 커스텀 페이지네이션
     """
+
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 100
@@ -43,9 +44,7 @@ class AdminUserListView(generics.ListAPIView[Any]):
         # 1. 검색 필터 (이메일, 닉네임, 이름)
         if search:
             queryset = queryset.filter(
-                Q(email__icontains=search) |
-                Q(nickname__icontains=search) |
-                Q(name__icontains=search)
+                Q(email__icontains=search) | Q(nickname__icontains=search) | Q(name__icontains=search)
             )
 
         # 2. 상태 필터 (active, inactive, withdrew)
@@ -62,11 +61,11 @@ class AdminUserListView(generics.ListAPIView[Any]):
             # 모델에 정의된 Role 상수와 1:1로 매핑
             role_map = {
                 "admin": "ADMIN",
-                "ta": "TA",           # 조교
-                "om": "OM",           # 운영매니저
-                "lc": "LC",           # 러닝코치
-                "user": "USER",       # 일반유저
-                "student": "STUDENT"  # 수강생
+                "ta": "TA",  # 조교
+                "om": "OM",  # 운영매니저
+                "lc": "LC",  # 러닝코치
+                "user": "USER",  # 일반유저
+                "student": "STUDENT",  # 수강생
             }
 
             target_role = role_map.get(role_param.lower())
