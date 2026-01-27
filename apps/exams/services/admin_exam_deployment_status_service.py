@@ -12,23 +12,21 @@ class ExamDeploymentStatusConflictError(Exception):
 
 
 def update_deployment_status(deployment_id: int, status: str) -> ExamDeployment:
-    try:
-        with transaction.atomic():
-            try:
-                deployment = ExamDeployment.objects.select_for_update().get(id=deployment_id)
-            except ExamDeployment.DoesNotExist as exc:
-                raise ExamDeploymentStatusNotFoundError from exc
+    with transaction.atomic():
+        try:
+            deployment = ExamDeployment.objects.select_for_update().get(id=deployment_id)
+        except ExamDeployment.DoesNotExist as exc:
+            raise ExamDeploymentStatusNotFoundError from exc
 
-            new_status = (
-                ExamDeployment.StatusChoices.ACTIVATED
-                if status == "activated"
-                else ExamDeployment.StatusChoices.DEACTIVATED
-            )
-            deployment.status = new_status
+        new_status = (
+            ExamDeployment.StatusChoices.ACTIVATED
+            if status == "activated"
+            else ExamDeployment.StatusChoices.DEACTIVATED
+        )
+        deployment.status = new_status
+        try:
             deployment.save(update_fields=["status"])
-    except ExamDeploymentStatusNotFoundError:
-        raise
-    except Exception as exc:
-        raise ExamDeploymentStatusConflictError from exc
+        except Exception as exc:
+            raise ExamDeploymentStatusConflictError from exc
 
     return deployment
