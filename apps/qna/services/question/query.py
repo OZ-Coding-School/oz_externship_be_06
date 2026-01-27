@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, F, Q, QuerySet
 
 from apps.qna.exceptions.question_exception import (
     QuestionBaseException,

@@ -7,14 +7,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.qna.serializers.question.request import QuestionCreateSerializer
-from apps.qna.serializers.question.response import (
-    QuestionCreateResponseSerializer,
-    QuestionListSerializer,
-    QuestionQuerySerializer,
-)
-from apps.qna.services.question.command import QuestionCommandService
-from apps.qna.services.question.query import QuestionQueryService
+from apps.qna.exceptions.question_exception import qna_exception_handler
+from apps.qna.serializers.question import request as ser_q_req
+from apps.qna.serializers.question import response as ser_q_res
+from apps.qna.services.question import command as svc_q_cmd
+from apps.qna.services.question import query as svc_q_qry
 from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.question_list_pagination import QnAPaginator
 
@@ -47,9 +44,6 @@ class QuestionCreateListAPIView(APIView):
         """,
         parameters=[QuestionQuerySerializer],
         responses={
-            200: QuestionListSerializer(many=True),
-            400: OpenApiResponse(description="Bad Request"),
-            404: OpenApiResponse(description="Not Found"),
         },
         tags=["qna"],
     )
@@ -97,3 +91,74 @@ class QuestionCreateListAPIView(APIView):
         # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class QuestionDetailAPIView(QnaBaseAPIView):
+    """
+    질문 상세 조회 API View
+    """
+
+    permission_classes = [AllowAny]
+
+    # 질의응답 상세 조회
+    # GET /api/v1/qna/questions/{question_id}
+    @extend_schema(
+        summary="질문 상세 조회 API",
+        description="""
+    ### 특정 항목을 클릭 시 상세조회 페이지로 이동합니다.
+    **상세 조회 페이지에서 확인 가능한 항목**
+    - 질문 제목
+    - 질문 내용
+    - 질문 내용에 첨부된 이미지
+    - 질문 작성자 정보
+        - 프로필 썸네일 이미지
+        - 닉네임
+    - 질문 카테고리 정보
+        - 대, 중, 소분류 카테고리 이름
+    - 질문 조회수
+    - 질문 작성일시
+    - 답변 목록
+        - 답변 작성자 정보
+            - 프로필 썸네일 이미지
+            - 닉네임
+        - 답변 내용
+        - 답변 작성일시
+        - 답변 채택 여부
+        - 답변에 대한 댓글 목록
+            - 댓글 작성자 정보
+                - 프로필 썸네일 이미지
+                - 유저 닉네임
+            - 댓글 내용
+            - 댓글 작성일시
+        """,
+        responses={
+            200: ser_q_res.QuestionDetailSerializer,
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[
+                    OpenApiExample(
+                        name="잘못된 요청 예시",
+                        value={"error_detail": "유효하지 않은 질문 상세 조회 요청입니다."},
+                        description="잘못된 요청 예시",
+                    ),
+                ],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[
+                    OpenApiExample(
+                        name="존재하지 않는 질문 예시",
+                        value={"error_detail": "해당 질문을 찾을 수 없습니다."},
+                        description="존재하지 않는 질문 예시",
+                    ),
+                ],
+            ),
+        },
+        tags=["qna"],
+    )
+    def get(self, request: Request, question_id: int) -> Response:
+        question = svc_q_qry.QuestionQueryService.get_question_detail(question_id)
+        serializer = ser_q_res.QuestionDetailSerializer(question)
+        return Response(serializer.data, status=status.HTTP_200_OK)

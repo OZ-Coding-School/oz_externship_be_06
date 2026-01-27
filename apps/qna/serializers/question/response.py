@@ -63,11 +63,54 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
-# ACTION RESPONSES (POST/PUT/DELETE Success)
+
+
+# ==============================================================================
+# Question Detail [GET] (/api/v1/qna/questions/{question_id})
+# ==============================================================================
+class QuestionImageSerializer(serializers.ModelSerializer[QuestionImage]):
+    """
+    질문 이미지 시리얼라이저
+    """
+
+    class Meta:
+        model = QuestionImage
+        fields = ["id", "img_url"]
+
+
+class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
+    """
+    질문 상세 조회 응답 시리얼라이저
+    """
+
+    category = QuestionCategoryListSerializer(read_only=True)
+    author = QuestionAuthorSerializer(read_only=True)
+    images = QuestionImageSerializer(many=True, read_only=True)
+    answers = AnswerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "title",
+            "content",
+            "category",
+            "images",
+            "view_count",
+            "created_at",
+            "author",
+            "answers",
+        ]
+
+
 # ==============================================================================
 
 
-class QuestionCreateResponseSerializer(QnAVersionedValidationMixin, serializers.Serializer[Any]):
+# ==============================================================================
+# ACTION RESPONSES (POST/PUT/DELETE Success)
+# ==============================================================================
+# Question Create [POST] (/api/v1/qna/questions/)
+class QuestionCreateResponseSerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
     질문 등록 응답 시리얼라이저
     """
