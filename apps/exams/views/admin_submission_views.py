@@ -24,7 +24,7 @@ class AdminExamSubmissionListAPIView(APIView):
     pagination_class = SimplePagePagination
 
     @extend_schema(
-        tags=["쪽지시험 관리"],
+        tags=["admin_exams"],
         summary="특정시험 응시 내역 목록 조회 API",
         description="""
         스태프(조교, 러닝 코치, 운영매니저), 관리자 권한을 가진 유저가
