@@ -178,9 +178,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
             ExamSubmissionDeleteConflictError,
         )
 
-        with patch(
-            "apps.exams.views.admin_submission_delete_views.delete_exam_submission"
-        ) as mock_delete:
+        with patch("apps.exams.views.admin_submission_delete_views.delete_exam_submission") as mock_delete:
             mock_delete.side_effect = ExamSubmissionDeleteConflictError()
 
             response = self.client.delete(
