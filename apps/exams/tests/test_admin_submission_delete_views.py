@@ -110,7 +110,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
     def test_admin_can_delete_submission(self) -> None:
         """관리자가 응시내역을 삭제할 수 있다."""
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/submissions/{self.submission.id}/",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -122,7 +122,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
     def test_ta_can_delete_submission(self) -> None:
         """조교가 응시내역을 삭제할 수 있다."""
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/submissions/{self.submission.id}/",
             headers=self._auth_headers(self.ta_user),
         )
 
@@ -133,7 +133,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_returns_401_when_unauthenticated(self) -> None:
         """인증되지 않은 사용자는 401을 받는다."""
-        response = self.client.delete(f"/api/v1/admin/exams/submissions/{self.submission.id}/")
+        response = self.client.delete(f"/api/v1/admin/submissions/{self.submission.id}/")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -142,7 +142,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
     def test_returns_403_for_non_staff(self) -> None:
         """스태프가 아닌 사용자는 403을 받는다."""
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/submissions/{self.submission.id}/",
             headers=self._auth_headers(self.normal_user),
         )
 
@@ -153,7 +153,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
     def test_returns_400_for_invalid_submission_id(self) -> None:
         """유효하지 않은 submission_id는 400을 받는다."""
         response = self.client.delete(
-            "/api/v1/admin/exams/submissions/0/",
+            "/api/v1/admin/submissions/0/",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -164,7 +164,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
     def test_returns_404_when_submission_missing(self) -> None:
         """존재하지 않는 응시내역은 404를 받는다."""
         response = self.client.delete(
-            "/api/v1/admin/exams/submissions/9999/",
+            "/api/v1/admin/submissions/9999/",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -178,11 +178,13 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
             ExamSubmissionDeleteConflictError,
         )
 
-        with patch("apps.exams.views.admin_submission_delete_views.delete_exam_submission") as mock_delete:
+        with patch(
+            "apps.exams.views.admin_submission_delete_views.delete_exam_submission"
+        ) as mock_delete:
             mock_delete.side_effect = ExamSubmissionDeleteConflictError()
 
             response = self.client.delete(
-                f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+                f"/api/v1/admin/submissions/{self.submission.id}/",
                 headers=self._auth_headers(self.admin_user),
             )
 
