@@ -23,7 +23,7 @@ def create_chatbot_session(
             user=user,
             question_id=question_id,
             title=title or "새 채팅",
-            using_model=ChatbotSession.AIModel.GEMINI,
+            using_model=using_model or ChatbotSession.AIModel.GEMINI,
         )
     except IntegrityError as exc:
         # user + question 유니크 제약

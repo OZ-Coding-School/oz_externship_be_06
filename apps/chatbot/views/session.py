@@ -15,6 +15,7 @@ from apps.chatbot.serializers.session import (
     ChatbotSessionSerializer,
 )
 from apps.chatbot.services.session_create import create_chatbot_session
+from apps.chatbot.services.session_list import get_user_chatbot_sessions
 from apps.core.utils.pagination import ChatbotSessionCursorPagination
 from apps.users.models import User
 
@@ -30,7 +31,7 @@ class ChatbotSessionAPIView(APIView):
     def get(self, request: Request) -> Response:
         user = cast(User, request.user)
 
-        queryset: QuerySet[ChatbotSession] = ChatbotSession.objects.filter(user=user).select_related("question")
+        queryset: QuerySet[ChatbotSession] = get_user_chatbot_sessions(user=user)
 
         paginator = ChatbotSessionCursorPagination()
         page = paginator.paginate_queryset(queryset, request)

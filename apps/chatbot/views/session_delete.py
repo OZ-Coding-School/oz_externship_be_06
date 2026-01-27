@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import cast
 
+from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.chatbot.services.session_delete import delete_chatbot_session
 from apps.users.models import User
 
 
@@ -27,26 +28,22 @@ class ChatbotSessionDeleteAPIView(APIView):
             "- 권한이 없거나 존재하지 않는 세션은 404를 반환합니다."
         ),
         responses={
-            204: None,  # 삭제 성공 (응답 바디 없음)
-            404: None,  # 존재하지 않거나 접근 불가한 세션
+            204: None,
+            404: None,
         },
     )
     def delete(self, request: Request, session_id: int) -> Response:
         user = cast(User, request.user)
 
-        # 본인 세션만 조회 (없거나 권한 없으면 404)
-        session = ChatbotSession.objects.filter(
-            pk=session_id,
-            user=user,
-        ).first()
-
-        if session is None:
+        try:
+            delete_chatbot_session(
+                user=user,
+                session_id=session_id,
+            )
+        except ValidationError as exc:
             return Response(
-                {"detail": "존재하지 않거나 접근 권한이 없는 세션입니다."},
+                {"detail": str(exc)},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
-        # 세션 삭제 (연관 메시지는 CASCADE)
-        session.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
