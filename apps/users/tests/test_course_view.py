@@ -106,7 +106,7 @@ class EnrolledCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
 
-        CohortStudent.objects.create(user=self.user, cohort=self.cohort)  # type: ignore[attr-defined]
+        CohortStudent.objects.create(user=self.user, cohort=self.cohort)
 
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
@@ -123,7 +123,7 @@ class EnrolledCoursesAPITests(TestCase):
         self.assertEqual(data[0]["course"]["tag"], "FE")
 
     def test_enrolled_courses_empty_list_200(self) -> None:
-        CohortStudent.objects.filter(user=self.user).delete()  # type: ignore[attr-defined]
+        CohortStudent.objects.filter(user=self.user).delete()
 
         res = self.client.get(self.url)
 
