@@ -1,3 +1,5 @@
+from typing import cast
+
 from django.http import Http404
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
@@ -10,6 +12,7 @@ from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers.error import ErrorDetailSerializer
 from apps.exams.serializers.exam_result import ExamSubmissionSerializer
+from apps.exams.services.exam_result import get_exam_submission_detail
 
 
 @extend_schema(
@@ -79,21 +82,10 @@ class ExamSubmissionDetailView(RetrieveAPIView[ExamSubmission]):
         return super().handle_exception(exc)
 
     def get_object(self) -> ExamSubmission:
-        submission_id = self.kwargs["submission_id"]
-        user_id = self.request.user.id
+        submission_id = int(self.kwargs["submission_id"])
+        user_id = cast(int, self.request.user.id)
 
-        submission = get_object_or_404(
-            ExamSubmission.objects.select_related("deployment__exam").prefetch_related("deployment__exam__questions"),
-            id=submission_id,
+        return get_exam_submission_detail(
+            submission_id=submission_id,
+            user_id=user_id,
         )
-
-        if submission.submitter_id != user_id:
-            raise PermissionDenied()
-
-        if submission.answers_json == {}:
-            raise ErrorDetailException(
-                "유효하지 않은 시험 응시 세션입니다.",
-                status.HTTP_400_BAD_REQUEST,
-            )
-
-        return submission
