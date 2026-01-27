@@ -230,6 +230,10 @@ NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
 
+# Social Login Settings
+FRONTEND_SOCIAL_REDIRECT_URL = os.getenv("FRONTEND_SOCIAL_REDIRECT_URL", "http://localhost:3000/auth/callback")
+COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", None)
+
 # AWS S3 settings
 AWS_S3_REGION = os.getenv("AWS_S3_REGION", "")
 AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID", "")

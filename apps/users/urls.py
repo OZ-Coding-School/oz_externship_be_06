@@ -20,6 +20,12 @@ from apps.users.views.sms_verification_view import (
 )
 from apps.users.views.token_refresh_view import TokenRefreshAPIView
 from apps.users.views.withdrawal_view import WithdrawalAPIView
+from apps.users.views.social_login_view import (
+    KakaoCallbackAPIView,
+    KakaoLoginStartAPIView,
+    NaverCallbackAPIView,
+    NaverLoginStartAPIView,
+)
 
 urlpatterns = [
     # 회원가입
@@ -52,4 +58,9 @@ urlpatterns = [
     path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
     path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
     path("restore/", RestoreAPIView.as_view(), name="restore"),
+    # 소셜 로그인
+    path("login/kakao/", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
+    path("login/kakao/callback/", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
+    path("login/naver/", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
+    path("login/naver/callback/", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
 ]
