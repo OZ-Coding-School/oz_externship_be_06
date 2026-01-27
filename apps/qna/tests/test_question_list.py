@@ -154,13 +154,13 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"category_id": 9999})
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["detail"], QuestionNotFoundException.default_detail)
+        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
 
     def test_search_no_results_returns_404(self) -> None:
         """[404] 검색 결과가 전혀 없을 경우 404 반환 검증"""
         response = self.client.get(self.url, {"search_keyword": "절대로없을법한검색어123"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["detail"], QuestionNotFoundException.default_detail)
+        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
 
     def test_filter_status_no_results_returns_404(self) -> None:
         """[404] 필터 조건에 부합하는 데이터가 없을 경우 404 반환 검증"""
@@ -170,7 +170,7 @@ class QuestionListAPITest(TestCase):
         # 'waiting' 상태를 조회하면 결과가 0건이므로 404 발생
         response = self.client.get(self.url, {"answer_status": "waiting"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["detail"], QuestionNotFoundException.default_detail)
+        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
 
     # --- 400 Bad Request ---------------------
 
@@ -180,20 +180,20 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"sort": "popular"})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # Mixin에 의해 detail에 에러 정보가 담겨있는지 확인
-        error_response = response.json()
-        error_msg = str(error_response.get("detail", error_response))
-        self.assertIn("popular", error_msg)
+        # Mixin에 의해 error_detail에 커스텀 에러 메시지가 담겨있는지 확인
+        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
 
     def test_invalid_answer_status_choice_returns_400(self) -> None:
         """[400] 허용되지 않은 answer_status 옵션 입력 시 400 반환 검증"""
         response = self.client.get(self.url, {"answer_status": "pending"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
 
     def test_invalid_page_type_returns_400(self) -> None:
         """[400] 숫자가 아닌 페이지 번호 입력 시 400 반환 검증(IntegerField 검증)"""
         response = self.client.get(self.url, {"page": "first_page"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
 
     def test_question_list_performance(self) -> None:
         """[성공] 질문 목록 조회 시 발생하는 쿼리 수 검증"""

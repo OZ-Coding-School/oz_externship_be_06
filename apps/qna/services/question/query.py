@@ -42,14 +42,13 @@ class QuestionQueryService:
             elif sort == "oldest":
                 queryset = queryset.order_by("created_at")
             elif sort == "most_views":
-                queryset = queryset.order_by("-view_count")  # 조회수 내림차순
+                queryset = queryset.order_by("-view_count")
 
             if not queryset.exists():
-                raise QuestionNotFoundException()
-
+                raise QuestionNotFoundException(detail="조회 가능한 질문이 존재하지 않습니다.")
             return queryset
 
         except QuestionNotFoundException:
             raise
-        except Exception as e:
-            raise QuestionBaseException(detail=f"질문 목록 조회 중 오류가 발생했습니다: {str(e)}")
+        except Exception:
+            raise QuestionBaseException(detail="유효하지 않은 목록 조회 요청입니다.")

@@ -21,5 +21,5 @@ class QuestionCommandService:
             question = Question.objects.create(author=author, category=category, **data)  # 질문 생성
             return question
 
-        except Exception as e:  # 발생하는 모든 예외를 최상위 예외인 QuestionBaseException으로 전환
-            raise QuestionBaseException(detail=f"질문 등록 중 오류가 발생했습니다: {str(e)}")
+        except Exception:  # 발생하는 모든 예외를 최상위 예외인 QuestionBaseException으로 전환
+            raise QuestionBaseException(detail="유효하지 않은 질문 등록 요청입니다.")

@@ -2,8 +2,9 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.qna.models import Question
-from apps.qna.serializers.base import QnAVersionedValidationMixin
+from apps.qna.models import Question, QuestionImage
+from apps.qna.serializers.answer.response import AnswerSerializer
+from apps.qna.serializers.base import QnaValidationMixin
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
@@ -13,9 +14,7 @@ from apps.qna.utils.content_parser import ContentParser
 # ==============================================================================
 # QUESTION LIST (GET /api/v1/qna/questions)
 # ==============================================================================
-
-
-class QuestionQuerySerializer(QnAVersionedValidationMixin, serializers.Serializer[Any]):
+class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
     질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
     """
@@ -26,6 +25,8 @@ class QuestionQuerySerializer(QnAVersionedValidationMixin, serializers.Serialize
     sort = serializers.ChoiceField(choices=["latest", "oldest", "most_views"], default="latest")
     page = serializers.IntegerField(default=1)
     size = serializers.IntegerField(default=10)
+
+    default_error_message = "유효하지 않은 목록 조회 요청입니다."
 
 
 class QuestionListSerializer(serializers.ModelSerializer[Question]):

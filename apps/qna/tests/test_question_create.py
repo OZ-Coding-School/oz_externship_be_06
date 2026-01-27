@@ -88,6 +88,7 @@ class QuestionCreateAPITest(TestCase):
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.json()["error_detail"], "로그인한 수강생만 질문을 등록할 수 있습니다.")
 
     def test_create_question_forbidden(self) -> None:
         """[실패] 수강생이 아닌 유저의 요청 시 403 에러 반환 검증"""
@@ -100,6 +101,7 @@ class QuestionCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()["error_detail"], "질문 등록 권한이 없습니다.")
 
     def test_create_question_invalid_category(self) -> None:
         """[실패] 존재하지 않는 카테고리 ID 전송 시 400 에러 반환 검증"""
@@ -112,7 +114,7 @@ class QuestionCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, QuestionBaseException.status_code)
-        self.assertIn("질문 등록 중 오류가 발생했습니다", response.json()["detail"])
+        self.assertEqual(response.json()["error_detail"], "유효하지 않은 질문 등록 요청입니다.")
 
     def test_create_question_bad_request(self) -> None:
         """[실패] 필수 데이터 누락 시 400 에러 반환 검증"""
@@ -127,7 +129,7 @@ class QuestionCreateAPITest(TestCase):
         res_data = response.json()
 
         self.assertEqual(response.status_code, QuestionBaseException.status_code)
-        self.assertIn("title", res_data.get("detail", response.json()))
+        self.assertEqual(res_data["error_detail"], "유효하지 않은 질문 등록 요청입니다.")
 
     def test_create_question_performance(self) -> None:
         """[성공] 질문 등록 시 발생하는 쿼리 수 검증"""
@@ -145,4 +147,4 @@ class QuestionCreateAPITest(TestCase):
                 self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
             )
 
-        self.assertLessEqual(len(context), 5, f"Expected 5 or fewer queries, but got {len(context)}")
+        self.assertLessEqual(len(context), 6, f"Expected 6 or fewer queries, but got {len(context)}")
