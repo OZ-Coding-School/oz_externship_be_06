@@ -39,7 +39,7 @@ class AdminExamDeleteAPIView(APIView):
         삭제 시 등록된 문제들도 함께 제거됩니다.
         """,
         responses={
-            201: AdminExamDeleteResponseSerializer,
+            200: AdminExamDeleteResponseSerializer,
             400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 요청"),
             401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
             403: OpenApiResponse(ErrorResponseSerializer, description="삭제 권한 없음"),
@@ -68,4 +68,4 @@ class AdminExamDeleteAPIView(APIView):
             )
 
         serializer = self.serializer_class({"id": deleted_id})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)

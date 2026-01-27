@@ -89,7 +89,7 @@ class AdminExamDeleteAPITest(TestCase):
             headers=self._auth_headers(self.admin_user),
         )
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["id"], self.exam.id)
         self.assertFalse(Exam.objects.filter(id=self.exam.id).exists())

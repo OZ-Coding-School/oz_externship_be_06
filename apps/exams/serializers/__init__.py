@@ -1,4 +1,4 @@
-from .admin.submissions import AdminExamSubmissionListResponseSerializer
+from .admin.submissions_list import AdminExamSubmissionListResponseSerializer
 from .error_serializers import ErrorDetailSerializer, ErrorResponseSerializer
 from .exam_submission import (
     ExamSubmissionCreateResponseSerializer,

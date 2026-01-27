@@ -32,7 +32,7 @@ from apps.courses.models import CohortStudent
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
-from apps.exams.serializers.error import ErrorDetailSerializer
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments import ExamDeploymentListSerializer
 
 
@@ -53,7 +53,7 @@ from apps.exams.serializers.student.deployments import ExamDeploymentListSeriali
     responses={
         200: ExamDeploymentListSerializer,
         401: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Unauthorized",
             examples=[
                 OpenApiExample(
@@ -63,7 +63,7 @@ from apps.exams.serializers.student.deployments import ExamDeploymentListSeriali
             ],
         ),
         403: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Forbidden",
             examples=[
                 OpenApiExample(
@@ -73,7 +73,7 @@ from apps.exams.serializers.student.deployments import ExamDeploymentListSeriali
             ],
         ),
         404: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Not Found",
             examples=[
                 OpenApiExample(

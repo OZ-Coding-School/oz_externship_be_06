@@ -9,12 +9,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin.exams import (
+from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.serializers.error import ErrorDetailSerializer
-from apps.exams.services.admin.exams import (
+from apps.exams.serializers.error_serializers import (
+    ErrorDetailSerializer,
+    ErrorResponseSerializer,
+)
+from apps.exams.services.admin.exams_create import (
     ExamCreateConflictError,
     ExamCreateNotFoundError,
     create_exam,
@@ -37,11 +40,11 @@ class AdminExamCreateAPIView(APIView):
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,
-            400: OpenApiResponse(ErrorDetailSerializer, description="유효하지 않은 시험 생성 요청"),
+            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 생성 요청"),
             401: OpenApiResponse(ErrorDetailSerializer, description="인증 실패"),
             403: OpenApiResponse(ErrorDetailSerializer, description="쪽지시험 생성 권한 없음"),
-            404: OpenApiResponse(ErrorDetailSerializer, description="과목 정보 없음"),
-            409: OpenApiResponse(ErrorDetailSerializer, description="동일한 이름의 시험 존재"),
+            404: OpenApiResponse(ErrorResponseSerializer, description="과목 정보 없음"),
+            409: OpenApiResponse(ErrorResponseSerializer, description="동일한 이름의 시험 존재"),
         },
     )
     def post(self, request: Request) -> Response:
