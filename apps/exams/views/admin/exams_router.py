@@ -92,11 +92,11 @@ class AdminExamRouterAPIView(APIView):
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 생성 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="쪽지시험 생성 권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="과목 정보 없음"),
-            409: OpenApiResponse(ErrorResponseSerializer, description="동일한 이름의 시험 존재"),
+            400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.NO_EXAM_CREATE_PERMISSION.value),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBJECT_NOT_FOUND.value),
+            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_CONFLICT.value),
         },
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
