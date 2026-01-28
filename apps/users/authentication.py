@@ -1,10 +1,11 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from typing import Any
+
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class ActiveUserJWTAuthentication(JWTAuthentication):
-
-    def get_user(self, validated_token):
+    def get_user(self, validated_token: Any) -> object:  # type: ignore[override]
         user = super().get_user(validated_token)
 
         if not getattr(user, "is_active", True):
