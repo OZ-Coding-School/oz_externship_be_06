@@ -10,6 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.views.mixins import ExamsExceptionMixin
+
 from apps.exams.constants import ErrorMessages
 from apps.exams.serializers import TakeExamResponseSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
@@ -17,7 +19,7 @@ from apps.exams.services import build_take_exam_response, take_exam
 from apps.users.models import User
 
 
-class TakeExamAPIView(APIView):
+class TakeExamAPIView(ExamsExceptionMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:

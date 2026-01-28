@@ -12,6 +12,7 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.views.mixins import ExamsExceptionMixin
 from apps.exams.serializers.student.submissions_result import ExamSubmissionSerializer
 from apps.exams.services.student.submissions_result import get_exam_submission_detail
 
@@ -64,7 +65,7 @@ from apps.exams.services.student.submissions_result import get_exam_submission_d
         ),
     },
 )
-class ExamSubmissionDetailView(RetrieveAPIView[ExamSubmission]):
+class ExamSubmissionDetailView(ExamsExceptionMixin, RetrieveAPIView[ExamSubmission]):
     permission_classes = [IsAuthenticated]
     serializer_class = ExamSubmissionSerializer
 

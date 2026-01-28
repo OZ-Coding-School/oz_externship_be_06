@@ -11,6 +11,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.views.mixins import ExamsExceptionMixin
+
 from apps.core.utils.pagination import SimplePagePagination
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
@@ -21,7 +23,7 @@ from apps.exams.serializers.admin.submissions_list import (
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 
 
-class AdminExamSubmissionListAPIView(APIView):
+class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 응시 내역 목록 조회 API."""
 
     permission_classes = [IsAuthenticated, IsExamStaff]

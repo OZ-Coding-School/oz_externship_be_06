@@ -35,6 +35,7 @@ from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_list import ExamDeploymentListSerializer
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
@@ -89,7 +90,7 @@ from apps.exams.serializers.student.deployments_list import ExamDeploymentListSe
         ),
     },
 )
-class ExamListView(ListAPIView[ExamDeployment]):
+class ExamListView(ExamsExceptionMixin, ListAPIView[ExamDeployment]):
     permission_classes = [IsAuthenticated]
     serializer_class = ExamDeploymentListSerializer
     pagination_class = SimplePagePagination

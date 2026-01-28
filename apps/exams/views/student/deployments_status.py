@@ -9,6 +9,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.views.mixins import ExamsExceptionMixin
+
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment
 from apps.exams.permissions import IsStudentRole
@@ -19,7 +21,7 @@ from apps.exams.serializers.student.deployments_status import (
 from apps.exams.services.student.deployments_status import is_exam_active
 
 
-class ExamStatusCheckAPIView(APIView):
+class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
     """수강생 응시 세션의 현재 시험 상태를 조회."""
 
     permission_classes = [IsAuthenticated, IsStudentRole]

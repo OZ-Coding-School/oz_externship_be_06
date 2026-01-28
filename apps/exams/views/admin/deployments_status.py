@@ -8,6 +8,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.views.mixins import ExamsExceptionMixin
+
 from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.deployments_status import (
@@ -22,7 +24,7 @@ from apps.exams.services.admin.deployments_status import (
 )
 
 
-class AdminExamDeploymentStatusAPIView(APIView):
+class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 배포 상태 변경 API."""
 
     permission_classes = [IsAuthenticated, IsExamStaff]

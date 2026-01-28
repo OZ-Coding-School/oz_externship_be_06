@@ -6,6 +6,8 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.exams.views.mixins import ExamsExceptionMixin
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.exams.constants import ErrorMessages
@@ -35,7 +37,7 @@ from apps.exams.services.student.submissions_create import submit_exam
         409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value),
     },
 )
-class ExamSubmissionCreateAPIView(APIView):
+class ExamSubmissionCreateAPIView(ExamsExceptionMixin, APIView):
     # 인증과 권한 관리
     # 여기에서 401, 403 잡아주고 메세지는 자동으로 만들어줌
     authentication_classes = [JWTAuthentication]
