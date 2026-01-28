@@ -10,8 +10,8 @@ from apps.exams.serializers import (
     ExamSubmissionCreateResponseSerializer,
     ExamSubmissionCreateSerializer,
 )
-from apps.exams.services.student.submissions_create import submit_exam
 from apps.exams.services.grading import grade_submission
+from apps.exams.services.student.submissions_create import submit_exam
 
 
 @extend_schema(

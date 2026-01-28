@@ -1,10 +1,10 @@
 from django.urls import path
 
 from apps.exams.views import CheckCodeAPIView, ExamListView, TakeExamAPIView
-from apps.exams.views.student.submissions_result import ExamSubmissionDetailView
-from apps.exams.views.student.submissions_create import ExamSubmissionCreateAPIView
 from apps.exams.views.student.deployments_cheating import ExamCheatingUpdateAPIView
 from apps.exams.views.student.deployments_status import ExamStatusCheckAPIView
+from apps.exams.views.student.submissions_create import ExamSubmissionCreateAPIView
+from apps.exams.views.student.submissions_result import ExamSubmissionDetailView
 
 app_name = "exams"
 

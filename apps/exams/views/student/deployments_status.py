@@ -9,7 +9,9 @@ from apps.exams.constants import ExamStatus
 from apps.exams.models import ExamDeployment
 from apps.exams.permissions import IsStudentRole
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.serializers.student.deployments_status import ExamStatusResponseSerializer
+from apps.exams.serializers.student.deployments_status import (
+    ExamStatusResponseSerializer,
+)
 from apps.exams.services.student.deployments_status import is_exam_active
 
 
