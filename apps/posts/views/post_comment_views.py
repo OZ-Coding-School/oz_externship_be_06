@@ -140,7 +140,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     # 이 View 안에서만 에러 응답 포맷을 테스트 요구사항(error_detail)로 강제
     def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, NotAuthenticated):
-            return Response({"detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error_detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
 
         if isinstance(exc, NotFound):
             return Response({"error_detail": str(exc.detail)}, status=status.HTTP_404_NOT_FOUND)
