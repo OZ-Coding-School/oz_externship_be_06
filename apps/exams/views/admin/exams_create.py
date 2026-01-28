@@ -55,6 +55,13 @@ class AdminExamCreateAPIView(APIView):
     )
     def post(self, request: Request) -> Response:
         serializer = AdminExamCreateRequestSerializer(data=request.data)
+
+        if not request.user or not request.user.is_authenticated:
+            return Response(
+                {"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         if not serializer.is_valid():
             return Response(
                 {"error_detail": ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value},
