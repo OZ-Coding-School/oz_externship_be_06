@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type, cast
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -54,6 +54,12 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
         return ""
 
     def get_thumbnail_img_url(self, obj: Post) -> Optional[str]:
+        first_image = obj.images.first()
+
+        if first_image:
+            if hasattr(first_image, "image") and first_image.image:
+                return cast(str, first_image.image.url)
+
         return None
 
 
