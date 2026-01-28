@@ -8,8 +8,8 @@ from apps.courses.models.cohort_students import CohortStudent
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
-from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.exams.constants import ErrorMessages
+from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.users.models import User
 
 
