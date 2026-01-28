@@ -1,15 +1,13 @@
-from .check_code import CheckCodeAPIView
-from .exam_list import ExamListView
-from .exam_status import ExamStatusAPIView
-from .exam_submission import ExamSubmissionCreateAPIView
-from .submit_exam import SubmitExamAPIView
-from .take_exam import TakeExamAPIView
+from .student.deployments_check_code import CheckCodeAPIView
+from .student.deployments_list import ExamListView
+from .student.deployments_take import TakeExamAPIView
+from .student.exam_status import ExamStatusAPIView
+from .student.submissions_create import ExamSubmissionCreateAPIView
 
 __all__ = [
     "CheckCodeAPIView",
     "ExamListView",
     "ExamStatusAPIView",
-    "SubmitExamAPIView",
     "TakeExamAPIView",
     "ExamSubmissionCreateAPIView",
 ]

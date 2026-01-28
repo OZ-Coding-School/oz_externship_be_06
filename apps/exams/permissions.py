@@ -4,11 +4,12 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.users.models import User
 
 
 class IsStudentRole(BasePermission):
-    message = "권한이 없습니다."
+    message = ErrorMessages.FORBIDDEN.value
 
     def has_permission(self, request: Any, view: Any) -> bool:
         user = request.user
@@ -18,7 +19,7 @@ class IsStudentRole(BasePermission):
 class IsExamStaff(BasePermission):
     """쪽지시험 관리자 API용 권한 검사."""
 
-    message = "쪽지시험 관리 권한이 없습니다."
+    message = ErrorMessages.NO_EXAM_STAFF_PERMISSION.value
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         user = request.user

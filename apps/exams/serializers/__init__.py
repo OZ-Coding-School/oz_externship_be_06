@@ -1,32 +1,23 @@
-from .admin_submission_serializers import AdminExamSubmissionListResponseSerializer
-from .error_serializers import ErrorDetailSerializer, ErrorResponseSerializer
-from .exam_status import ExamStatusResponseSerializer
-from .exam_submission import (
-    ExamSubmissionCreateResponseSerializer,
-    ExamSubmissionCreateSerializer,
-)
-from .submit_exam import (
-    AnswerItemSerializer,
-    SubmitExamRequestSerializer,
-    SubmitExamResponseSerializer,
-)
-from .take_exam import (
+from .admin.submissions_list import AdminExamSubmissionListResponseSerializer
+from .error_serializers import ErrorResponseSerializer
+from .student.deployments_status import ExamStatusResponseSerializer
+from .student.deployments_take import (
     CheckCodeRequestSerializer,
     TakeExamRequestSerializer,
     TakeExamResponseSerializer,
 )
+from .student.submissions_create import (
+    ExamSubmissionCreateResponseSerializer,
+    ExamSubmissionCreateSerializer,
+)
 
 __all__ = [
     "AdminExamSubmissionListResponseSerializer",
-    "AnswerItemSerializer",
     "CheckCodeRequestSerializer",
     "ExamStatusResponseSerializer",
-    "SubmitExamRequestSerializer",
-    "SubmitExamResponseSerializer",
     "TakeExamRequestSerializer",
     "TakeExamResponseSerializer",
     "ExamSubmissionCreateSerializer",
     "ExamSubmissionCreateResponseSerializer",
     "ErrorResponseSerializer",
-    "ErrorDetailSerializer",
 ]
