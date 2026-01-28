@@ -1,8 +1,10 @@
-from typing import Any, cast
+import logging
 
 from rest_framework import serializers
 
 from apps.qna.exceptions.question_exception import QuestionBaseException
+
+logger = logging.getLogger(__name__)
 
 
 class QnaValidationMixin:
@@ -21,6 +23,12 @@ class QnaValidationMixin:
                 raise QuestionBaseException(detail=error_message)
             return False
         except Exception as e:
+            logger.error(
+                f"데이터 검증 중 예상치 못한 서버 에러 발생. "
+                f"Serializer: {self.__class__.__name__}, Exception: {str(e)}",
+                exc_info=True,
+            )
+
             if raise_exception:
                 raise QuestionBaseException(detail=f"데이터 검증 중 오류 발생: {str(e)}")
             return False

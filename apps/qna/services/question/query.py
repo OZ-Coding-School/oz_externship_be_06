@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.db.models import Count, F, Q, QuerySet
@@ -7,6 +8,8 @@ from apps.qna.exceptions.question_exception import (
     QuestionNotFoundException,
 )
 from apps.qna.models import Question
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionQueryService:
@@ -50,7 +53,8 @@ class QuestionQueryService:
 
         except QuestionNotFoundException:
             raise
-        except Exception:
+        except Exception as e:
+            logger.error(f"유효하지 않은 목록 조회 요청입니다.\nMessage: {str(e)}", exc_info=True)
             raise QuestionBaseException(detail="유효하지 않은 목록 조회 요청입니다.")
 
     @staticmethod
@@ -74,5 +78,8 @@ class QuestionQueryService:
 
         except Question.DoesNotExist:
             raise QuestionNotFoundException(detail="해당 질문을 찾을 수 없습니다.")
-        except Exception:
+        except Exception as e:
+            logger.error(
+                f"유효하지 않은 질문 상세 조회 요청입니다. ID: {question_id}\nMessage: {str(e)}", exc_info=True
+            )
             raise QuestionBaseException(detail="유효하지 않은 질문 상세 조회 요청입니다.")
