@@ -8,8 +8,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.deployments_status import (
@@ -22,6 +20,7 @@ from apps.exams.services.admin.deployments_status import (
     ExamDeploymentStatusNotFoundError,
     update_deployment_status,
 )
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):

@@ -8,8 +8,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.deployments_create import (
@@ -22,6 +20,7 @@ from apps.exams.services.admin.deployments_create import (
     ExamDeploymentNotFoundError,
     create_exam_deployment,
 )
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class AdminExamDeploymentCreateAPIView(ExamsExceptionMixin, APIView):

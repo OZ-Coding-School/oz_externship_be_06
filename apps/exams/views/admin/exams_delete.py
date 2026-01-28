@@ -8,8 +8,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.exams_delete import (
@@ -21,6 +19,7 @@ from apps.exams.services.admin.exams_delete import (
     ExamDeleteNotFoundError,
     delete_exam,
 )
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class AdminExamDeleteAPIView(ExamsExceptionMixin, APIView):

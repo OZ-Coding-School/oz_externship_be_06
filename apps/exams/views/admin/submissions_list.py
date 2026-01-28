@@ -11,8 +11,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.core.utils.pagination import SimplePagePagination
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
@@ -21,6 +19,7 @@ from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):

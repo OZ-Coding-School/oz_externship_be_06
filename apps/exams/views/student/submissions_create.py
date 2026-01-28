@@ -6,8 +6,6 @@ from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from apps.exams.views.mixins import ExamsExceptionMixin
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.exams.constants import ErrorMessages
@@ -18,6 +16,7 @@ from apps.exams.serializers import (
 )
 from apps.exams.services.grading import grade_submission
 from apps.exams.services.student.submissions_create import submit_exam
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(

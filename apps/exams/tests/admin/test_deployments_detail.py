@@ -176,7 +176,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.get(
@@ -186,7 +186,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value)
 
     def test_returns_404_when_deployment_missing(self) -> None:
         response = self.client.get(

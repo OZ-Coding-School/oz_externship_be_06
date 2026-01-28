@@ -135,7 +135,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         payload = {
@@ -155,7 +155,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.NO_QUESTION_CREATE_PERMISSION.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.NO_QUESTION_CREATE_PERMISSION.value)
 
     def test_returns_404_when_exam_missing(self) -> None:
         payload = {

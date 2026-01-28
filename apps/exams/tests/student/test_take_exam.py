@@ -89,8 +89,8 @@ class TakeExamAPITest(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", response.data)
-        self.assertIn(ErrorMessages.FORBIDDEN.value, str(response.data["detail"]))
+        self.assertIn("error_detail", response.data)
+        self.assertIn(ErrorMessages.FORBIDDEN.value, str(response.data["error_detail"]))
 
     def test_take_exam_unauthenticated(self) -> None:
         response = self.client.get(self._take_exam_url())
@@ -102,8 +102,8 @@ class TakeExamAPITest(APITestCase):
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", response.data)
-        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["detail"]))
+        self.assertIn("error_detail", response.data)
+        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["error_detail"]))
 
     def test_take_exam_before_open_time(self) -> None:
         now = timezone.now()
@@ -113,8 +113,8 @@ class TakeExamAPITest(APITestCase):
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", response.data)
-        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["detail"]))
+        self.assertIn("error_detail", response.data)
+        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["error_detail"]))
 
     def test_take_exam_after_close_time(self) -> None:
         now = timezone.now()
@@ -124,8 +124,8 @@ class TakeExamAPITest(APITestCase):
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", response.data)
-        self.assertIn(ErrorMessages.EXAM_CLOSED.value, str(response.data["detail"]))
+        self.assertIn("error_detail", response.data)
+        self.assertIn(ErrorMessages.EXAM_CLOSED.value, str(response.data["error_detail"]))
 
     def test_take_exam_existing_submission(self) -> None:
         self.client.force_authenticate(user=self.student_user)
