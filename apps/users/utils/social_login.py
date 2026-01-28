@@ -53,7 +53,7 @@ class KakaoOAuthService:
     USER_INFO_URL = "https://kapi.kakao.com/v2/user/me"
 
     def get_access_token(self, code: str) -> str:
-        #인가 코드로 access_token 발급
+        # 인가 코드로 access_token 발급
         response = requests.post(
             self.TOKEN_URL,
             data={
@@ -65,20 +65,22 @@ class KakaoOAuthService:
             timeout=10,
         )
         response.raise_for_status()
-        return response.json()["access_token"]
+        token: str = response.json()["access_token"]
+        return token
 
     def get_user_info(self, access_token: str) -> dict[str, Any]:
-        #access_token으로 사용자 정보 조회
+        # access_token으로 사용자 정보 조회
         response = requests.get(
             self.USER_INFO_URL,
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=10,
         )
         response.raise_for_status()
-        return response.json()
+        data: dict[str, Any] = response.json()
+        return data
 
     def get_or_create_user(self, profile: dict[str, Any]) -> Any:
-        #카카오톡 프로필 유저 조회
+        # 카카오톡 프로필 유저 조회
         kakao_id = str(profile.get("id"))
         kakao_account = profile.get("kakao_account", {})
         kakao_profile = kakao_account.get("profile", {})
@@ -86,17 +88,21 @@ class KakaoOAuthService:
         email = kakao_account.get("email")
         nickname = kakao_profile.get("nickname", "")
         profile_image = kakao_profile.get("profile_image_url") or kakao_profile.get("thumbnail_image_url")
-        gender = kakao_account.get("gender")  #남자여자
+        gender = kakao_account.get("gender")  # 남자여자
         birthday_date = parse_kakao_birthday(kakao_account)
 
         if not email:
             raise ValidationError({"code": "email_required", "message": "카카오 계정에 이메일이 없습니다."})
 
         # 기존 소셜 유저 조회
-        social_user = SocialUser.objects.filter(
-            provider=SocialUser.Provider.KAKAO,
-            provider_id=kakao_id,
-        ).select_related("user").first()
+        social_user = (
+            SocialUser.objects.filter(
+                provider=SocialUser.Provider.KAKAO,
+                provider_id=kakao_id,
+            )
+            .select_related("user")
+            .first()
+        )
 
         if social_user:
             return social_user.user
@@ -151,7 +157,7 @@ class NaverOAuthService:
     USER_INFO_URL = "https://openapi.naver.com/v1/nid/me"
 
     def get_access_token(self, code: str, state: str) -> str:
-        #인가 코드로 access_token 발급
+        # 인가 코드로 access_token 발급
         response = requests.post(
             self.TOKEN_URL,
             data={
@@ -164,26 +170,27 @@ class NaverOAuthService:
             timeout=10,
         )
         response.raise_for_status()
-        return response.json()["access_token"]
+        token: str = response.json()["access_token"]
+        return token
 
     def get_user_info(self, access_token: str) -> dict[str, Any]:
-        #access_token으로 사용자 정보 조회
+        # access_token으로 사용자 정보 조회
         response = requests.get(
             self.USER_INFO_URL,
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=10,
         )
         response.raise_for_status()
-        data = response.json()
+        data: dict[str, Any] = response.json()
 
-        profile = data.get("response")
+        profile: dict[str, Any] | None = data.get("response")
         if not profile:
             raise ValidationError({"code": "naver_api_error", "message": "네이버 프로필 응답이 비어있습니다."})
 
         return profile
 
     def get_or_create_user(self, profile: dict[str, Any]) -> Any:
-        #네이버 프로필로 유저 조회 또는 생성
+        # 네이버 프로필로 유저 조회 또는 생성
         naver_id = str(profile.get("id"))
         email = profile.get("email")
         nickname = profile.get("nickname", "")
@@ -197,10 +204,14 @@ class NaverOAuthService:
             raise ValidationError({"code": "email_required", "message": "네이버 계정에 이메일이 없습니다."})
 
         # 기존 소셜 유저 조회
-        social_user = SocialUser.objects.filter(
-            provider=SocialUser.Provider.NAVER,
-            provider_id=naver_id,
-        ).select_related("user").first()
+        social_user = (
+            SocialUser.objects.filter(
+                provider=SocialUser.Provider.NAVER,
+                provider_id=naver_id,
+            )
+            .select_related("user")
+            .first()
+        )
 
         if social_user:
             return social_user.user
