@@ -1,5 +1,6 @@
-from typing import NoReturn, TypedDict
+from typing import NoReturn
 
+from django.db.models import Q, QuerySet
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -7,35 +8,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.models.enrollment import StudentEnrollmentRequest
 from apps.users.permissions import IsAdminStaff
-
-
-class EnrollmentUserDict(TypedDict):
-    id: int
-    email: str
-    name: str
-    birthday: str
-    gender: str
-
-
-class EnrollmentCohortDict(TypedDict):
-    id: int
-    number: int
-
-
-class EnrollmentCourseDict(TypedDict):
-    id: int
-    name: str
-    tag: str
-
-
-class MockEnrollmentDict(TypedDict):
-    id: int
-    user: EnrollmentUserDict
-    cohort: EnrollmentCohortDict
-    course: EnrollmentCourseDict
-    status: str
-    created_at: str
+from apps.users.serializers.admin.admin_student_enrollment_serializers import (
+    AdminStudentEnrollmentListSerializer,
+)
+from apps.users.utils.pagination import AdminListPagination
 
 
 # 어드민 수강생 등록 요청 목록 조회 api
@@ -48,52 +26,35 @@ class AdminStudentEnrollmentListAPIView(APIView):
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
         raise PermissionDenied(detail="권한이 없습니다.")
 
-    # mock 데이터
-    def _get_mock_enrollments(self) -> list[MockEnrollmentDict]:
-        return [
-            {
-                "id": 1,
-                "user": {
-                    "id": 1,
-                    "email": "user1@example.com",
-                    "name": "김신청",
-                    "birthday": "2000-01-01",
-                    "gender": "MALE",
-                },
-                "cohort": {"id": 1, "number": 1},
-                "course": {"id": 1, "name": "백엔드 부트캠프", "tag": "BE"},
-                "status": "PENDING",
-                "created_at": "2025-01-01T00:00:00+09:00",
-            },
-            {
-                "id": 2,
-                "user": {
-                    "id": 2,
-                    "email": "user2@example.com",
-                    "name": "이신청",
-                    "birthday": "2001-02-02",
-                    "gender": "FEMALE",
-                },
-                "cohort": {"id": 1, "number": 1},
-                "course": {"id": 1, "name": "백엔드 부트캠프", "tag": "BE"},
-                "status": "ACCEPTED",
-                "created_at": "2025-01-02T00:00:00+09:00",
-            },
-            {
-                "id": 3,
-                "user": {
-                    "id": 3,
-                    "email": "user3@example.com",
-                    "name": "박신청",
-                    "birthday": "2002-03-03",
-                    "gender": "MALE",
-                },
-                "cohort": {"id": 2, "number": 1},
-                "course": {"id": 2, "name": "프론트엔드 부트캠프", "tag": "FE"},
-                "status": "REJECTED",
-                "created_at": "2025-01-03T00:00:00+09:00",
-            },
-        ]
+    def get_queryset(self, request: Request) -> QuerySet[StudentEnrollmentRequest]:
+        queryset = StudentEnrollmentRequest.objects.select_related("user", "cohort__course")
+
+        # 검색 필터
+        search = request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(Q(user__name__icontains=search) | Q(user__email__icontains=search))
+
+        # 상태 필터
+        status_filter = request.query_params.get("status")
+        if status_filter:
+            status_map = {
+                "pending": StudentEnrollmentRequest.Status.PENDING,
+                "accepted": StudentEnrollmentRequest.Status.APPROVED,
+                "rejected": StudentEnrollmentRequest.Status.REJECTED,
+            }
+            if status_filter.lower() in status_map:
+                queryset = queryset.filter(status=status_map[status_filter.lower()])
+
+        # 정렬
+        sort = request.query_params.get("sort")
+        if sort == "latest":
+            queryset = queryset.order_by("-created_at")
+        elif sort == "oldest":
+            queryset = queryset.order_by("created_at")
+        else:
+            queryset = queryset.order_by("id")
+
+        return queryset
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -150,22 +111,14 @@ class AdminStudentEnrollmentListAPIView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
-        # Mock 데이터 반환
-        mock_enrollments = self._get_mock_enrollments()
+        queryset = self.get_queryset(request)
 
-        # 페이지네이션 형식으로 응답
-        page = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 10))
+        paginator = AdminListPagination()
+        page = paginator.paginate_queryset(queryset, request)
 
-        start = (page - 1) * page_size
-        end = start + page_size
-        paginated_data = mock_enrollments[start:end]
+        if page is not None:
+            serializer = AdminStudentEnrollmentListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
-        return Response(
-            {
-                "count": len(mock_enrollments),
-                "next": None,
-                "previous": None,
-                "results": paginated_data,
-            }
-        )
+        serializer = AdminStudentEnrollmentListSerializer(queryset, many=True)
+        return Response(serializer.data)

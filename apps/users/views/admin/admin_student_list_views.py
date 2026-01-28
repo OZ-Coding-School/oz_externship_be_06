@@ -1,5 +1,6 @@
-from typing import NoReturn, TypedDict
+from typing import NoReturn
 
+from django.db.models import Q, QuerySet
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -7,36 +8,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.models import User
 from apps.users.permissions import IsAdminStaff
-
-
-class StudentCohortDict(TypedDict):
-    id: int
-    number: int
-
-
-class StudentCourseDict(TypedDict):
-    id: int
-    name: str
-    tag: str
-
-
-class InProgressCourseDict(TypedDict):
-    cohort: StudentCohortDict
-    course: StudentCourseDict
-
-
-class MockStudentDict(TypedDict):
-    id: int
-    email: str
-    nickname: str
-    name: str
-    phone_number: str
-    birthday: str
-    status: str
-    role: str
-    in_progress_course: InProgressCourseDict
-    created_at: str
+from apps.users.serializers.admin.admin_student_list_serializers import (
+    AdminStudentListSerializer,
+)
+from apps.users.utils.pagination import AdminListPagination
 
 
 # 어드민 수강생 목록 조회 api
@@ -49,55 +26,46 @@ class AdminStudentListAPIView(APIView):
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
         raise PermissionDenied(detail="권한이 없습니다.")
 
-    def _get_mock_students(self) -> list[MockStudentDict]:
-        # mock 데이터
-        return [
-            {
-                "id": 1,
-                "email": "student1@example.com",
-                "nickname": "수강생1",
-                "name": "김수강",
-                "phone_number": "01011111111",
-                "birthday": "2000-01-01",
-                "status": "ACTIVATED",
-                "role": "STUDENT",
-                "in_progress_course": {
-                    "cohort": {"id": 1, "number": 1},
-                    "course": {"id": 1, "name": "백엔드 부트캠프", "tag": "BE"},
-                },
-                "created_at": "2025-01-01T00:00:00+09:00",
-            },
-            {
-                "id": 2,
-                "email": "student2@example.com",
-                "nickname": "수강생2",
-                "name": "이수강",
-                "phone_number": "01022222222",
-                "birthday": "2001-02-02",
-                "status": "ACTIVATED",
-                "role": "STUDENT",
-                "in_progress_course": {
-                    "cohort": {"id": 2, "number": 2},
-                    "course": {"id": 1, "name": "백엔드 부트캠프", "tag": "BE"},
-                },
-                "created_at": "2025-01-02T00:00:00+09:00",
-            },
-            {
-                "id": 3,
-                "email": "student3@example.com",
-                "nickname": "수강생3",
-                "name": "박수강",
-                "phone_number": "01033333333",
-                "birthday": "2002-03-03",
-                "status": "DEACTIVATED",
-                "role": "STUDENT",
-                "in_progress_course": {
-                    "cohort": {"id": 3, "number": 1},
-                    "course": {"id": 2, "name": "프론트엔드 부트캠프", "tag": "FE"},
-                },
-                "created_at": "2025-01-03T00:00:00+09:00",
-            },
-        ]
+    def get_queryset(self, request: Request) -> QuerySet[User]:
+        queryset = (
+            User.objects.filter(role=User.Role.STUDENT)
+            .select_related()
+            .prefetch_related("cohort_students__cohort__course")
+        )
+
+        # 검색 필터
+        search = request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(nickname__icontains=search)
+                | Q(phone_number__icontains=search)
+            )
+
+        # 상태 필터
+        status_filter = request.query_params.get("status")
+        if status_filter:
+            status_map = {
+                "activated": True,
+                "deactivated": False,
+            }
+            if status_filter.lower() in status_map:
+                queryset = queryset.filter(is_active=status_map[status_filter.lower()])
+            elif status_filter.lower() == "withdrew":
+                queryset = queryset.filter(withdrawal__isnull=False)
+
+        # 과정 ID 필터
+        course_id = request.query_params.get("course_id")
+        if course_id:
+            queryset = queryset.filter(cohort_students__cohort__course_id=course_id)
+
+        # 기수 ID 필터
+        cohort_id = request.query_params.get("cohort_id")
+        if cohort_id:
+            queryset = queryset.filter(cohort_students__cohort_id=cohort_id)
+
+        return queryset.distinct().order_by("id")
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -160,22 +128,14 @@ class AdminStudentListAPIView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
-        # Mock 데이터 반환
-        mock_students = self._get_mock_students()
+        queryset = self.get_queryset(request)
 
-        # 페이지네이션 형식으로 응답
-        page = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 10))
+        paginator = AdminListPagination()
+        page = paginator.paginate_queryset(queryset, request)
 
-        start = (page - 1) * page_size
-        end = start + page_size
-        paginated_data = mock_students[start:end]
+        if page is not None:
+            serializer = AdminStudentListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
-        return Response(
-            {
-                "count": len(mock_students),
-                "next": None,
-                "previous": None,
-                "results": paginated_data,
-            }
-        )
+        serializer = AdminStudentListSerializer(queryset, many=True)
+        return Response(serializer.data)
