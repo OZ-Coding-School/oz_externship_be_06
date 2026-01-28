@@ -5,7 +5,13 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
-from apps.qna.models import Answer, Question, QuestionCategory, QuestionImage, AnswerComment
+from apps.qna.models import (
+    Answer,
+    AnswerComment,
+    Question,
+    QuestionCategory,
+    QuestionImage,
+)
 
 User = get_user_model()
 
@@ -51,16 +57,11 @@ class QuestionDetailAPITest(TestCase):
 
         # 답변 및 댓글 추가 (계층 구조)
         self.answer = Answer.objects.create(
-            author=self.user,
-            question=self.question,
-            content="첫 번째 답변입니다.",
-            is_adopted=True
+            author=self.user, question=self.question, content="첫 번째 답변입니다.", is_adopted=True
         )
 
         self.comment = AnswerComment.objects.create(
-            author=self.user,
-            answer=self.answer,
-            content="답변에 대한 댓글입니다."
+            author=self.user, answer=self.answer, content="답변에 대한 댓글입니다."
         )
 
         self.url = reverse("question-detail", kwargs={"question_id": self.question.id})
@@ -94,12 +95,7 @@ class QuestionDetailAPITest(TestCase):
 
     def test_get_question_detail_empty_relations(self) -> None:
         """[성공] 답변이나 이미지가 없는 질문 조회 시 빈 리스트 반환 확인"""
-        empty_q = Question.objects.create(
-            author=self.user,
-            category=self.cat_depth1,
-            title="빈 질문",
-            content="내용"
-        )
+        empty_q = Question.objects.create(author=self.user, category=self.cat_depth1, title="빈 질문", content="내용")
         url = reverse("question-detail", kwargs={"question_id": empty_q.id})
 
         response = self.client.get(url)
