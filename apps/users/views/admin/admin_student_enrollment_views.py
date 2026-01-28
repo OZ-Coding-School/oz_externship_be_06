@@ -1,8 +1,6 @@
 from typing import NoReturn
 
-from django.db import transaction
 from django.db.models import Q, QuerySet
-from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
@@ -11,14 +9,17 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.courses.models.cohort_students import CohortStudent
-from apps.users.models import User
 from apps.users.models.enrollment import StudentEnrollmentRequest
 from apps.users.permissions import IsAdminStaff
 from apps.users.serializers.admin.admin_student_enrollment_serializers import (
     AdminStudentEnrollmentAcceptSerializer,
     AdminStudentEnrollmentListSerializer,
     AdminStudentEnrollmentRejectSerializer,
+    AdminStudentEnrollmentResponseSerializer,
+)
+from apps.users.services.admin_student_enrollment_service import (
+    accept_enrollments,
+    reject_enrollments,
 )
 from apps.users.utils.pagination import AdminListPagination
 
@@ -154,49 +155,27 @@ class AdminStudentEnrollmentAcceptAPIView(APIView):
         """,
         request=AdminStudentEnrollmentAcceptSerializer,
         responses={
-            200: OpenApiResponse(description="수강생 등록 신청들에 대한 승인 요청이 처리되었습니다."),
+            200: AdminStudentEnrollmentResponseSerializer,
             400: OpenApiResponse(description="유효성 검사 실패"),
             401: OpenApiResponse(description="자격 인증 데이터가 제공되지 않았습니다."),
             403: OpenApiResponse(description="권한이 없습니다."),
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = AdminStudentEnrollmentAcceptSerializer(data=request.data)
-        if not serializer.is_valid():
+        request_serializer = AdminStudentEnrollmentAcceptSerializer(data=request.data)
+        if not request_serializer.is_valid():
             return Response(
-                {"error_detail": serializer.errors},
+                {"error_detail": request_serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        enrollment_ids = serializer.validated_data["enrollments"]
+        enrollment_ids = request_serializer.validated_data["enrollments"]
+        accept_enrollments(enrollment_ids)
 
-        with transaction.atomic():
-            enrollments = StudentEnrollmentRequest.objects.filter(
-                id__in=enrollment_ids,
-                status=StudentEnrollmentRequest.Status.PENDING,
-            ).select_related("user", "cohort")
-
-            for enrollment in enrollments:
-                # 등록 요청 승인 처리
-                enrollment.status = StudentEnrollmentRequest.Status.APPROVED
-                enrollment.accepted_at = timezone.now()
-                enrollment.save()
-
-                # 유저 role 변경
-                user = enrollment.user
-                user.role = User.Role.STUDENT
-                user.save(update_fields=["role"])
-
-                # CohortStudent 생성 (이미 존재하지 않는 경우)
-                CohortStudent.objects.get_or_create(
-                    user=user,
-                    cohort=enrollment.cohort,
-                )
-
-        return Response(
-            {"detail": "수강생 등록 신청들에 대한 승인 요청이 처리되었습니다."},
-            status=status.HTTP_200_OK,
+        response_serializer = AdminStudentEnrollmentResponseSerializer(
+            {"detail": "수강생 등록 신청들에 대한 승인 요청이 처리되었습니다."}
         )
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 # 어드민 수강생 등록 요청 반려
@@ -220,29 +199,24 @@ class AdminStudentEnrollmentRejectAPIView(APIView):
         """,
         request=AdminStudentEnrollmentRejectSerializer,
         responses={
-            200: OpenApiResponse(description="수강생 등록 신청들에 대한 거절 요청이 처리되었습니다."),
+            200: AdminStudentEnrollmentResponseSerializer,
             400: OpenApiResponse(description="유효성 검사 실패"),
             401: OpenApiResponse(description="자격 인증 데이터가 제공되지 않았습니다."),
             403: OpenApiResponse(description="권한이 없습니다."),
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = AdminStudentEnrollmentRejectSerializer(data=request.data)
-        if not serializer.is_valid():
+        request_serializer = AdminStudentEnrollmentRejectSerializer(data=request.data)
+        if not request_serializer.is_valid():
             return Response(
-                {"error_detail": serializer.errors},
+                {"error_detail": request_serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        enrollment_ids = serializer.validated_data["enrollments"]
+        enrollment_ids = request_serializer.validated_data["enrollments"]
+        reject_enrollments(enrollment_ids)
 
-        with transaction.atomic():
-            StudentEnrollmentRequest.objects.filter(
-                id__in=enrollment_ids,
-                status=StudentEnrollmentRequest.Status.PENDING,
-            ).update(status=StudentEnrollmentRequest.Status.REJECTED)
-
-        return Response(
-            {"detail": "수강생 등록 신청들에 대한 거절 요청이 처리되었습니다."},
-            status=status.HTTP_200_OK,
+        response_serializer = AdminStudentEnrollmentResponseSerializer(
+            {"detail": "수강생 등록 신청들에 대한 거절 요청이 처리되었습니다."}
         )
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
