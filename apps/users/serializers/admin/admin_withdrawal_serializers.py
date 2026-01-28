@@ -6,7 +6,7 @@ from apps.users.models import User, Withdrawal
 from apps.users.services.admin_withdrawal_service import get_assigned_courses
 
 
-# 탈퇴 내역 유저 정보 (목록용)
+# 탈퇴 내역 유저 정보
 class WithdrawalUserSerializer(serializers.Serializer[Any]):
     id = serializers.IntegerField()
     email = serializers.EmailField()

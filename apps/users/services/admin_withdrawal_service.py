@@ -51,9 +51,8 @@ def get_withdrawal_list(
 
     return queryset
 
-
+#수강생의 수강 과정-기수 목록을 반환
 def _get_assigned_courses_for_student(user: User) -> list[dict[str, Any]]:
-    """수강생의 수강 과정-기수 목록을 반환합니다."""
     cohort_students = CohortStudent.objects.filter(user=user).select_related(
         "cohort__course"
     )
@@ -75,9 +74,8 @@ def _get_assigned_courses_for_student(user: User) -> list[dict[str, Any]]:
         for cs in cohort_students
     ]
 
-
+#조교의 담당 과정-기수 목록을 반환
 def _get_assigned_courses_for_ta(user: User) -> list[dict[str, Any]]:
-    """조교의 담당 과정-기수 목록을 반환합니다."""
     training_assistants = TrainingAssistant.objects.filter(user=user).select_related(
         "cohort__course"
     )
@@ -99,9 +97,8 @@ def _get_assigned_courses_for_ta(user: User) -> list[dict[str, Any]]:
         for ta in training_assistants
     ]
 
-
+#운영매니저의 담당 과정 목록을 반환
 def _get_assigned_courses_for_om(user: User) -> list[dict[str, Any]]:
-    """운영매니저의 담당 과정 목록을 반환합니다."""
     operation_managers = OperationManager.objects.filter(user=user).select_related(
         "course"
     )
@@ -117,9 +114,8 @@ def _get_assigned_courses_for_om(user: User) -> list[dict[str, Any]]:
         for om in operation_managers
     ]
 
-
+#러닝코치의 담당 과정 목록을 반환
 def _get_assigned_courses_for_lc(user: User) -> list[dict[str, Any]]:
-    """러닝코치의 담당 과정 목록을 반환합니다."""
     learning_coachs = LearningCoach.objects.filter(user=user).select_related("course")
     return [
         {
