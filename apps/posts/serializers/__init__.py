@@ -24,8 +24,4 @@ __all__ = [
     "PostCommentCreateSerializer",
     "PostCommentUpdateSerializer",
     "PostCommentDeleteResponseSerializer",
-from .post_category import PostCategorySerializer
-
-__all__ = [
-    "PostCategorySerializer",
 ]
