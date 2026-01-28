@@ -88,7 +88,7 @@ class TakeExamAPITest(APITestCase):
     def test_take_exam_non_student_role(self) -> None:
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self._take_exam_url())
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("error_detail", response.data)
         self.assertIn(ErrorMessages.FORBIDDEN.value, str(response.data["error_detail"]))
 

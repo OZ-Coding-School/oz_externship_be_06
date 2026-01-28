@@ -87,6 +87,7 @@ class CheckCodeAPITest(APITestCase):
         self.client.force_authenticate(user=self.student_user)
         response = self.client.post(self._check_code_url(), {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", response.data)
 
     def test_check_code_unauthenticated(self) -> None:
         """인증되지 않은 사용자 테스트"""

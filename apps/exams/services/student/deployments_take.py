@@ -26,7 +26,7 @@ class TakeExamResult:
 
 def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     if user.role != User.Role.STUDENT:
-        raise ValidationError({"detail": ErrorMessages.FORBIDDEN.value})
+        raise ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
 
     try:
         deployment = ExamDeployment.objects.select_related("exam", "exam__subject").get(id=deployment_id)
