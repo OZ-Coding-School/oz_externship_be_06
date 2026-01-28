@@ -18,5 +18,8 @@ urlpatterns = [
         PostCommentRetrieveUpdateDestroyAPIView.as_view(),
         name="post-comment-rud",
     ),
+from apps.posts.views.post_category_views import PostCategoryListAPIView
+
+urlpatterns = [
     path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
 ]
