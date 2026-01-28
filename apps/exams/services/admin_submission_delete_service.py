@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import IntegrityError, OperationalError, transaction
 
 from apps.exams.models import ExamSubmission
 
@@ -20,7 +20,7 @@ def delete_exam_submission(submission_id: int) -> int:
     try:
         with transaction.atomic():
             submission.delete()
-    except Exception as exc:
+    except (IntegrityError, OperationalError) as exc:
         raise ExamSubmissionDeleteConflictError from exc
 
     return submission_id

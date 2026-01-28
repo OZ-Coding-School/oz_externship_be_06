@@ -31,6 +31,19 @@ class AdminExamSubmissionDeleteAPIView(APIView):
             raise NotAuthenticated()
         raise PermissionDenied(detail="쪽지시험 응시 내역 삭제 권한이 없습니다.")
 
+    def handle_exception(self, exc: Exception) -> Response:
+        if isinstance(exc, NotAuthenticated):
+            return Response(
+                {"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        elif isinstance(exc, PermissionDenied):
+            return Response(
+                {"error_detail": "쪽지시험 응시 내역 삭제 권한이 없습니다."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().handle_exception(exc)
+
     @extend_schema(
         tags=["admin_exams"],
         summary="어드민 쪽지시험 응시내역 삭제 API",
