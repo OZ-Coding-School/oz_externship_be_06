@@ -55,27 +55,22 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
         fields = ("content",)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        # 401: 명세 메시지
+        # 입력 데이터(필드)만 검증
+        return attrs
+
+    def create(self, validated_data: Dict[str, Any]) -> PostComment:
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or user.is_anonymous:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
 
-        # 404: 명세 메시지 (게시글 없음)
-        post = self.context.get("post")
-        if post is None or not isinstance(post, Post):
+        context_post = self.context.get("post")
+        if context_post is None or not isinstance(context_post, Post):
             raise NotFound(detail="해당 게시글을 찾을 수 없습니다.")
-
-        return attrs
-
-    def create(self, validated_data: Dict[str, Any]) -> PostComment:
-        request = self.context["request"]
-        context_post = self.context["post"]
 
         # ListCreateAPIView.perform_create 에서 save(author=..., post=...) 형태로 넘길 수 있으므로
         # validated_data에 author/post가 섞여 들어오는 케이스를 방어한다.
-        # 추후 실구현하면서 수정/삭제 예정
-        author = validated_data.pop("author", request.user)
+        author = validated_data.pop("author", user)
         post = validated_data.pop("post", context_post)
 
         return PostComment.objects.create(author=author, post=post, **validated_data)

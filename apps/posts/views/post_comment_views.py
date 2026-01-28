@@ -50,21 +50,6 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
             return [AllowAny()]
         return [IsAuthenticated()]
 
-    # 이 View 안에서만 에러 응답 포맷을 테스트 요구사항(error_detail)로 강제
-    def handle_exception(self, exc: Exception) -> Response:
-        if isinstance(exc, NotAuthenticated):
-            return Response({"error_detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
-
-        if isinstance(exc, NotFound):
-            return Response({"error_detail": str(exc.detail)}, status=status.HTTP_404_NOT_FOUND)
-
-        if isinstance(exc, PermissionDenied):
-            return Response({"error_detail": str(exc.detail)}, status=status.HTTP_403_FORBIDDEN)
-
-        if isinstance(exc, ValidationError):
-            return Response({"error_detail": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
-
-        return super().handle_exception(exc)
 
     def _get_post(self) -> Post:
         post_id = self.kwargs.get("post_id")
@@ -156,13 +141,12 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     # 이 View 안에서만 에러 응답 포맷을 테스트 요구사항(error_detail)로 강제
     def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, NotAuthenticated):
-            return Response({"error_detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
 
         if isinstance(exc, NotFound):
             return Response({"error_detail": str(exc.detail)}, status=status.HTTP_404_NOT_FOUND)
 
         if isinstance(exc, PermissionDenied):
-            # PermissionDenied()로 던지면 기본 메시지가 비어있을 수 있어서 안전하게 처리
             detail = str(getattr(exc, "detail", "")) or "권한이 없습니다."
             return Response({"error_detail": detail}, status=status.HTTP_403_FORBIDDEN)
 
