@@ -8,7 +8,7 @@ from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDeni
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 
-AUTH_MSG = "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
+AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
 
 
 class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]

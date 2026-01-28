@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.posts.views.post_category_views import PostCategoryListAPIView
+from apps.posts.views.post_comment_views import PostNicknameAutocompleteAPIView
 
 from .views import PostCommentListCreateAPIView, PostCommentRetrieveUpdateDestroyAPIView
 
@@ -18,4 +19,6 @@ urlpatterns = [
         name="post-comment-rud",
     ),
     path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
+    # 닉네임 자동완성/추천 (mock)
+    path("search-nickname/", PostNicknameAutocompleteAPIView.as_view(), name="search-nickname"),
 ]
