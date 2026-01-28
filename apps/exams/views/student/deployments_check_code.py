@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import NoReturn, cast
 
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
-from typing import NoReturn
-
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request

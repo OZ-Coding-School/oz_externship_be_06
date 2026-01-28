@@ -1,7 +1,7 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
-from rest_framework import permissions, status
 from typing import NoReturn
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import permissions, status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
