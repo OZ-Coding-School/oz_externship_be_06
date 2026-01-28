@@ -11,16 +11,13 @@ from rest_framework.views import APIView
 from apps.exams.constants import ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
-from apps.exams.serializers.error_serializers import (
-    ErrorDetailSerializer,
-    ErrorResponseSerializer,
-)
-from apps.exams.serializers.student.cheating import (
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
 )
 from apps.exams.services.grading import grade_submission
-from apps.exams.services.student.status import is_exam_active
+from apps.exams.services.student.deployments_status import is_exam_active
 
 
 class ExamCheatingUpdateAPIView(APIView):
@@ -48,8 +45,8 @@ class ExamCheatingUpdateAPIView(APIView):
         ],
         responses={
             200: ExamCheatingResponseSerializer,
-            401: OpenApiResponse(ErrorDetailSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorDetailSerializer, description="권한 없음"),
+            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
+            403: OpenApiResponse(ErrorResponseSerializer, description="권한 없음"),
             404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
             410: OpenApiResponse(ErrorResponseSerializer, description="시험 종료"),
         },

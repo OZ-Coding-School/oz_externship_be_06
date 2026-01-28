@@ -1,9 +1,9 @@
-from .exam_submission import ExamSubmissionCreateAPIView
-from .student.check_code import CheckCodeAPIView
-from .student.deployments import ExamListView
+from .student.deployments_check_code import CheckCodeAPIView
+from .student.deployments_list import ExamListView
 from .student.exam_status import ExamStatusAPIView
-from .student.submit_exam import SubmitExamAPIView
-from .student.take_exam import TakeExamAPIView
+from .student.submissions_create import ExamSubmissionCreateAPIView
+from .student.submissions_submit import SubmitExamAPIView
+from .student.deployments_take import TakeExamAPIView
 
 __all__ = [
     "CheckCodeAPIView",

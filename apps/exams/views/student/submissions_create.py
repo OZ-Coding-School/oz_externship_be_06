@@ -6,12 +6,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.exams.serializers import (
-    ErrorDetailSerializer,
     ErrorResponseSerializer,
     ExamSubmissionCreateResponseSerializer,
     ExamSubmissionCreateSerializer,
 )
-from apps.exams.services.exam_submission_service import submit_exam
+from apps.exams.services.student.submissions_create import submit_exam
 from apps.exams.services.grading import grade_submission
 
 
@@ -26,8 +25,8 @@ from apps.exams.services.grading import grade_submission
     responses={
         201: ExamSubmissionCreateResponseSerializer,
         400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 응시 세션 또는 요청 데이터 오류"),
-        401: OpenApiResponse(ErrorDetailSerializer, description="인증 정보가 제공되지 않음"),
-        403: OpenApiResponse(ErrorDetailSerializer, description="시험 제출 권한 없음"),
+        401: OpenApiResponse(ErrorResponseSerializer, description="인증 정보가 제공되지 않음"),
+        403: OpenApiResponse(ErrorResponseSerializer, description="시험 제출 권한 없음"),
         404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 또는 응시 세션을 찾을 수 없음"),
         409: OpenApiResponse(ErrorResponseSerializer, description="이미 제출된 시험"),
     },
@@ -36,7 +35,7 @@ class ExamSubmissionCreateAPIView(APIView):
     # 인증과 권한 관리
     # 여기에서 401, 403 잡아주고 메세지는 자동으로 만들어줌
     authentication_classes = [JWTAuthentication]
-    permission_classes = [permissions.IsAuthenticated]  # 로그인한 유저만 제출 가능
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request: Request) -> Response:
         serializer = ExamSubmissionCreateSerializer(

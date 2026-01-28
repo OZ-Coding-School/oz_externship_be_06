@@ -10,9 +10,9 @@ from rest_framework.response import Response
 
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
-from apps.exams.serializers.error import ErrorDetailSerializer
-from apps.exams.serializers.exam_result import ExamSubmissionSerializer
-from apps.exams.services.exam_result import get_exam_submission_detail
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.serializers.student.submissions_result import ExamSubmissionSerializer
+from apps.exams.services.student.submissions_result import get_exam_submission_detail
 
 
 @extend_schema(
@@ -22,7 +22,7 @@ from apps.exams.services.exam_result import get_exam_submission_detail
     responses={
         200: ExamSubmissionSerializer,
         400: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Bad Request",
             examples=[
                 OpenApiExample(
@@ -32,7 +32,7 @@ from apps.exams.services.exam_result import get_exam_submission_detail
             ],
         ),
         401: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Unauthorized",
             examples=[
                 OpenApiExample(
@@ -42,7 +42,7 @@ from apps.exams.services.exam_result import get_exam_submission_detail
             ],
         ),
         403: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Forbidden",
             examples=[
                 OpenApiExample(
@@ -52,7 +52,7 @@ from apps.exams.services.exam_result import get_exam_submission_detail
             ],
         ),
         404: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Not Found",
             examples=[
                 OpenApiExample(

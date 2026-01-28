@@ -10,11 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.serializers.student.submit_exam import (
+from apps.exams.serializers.student.submissions_submit import (
     SubmitExamRequestSerializer,
     SubmitExamResponseSerializer,
 )
-from apps.exams.services.student.submit_exam import submit_exam
+from apps.exams.services.student.submissions_submit import submit_exam
 from apps.users.models import User
 
 
