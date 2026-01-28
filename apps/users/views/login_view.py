@@ -15,6 +15,14 @@ class LoginAPIView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="이메일 로그인 API",
+        description="""
+이메일과 비밀번호로 로그인합니다.
+
+## 응답
+- 성공 시 `access_token`과 `refresh_token`이 반환됩니다.
+- JWT 토큰을 사용하여 인증이 필요한 API 호출 시 헤더에 포함하세요.
+
+        """,
         request=LoginSerializer,
         responses={
             200: OpenApiResponse(description="로그인 성공"),
@@ -59,6 +67,13 @@ class LogoutAPIView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="로그아웃 API",
+        description="""
+현재 로그인된 사용자를 로그아웃합니다.
+
+## 주의사항
+- 인증 토큰이 필요합니다. (`Authorization: Bearer {access_token}`)
+- 클라이언트에서 저장된 토큰을 삭제해야 완전한 로그아웃이 됩니다.
+        """,
         responses={
             200: OpenApiResponse(description="로그아웃 성공"),
         },

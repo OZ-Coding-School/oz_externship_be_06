@@ -17,6 +17,18 @@ class ProfileImageView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="프로필 이미지 수정",
+        description="""
+프로필 이미지를 업로드하거나 변경합니다.
+
+## 허용 파일 형식
+- JPEG (image/jpeg)
+- JPG (image/jpg)
+- PNG (image/png)
+
+## 주의사항
+- 기존 프로필 이미지가 있는 경우 자동으로 삭제되고 새 이미지로 교체됩니다.
+- 이미지는 AWS S3에 저장됩니다.
+        """,
         request=ProfileImageRequestSerializer,
         responses={
             200: OpenApiResponse(description="프로필 사진이 등록되었습니다."),

@@ -22,8 +22,11 @@ class ChangePasswordAPIView(APIView):
         tags=["accounts"],
         summary="비밀번호 재설정 API",
         description="""
-        로그인한 사용자가 비밀번호를 변경합니다.
-        기존 비밀번호(old_password)를 확인한 후 새 비밀번호(new_password)로 변경합니다.
+로그인한 사용자가 비밀번호를 변경합니다.
+
+## 주의사항
+- 이 API는 로그인 상태에서만 사용 가능합니다.
+- 비밀번호를 잊어버린 경우 `/api/v1/accounts/find-password` API를 사용하세요.
         """,
         request=ChangePasswordSerializer,
         responses={
@@ -71,8 +74,17 @@ class FindPasswordAPIView(APIView):
         tags=["accounts"],
         summary="비밀번호 분실 시 재설정 API",
         description="""
-        이메일 인증 후 발급받은 email_token을 사용하여 비밀번호를 재설정합니다.
-        로그인하지 않은 상태에서 비밀번호를 분실한 경우 사용합니다.
+비밀번호를 분실한 경우 이메일 인증을 통해 비밀번호를 재설정합니다.
+
+## 플로우
+
+1. `POST /api/v1/accounts/verification/send-email` - 가입한 이메일로 인증 코드 발송
+2. `POST /api/v1/accounts/verification/verify-email` - 인증 코드 확인 → `email_token` 반환
+3. `POST /api/v1/accounts/find-password` - 비밀번호 재설정 (현재 API)
+
+## 주의사항
+- `email_token`은 1회 사용 후 자동 삭제됩니다.
+- 로그인 상태에서 비밀번호를 변경하려면 `/api/v1/accounts/change-password` API를 사용하세요.
         """,
         request=FindPasswordSerializer,
         responses={
