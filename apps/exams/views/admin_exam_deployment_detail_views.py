@@ -1,7 +1,10 @@
+from typing import NoReturn
+
 from django.conf import settings
 from django.urls import reverse
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -25,6 +28,11 @@ class AdminExamDeploymentDetailAPIView(APIView):
     permission_classes = [IsAuthenticated, IsExamStaff]
     serializer_class = AdminExamDeploymentDetailResponseSerializer
 
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value)
+
     @extend_schema(
         tags=["admin_exams"],
         summary="어드민 쪽지시험 배포 상세 조회 API",
@@ -34,10 +42,10 @@ class AdminExamDeploymentDetailAPIView(APIView):
         """,
         responses={
             200: AdminExamDeploymentDetailResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="배포 조회 권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="배포 정보 없음"),
+            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 배포 상세 조회 요청입니다."),
+            401: OpenApiResponse(ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다."),
+            403: OpenApiResponse(ErrorResponseSerializer, description="쪽지시험 배포 상세 조회 권한이 없습니다."),
+            404: OpenApiResponse(ErrorResponseSerializer, description="해당 배포 정보를 찾을 수 없습니다."),
         },
     )
     def get(self, request: Request, deployment_id: int) -> Response:
