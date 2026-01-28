@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.courses.models import Cohort, Course, Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
 
@@ -87,7 +88,7 @@ class TakeExamAPITest(APITestCase):
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.data)
-        self.assertIn("수강생 권한이 필요합니다", str(response.data["detail"]))
+        self.assertIn(ErrorMessages.FORBIDDEN.value, str(response.data["detail"]))
 
     def test_take_exam_unauthenticated(self) -> None:
         response = self.client.get(self._take_exam_url())
@@ -100,7 +101,7 @@ class TakeExamAPITest(APITestCase):
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.data)
-        self.assertIn("현재 응시할 수 없는 시험입니다", str(response.data["detail"]))
+        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["detail"]))
 
     def test_take_exam_before_open_time(self) -> None:
         now = timezone.now()
@@ -111,7 +112,7 @@ class TakeExamAPITest(APITestCase):
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.data)
-        self.assertIn("아직 응시할 수 없습니다", str(response.data["detail"]))
+        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["detail"]))
 
     def test_take_exam_after_close_time(self) -> None:
         now = timezone.now()
@@ -122,7 +123,7 @@ class TakeExamAPITest(APITestCase):
         response = self.client.get(self._take_exam_url())
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.data)
-        self.assertIn("시험이 종료되었습니다", str(response.data["detail"]))
+        self.assertIn(ErrorMessages.EXAM_CLOSED.value, str(response.data["detail"]))
 
     def test_take_exam_existing_submission(self) -> None:
         self.client.force_authenticate(user=self.student_user)

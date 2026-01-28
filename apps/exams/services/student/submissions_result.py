@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
 
@@ -20,7 +21,7 @@ def get_exam_submission_detail(*, submission_id: int, user_id: int) -> ExamSubmi
 
     if submission.answers_json == {}:
         raise ErrorDetailException(
-            "유효하지 않은 시험 응시 세션입니다.",
+            ErrorMessages.INVALID_EXAM_SESSION.value,
             status.HTTP_400_BAD_REQUEST,
         )
 

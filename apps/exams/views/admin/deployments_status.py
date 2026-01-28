@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusRequestSerializer,
@@ -29,8 +30,8 @@ class AdminExamDeploymentStatusAPIView(APIView):
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated()
-        raise PermissionDenied(detail="쪽지시험 배포 상태 변경 권한이 없습니다.")
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value)
 
     @extend_schema(
         tags=["admin_exams"],
@@ -41,18 +42,22 @@ class AdminExamDeploymentStatusAPIView(APIView):
         request=AdminExamDeploymentStatusRequestSerializer,
         responses={
             200: AdminExamDeploymentStatusResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="배포 상태 변경 권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="배포 정보 없음"),
-            409: OpenApiResponse(ErrorResponseSerializer, description="상태 변경 충돌"),
+            400: OpenApiResponse(
+                ErrorResponseSerializer, description=ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value
+            ),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(
+                ErrorResponseSerializer, description=ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value
+            ),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.DEPLOYMENT_NOT_FOUND.value),
+            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.DEPLOYMENT_CONFLICT.value),
         },
     )
     def patch(self, request: Request, deployment_id: int) -> Response:
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(
-                {"error_detail": "유효하지 않은 배포 상태 요청입니다."},
+                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -60,12 +65,12 @@ class AdminExamDeploymentStatusAPIView(APIView):
             deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
         except ExamDeploymentStatusNotFoundError:
             return Response(
-                {"error_detail": "해당 배포 정보를 찾을 수 없습니다."},
+                {"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except ExamDeploymentStatusConflictError:
             return Response(
-                {"error_detail": "배포 상태 변경 중 충돌이 발생했습니다."},
+                {"error_detail": ErrorMessages.DEPLOYMENT_CONFLICT.value},
                 status=status.HTTP_409_CONFLICT,
             )
 

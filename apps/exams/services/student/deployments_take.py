@@ -6,6 +6,7 @@ from typing import Any
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.users.models import User
 
@@ -18,21 +19,21 @@ class TakeExamResult:
 
 def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     if user.role != User.Role.STUDENT:
-        raise ValidationError({"detail": "수강생 권한이 필요합니다."})
+        raise ValidationError({"detail": ErrorMessages.FORBIDDEN.value})
 
     try:
         deployment = ExamDeployment.objects.select_related("exam", "exam__subject").get(id=deployment_id)
     except ExamDeployment.DoesNotExist as exc:
-        raise ValidationError({"detail": "해당 시험 정보를 찾을 수 없습니다."}) from exc
+        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_FOUND.value}) from exc
 
     if deployment.status != ExamDeployment.StatusChoices.ACTIVATED:
-        raise ValidationError({"detail": "현재 응시할 수 없는 시험입니다."})
+        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
 
     now = timezone.now()
     if now < deployment.open_at:
-        raise ValidationError({"detail": "아직 응시할 수 없습니다."})
+        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
     if now > deployment.close_at:
-        raise ValidationError({"detail": "시험이 종료되었습니다."})
+        raise ValidationError({"detail": ErrorMessages.EXAM_CLOSED.value})
 
     submission, _created = ExamSubmission.objects.get_or_create(
         submitter=user,

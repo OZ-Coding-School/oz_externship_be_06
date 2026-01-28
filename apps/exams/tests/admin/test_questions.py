@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion
 from apps.users.models import User
 
@@ -131,7 +132,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         payload = {
@@ -151,7 +152,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], "쪽지시험 관리 권한이 없습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.NO_QUESTION_CREATE_PERMISSION.value)
 
     def test_returns_404_when_exam_missing(self) -> None:
         payload = {
@@ -171,7 +172,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(data["error_detail"], "해당 쪽지시험 정보를 찾을 수 없습니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.EXAM_ADMIN_NOT_FOUND.value)
 
     def test_returns_409_when_question_limit_exceeded(self) -> None:
         for _ in range(20):
@@ -196,7 +197,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         data = response.json()
         self.assertEqual(
             data["error_detail"],
-            "해당 쪽지시험에 등록 가능한 문제 수 또는 총 배점을 초과했습니다.",
+            ErrorMessages.QUESTION_CREATE_CONFLICT.value,
         )
 
     def test_returns_409_when_total_points_exceeded(self) -> None:
@@ -222,7 +223,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         data = response.json()
         self.assertEqual(
             data["error_detail"],
-            "해당 쪽지시험에 등록 가능한 문제 수 또는 총 배점을 초과했습니다.",
+            ErrorMessages.QUESTION_CREATE_CONFLICT.value,
         )
 
     def test_returns_400_for_invalid_type(self) -> None:
@@ -242,7 +243,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_invalid_point(self) -> None:
         payload = {
@@ -261,7 +262,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_multiple_choice_without_options(self) -> None:
         payload = {
@@ -280,7 +281,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_ordering_answer_mismatch(self) -> None:
         payload = {
@@ -300,7 +301,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_fill_blank_missing_prompt(self) -> None:
         payload = {
@@ -320,7 +321,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_fill_blank_count_mismatch(self) -> None:
         payload = {
@@ -341,7 +342,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_short_answer_invalid_type(self) -> None:
         payload = {
@@ -360,7 +361,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
     def test_returns_400_for_ox_invalid_answer(self) -> None:
         payload = {
@@ -379,4 +380,4 @@ class AdminExamQuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 문제 등록 데이터입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)

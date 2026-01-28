@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models.exams import Exam
 from apps.users.models import User
 
@@ -110,7 +111,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertIn("detail", response.json())
+        self.assertEqual(response.json()["detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_admin_exam_create_returns_403_when_not_staff(self) -> None:
         image_file = self._create_image_file()
@@ -124,7 +125,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertIn("detail", response.json())
+        self.assertEqual(response.json()["detail"], ErrorMessages.NO_EXAM_CREATE_PERMISSION.value)
 
     def test_admin_exam_create_returns_404_when_subject_missing(self) -> None:
         image_file = self._create_image_file()
@@ -138,7 +139,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()["error_detail"], "해당 과목 정보를 찾을 수 없습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.SUBJECT_NOT_FOUND.value)
 
     def test_admin_exam_create_returns_409_when_duplicate_title(self) -> None:
         Exam.objects.create(subject=self.subject, title="Python Basic Exam", thumbnail_img_url="media/test.png")
@@ -154,7 +155,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json()["error_detail"], "동일한 이름의 시험이 이미 존재합니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.EXAM_CONFLICT.value)
 
     def test_admin_exam_create_returns_400_when_invalid(self) -> None:
         response = self._auth_client(self.admin_user).post(
@@ -163,7 +164,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 시험 생성 요청입니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value)
 
     def test_admin_exam_create_returns_400_when_invalid_image_type(self) -> None:
         image_file = SimpleUploadedFile(
@@ -182,4 +183,4 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 시험 생성 요청입니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value)

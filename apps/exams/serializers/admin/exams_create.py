@@ -4,6 +4,8 @@ from typing import Any
 
 from rest_framework import serializers
 
+from apps.exams.constants import ErrorMessages
+
 
 class AdminExamCreateRequestSerializer(serializers.Serializer[Any]):
     """쪽지시험 생성 요청 스키마."""
@@ -15,7 +17,7 @@ class AdminExamCreateRequestSerializer(serializers.Serializer[Any]):
     def validate_thumbnail_img(self, value: Any) -> Any:
         content_type = getattr(value, "content_type", None)
         if content_type not in {"image/jpeg", "image/png", "image/jpg"}:
-            raise serializers.ValidationError("유효하지 않은 시험 생성 요청입니다.")
+            raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value)
         return value
 
 

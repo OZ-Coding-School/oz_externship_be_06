@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment
 from apps.users.models import User
 
@@ -104,7 +105,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         payload = {"status": "deactivated"}
@@ -118,7 +119,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], "쪽지시험 배포 상태 변경 권한이 없습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value)
 
     def test_returns_404_when_deployment_missing(self) -> None:
         payload = {"status": "deactivated"}
@@ -132,7 +133,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(data["error_detail"], "해당 배포 정보를 찾을 수 없습니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.DEPLOYMENT_NOT_FOUND.value)
 
     def test_returns_400_when_invalid_status(self) -> None:
         payload = {"status": "invalid"}
@@ -146,4 +147,4 @@ class AdminExamDeploymentStatusAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 배포 상태 요청입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value)

@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
 
@@ -124,7 +125,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertIn("detail", data)
+        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.get(
@@ -134,7 +135,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertIn("detail", data)
+        self.assertEqual(data["detail"], ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value)
 
     def test_returns_404_when_no_submissions(self) -> None:
         ExamSubmission.objects.all().delete()
@@ -146,7 +147,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(data["error_detail"], "조회된 응시 내역이 없습니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value)
 
     def test_filter_by_search_keyword_nickname(self) -> None:
         response = self.client.get(
@@ -202,7 +203,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 조회 요청입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value)
 
     def test_filter_by_invalid_exam_id(self) -> None:
         response = self.client.get(
@@ -213,7 +214,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 조회 요청입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value)
 
     def test_sort_by_score_desc(self) -> None:
         ExamSubmission.objects.create(

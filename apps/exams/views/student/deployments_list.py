@@ -29,6 +29,7 @@ from rest_framework.response import Response
 
 from apps.core.utils.pagination import SimplePagePagination
 from apps.courses.models import CohortStudent
+from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
@@ -58,7 +59,7 @@ from apps.exams.serializers.student.deployments_list import ExamDeploymentListSe
             examples=[
                 OpenApiExample(
                     "인증 실패",
-                    value={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
                 )
             ],
         ),
@@ -68,7 +69,7 @@ from apps.exams.serializers.student.deployments_list import ExamDeploymentListSe
             examples=[
                 OpenApiExample(
                     "권한 없음",
-                    value={"error_detail": "권한이 없습니다."},
+                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
                 )
             ],
         ),
@@ -78,11 +79,11 @@ from apps.exams.serializers.student.deployments_list import ExamDeploymentListSe
             examples=[
                 OpenApiExample(
                     "코호트 없음/잘못된 요청",
-                    value={"error_detail": "사용자 정보를 찾을 수 없습니다."},
+                    value={"error_detail": ErrorMessages.USER_NOT_FOUND.value},
                 ),
                 OpenApiExample(
                     "잘못된 status",
-                    value={"error_detail": "요청 코드가 일치하지 않습니다."},
+                    value={"error_detail": ErrorMessages.INVALID_EXAM_LIST_REQUEST.value},
                 ),
             ],
         ),
@@ -95,10 +96,10 @@ class ExamListView(ListAPIView[ExamDeployment]):
 
     def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, NotAuthenticated):
-            exc = ErrorDetailException("자격 인증 데이터가 제공되지 않았습니다.", status.HTTP_401_UNAUTHORIZED)
+            exc = ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
 
         elif isinstance(exc, PermissionDenied):
-            exc = ErrorDetailException("권한이 없습니다.", status.HTTP_403_FORBIDDEN)
+            exc = ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
 
         if isinstance(exc, ErrorDetailException):
             return Response({"error_detail": str(exc.detail)}, status=exc.http_status)
@@ -116,11 +117,11 @@ class ExamListView(ListAPIView[ExamDeployment]):
         )
 
         if cohort_id is None:
-            raise ErrorDetailException("사용자 정보를 찾을 수 없습니다.", status.HTTP_404_NOT_FOUND)
+            raise ErrorDetailException(ErrorMessages.USER_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
         status_param = self.request.query_params.get("status", "all").lower()
         if status_param not in ("all", "done", "pending"):
-            raise ErrorDetailException("요청 코드가 일치하지 않습니다.", status.HTTP_404_NOT_FOUND)
+            raise ErrorDetailException(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value, status.HTTP_404_NOT_FOUND)
 
         latest_sub = ExamSubmission.objects.filter(submitter_id=user_id, deployment_id=OuterRef("pk")).order_by(
             "-created_at"

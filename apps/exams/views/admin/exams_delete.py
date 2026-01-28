@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.exams_delete import (
     AdminExamDeleteResponseSerializer,
@@ -28,8 +29,8 @@ class AdminExamDeleteAPIView(APIView):
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated()
-        raise PermissionDenied(detail="쪽지시험 삭제 권한이 없습니다.")
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_EXAM_DELETE_PERMISSION.value)
 
     @extend_schema(
         tags=["admin_exams"],
@@ -40,17 +41,17 @@ class AdminExamDeleteAPIView(APIView):
         """,
         responses={
             200: AdminExamDeleteResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="삭제 권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
-            409: OpenApiResponse(ErrorResponseSerializer, description="삭제 충돌"),
+            400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_DELETE_REQUEST.value),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.NO_EXAM_DELETE_PERMISSION.value),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_DELETE_NOT_FOUND.value),
+            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_DELETE_CONFLICT.value),
         },
     )
     def delete(self, request: Request, exam_id: int) -> Response:
         if exam_id <= 0:
             return Response(
-                {"error_detail": "유효하지 않은 요청입니다."},
+                {"error_detail": ErrorMessages.INVALID_EXAM_DELETE_REQUEST.value},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -58,12 +59,12 @@ class AdminExamDeleteAPIView(APIView):
             deleted_id = delete_exam(exam_id)
         except ExamDeleteNotFoundError:
             return Response(
-                {"error_detail": "삭제하려는 쪽지시험 정보를 찾을 수 없습니다."},
+                {"error_detail": ErrorMessages.EXAM_DELETE_NOT_FOUND.value},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except ExamDeleteConflictError:
             return Response(
-                {"error_detail": "쪽지시험 삭제 중 충돌이 발생했습니다."},
+                {"error_detail": ErrorMessages.EXAM_DELETE_CONFLICT.value},
                 status=status.HTTP_409_CONFLICT,
             )
 

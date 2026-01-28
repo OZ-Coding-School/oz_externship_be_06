@@ -3,12 +3,16 @@ from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from rest_framework import status
+from typing import NoReturn
+
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.constants import ExamStatus
+from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
@@ -25,6 +29,11 @@ class ExamCheatingUpdateAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamCheatingResponseSerializer
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
 
     @extend_schema(
         tags=["exams"],
@@ -45,10 +54,11 @@ class ExamCheatingUpdateAPIView(APIView):
         ],
         responses={
             200: ExamCheatingResponseSerializer,
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
-            410: OpenApiResponse(ErrorResponseSerializer, description="시험 종료"),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
+            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value),
+            410: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_ALREADY_CLOSED.value),
         },
     )
     def post(self, request: Request, deployment_id: int) -> Response:
@@ -57,15 +67,24 @@ class ExamCheatingUpdateAPIView(APIView):
         try:
             deployment = ExamDeployment.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
-            return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
+            return Response(
+                {"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         if not is_exam_active(deployment):
-            return Response({"error_detail": "시험이 이미 종료되었습니다."}, status=410)
+            return Response(
+                {"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
+                status=status.HTTP_410_GONE,
+            )
 
         cheating_key = f"exam:cheating:{deployment.id}:{user.id}"
         submit_lock_key = f"exam:submit-lock:{deployment.id}:{user.id}"
         if ExamSubmission.objects.filter(submitter_id=user.id, deployment=deployment).exists():
-            return Response({"error_detail": "이미 제출된 시험입니다."}, status=410)
+            return Response(
+                {"error_detail": ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         current_count = cache.get(cheating_key)
         ttl_seconds = max(1, deployment.duration_time * 60)

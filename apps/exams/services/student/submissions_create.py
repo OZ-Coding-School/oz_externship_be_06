@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import APIException, ErrorDetail
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers import ErrorResponseSerializer
 from apps.users.models import User
@@ -14,14 +15,14 @@ from apps.users.models import User
 class InvalidSubmissionError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
-    def __init__(self, message: str = "유효하지 않은 시험 응시 세션입니다.") -> None:
+    def __init__(self, message: str = ErrorMessages.INVALID_EXAM_SESSION.value) -> None:
         self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
 
 
 class AlreadySubmittedError(APIException):
     status_code = status.HTTP_409_CONFLICT
 
-    def __init__(self, message: str = "이미 제출된 시험입니다.") -> None:
+    def __init__(self, message: str = ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value) -> None:
         self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
 
 

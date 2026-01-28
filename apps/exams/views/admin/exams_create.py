@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from typing import NoReturn
+
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
@@ -28,6 +32,11 @@ class AdminExamCreateAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = AdminExamCreateRequestSerializer
 
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_EXAM_CREATE_PERMISSION.value)
+
     @extend_schema(
         tags=["admin_exams"],
         summary="관리자 쪽지시험 생성 API",
@@ -37,18 +46,18 @@ class AdminExamCreateAPIView(APIView):
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 생성 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="쪽지시험 생성 권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="과목 정보 없음"),
-            409: OpenApiResponse(ErrorResponseSerializer, description="동일한 이름의 시험 존재"),
+            400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.NO_EXAM_CREATE_PERMISSION.value),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBJECT_NOT_FOUND.value),
+            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_CONFLICT.value),
         },
     )
     def post(self, request: Request) -> Response:
         serializer = AdminExamCreateRequestSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
-                {"error_detail": "유효하지 않은 시험 생성 요청입니다."},
+                {"error_detail": ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -61,12 +70,12 @@ class AdminExamCreateAPIView(APIView):
             )
         except ExamCreateNotFoundError:
             return Response(
-                {"error_detail": "해당 과목 정보를 찾을 수 없습니다."},
+                {"error_detail": ErrorMessages.SUBJECT_NOT_FOUND.value},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except ExamCreateConflictError:
             return Response(
-                {"error_detail": "동일한 이름의 시험이 이미 존재합니다."},
+                {"error_detail": ErrorMessages.EXAM_CONFLICT.value},
                 status=status.HTTP_409_CONFLICT,
             )
 

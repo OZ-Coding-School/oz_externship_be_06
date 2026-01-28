@@ -55,6 +55,7 @@ class ErrorMessages(str, Enum):
     EXAM_ADMIN_NOT_FOUND = "해당 쪽지시험 정보를 찾을 수 없습니다."
     EXAM_UPDATE_NOT_FOUND = "수정할 쪽지시험 정보를 찾을 수 없습니다."
     EXAM_DELETE_NOT_FOUND = "삭제하려는 쪽지시험 정보를 찾을 수 없습니다."
+    SUBJECT_NOT_FOUND = "해당 과목 정보를 찾을 수 없습니다."
     QUESTION_NOT_FOUND = "삭제할 문제 정보를 찾을 수 없습니다."
     QUESTION_UPDATE_NOT_FOUND = "수정하려는 문제 정보를 찾을 수 없습니다."
     DEPLOYMENT_NOT_FOUND = "해당 배포 정보를 찾을 수 없습니다."

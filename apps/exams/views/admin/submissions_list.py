@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+from typing import NoReturn
+
 from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.utils.pagination import SimplePagePagination
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.submissions_list import (
@@ -22,6 +26,11 @@ class AdminExamSubmissionListAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsExamStaff]
     pagination_class = SimplePagePagination
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value)
 
     @extend_schema(
         tags=["쪽지시험 관리"],
@@ -83,10 +92,14 @@ class AdminExamSubmissionListAPIView(APIView):
         ],
         responses={
             200: AdminExamSubmissionListResponseSerializer(many=True),
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 조회 요청"),
-            401: OpenApiResponse(ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="특정시험 응시 내역 조회 권한이 없습니다"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="조회된 응시 내역이 없습니다"),
+            400: OpenApiResponse(
+                ErrorResponseSerializer, description=ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value
+            ),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(
+                ErrorResponseSerializer, description=ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value
+            ),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value),
         },
     )
     def get(self, request: Request) -> Response:
@@ -120,7 +133,7 @@ class AdminExamSubmissionListAPIView(APIView):
                 queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
             except ValueError:
                 return Response(
-                    {"error_detail": "유효하지 않은 조회 요청입니다."},
+                    {"error_detail": ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -131,7 +144,7 @@ class AdminExamSubmissionListAPIView(APIView):
                 queryset = queryset.filter(deployment__exam_id=exam_id_int)
             except ValueError:
                 return Response(
-                    {"error_detail": "유효하지 않은 조회 요청입니다."},
+                    {"error_detail": ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -150,7 +163,7 @@ class AdminExamSubmissionListAPIView(APIView):
         # 결과가 비어있을 경우 404 반환
         if not queryset.exists():
             return Response(
-                {"error_detail": "조회된 응시 내역이 없습니다."},
+                {"error_detail": ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

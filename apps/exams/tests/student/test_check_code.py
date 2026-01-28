@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.courses.models import Cohort, Course, Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment
 from apps.users.models import User
 
@@ -77,7 +78,7 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(self._check_code_url(), {"code": "wrongcode"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error_detail", response.data)
-        self.assertIn("응시 코드가 일치하지 않습니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.INVALID_CHECK_CODE_REQUEST.value, str(response.data["error_detail"]))
 
     def test_check_code_missing_code(self) -> None:
         """참가코드 필드 누락 테스트"""
@@ -96,7 +97,7 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(self._check_code_url(), {"code": "testcode123"})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("error_detail", response.data)
-        self.assertIn("시험에 응시할 권한이 없습니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.NO_EXAM_TAKE_PERMISSION.value, str(response.data["error_detail"]))
 
     def test_check_code_deployment_not_found(self) -> None:
         """존재하지 않는 배포 정보 테스트"""
@@ -105,7 +106,7 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(url, {"code": "testcode123"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("error_detail", response.data)
-        self.assertIn("해당 시험 정보를 찾을 수 없습니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, str(response.data["error_detail"]))
 
     def test_check_code_deactivated_status(self) -> None:
         """비활성화된 시험 테스트"""
@@ -115,7 +116,7 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(self._check_code_url(), {"code": "testcode123"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error_detail", response.data)
-        self.assertIn("현재 응시할 수 없는 시험입니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.INVALID_CHECK_CODE_REQUEST.value, str(response.data["error_detail"]))
 
     def test_check_code_before_open_time(self) -> None:
         """응시 시작 시간 전 테스트"""
@@ -127,7 +128,7 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(self._check_code_url(), {"code": "testcode123"})
         self.assertEqual(response.status_code, status.HTTP_423_LOCKED)
         self.assertIn("error_detail", response.data)
-        self.assertIn("아직 응시할 수 없습니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.EXAM_NOT_AVAILABLE.value, str(response.data["error_detail"]))
 
     def test_check_code_after_close_time(self) -> None:
         """응시 종료 시간 후 테스트"""
@@ -139,4 +140,4 @@ class CheckCodeAPITest(APITestCase):
         response = self.client.post(self._check_code_url(), {"code": "testcode123"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error_detail", response.data)
-        self.assertIn("시험이 이미 종료되었습니다", str(response.data["error_detail"]))
+        self.assertIn(ErrorMessages.EXAM_ALREADY_CLOSED.value, str(response.data["error_detail"]))

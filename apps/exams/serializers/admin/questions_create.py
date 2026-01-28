@@ -2,6 +2,7 @@ from typing import Any
 
 from rest_framework import serializers
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamQuestion
 
 
@@ -26,21 +27,13 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
     explanation = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        type_map = {
-            "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
-            "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
-            "ordering": ExamQuestion.TypeChoices.ORDERING,
-            "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
-            "ox": ExamQuestion.TypeChoices.OX,
-        }
-
         exam_type = attrs.get("type")
         if exam_type not in self.TYPE_MAP:
-            raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+            raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
         point = attrs.get("point")
         if not isinstance(point, int) or not (1 <= point <= 10):
-            raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+            raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
         options = attrs.get("options")
         blank_count = attrs.get("blank_count")
@@ -49,26 +42,26 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
 
         if exam_type in {"multiple_choice", "ordering"}:
             if not options or len(options) < 2:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
             if not isinstance(correct_answer, list) or not correct_answer:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
             if exam_type == "ordering" and len(correct_answer) != len(options):
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
         elif exam_type == "fill_blank":
             if not prompt:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
             if not isinstance(blank_count, int) or blank_count < 1:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
             if not isinstance(correct_answer, list) or len(correct_answer) != blank_count:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
         elif exam_type == "short_answer":
             if not isinstance(correct_answer, str):
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
         elif exam_type == "ox":
             if isinstance(correct_answer, bool):
                 attrs["correct_answer"] = "O" if correct_answer else "X"
             elif correct_answer not in {"O", "X"}:
-                raise serializers.ValidationError("유효하지 않은 문제 등록 데이터입니다.")
+                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
 
         attrs["model_type"] = self.TYPE_MAP[exam_type]
         return attrs

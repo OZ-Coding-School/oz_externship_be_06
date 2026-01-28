@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion
 from apps.users.models import User
 
@@ -100,7 +101,7 @@ class AdminExamDeleteAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.delete(
@@ -110,7 +111,7 @@ class AdminExamDeleteAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], "쪽지시험 삭제 권한이 없습니다.")
+        self.assertEqual(data["detail"], ErrorMessages.NO_EXAM_DELETE_PERMISSION.value)
 
     def test_returns_404_when_exam_missing(self) -> None:
         response = self.client.delete(
@@ -120,4 +121,4 @@ class AdminExamDeleteAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(data["error_detail"], "삭제하려는 쪽지시험 정보를 찾을 수 없습니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.EXAM_DELETE_NOT_FOUND.value)

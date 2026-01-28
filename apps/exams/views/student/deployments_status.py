@@ -1,11 +1,15 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from rest_framework import status
+from typing import NoReturn
+
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.constants import ExamStatus
+from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment
 from apps.exams.permissions import IsStudentRole
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
@@ -20,6 +24,11 @@ class ExamStatusCheckAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamStatusResponseSerializer
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
 
     @extend_schema(
         tags=["exams"],
@@ -39,16 +48,19 @@ class ExamStatusCheckAPIView(APIView):
         ],
         responses={
             200: ExamStatusResponseSerializer,
-            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorResponseSerializer, description="권한 없음"),
-            404: OpenApiResponse(ErrorResponseSerializer, description="시험 정보 없음"),
+            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
+            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
+            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
         },
     )
     def get(self, request: Request, deployment_id: int) -> Response:
         try:
             deployment = ExamDeployment.objects.select_related("exam", "cohort").get(id=deployment_id)
         except ExamDeployment.DoesNotExist:
-            return Response({"error_detail": "해당 시험 정보를 찾을 수 없습니다."}, status=404)
+            return Response(
+                {"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         is_closed = not is_exam_active(deployment)
         serializer = self.serializer_class(

@@ -8,6 +8,7 @@ from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
@@ -27,7 +28,7 @@ from apps.exams.services.student.submissions_result import get_exam_submission_d
             examples=[
                 OpenApiExample(
                     "유효하지 않은 시험 응시 세션",
-                    value={"error_detail": "유효하지 않은 시험 응시 세션입니다."},
+                    value={"error_detail": ErrorMessages.INVALID_EXAM_SESSION.value},
                 ),
             ],
         ),
@@ -37,7 +38,7 @@ from apps.exams.services.student.submissions_result import get_exam_submission_d
             examples=[
                 OpenApiExample(
                     "인증 실패",
-                    value={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
                 ),
             ],
         ),
@@ -47,7 +48,7 @@ from apps.exams.services.student.submissions_result import get_exam_submission_d
             examples=[
                 OpenApiExample(
                     "권한 없음",
-                    value={"error_detail": "권한이 없습니다."},
+                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
                 ),
             ],
         ),
@@ -57,7 +58,7 @@ from apps.exams.services.student.submissions_result import get_exam_submission_d
             examples=[
                 OpenApiExample(
                     "시험 정보 없음",
-                    value={"error_detail": "해당 시험 정보를 찾을 수 없습니다."},
+                    value={"error_detail": ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value},
                 ),
             ],
         ),
@@ -69,12 +70,12 @@ class ExamSubmissionDetailView(RetrieveAPIView[ExamSubmission]):
 
     def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, NotAuthenticated):
-            exc = ErrorDetailException("자격 인증 데이터가 제공되지 않았습니다.", status.HTTP_401_UNAUTHORIZED)
+            exc = ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
         elif isinstance(exc, PermissionDenied):
-            exc = ErrorDetailException("권한이 없습니다.", status.HTTP_403_FORBIDDEN)
+            exc = ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
 
         if isinstance(exc, Http404):
-            exc = ErrorDetailException("제출 내역을 찾을 수 없습니다.", status.HTTP_404_NOT_FOUND)
+            exc = ErrorDetailException(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
         if isinstance(exc, ErrorDetailException):
             return Response({"error_detail": str(exc.detail)}, status=exc.http_status)
