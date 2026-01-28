@@ -17,7 +17,10 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/qna/", include("apps.qna.urls.question_urls")),
     path("api/v1/chatbot/", include("apps.chatbot.urls")),
     path("api/v1/course/", include("apps.courses.urls")),
+<<<<<<< HEAD
     path("api/v1/posts/", include("apps.posts.urls")),
+=======
+>>>>>>> 21b6fd7 (fix: 충돌 마커 제거)
 ]
 
 if settings.DEBUG:
