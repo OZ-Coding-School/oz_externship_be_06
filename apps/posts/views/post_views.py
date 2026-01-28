@@ -73,11 +73,16 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
 
     def handle_exception(self, exc: Exception) -> Response:
+        """
+        이 ViewSet 내에서 발생하는 예외만 가공합니다.
+        타 앱(exams, qna 등)에는 전혀 영향을 주지 않습니다.
+        """
         response = super().handle_exception(exc)
-        if isinstance(response.data, dict) and "error_detail" in response.data:
-            return response
-        if isinstance(response.data, dict):
-            response.data = {"error_detail": response.data}
+
+        if response is not None and isinstance(response.data, dict):
+            detail = response.data.get("detail", response.data)
+            response.data = {"error_detail": detail}
+
         return response
 
     def get_queryset(self) -> QuerySet[Post]:
