@@ -6,6 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin_exam_deployment_detail_serializers import (
     AdminExamDeploymentDetailResponseSerializer,
@@ -41,7 +42,7 @@ class AdminExamDeploymentDetailAPIView(APIView):
     def get(self, request: Request, deployment_id: int) -> Response:
         if deployment_id <= 0:
             return Response(
-                {"error_detail": "유효하지 않은 배포 상세 조회 요청입니다."},
+                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -49,7 +50,7 @@ class AdminExamDeploymentDetailAPIView(APIView):
             payload = get_exam_deployment_detail(deployment_id)
         except ExamDeploymentDetailNotFoundError:
             return Response(
-                {"error_detail": "해당 배포 정보를 찾을 수 없습니다."},
+                {"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

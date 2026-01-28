@@ -45,7 +45,6 @@ class AdminExamDeploymentExamSerializer(serializers.Serializer[Any]):
     id = serializers.IntegerField()
     title = serializers.CharField()
     thumbnail_img_url = serializers.CharField()
-    questions = AdminExamDeploymentQuestionSerializer(many=True)
 
 
 class AdminExamDeploymentDetailResponseSerializer(serializers.Serializer[Any]):
