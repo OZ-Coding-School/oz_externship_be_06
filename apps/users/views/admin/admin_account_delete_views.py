@@ -14,9 +14,8 @@ from apps.users.services.admin_account_delete_service import (
     delete_account,
 )
 
-
+#어드민 회원정보 삭제 api
 class AdminAccountDeleteAPIView(APIView):
-    """어드민 회원 정보 삭제 API."""
 
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -30,7 +29,6 @@ class AdminAccountDeleteAPIView(APIView):
         summary="어드민 페이지 회원 정보 삭제 API",
         description="""
         관리자(ADMIN)가 회원 정보를 삭제합니다.
-
         삭제 시 해당 유저와 관련된 모든 데이터가 즉시 삭제되며 되돌릴 수 없습니다.
         """,
         parameters=[
