@@ -15,6 +15,10 @@ from apps.users.views.admin.admin_student_enrollment_views import (
 )
 from apps.users.views.admin.admin_student_list_views import AdminStudentListAPIView
 from apps.users.views.admin.admin_student_score_views import AdminStudentScoreAPIView
+from apps.users.views.admin.admin_withdrawal_views import (
+    AdminWithdrawalDetailAPIView,
+    AdminWithdrawalListAPIView,
+)
 
 
 # GET, PATCH, DELETE를 같은 URL에서 처리하기 위한 combined view
@@ -63,5 +67,15 @@ urlpatterns = [
         "students/<int:student_id>/scores",
         AdminStudentScoreAPIView.as_view(),
         name="admin-student-scores",
+    ),
+    path(
+        "withdrawals/",
+        AdminWithdrawalListAPIView.as_view(),
+        name="admin-withdrawal-list",
+    ),
+    path(
+        "withdrawals/<int:withdrawal_id>/",
+        AdminWithdrawalDetailAPIView.as_view(),
+        name="admin-withdrawal-detail",
     ),
 ]
