@@ -40,3 +40,19 @@ make logs django # Docker django service 로그만 확인
    - `make fetch` - 원격(origin) 최신 내역 가져오기
    - `make sync-develop` - 원격 최신 내역 가져오기 + develop 브랜치로 이동 + pull develop 브랜치
    - `make rebase` - 로컬 develop 기준으로 리베이스
+
+## Mock 응답 설정
+
+개발 편의를 위해 환경변수로 mock 응답을 사용할 수 있습니다.
+
+- 환경변수: `USE_EXAM_MOCK`
+  - `true`  → mock 데이터 반환
+  - `false` → DB 조회 결과 반환 (기본값)
+
+로컬에서 사용 예시:
+
+```bash
+USE_EXAM_MOCK=true
+```
+
+환경변수를 켠 경우에도 테스트는 환경에 영향받지 않도록 `override_settings(USE_EXAM_MOCK=False)`로 고정합니다.
