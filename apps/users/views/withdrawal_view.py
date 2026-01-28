@@ -19,6 +19,15 @@ class WithdrawalAPIView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="회원 탈퇴 요청",
+        description="""
+회원 탈퇴를 요청합니다.
+
+## 탈퇴 처리 방식
+- 탈퇴 요청 즉시 계정이 비활성화됩니다.
+- 실제 데이터 삭제는 일정 기간(유예 기간) 후에 진행됩니다.
+- 유예 기간 내에는 계정 복구가 가능합니다.
+
+        """,
         request=WithdrawalRequestSerializer,
         responses={201: WithdrawalResponseSerializer},
     )

@@ -37,9 +37,23 @@ class SendSmsVerificationAPIView(APIView):
         tags=["accounts"],
         summary="통합 SMS 인증 발송 API",
         description="""
-        휴대폰 번호로 6자리 인증 코드를 발송합니다.
-        회원가입, 휴대폰 번호 변경 등에서 사용됩니다.
-        인증 코드는 10분간 유효합니다.
+휴대폰 번호로 6자리 인증 코드를 발송합니다.
+
+## 사용 목적
+- 회원가입 시 휴대폰 인증
+- 휴대폰 번호 변경
+- 이메일 찾기
+
+## 요청 필드
+- `phone_number`: 인증 코드를 받을 휴대폰 번호 (예: "01012345678")
+
+## 동작 방식
+1. Twilio Verify 서비스를 통해 SMS 발송
+2. 인증 코드는 10분간 유효
+3. 동일 번호로 재요청 시 기존 코드가 갱신됨
+
+## 다음 단계
+- `POST /api/v1/accounts/verification/verify-sms` API로 인증 코드 검증
         """,
         request=SendSmsVerificationSerializer,
         responses={
@@ -85,9 +99,17 @@ class VerifySmsAPIView(APIView):
         tags=["accounts"],
         summary="통합 SMS 인증 API",
         description="""
-        휴대폰으로 발송된 인증 코드를 검증합니다.
-        인증 성공 시 회원가입에 사용할 sms_token을 반환합니다.
-        sms_token은 1시간 동안 유효합니다.
+휴대폰으로 발송된 인증 코드를 검증합니다.
+
+## 응답
+- 인증 성공 시 `sms_token` 반환
+- `sms_token`은 1시간 동안 유효합니다.
+
+## 사용 용도별 다음 단계
+- **회원가입**: `POST /api/v1/accounts/signup` 요청 시 `sms_token` 필드에 포함
+- **휴대폰 번호 변경**: `PATCH /api/v1/accounts/change-phone` 요청 시 `phone_verify_token` 필드에 포함
+- **이메일 찾기**: `POST /api/v1/accounts/find-email` 요청 시 `sms_token` 필드에 포함
+
         """,
         request=VerifySmsSerializer,
         responses={
