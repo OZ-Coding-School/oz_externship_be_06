@@ -131,7 +131,7 @@ class KakaoOAuthService:
             # 신규 유저 생성
             user = User.objects.create_user(
                 email=email,
-                nickname=nickname[:10] if nickname else f"kakao_{kakao_id[:6]}",
+                nickname=nickname[:10] if nickname else f"kakao_{kakao_id[:4]}",
                 name=nickname[:30] if nickname else "카카오유저",
                 phone_number="",
                 gender=user_gender,
@@ -240,7 +240,7 @@ class NaverOAuthService:
             # 신규 유저 생성
             user = User.objects.create_user(
                 email=email,
-                nickname=nickname[:10] if nickname else f"naver_{naver_id[:6]}",
+                nickname=nickname[:10] if nickname else f"naver_{naver_id[:4]}",
                 name=name[:30] if name else "네이버유저",
                 phone_number=mobile,
                 gender=user_gender,
