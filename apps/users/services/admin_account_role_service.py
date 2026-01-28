@@ -34,7 +34,8 @@ def update_account_role(
 
     return user
 
-#기존 역할 관련 데이터 삭제
+
+# 기존 역할 관련 데이터 삭제
 def _clear_role_relations(user: User, role: str) -> None:
     if role == User.Role.TA:
         TrainingAssistant.objects.filter(user=user).delete()
@@ -52,7 +53,7 @@ def _create_role_relations(
     cohort: Cohort | None,
     assigned_courses: list[Course] | None,
 ) -> None:
-    if role == User.Role.TA and cohort: #새 역할 데이터 생성
+    if role == User.Role.TA and cohort:  # 새 역할 데이터 생성
         TrainingAssistant.objects.create(user=user, cohort=cohort)
     elif role == User.Role.STUDENT and cohort:
         CohortStudent.objects.create(user=user, cohort=cohort)

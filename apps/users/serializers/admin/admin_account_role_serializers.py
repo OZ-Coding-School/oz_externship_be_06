@@ -5,7 +5,8 @@ from rest_framework import serializers
 from apps.courses.models import Cohort, Course
 from apps.users.models import User
 
-#어드민 권한 변경 요철
+
+# 어드민 권한 변경 요철
 class AdminAccountRoleUpdateSerializer(serializers.Serializer[Any]):
 
     role = serializers.ChoiceField(
@@ -36,9 +37,7 @@ class AdminAccountRoleUpdateSerializer(serializers.Serializer[Any]):
         assigned_courses = attrs.get("assigned_courses")
 
         if role in ("TA", "STUDENT") and not cohort_id:
-            raise serializers.ValidationError(
-                {"cohort_id": [f"{role} 권한으로 변경 시 기수 선택은 필수입니다."]}
-            )
+            raise serializers.ValidationError({"cohort_id": [f"{role} 권한으로 변경 시 기수 선택은 필수입니다."]})
 
         if role in ("LC", "OM") and not assigned_courses:
             raise serializers.ValidationError(

@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from typing import Any
 
 from django.core.cache import cache
 from django.test import TestCase
@@ -73,7 +74,7 @@ class ExamCheatingUpdateAPITest(TestCase):
             role=User.Role.USER,
         )
 
-    def _auth_headers(self, user: User) -> dict[str, str]:
+    def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)
         return {"Authorization": f"Bearer {token}"}
 

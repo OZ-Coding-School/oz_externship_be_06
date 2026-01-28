@@ -14,7 +14,8 @@ from apps.users.services.admin_account_delete_service import (
     delete_account,
 )
 
-#어드민 회원정보 삭제 api
+
+# 어드민 회원정보 삭제 api
 class AdminAccountDeleteAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdmin]

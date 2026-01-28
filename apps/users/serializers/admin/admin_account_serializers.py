@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from apps.users.models import User
 
+
 # 어드민 회원 정보 수정
 class AdminAccountUpdateRequestSerializer(serializers.Serializer[Any]):
 
@@ -32,7 +33,8 @@ class AdminAccountUpdateRequestSerializer(serializers.Serializer[Any]):
             raise serializers.ValidationError("이름은 빈 값일 수 없습니다.")
         return value.strip()
 
-#어드민 회원 정보 수정 응답
+
+# 어드민 회원 정보 수정 응답
 class AdminAccountUpdateResponseSerializer(serializers.ModelSerializer[User]):
 
     gender = serializers.CharField(source="get_gender_display")

@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from typing import Any
 
 from django.test import TestCase
 from rest_framework import status
@@ -81,7 +82,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
     def _get_url(self, account_id: int) -> str:
         return f"/api/v1/admin/accounts/{account_id}/role/"
 
-    def _auth_headers(self, user: User) -> dict[str, str]:
+    def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
@@ -113,9 +114,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
 
         self.target_user.refresh_from_db()
         self.assertEqual(self.target_user.role, User.Role.TA)
-        self.assertTrue(
-            TrainingAssistant.objects.filter(user=self.target_user, cohort=self.cohort).exists()
-        )
+        self.assertTrue(TrainingAssistant.objects.filter(user=self.target_user, cohort=self.cohort).exists())
 
     def test_change_role_to_ta_without_cohort_fails(self) -> None:
         """조교로 변경 시 기수가 없으면 실패한다."""
@@ -142,9 +141,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
 
         self.target_user.refresh_from_db()
         self.assertEqual(self.target_user.role, User.Role.STUDENT)
-        self.assertTrue(
-            CohortStudent.objects.filter(user=self.target_user, cohort=self.cohort).exists()
-        )
+        self.assertTrue(CohortStudent.objects.filter(user=self.target_user, cohort=self.cohort).exists())
 
     def test_change_role_to_lc_with_courses(self) -> None:
         """러닝코치로 변경 시 담당 과정을 지정할 수 있다."""

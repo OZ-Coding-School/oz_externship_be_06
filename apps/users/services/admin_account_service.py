@@ -17,7 +17,8 @@ class AccountUpdateConflictError(Exception):
         self.message = message
         super().__init__(message)
 
-#회원 정보 수정
+
+# 회원 정보 수정
 def update_account(account_id: int, data: dict[str, Any]) -> User:
     try:
         user = User.objects.get(id=account_id)

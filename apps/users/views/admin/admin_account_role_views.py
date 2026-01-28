@@ -17,7 +17,8 @@ from apps.users.services.admin_account_role_service import (
     update_account_role,
 )
 
-#어드민 권한 변경 api
+
+# 어드민 권한 변경 api
 class AdminAccountRoleUpdateAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdmin]

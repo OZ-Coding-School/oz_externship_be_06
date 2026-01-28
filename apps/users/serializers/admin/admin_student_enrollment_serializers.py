@@ -6,8 +6,8 @@ from apps.users.models import User
 from apps.users.models.enrollment import StudentEnrollmentRequest
 
 
+# 등록 요청 유저 정보
 class EnrollmentUserSerializer(serializers.Serializer[Any]):
-    """등록 요청 유저 정보 시리얼라이저."""
 
     id = serializers.IntegerField()
     email = serializers.EmailField()
@@ -16,23 +16,23 @@ class EnrollmentUserSerializer(serializers.Serializer[Any]):
     gender = serializers.CharField()
 
 
+# 등록 요청 기수 정보
 class EnrollmentCohortSerializer(serializers.Serializer[Any]):
-    """등록 요청 기수 정보 시리얼라이저."""
 
     id = serializers.IntegerField()
     number = serializers.IntegerField()
 
 
+# 등록 요청 과정 정보
 class EnrollmentCourseSerializer(serializers.Serializer[Any]):
-    """등록 요청 과정 정보 시리얼라이저."""
 
     id = serializers.IntegerField()
     name = serializers.CharField()
     tag = serializers.CharField()
 
 
+# 어드민 수강생 등록 요청 목록
 class AdminStudentEnrollmentListSerializer(serializers.ModelSerializer[StudentEnrollmentRequest]):
-    """어드민 수강생 등록 요청 목록 시리얼라이저."""
 
     user = serializers.SerializerMethodField()
     cohort = serializers.SerializerMethodField()

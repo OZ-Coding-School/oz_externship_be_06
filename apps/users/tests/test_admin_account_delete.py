@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 from django.test import TestCase
 from rest_framework import status
@@ -89,7 +90,7 @@ class AdminAccountDeleteAPITest(TestCase):
     def _get_url(self, account_id: int) -> str:
         return f"/api/v1/admin/accounts/{account_id}/"
 
-    def _auth_headers(self, user: User) -> dict[str, str]:
+    def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 

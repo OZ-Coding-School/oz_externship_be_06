@@ -19,7 +19,8 @@ from apps.users.services.admin_account_service import (
     update_account,
 )
 
-#어드민 회원 정보 수정
+
+# 어드민 회원 정보 수정
 class AdminAccountUpdateAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
