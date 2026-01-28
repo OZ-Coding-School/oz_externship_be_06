@@ -55,4 +55,4 @@ make logs django # Docker django service 로그만 확인
 USE_EXAM_MOCK=true
 ```
 
-테스트는 환경에 영향받지 않도록 `override_settings(USE_EXAM_MOCK=False)`로 고정되어 있습니다.
+환경변수를 켠 경우에도 테스트는 환경에 영향받지 않도록 `override_settings(USE_EXAM_MOCK=False)`로 고정합니다.
