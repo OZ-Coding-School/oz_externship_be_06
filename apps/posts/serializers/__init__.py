@@ -1,10 +1,4 @@
 from .post_category import PostCategorySerializer
-
-__all__ = [
-    "PostCategorySerializer",
-]
-
-from .post_category import PostCategorySerializer
 from .post_comment import (
     PostCommentCreateSerializer,
     PostCommentDeleteResponseSerializer,
@@ -30,4 +24,8 @@ __all__ = [
     "PostCommentCreateSerializer",
     "PostCommentUpdateSerializer",
     "PostCommentDeleteResponseSerializer",
+from .post_category import PostCategorySerializer
+
+__all__ = [
+    "PostCategorySerializer",
 ]
