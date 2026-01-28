@@ -72,7 +72,7 @@ class AdminExamListAPITest(TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.json()["error_detail"],
-            ErrorMessages.UNAUTHORIZED,
+            ErrorMessages.UNAUTHORIZED.value,
         )
 
     def test_403_when_not_admin(self) -> None:
@@ -83,7 +83,7 @@ class AdminExamListAPITest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.json()["error_detail"],
-            ErrorMessages.NO_EXAM_LIST_PERMISSION,
+            ErrorMessages.NO_EXAM_LIST_PERMISSION.value,
         )
 
     def test_400_when_invalid_sort(self) -> None:
@@ -94,7 +94,7 @@ class AdminExamListAPITest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error_detail"],
-            ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST,
+            ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
         )
 
     def test_400_when_invalid_order(self) -> None:
@@ -105,7 +105,7 @@ class AdminExamListAPITest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error_detail"],
-            ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST,
+            ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
         )
 
     def test_200_success_default_sort(self) -> None:

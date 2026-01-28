@@ -35,14 +35,14 @@ class AdminExamListService:
         order_v = order or cls.DEFAULT_ORDER
 
         if sort_v not in cls.ALLOWED_SORT or order_v not in cls.ALLOWED_ORDER:
-            raise InvalidAdminExamListParams(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            raise InvalidAdminExamListParams(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value)
 
         subject_id_v: int | None = None
         if subject_id:
             try:
                 subject_id_v = int(subject_id)
             except ValueError:
-                raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST)
+                raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value)
 
         return AdminExamListParams(
             search_keyword=search_keyword or None,

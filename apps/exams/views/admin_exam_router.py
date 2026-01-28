@@ -10,6 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin_exam_serializers import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
@@ -53,7 +54,7 @@ class AdminExamRouterAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "유효하지 않은 조회 요청",
-                        value={"error_detail": "유효하지 않은 조회 요청입니다."},
+                        value={"error_detail": ErrorMessages.INVALID_EXAM_LIST_REQUEST.value},
                     )
                 ],
             ),
@@ -63,7 +64,7 @@ class AdminExamRouterAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "인증 실패",
-                        value={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."},
+                        value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
                     )
                 ],
             ),
@@ -73,7 +74,7 @@ class AdminExamRouterAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "권한 없음",
-                        value={"error_detail": "쪽지시험 목록 조회 권한이 없습니다."},
+                        value={"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION.value},
                     )
                 ],
             ),

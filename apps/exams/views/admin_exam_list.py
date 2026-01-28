@@ -42,19 +42,19 @@ from apps.exams.services.admin_exam_list import (
             description="Bad Request",
             examples=[
                 OpenApiExample(
-                    "유효하지 않은 조회 요청", value={"error_detail": ErrorMessages.INVALID_EXAM_LIST_REQUEST}
+                    "유효하지 않은 조회 요청", value={"error_detail": ErrorMessages.INVALID_EXAM_LIST_REQUEST.value}
                 )
             ],
         ),
         401: OpenApiResponse(
             response=ErrorDetailSerializer,
             description="Unauthorized",
-            examples=[OpenApiExample("인증 실패", value={"error_detail": ErrorMessages.UNAUTHORIZED})],
+            examples=[OpenApiExample("인증 실패", value={"error_detail": ErrorMessages.UNAUTHORIZED.value})],
         ),
         403: OpenApiResponse(
             response=ErrorDetailSerializer,
             description="Forbidden",
-            examples=[OpenApiExample("권한 없음", value={"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION})],
+            examples=[OpenApiExample("권한 없음", value={"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION.value})],
         ),
     },
 )
@@ -66,12 +66,12 @@ class AdminExamListView(ListAPIView[Exam]):
     def handle_exception(self, exc: Exception) -> Response:
         if isinstance(exc, NotAuthenticated):
             return Response(
-                {"error_detail": ErrorMessages.UNAUTHORIZED},
+                {"error_detail": ErrorMessages.UNAUTHORIZED.value},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         if isinstance(exc, PermissionDenied):
             return Response(
-                {"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION},
+                {"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION.value},
                 status=status.HTTP_403_FORBIDDEN,
             )
         if isinstance(exc, InvalidAdminExamListParams):
