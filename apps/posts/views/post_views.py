@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Type
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import F, QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.request import Request
@@ -19,6 +19,45 @@ from ..serializers.post_serializers import (
     PostListSerializer,
 )
 from .post_permissions import IsAuthorOrReadOnly
+
+
+class PostOrderingFilter(filters.OrderingFilter):
+    ordering_param: str = "sort"
+
+    def get_ordering(self, request: Request, queryset: QuerySet[Post], view: Any) -> Optional[List[str]]:
+        params = request.query_params.get(self.ordering_param)
+
+        if params:
+            mapping: Dict[str, str] = {
+                "latest": "-created_at",
+                "most_views": "-view_count",
+                "most_likes": "-like_count",
+                "most_comments": "-comment_count",
+            }
+            sort_field = mapping.get(params)
+            if sort_field:
+                return [sort_field]
+
+        return ["-created_at"]
+
+
+class PostSearchFilter(filters.SearchFilter):
+    search_type_param = "search_type"
+
+    def get_search_fields(self, view: Any, request: Request) -> List[str]:
+        search_type: Optional[str] = request.query_params.get(self.search_type_param)
+
+        mapping: Dict[str, List[str]] = {
+            "author": ["author__nickname"],
+            "title": ["title"],
+            "content": ["content"],
+            "title_or_content": ["title", "content"],
+        }
+
+        if search_type and search_type in mapping:
+            return mapping[search_type]
+
+        return ["title", "content", "author__nickname"]
 
 
 @extend_schema_view(
@@ -52,45 +91,39 @@ from .post_permissions import IsAuthorOrReadOnly
     ),
     destroy=extend_schema(
         summary="게시글 삭제",
-        responses={
-            200: inline_serializer(name="PostDeleteResponse", fields={"detail": CharField()}),
-            401: inline_serializer(name="Error401Response", fields={"error_detail": CharField()}),
-            403: inline_serializer(name="Error403Response", fields={"error_detail": CharField()}),
-            404: inline_serializer(name="Error404Response", fields={"error_detail": CharField()}),
-        },
+        responses={200: inline_serializer(name="PostDeleteResponse", fields={"detail": CharField()})},
     ),
 )
 @extend_schema(tags=["posts"])
 class PostViewSet(viewsets.ModelViewSet[Post]):
-    queryset = Post.objects.annotate(
-        comment_count=Count("comments", distinct=True),
-        like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True),
-    )
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    queryset = Post.objects.all()
+    filter_backends = [PostSearchFilter, PostOrderingFilter]
     search_fields = ["title", "content", "author__nickname"]
-    ordering_fields = ["created_at", "view_count", "like_count", "comment_count"]
-    ordering = ["-created_at"]
+
+    ordering_fields = ["latest", "most_views", "most_likes", "most_comments"]
+    ordering = ["latest"]
+
     http_method_names = ["get", "post", "put", "delete", "head", "options"]
+
+    def get_queryset(self) -> QuerySet[Post]:
+        return Post.objects.select_related("author").all()
 
     def handle_exception(self, exc: Exception) -> Response:
         """
-        이 ViewSet 내에서 발생하는 예외만 가공합니다.
-        타 앱(exams, qna 등)에는 전혀 영향을 주지 않습니다.
+        PostViewSet 내에서 발생하는 404, 401, 403 등 모든 예외를
+        {"error_detail": "메시지"} 형식으로 변환합니다.
         """
         response = super().handle_exception(exc)
 
-        if response is not None and isinstance(response.data, dict):
-            detail = response.data.get("detail", response.data)
+        if response is not None:
+            if isinstance(response.data, dict):
+                detail = response.data.get("detail", response.data)
+            else:
+                detail = response.data
+
             response.data = {"error_detail": detail}
 
         return response
-
-    def get_queryset(self) -> QuerySet[Post]:
-        queryset: QuerySet[Post] = super().get_queryset()
-        category_id = self.request.query_params.get("category_id")
-        if category_id:
-            queryset = queryset.filter(category_id=int(category_id))
-        return queryset
 
     def get_permissions(self) -> List[permissions.BasePermission]:
         if self.action in ["create", "update", "destroy"]:
@@ -109,10 +142,12 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         instance = serializer.instance
+
         if instance is None:
             return Response(
                 {"error_detail": "데이터 생성에 실패했습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
         return Response(
             {"detail": "게시글이 성공적으로 등록되었습니다.", "pk": instance.id}, status=status.HTTP_201_CREATED
         )
@@ -143,6 +178,11 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         instance = self.get_object()
-        instance.view_count += 1
-        instance.save()
-        return super().retrieve(request, *args, **kwargs)
+
+        instance.view_count = F("view_count") + 1
+        instance.save(update_fields=["view_count"])
+
+        instance.refresh_from_db()
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
