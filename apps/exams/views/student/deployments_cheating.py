@@ -12,8 +12,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
@@ -23,7 +21,11 @@ from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingResponseSerializer,
 )
 from apps.exams.services.grading import grade_submission
-from apps.exams.services.student.deployments_status import is_exam_active
+from apps.exams.services.student.deployments_status import (
+    get_exam_status,
+    is_deployment_active_now,
+)
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
@@ -74,7 +76,7 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if not is_exam_active(deployment):
+        if not is_deployment_active_now(deployment):
             return Response(
                 {"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
                 status=status.HTTP_410_GONE,
@@ -121,10 +123,11 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
                         submission.save(update_fields=["cheating_count", "answers_json"])
                     grade_submission(submission)
                 cache.delete(submit_lock_key)
+        status_value = ExamStatus.CLOSED.value if is_closed else get_exam_status(deployment).value
         serializer = self.serializer_class(
             data={
                 "cheating_count": cheating_count,
-                "exam_status": (ExamStatus.CLOSED if is_closed else ExamStatus.ACTIVATED).value,
+                "exam_status": status_value,
                 "force_submit": is_closed,
             }
         )

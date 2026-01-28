@@ -9,8 +9,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.views.mixins import ExamsExceptionMixin
-
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment
 from apps.exams.permissions import IsStudentRole
@@ -18,7 +16,8 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
 )
-from apps.exams.services.student.deployments_status import is_exam_active
+from apps.exams.services.student.deployments_status import get_exam_status
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
@@ -64,10 +63,11 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        is_closed = not is_exam_active(deployment)
+        exam_status = get_exam_status(deployment)
+        is_closed = exam_status == ExamStatus.CLOSED
         serializer = self.serializer_class(
             data={
-                "exam_status": (ExamStatus.CLOSED if is_closed else ExamStatus.ACTIVATED).value,
+                "exam_status": exam_status.value,
                 "force_submit": is_closed,
             }
         )

@@ -8,6 +8,11 @@ from rest_framework.exceptions import ValidationError
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.exams.services.student.deployments_status import (
+    is_deployment_activated,
+    is_deployment_opened,
+    is_deployment_time_closed,
+)
 from apps.users.models import User
 
 
@@ -26,13 +31,13 @@ def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     except ExamDeployment.DoesNotExist as exc:
         raise ValidationError({"detail": ErrorMessages.EXAM_NOT_FOUND.value}) from exc
 
-    if deployment.status != ExamDeployment.StatusChoices.ACTIVATED:
+    if not is_deployment_activated(deployment):
         raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
 
     now = timezone.now()
-    if now < deployment.open_at:
+    if not is_deployment_opened(deployment, now=now):
         raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
-    if now > deployment.close_at:
+    if is_deployment_time_closed(deployment, now=now):
         raise ValidationError({"detail": ErrorMessages.EXAM_CLOSED.value})
 
     submission, _created = ExamSubmission.objects.get_or_create(

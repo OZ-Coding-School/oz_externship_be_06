@@ -9,6 +9,7 @@ from rest_framework.exceptions import APIException, ErrorDetail
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers import ErrorResponseSerializer
+from apps.exams.services.student.deployments_status import is_deployment_time_closed
 from apps.users.models import User
 
 
@@ -50,7 +51,7 @@ def submit_exam(
         raise InvalidSubmissionError()
 
     # 시험 마감 후 제출
-    if timezone.now() > submission.deployment.close_at:
+    if is_deployment_time_closed(submission.deployment):
         raise InvalidSubmissionError()
 
     # 이미 제출됨
