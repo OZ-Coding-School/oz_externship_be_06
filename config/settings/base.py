@@ -174,12 +174,10 @@ CORS_ALLOW_HEADERS = [
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
-
     # NOTE: DEFAULT_AUTHENTICATION_CLASSES를 JWTAuthentication -> ActiveUserJWTAuthentication으로 변경.
     #       기존 JWTAuthentication만 사용 시, is_active=False(탈퇴/비활성) 계정도 유효한 access 토큰으로 IsAuthenticated를 통과해
     #       API 호출이 가능할 수 있음. 이를 방지하기 위해 커스텀 인증에서 매 요청마다 is_active를 검사해 인증 단계에서 차단한다.
     "DEFAULT_AUTHENTICATION_CLASSES": ("apps.users.authentication.ActiveUserJWTAuthentication",),
-
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,

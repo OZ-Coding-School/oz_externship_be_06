@@ -1,9 +1,11 @@
+from datetime import date
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
-from datetime import date
-from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class CustomJwtAuthTests(TestCase):
     client: APIClient
@@ -31,7 +33,7 @@ class CustomJwtAuthTests(TestCase):
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
-    def test_inactive_user_cannot_access_me(self):
+    def test_inactive_user_cannot_access_me(self) -> None:
         me_url = "/api/v1/accounts/me/"
         response = self.client.get(me_url)
 
