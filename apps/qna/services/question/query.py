@@ -1,12 +1,15 @@
+import logging
 from typing import Any
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, F, Q, QuerySet
 
 from apps.qna.exceptions.question_exception import (
     QuestionBaseException,
     QuestionNotFoundException,
 )
 from apps.qna.models import Question
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionQueryService:
@@ -42,14 +45,41 @@ class QuestionQueryService:
             elif sort == "oldest":
                 queryset = queryset.order_by("created_at")
             elif sort == "most_views":
-                queryset = queryset.order_by("-view_count")  # 조회수 내림차순
+                queryset = queryset.order_by("-view_count")
 
             if not queryset.exists():
-                raise QuestionNotFoundException()
-
+                raise QuestionNotFoundException(detail="조회 가능한 질문이 존재하지 않습니다.")
             return queryset
 
         except QuestionNotFoundException:
             raise
         except Exception as e:
-            raise QuestionBaseException(detail=f"질문 목록 조회 중 오류가 발생했습니다: {str(e)}")
+            logger.error(f"유효하지 않은 목록 조회 요청입니다.\nMessage: {str(e)}", exc_info=True)
+            raise QuestionBaseException(detail="유효하지 않은 목록 조회 요청입니다.")
+
+    @staticmethod
+    def get_question_detail(question_id: int) -> Question:
+        """질문 상세 정보 조회 (조회수 증가 포함)"""
+        try:
+            # 질문 조회 및 관련 데이터 Loading
+            question = (
+                Question.objects.select_related("author", "category__parent__parent")
+                .prefetch_related("images", "answers__author", "answers__comments__author")
+                .get(id=question_id)
+            )
+
+            # 조회수 증가
+            Question.objects.filter(id=question_id).update(view_count=F("view_count") + 1)
+
+            # 메모리 상의 객체도 업데이트 (응답용)
+            question.view_count += 1
+
+            return question
+
+        except Question.DoesNotExist:
+            raise QuestionNotFoundException(detail="해당 질문을 찾을 수 없습니다.")
+        except Exception as e:
+            logger.error(
+                f"유효하지 않은 질문 상세 조회 요청입니다. ID: {question_id}\nMessage: {str(e)}", exc_info=True
+            )
+            raise QuestionBaseException(detail="유효하지 않은 질문 상세 조회 요청입니다.")
