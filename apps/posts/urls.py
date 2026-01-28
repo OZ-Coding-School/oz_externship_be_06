@@ -1,8 +1,10 @@
 from django.urls import path
 
-from apps.posts.views.post_category_views import PostCategoryListAPIView
-
-from .views import PostCommentListCreateAPIView, PostCommentRetrieveUpdateDestroyAPIView
+from .views import (
+    PostCategoryListAPIView,
+    PostCommentListCreateAPIView,
+    PostCommentRetrieveUpdateDestroyAPIView,
+)
 
 urlpatterns = [
     # 댓글 목록 / 생성
@@ -17,8 +19,5 @@ urlpatterns = [
         PostCommentRetrieveUpdateDestroyAPIView.as_view(),
         name="post-comment-rud",
     ),
-from apps.posts.views.post_category_views import PostCategoryListAPIView
-
-urlpatterns = [
     path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
 ]
