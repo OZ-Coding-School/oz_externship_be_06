@@ -11,13 +11,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.serializers.admin_exam_serializers import (
+from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.serializers.error import ErrorDetailSerializer
-from apps.exams.views.admin_exam_list import AdminExamListView
-from apps.exams.views.admin_exam_views import AdminExamCreateAPIView
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
+from apps.exams.views.admin.exams_list import AdminExamListView
 
 
 class AdminExamRouterAPIView(APIView):
@@ -49,7 +49,7 @@ class AdminExamRouterAPIView(APIView):
         responses={
             200: OpenApiResponse(description="OK"),
             400: OpenApiResponse(
-                response=ErrorDetailSerializer,
+                response=ErrorResponseSerializer,
                 description="Bad Request",
                 examples=[
                     OpenApiExample(
@@ -59,7 +59,7 @@ class AdminExamRouterAPIView(APIView):
                 ],
             ),
             401: OpenApiResponse(
-                response=ErrorDetailSerializer,
+                response=ErrorResponseSerializer,
                 description="Unauthorized",
                 examples=[
                     OpenApiExample(
@@ -69,7 +69,7 @@ class AdminExamRouterAPIView(APIView):
                 ],
             ),
             403: OpenApiResponse(
-                response=ErrorDetailSerializer,
+                response=ErrorResponseSerializer,
                 description="Forbidden",
                 examples=[
                     OpenApiExample(
@@ -92,11 +92,11 @@ class AdminExamRouterAPIView(APIView):
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,
-            400: OpenApiResponse(ErrorDetailSerializer, description="유효하지 않은 시험 생성 요청"),
-            401: OpenApiResponse(ErrorDetailSerializer, description="인증 실패"),
-            403: OpenApiResponse(ErrorDetailSerializer, description="쪽지시험 생성 권한 없음"),
-            404: OpenApiResponse(ErrorDetailSerializer, description="과목 정보 없음"),
-            409: OpenApiResponse(ErrorDetailSerializer, description="동일한 이름의 시험 존재"),
+            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 시험 생성 요청"),
+            401: OpenApiResponse(ErrorResponseSerializer, description="인증 실패"),
+            403: OpenApiResponse(ErrorResponseSerializer, description="쪽지시험 생성 권한 없음"),
+            404: OpenApiResponse(ErrorResponseSerializer, description="과목 정보 없음"),
+            409: OpenApiResponse(ErrorResponseSerializer, description="동일한 이름의 시험 존재"),
         },
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:

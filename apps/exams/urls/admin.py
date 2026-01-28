@@ -9,8 +9,8 @@ from apps.exams.views.admin.deployments_detail import (
 from apps.exams.views.admin.deployments_status import (
     AdminExamDeploymentStatusAPIView,
 )
-from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
 from apps.exams.views.admin.exams_delete import AdminExamDeleteAPIView
+from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
 from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView

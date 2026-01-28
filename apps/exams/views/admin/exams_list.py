@@ -15,8 +15,8 @@ from apps.core.utils.pagination import AdminExamPagination
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_exam_list import AdminExamListItemSerializer
-from apps.exams.serializers.error import ErrorDetailSerializer
+from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin_exam_list import (
     AdminExamListService,
     InvalidAdminExamListParams,
@@ -38,7 +38,7 @@ from apps.exams.services.admin_exam_list import (
     responses={
         200: OpenApiResponse(description="OK"),
         400: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Bad Request",
             examples=[
                 OpenApiExample(
@@ -47,12 +47,12 @@ from apps.exams.services.admin_exam_list import (
             ],
         ),
         401: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Unauthorized",
             examples=[OpenApiExample("인증 실패", value={"error_detail": ErrorMessages.UNAUTHORIZED.value})],
         ),
         403: OpenApiResponse(
-            response=ErrorDetailSerializer,
+            response=ErrorResponseSerializer,
             description="Forbidden",
             examples=[OpenApiExample("권한 없음", value={"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION.value})],
         ),
