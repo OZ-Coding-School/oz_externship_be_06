@@ -74,11 +74,10 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
 
     def handle_exception(self, exc: Exception) -> Response:
         response = super().handle_exception(exc)
+        if isinstance(response.data, dict) and "error_detail" in response.data:
+            return response
         if isinstance(response.data, dict):
-            if "detail" in response.data:
-                response.data = {"error_detail": response.data["detail"]}
-            else:
-                response.data = {"error_detail": response.data}
+            response.data = {"error_detail": response.data}
         return response
 
     def get_queryset(self) -> QuerySet[Post]:
@@ -89,7 +88,7 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
         return queryset
 
     def get_permissions(self) -> List[permissions.BasePermission]:
-        if self.action in ["update", "destroy"]:
+        if self.action in ["create", "update", "destroy"]:
             return [permissions.IsAuthenticated(), IsAuthorOrReadOnly()]
         return [permissions.AllowAny()]
 
@@ -102,10 +101,13 @@ class PostViewSet(viewsets.ModelViewSet[Post]):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer = self.get_serializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        instance: Post = serializer.instance
+        instance = serializer.instance
+        if instance is None:
+            return Response(
+                {"error_detail": "데이터 생성에 실패했습니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         return Response(
             {"detail": "게시글이 성공적으로 등록되었습니다.", "pk": instance.id}, status=status.HTTP_201_CREATED
         )
