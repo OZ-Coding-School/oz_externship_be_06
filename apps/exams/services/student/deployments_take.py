@@ -4,9 +4,11 @@ from dataclasses import dataclass
 from typing import Any
 
 from django.utils import timezone
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.services.student.deployments_status import (
     is_deployment_activated,
@@ -38,7 +40,7 @@ def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     if not is_deployment_opened(deployment, now=now):
         raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
     if is_deployment_time_closed(deployment, now=now):
-        raise ValidationError({"detail": ErrorMessages.EXAM_CLOSED.value})
+        raise ErrorDetailException(ErrorMessages.EXAM_CLOSED.value, status.HTTP_410_GONE)
 
     submission, _created = ExamSubmission.objects.get_or_create(
         submitter=user,

@@ -123,7 +123,7 @@ class TakeExamAPITest(APITestCase):
         self.deployment.save()
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self._take_exam_url())
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_410_GONE)
         self.assertIn("error_detail", response.data)
         self.assertIn(ErrorMessages.EXAM_CLOSED.value, str(response.data["error_detail"]))
 
