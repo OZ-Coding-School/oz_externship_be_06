@@ -26,13 +26,15 @@ from apps.users.utils.social_login import (
 
 logger = logging.getLogger(__name__)
 
-#프론트엔드 리다이렉트
+
+# 프론트엔드 리다이렉트
 def frontend_redirect(*, provider: str, is_success: bool = True) -> HttpResponseRedirect:
     base = getattr(settings, "FRONTEND_SOCIAL_REDIRECT_URL", "") or "/"
     params = {"provider": provider, "is_success": str(is_success).lower()}
     return redirect(f"{base}?{urlencode(params)}")
 
-#인증토큰을 쿠키에 설정
+
+# 인증토큰을 쿠키에 설정
 def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -> None:
     secure = getattr(settings, "SESSION_COOKIE_SECURE", False)
     samesite = cast(
@@ -61,7 +63,8 @@ def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -
         path="/",
     )
 
-#카카오로그인
+
+# 카카오로그인
 class KakaoLoginStartAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -85,7 +88,8 @@ class KakaoLoginStartAPIView(APIView):
         )
         return redirect(authorize_url)
 
-#카카오 로그인 콜백
+
+# 카카오 로그인 콜백
 class KakaoCallbackAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -142,7 +146,8 @@ class KakaoCallbackAPIView(APIView):
         finally:
             request.session.pop("oauth_state_kakao", None)
 
-#네이버 로그인
+
+# 네이버 로그인
 class NaverLoginStartAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -166,7 +171,8 @@ class NaverLoginStartAPIView(APIView):
         )
         return redirect(authorize_url)
 
-#네이버 로그인 콜백
+
+# 네이버 로그인 콜백
 class NaverCallbackAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]

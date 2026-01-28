@@ -2,7 +2,8 @@ from typing import Any
 
 from rest_framework import serializers
 
-#카카오 프로필 검증
+
+# 카카오 프로필 검증
 class KakaoProfileSerializer(serializers.Serializer[Any]):
 
     id = serializers.IntegerField()
@@ -17,7 +18,8 @@ class KakaoProfileSerializer(serializers.Serializer[Any]):
 
         return attrs
 
-#네이버 프로필 검증
+
+# 네이버 프로필 검증
 class NaverProfileSerializer(serializers.Serializer[Any]):
 
     id = serializers.CharField()
