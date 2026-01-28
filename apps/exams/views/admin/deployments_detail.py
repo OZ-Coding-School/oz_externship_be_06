@@ -12,11 +12,11 @@ from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.permissions import IsExamStaff
-from apps.exams.serializers.admin_exam_deployment_detail_serializers import (
+from apps.exams.serializers.admin.deployments_detail import (
     AdminExamDeploymentDetailResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_exam_deployment_detail_service import (
+from apps.exams.services.admin.deployments_detail import (
     ExamDeploymentDetailNotFoundError,
     get_exam_deployment_detail,
 )
@@ -42,10 +42,22 @@ class AdminExamDeploymentDetailAPIView(APIView):
         """,
         responses={
             200: AdminExamDeploymentDetailResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description="유효하지 않은 배포 상세 조회 요청입니다."),
-            401: OpenApiResponse(ErrorResponseSerializer, description="자격 인증 데이터가 제공되지 않았습니다."),
-            403: OpenApiResponse(ErrorResponseSerializer, description="쪽지시험 배포 상세 조회 권한이 없습니다."),
-            404: OpenApiResponse(ErrorResponseSerializer, description="해당 배포 정보를 찾을 수 없습니다."),
+            400: OpenApiResponse(
+                ErrorResponseSerializer,
+                description=ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value,
+            ),
+            401: OpenApiResponse(
+                ErrorResponseSerializer,
+                description=ErrorMessages.UNAUTHORIZED.value,
+            ),
+            403: OpenApiResponse(
+                ErrorResponseSerializer,
+                description=ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value,
+            ),
+            404: OpenApiResponse(
+                ErrorResponseSerializer,
+                description=ErrorMessages.DEPLOYMENT_NOT_FOUND.value,
+            ),
         },
     )
     def get(self, request: Request, deployment_id: int) -> Response:

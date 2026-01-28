@@ -11,7 +11,7 @@ from apps.exams.views.admin.exams_delete import AdminExamDeleteAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
 from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView
-from apps.exams.views.admin_exam_deployment_detail_views import (
+from apps.exams.views.admin.deployments_detail import (
     AdminExamDeploymentDetailAPIView,
 )
 
