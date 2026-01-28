@@ -111,7 +111,9 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json()["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다.")
+        self.assertEqual(
+            response.json()["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
+        )
 
     def test_admin_exam_create_returns_403_when_not_staff(self) -> None:
         image_file = self._create_image_file()
