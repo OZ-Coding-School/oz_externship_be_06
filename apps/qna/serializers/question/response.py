@@ -1,0 +1,76 @@
+from typing import Any
+
+from rest_framework import serializers
+
+from apps.qna.models import Question
+from apps.qna.serializers.base import QnAVersionedValidationMixin
+from apps.qna.serializers.question.common import (
+    QuestionAuthorSerializer,
+    QuestionCategoryListSerializer,
+)
+from apps.qna.utils.content_parser import ContentParser
+
+# ==============================================================================
+# QUESTION LIST (GET /api/v1/qna/questions)
+# ==============================================================================
+
+
+class QuestionQuerySerializer(QnAVersionedValidationMixin, serializers.Serializer[Any]):
+    """
+    질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
+    """
+
+    search_keyword = serializers.CharField(required=False, allow_blank=True)
+    category_id = serializers.IntegerField(required=False)
+    answer_status = serializers.ChoiceField(choices=["waiting", "answered"], required=False)
+    sort = serializers.ChoiceField(choices=["latest", "oldest", "most_views"], default="latest")
+    page = serializers.IntegerField(default=1)
+    size = serializers.IntegerField(default=10)
+
+
+class QuestionListSerializer(serializers.ModelSerializer[Question]):
+    """
+    질의응답 목록 조회 카드 형태 항목 시리얼라이저
+    """
+
+    category = QuestionCategoryListSerializer(read_only=True)
+    author = QuestionAuthorSerializer(read_only=True)
+    content_preview = serializers.SerializerMethodField()
+    answer_count = serializers.IntegerField(read_only=True)
+    thumbnail_img_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "category",
+            "author",
+            "title",
+            "content_preview",
+            "answer_count",
+            "view_count",
+            "created_at",
+            "thumbnail_img_url",
+        ]
+
+    def get_content_preview(self, obj: Question) -> str:
+        """본문 프리뷰 생성"""
+        return obj.content[:50] + "..." if len(obj.content) > 100 else obj.content
+
+    def get_thumbnail_img_url(self, obj: Question) -> Any:
+        """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
+        return ContentParser.extract_thumbnail_img_url(obj.content)
+
+
+# ==============================================================================
+# ACTION RESPONSES (POST/PUT/DELETE Success)
+# ==============================================================================
+
+
+class QuestionCreateResponseSerializer(QnAVersionedValidationMixin, serializers.Serializer[Any]):
+    """
+    질문 등록 응답 시리얼라이저
+    """
+
+    message = serializers.CharField(default="질문이 성공적으로 등록되었습니다.")
+    question_id = serializers.IntegerField(source="id")

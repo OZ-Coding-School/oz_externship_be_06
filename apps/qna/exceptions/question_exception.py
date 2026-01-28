@@ -5,8 +5,8 @@ from rest_framework.exceptions import APIException
 class QuestionBaseException(APIException):
     """
     QnA 앱의 최상위 예외 클래스 (400 Bad Request)
-    DRF 기본 ValidationError 발생은 serializer에서 처리하고,
-    그 외의 예상치 못한 에러를 위한 예외처리 클래스
+    DRF 기본 ValidationError 발생: detail = serializers.ValidationError.detail,
+    그 외의 예상치 못한 에러: detail = default_detail
     """
 
     status_code: int = status.HTTP_400_BAD_REQUEST
@@ -24,11 +24,11 @@ class QuestionPermissionDeniedException(QuestionBaseException):
     default_code = "permission_denied"
 
 
-class QuestionAuthenticationRequiredException(QuestionBaseException):
+class QuestionNotFoundException(QuestionBaseException):
     """
-    인증 필요 예외 (401 Unauthorized)
+    데이터가 존재하지 않을 때 예외 (404 Not Found)
     """
 
-    status_code: int = status.HTTP_401_UNAUTHORIZED
-    default_detail = "인증 정보가 유효하지 않습니다."
-    default_code = "authentication_failed"
+    status_code: int = status.HTTP_404_NOT_FOUND
+    default_detail = "조회 가능한 질문이 존재하지 않습니다."
+    default_code = "question_not_found"

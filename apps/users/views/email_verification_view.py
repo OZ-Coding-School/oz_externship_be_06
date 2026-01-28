@@ -40,9 +40,18 @@ class SendEmailVerificationAPIView(APIView):
         tags=["accounts"],
         summary="통합 이메일 인증 발송 API",
         description="""
-        이메일로 6자리 인증 코드를 발송합니다.
-        회원가입, 비밀번호 찾기, 계정 복구 등에서 사용됩니다.
-        인증 코드는 5분간 유효합니다.
+이메일로 6자리 인증 코드를 발송합니다.
+
+## 사용 목적
+- 회원가입 시 이메일 인증
+- 비밀번호 찾기
+- 탈퇴 계정 복구
+
+## 동작 방식
+1. 이메일 주소로 6자리 인증 코드 발송
+2. Redis에 인증 코드 저장 (5분간 유효)
+3. 동일 이메일로 재요청 시 기존 코드가 덮어쓰기됨
+
         """,
         request=SendEmailVerificationSerializer,
         responses={
@@ -95,9 +104,24 @@ class VerifyEmailAPIView(APIView):
         tags=["accounts"],
         summary="통합 이메일 인증 API",
         description="""
-        이메일로 발송된 인증 코드를 검증합니다.
-        인증 성공 시 회원가입에 사용할 email_token을 반환합니다.
-        email_token은 1시간 동안 유효합니다.
+이메일로 발송된 인증 코드를 검증합니다.
+
+## 요청 필드
+- `email`: 인증 코드를 받은 이메일 주소
+- `code`: 6자리 인증 코드
+
+## 응답
+- 인증 성공 시 `email_token` 반환
+- `email_token`은 1시간 동안 유효합니다.
+
+## 사용 용도별 다음 단계
+- **회원가입**: `POST /api/v1/accounts/signup` 요청 시 `email_token` 필드에 포함
+- **비밀번호 찾기**: `POST /api/v1/accounts/find-password` 요청 시 `email_token` 필드에 포함
+- **계정 복구**: `POST /api/v1/accounts/restore` 요청 시 `email_token` 필드에 포함
+
+## 에러 케이스
+- **400**: 인증 코드가 만료됨 (5분 초과)
+- **400**: 인증 코드가 일치하지 않음
         """,
         request=VerifyEmailSerializer,
         responses={

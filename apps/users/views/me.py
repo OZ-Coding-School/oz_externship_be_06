@@ -19,6 +19,10 @@ class MeView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="내 정보 조회",
+        description="""
+로그인한 사용자의 정보를 조회합니다.
+
+        """,
         responses=MeResponseSerializer,
     )
     def get(self, request: Request) -> Response:
@@ -28,6 +32,14 @@ class MeView(APIView):
     @extend_schema(
         tags=["accounts"],
         summary="회원 정보 수정",
+        description="""
+로그인한 사용자의 기본 정보를 수정합니다.
+
+## 주의사항
+- 프로필 이미지 수정은 `/accounts/me/profile-image` API를 사용하세요.
+- 휴대폰 번호 변경은 `/accounts/change-phone` API를 사용하세요.
+- 비밀번호 변경은 `/accounts/change-password` API를 사용하세요.
+        """,
         request=MeUpdateRequestSerializer,
         responses={200: MeUpdateResponseSerializer},
     )

@@ -1,21 +1,31 @@
 from django.urls import path
 
 from apps.users.views.change_phone_view import ChangePhoneView
+from apps.users.views.course_view import AvailableCoursesAPIView, EnrolledCoursesAPIView
 from apps.users.views.email_verification_view import (
     SendEmailVerificationAPIView,
     VerifyEmailAPIView,
 )
+from apps.users.views.enroll_student_view import EnrollStudentAPIView
 from apps.users.views.find_email_view import FindEmailAPIView
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
 from apps.users.views.me import MeView
 from apps.users.views.password_view import ChangePasswordAPIView, FindPasswordAPIView
 from apps.users.views.profile_image_view import ProfileImageView
+from apps.users.views.restore_view import RestoreAPIView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
 from apps.users.views.sms_verification_view import (
     SendSmsVerificationAPIView,
     VerifySmsAPIView,
 )
+from apps.users.views.social_login_view import (
+    KakaoCallbackAPIView,
+    KakaoLoginStartAPIView,
+    NaverCallbackAPIView,
+    NaverLoginStartAPIView,
+)
 from apps.users.views.token_refresh_view import TokenRefreshAPIView
+from apps.users.views.withdrawal_view import WithdrawalAPIView
 
 urlpatterns = [
     # 회원가입
@@ -41,4 +51,16 @@ urlpatterns = [
     path("find-email/", FindEmailAPIView.as_view(), name="find-email"),
     # 휴대폰 번호 변경
     path("change-phone/", ChangePhoneView.as_view(), name="change-phone"),
+    # 수강생 등록 신청
+    path("enroll-student/", EnrollStudentAPIView.as_view(), name="enroll-student"),
+    # 수강 관련
+    path("available-courses/", AvailableCoursesAPIView.as_view(), name="available-courses"),
+    path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
+    path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
+    path("restore/", RestoreAPIView.as_view(), name="restore"),
+    # 소셜 로그인
+    path("login/kakao/", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
+    path("login/kakao/callback/", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
+    path("login/naver/", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
+    path("login/naver/callback/", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
 ]
