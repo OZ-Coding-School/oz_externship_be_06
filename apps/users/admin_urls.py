@@ -9,9 +9,12 @@ from apps.users.views.admin.admin_account_role_views import (
 )
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
 from apps.users.views.admin.admin_student_enrollment_views import (
+    AdminStudentEnrollmentAcceptAPIView,
     AdminStudentEnrollmentListAPIView,
+    AdminStudentEnrollmentRejectAPIView,
 )
 from apps.users.views.admin.admin_student_list_views import AdminStudentListAPIView
+from apps.users.views.admin.admin_student_score_views import AdminStudentScoreAPIView
 
 
 # GET, PATCH, DELETE를 같은 URL에서 처리하기 위한 combined view
@@ -45,5 +48,20 @@ urlpatterns = [
         "student-enrollments/",
         AdminStudentEnrollmentListAPIView.as_view(),
         name="admin-student-enrollment-list",
+    ),
+    path(
+        "student-enrollments/accept",
+        AdminStudentEnrollmentAcceptAPIView.as_view(),
+        name="admin-student-enrollment-accept",
+    ),
+    path(
+        "student-enrollments/reject",
+        AdminStudentEnrollmentRejectAPIView.as_view(),
+        name="admin-student-enrollment-reject",
+    ),
+    path(
+        "students/<int:student_id>/scores",
+        AdminStudentScoreAPIView.as_view(),
+        name="admin-student-scores",
     ),
 ]

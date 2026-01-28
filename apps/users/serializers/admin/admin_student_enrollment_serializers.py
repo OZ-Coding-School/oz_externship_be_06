@@ -78,3 +78,23 @@ class AdminStudentEnrollmentListSerializer(serializers.ModelSerializer[StudentEn
         if obj.status == StudentEnrollmentRequest.Status.APPROVED:
             return "ACCEPTED"
         return obj.status
+
+
+# 어드민 수강생 등록 요청 승인
+class AdminStudentEnrollmentAcceptSerializer(serializers.Serializer[Any]):
+
+    enrollments = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        allow_empty=False,
+    )
+
+
+# 어드민 수강생 등록 요청 거절
+class AdminStudentEnrollmentRejectSerializer(serializers.Serializer[Any]):
+
+    enrollments = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=True,
+        allow_empty=False,
+    )
