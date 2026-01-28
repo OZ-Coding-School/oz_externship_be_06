@@ -22,7 +22,6 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -96,12 +95,6 @@ class ExamListView(ExamsExceptionMixin, ListAPIView[ExamDeployment]):
     pagination_class = SimplePagePagination
 
     def handle_exception(self, exc: Exception) -> Response:
-        if isinstance(exc, NotAuthenticated):
-            exc = ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
-
-        elif isinstance(exc, PermissionDenied):
-            exc = ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
-
         if isinstance(exc, ErrorDetailException):
             return Response({"error_detail": str(exc.detail)}, status=exc.http_status)
 

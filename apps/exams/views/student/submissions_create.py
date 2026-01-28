@@ -1,8 +1,5 @@
-from typing import NoReturn
-
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -41,11 +38,6 @@ class ExamSubmissionCreateAPIView(ExamsExceptionMixin, APIView):
     # 여기에서 401, 403 잡아주고 메세지는 자동으로 만들어줌
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
-        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
 
     def post(self, request: Request) -> Response:
         serializer = ExamSubmissionCreateSerializer(

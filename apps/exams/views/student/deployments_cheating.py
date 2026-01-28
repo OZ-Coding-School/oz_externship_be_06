@@ -1,12 +1,7 @@
-from typing import NoReturn
-
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -15,7 +10,6 @@ from rest_framework.views import APIView
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.permissions import IsStudentRole
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
@@ -34,37 +28,6 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
     permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamCheatingResponseSerializer
 
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
-        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
-
-    @extend_schema(
-        tags=["exams"],
-        summary="쪽지시험 부정행위 카운트 업데이트 API",
-        description="""
-        시험 응시 중 화면 이탈 등 부정행위가 발생했을 때 카운트를 증가시킵니다.
-        부정행위 3회 이상이면 force_submit=True로 종료 처리 응답을 반환합니다.
-        """,
-        request=ExamCheatingRequestSerializer,
-        parameters=[
-            OpenApiParameter(
-                name="deployment_id",
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.PATH,
-                required=True,
-                description="시험 배포 ID",
-            )
-        ],
-        responses={
-            200: ExamCheatingResponseSerializer,
-            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
-            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
-            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
-            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value),
-            410: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_ALREADY_CLOSED.value),
-        },
-    )
     def post(self, request: Request, deployment_id: int) -> Response:
         user = request.user
 

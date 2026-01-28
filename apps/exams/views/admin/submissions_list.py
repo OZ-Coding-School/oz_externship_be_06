@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import NoReturn
 
 from django.db.models import Q
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +17,6 @@ from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -30,79 +28,9 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
+            raise NotAuthenticated()
         raise PermissionDenied(detail=ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value)
 
-    @extend_schema(
-        tags=["쪽지시험 관리"],
-        summary="특정시험 응시 내역 목록 조회 API",
-        description="""
-        스태프(조교, 러닝 코치, 운영매니저), 관리자 권한을 가진 유저가
-        쪽지시험 응시 내역 목록을 조회합니다.
-        """,
-        parameters=[
-            OpenApiParameter(
-                name="page",
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description="페이지 번호",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="size",
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description="페이지 크기",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="search_keyword",
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description="검색 키워드 (닉네임, 이름)",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="cohort_id",
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description="기수 ID",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="exam_id",
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description="시험 ID",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="sort",
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description="정렬 기준 (score, started_at)",
-                required=False,
-            ),
-            OpenApiParameter(
-                name="order",
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description="정렬 순서 (asc, desc)",
-                required=False,
-            ),
-        ],
-        responses={
-            200: AdminExamSubmissionListResponseSerializer(many=True),
-            400: OpenApiResponse(
-                ErrorResponseSerializer, description=ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value
-            ),
-            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
-            403: OpenApiResponse(
-                ErrorResponseSerializer, description=ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value
-            ),
-            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value),
-        },
-    )
     def get(self, request: Request) -> Response:
         # Query parameters
         search_keyword = request.query_params.get("search_keyword", "")

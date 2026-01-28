@@ -3,8 +3,7 @@ from typing import cast
 from django.http import Http404
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from rest_framework.generics import RetrieveAPIView, get_object_or_404
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -70,11 +69,6 @@ class ExamSubmissionDetailView(ExamsExceptionMixin, RetrieveAPIView[ExamSubmissi
     serializer_class = ExamSubmissionSerializer
 
     def handle_exception(self, exc: Exception) -> Response:
-        if isinstance(exc, NotAuthenticated):
-            exc = ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
-        elif isinstance(exc, PermissionDenied):
-            exc = ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
-
         if isinstance(exc, Http404):
             exc = ErrorDetailException(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
