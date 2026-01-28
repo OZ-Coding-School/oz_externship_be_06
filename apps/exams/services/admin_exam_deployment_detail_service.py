@@ -21,10 +21,6 @@ def get_exam_deployment_detail(deployment_id: int) -> dict[str, Any]:
 
     course = deployment.cohort.course
     cohort_display = f"{course.name} {deployment.cohort.number}기"
-    questions = deployment.questions_snapshot_json
-    if not isinstance(questions, list):
-        questions = []
-
     return {
         "id": deployment.id,
         "access_code": deployment.access_code,
@@ -44,7 +40,6 @@ def get_exam_deployment_detail(deployment_id: int) -> dict[str, Any]:
             "id": deployment.exam.id,
             "title": deployment.exam.title,
             "thumbnail_img_url": deployment.exam.thumbnail_img_url,
-            "questions": questions,
         },
         "subject": {
             "id": deployment.exam.subject.id,

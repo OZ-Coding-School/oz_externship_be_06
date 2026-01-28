@@ -9,6 +9,7 @@ from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
+from apps.exams.constants import ErrorMessages
 from apps.users.models import User
 
 
@@ -149,7 +150,6 @@ class AdminExamDeploymentDetailAPITest(TestCase):
         self.assertEqual(data["not_submitted_count"], 2)
         self.assertEqual(data["exam"]["id"], self.exam.id)
         self.assertEqual(data["subject"]["id"], self.subject.id)
-        self.assertEqual(len(data["exam"]["questions"]), 1)
         self.assertEqual(
             data["exam_access_url"],
             f"http://testserver/api/v1/exams/deployments/{self.deployment.id}",
@@ -163,7 +163,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
         self.assertEqual(response.status_code, 400)
         data = response.json()
-        self.assertEqual(data["error_detail"], "유효하지 않은 배포 상세 조회 요청입니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value)
 
     def test_returns_401_when_unauthenticated(self) -> None:
         response = self.client.get(f"/api/v1/admin/exams/deployments/{self.deployment.id}/")
@@ -190,4 +190,4 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(data["error_detail"], "해당 배포 정보를 찾을 수 없습니다.")
+        self.assertEqual(data["error_detail"], ErrorMessages.DEPLOYMENT_NOT_FOUND.value)
