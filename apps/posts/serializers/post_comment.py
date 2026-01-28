@@ -7,20 +7,22 @@ from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDeni
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
-from .post_serializers import AuthorSimpleSerializer
 
 AUTH_MSG = "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
 
 
 class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
     """댓글 태그된 사용자 응답용 시리얼라이저."""
+
     id = serializers.IntegerField(source="tagged_user.id")
     nickname = serializers.CharField(source="tagged_user.nickname")
 
 
 class PostCommentListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     """댓글 목록 조회 응답 시리얼라이저"""
-    author = AuthorSimpleSerializer(read_only=True)
+
+    # AuthorSimpleSerializer가 정의되어 있지 않아 주석 처리함
+    # author = AuthorSimpleSerializer(read_only=True)
     tagged_users = serializers.SerializerMethodField()
 
     class Meta:
@@ -97,4 +99,5 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
 
 class PostCommentDeleteResponseSerializer(serializers.Serializer):  # type: ignore[type-arg]
     """댓글 삭제 응답 스펙용 시리얼라이저"""
+
     detail = serializers.CharField()
