@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
@@ -13,6 +13,7 @@ from apps.qna.utils.constants import ErrorMessages
 User = get_user_model()
 
 
+@override_settings(USE_QNA_MOCK=False)
 class QuestionListAPITest(TestCase):
     """
     질문 목록 조회 API (GET) 테스트
