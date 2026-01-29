@@ -12,3 +12,7 @@ class WithdrawalResponseSerializer(serializers.Serializer):  # type: ignore[type
     message = serializers.CharField()
     due_date = serializers.DateField()
     reason = serializers.ChoiceField(choices=Withdrawal.Reason.choices)
+
+
+class ErrorDetailSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    error_detail = serializers.CharField()

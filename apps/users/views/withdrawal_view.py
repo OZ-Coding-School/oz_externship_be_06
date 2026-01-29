@@ -1,5 +1,5 @@
 from django.db import transaction
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -8,8 +8,8 @@ from rest_framework.views import APIView
 
 from apps.users.models import Withdrawal
 from apps.users.serializers.withdrawal_serializer import (
+    ErrorDetailSerializer,
     WithdrawalRequestSerializer,
-    WithdrawalResponseSerializer,
 )
 
 
@@ -29,15 +29,22 @@ class WithdrawalAPIView(APIView):
 
         """,
         request=WithdrawalRequestSerializer,
-        responses={201: WithdrawalResponseSerializer},
+        responses={
+            204: OpenApiResponse(description="No Content"),
+            400: OpenApiResponse(
+                response=ErrorDetailSerializer,
+                description="Bad Request",
+            ),
+            401: OpenApiResponse(description="Unauthorized"),
+        },
     )
-    def post(self, request: Request) -> Response:
+    def delete(self, request: Request) -> Response:
         user = request.user
 
         if not user.is_active:
             return Response(
                 {"error_detail": "이미 탈퇴 처리된 계정입니다."},
-                status=status.HTTP_409_CONFLICT,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         existing = Withdrawal.objects.filter(user=user).first()
@@ -45,24 +52,16 @@ class WithdrawalAPIView(APIView):
             return Response(
                 {
                     "error_detail": "이미 탈퇴 신청한 계정입니다.",
-                    "expire_at": existing.due_date,
                 },
-                status=status.HTTP_409_CONFLICT,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = WithdrawalRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            withdrawal = Withdrawal.objects.create(user=user, **serializer.validated_data)
+            _ = Withdrawal.objects.create(user=user, **serializer.validated_data)
             user.is_active = False
             user.save(update_fields=["is_active"])
 
-        response_serializer = WithdrawalResponseSerializer(
-            {
-                "message": "회원 탈퇴 요청이 완료 되었습니다.",
-                "due_date": withdrawal.due_date,
-                "reason": withdrawal.reason,
-            }
-        )
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_204_NO_CONTENT)
