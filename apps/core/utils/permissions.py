@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, Set
+from typing import Any, Iterable, Set, Type
 
 from rest_framework.permissions import BasePermission
 
@@ -20,13 +20,13 @@ class RolePermission(BasePermission):
         return user.role in self.allowed_roles
 
     @classmethod
-    def with_roles(cls, roles: Iterable[User.Role]) -> type["RolePermission"]:
+    def with_roles(cls, roles: Iterable[User.Role]) -> Type["RolePermission"]:
         roles_set = set(roles)
-
-        class _CustomRolePermission(cls):
-            allowed_roles = roles_set
-
-        return _CustomRolePermission
+        return type(
+            "RolePermissionWithRoles",
+            (cls,),
+            {"allowed_roles": roles_set},
+        )
 
 
 class IsStudentRole(RolePermission):
