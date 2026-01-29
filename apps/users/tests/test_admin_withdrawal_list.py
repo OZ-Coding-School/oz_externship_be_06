@@ -267,8 +267,6 @@ class AdminWithdrawalListAPITest(TestCase):
         data = response.json()
 
         # GRADUATION 사유를 가진 항목 찾기
-        graduation_item = next(
-            (item for item in data["results"] if item["reason"] == "GRADUATION"), None
-        )
-        self.assertIsNotNone(graduation_item)
+        graduation_item = next((item for item in data["results"] if item["reason"] == "GRADUATION"), None)
+        assert graduation_item is not None
         self.assertEqual(graduation_item["reason_display"], "졸업 및 수료")

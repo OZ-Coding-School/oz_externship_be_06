@@ -33,9 +33,7 @@ def get_withdrawal_list(
 
     # 검색 필터 (이메일, 이름)
     if search:
-        queryset = queryset.filter(
-            Q(user__email__icontains=search) | Q(user__name__icontains=search)
-        )
+        queryset = queryset.filter(Q(user__email__icontains=search) | Q(user__name__icontains=search))
 
     # 권한 필터
     if role and role.lower() in ROLE_MAP:
@@ -51,11 +49,10 @@ def get_withdrawal_list(
 
     return queryset
 
-#수강생의 수강 과정-기수 목록을 반환
+
+# 수강생의 수강 과정-기수 목록을 반환
 def _get_assigned_courses_for_student(user: User) -> list[dict[str, Any]]:
-    cohort_students = CohortStudent.objects.filter(user=user).select_related(
-        "cohort__course"
-    )
+    cohort_students = CohortStudent.objects.filter(user=user).select_related("cohort__course")
     return [
         {
             "course": {
@@ -74,11 +71,10 @@ def _get_assigned_courses_for_student(user: User) -> list[dict[str, Any]]:
         for cs in cohort_students
     ]
 
-#조교의 담당 과정-기수 목록을 반환
+
+# 조교의 담당 과정-기수 목록을 반환
 def _get_assigned_courses_for_ta(user: User) -> list[dict[str, Any]]:
-    training_assistants = TrainingAssistant.objects.filter(user=user).select_related(
-        "cohort__course"
-    )
+    training_assistants = TrainingAssistant.objects.filter(user=user).select_related("cohort__course")
     return [
         {
             "course": {
@@ -97,11 +93,10 @@ def _get_assigned_courses_for_ta(user: User) -> list[dict[str, Any]]:
         for ta in training_assistants
     ]
 
-#운영매니저의 담당 과정 목록을 반환
+
+# 운영매니저의 담당 과정 목록을 반환
 def _get_assigned_courses_for_om(user: User) -> list[dict[str, Any]]:
-    operation_managers = OperationManager.objects.filter(user=user).select_related(
-        "course"
-    )
+    operation_managers = OperationManager.objects.filter(user=user).select_related("course")
     return [
         {
             "course": {
@@ -114,7 +109,8 @@ def _get_assigned_courses_for_om(user: User) -> list[dict[str, Any]]:
         for om in operation_managers
     ]
 
-#러닝코치의 담당 과정 목록을 반환
+
+# 러닝코치의 담당 과정 목록을 반환
 def _get_assigned_courses_for_lc(user: User) -> list[dict[str, Any]]:
     learning_coachs = LearningCoach.objects.filter(user=user).select_related("course")
     return [
@@ -129,7 +125,8 @@ def _get_assigned_courses_for_lc(user: User) -> list[dict[str, Any]]:
         for lc in learning_coachs
     ]
 
-#유저 권한에 따라 다른 과정 목록을 반환
+
+# 유저 권한에 따라 다른 과정 목록을 반환
 def get_assigned_courses(user: User) -> list[dict[str, Any]]:
     if user.role == User.Role.STUDENT:
         return _get_assigned_courses_for_student(user)
@@ -141,7 +138,8 @@ def get_assigned_courses(user: User) -> list[dict[str, Any]]:
         return _get_assigned_courses_for_lc(user)
     return []
 
-#탈퇴내역 상세 정보 조회
+
+# 탈퇴내역 상세 정보 조회
 def get_withdrawal_detail(withdrawal_id: int) -> Withdrawal:
 
     try:

@@ -25,9 +25,7 @@ class AdminWithdrawalListAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
-    def permission_denied(
-        self, request: Request, message: str | None = None, code: str | None = None
-    ) -> NoReturn:
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
         raise PermissionDenied(detail="권한이 없습니다.")
@@ -111,14 +109,12 @@ class AdminWithdrawalListAPIView(APIView):
         return Response(serializer.data)
 
 
-#어드민 탈퇴 내역 상세 조회 api
+# 어드민 탈퇴 내역 상세 조회 api
 class AdminWithdrawalDetailAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
-    def permission_denied(
-        self, request: Request, message: str | None = None, code: str | None = None
-    ) -> NoReturn:
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
         raise PermissionDenied(detail="권한이 없습니다.")
