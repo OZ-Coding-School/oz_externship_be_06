@@ -1,13 +1,13 @@
 import logging
 from typing import Any
 
+from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 
-from apps.qna.exceptions.question_exception import (
-    QuestionBaseException,
-    QuestionNotFoundException,
-)
+from apps.qna.exceptions.base_e import QnaBaseException
+from apps.qna.exceptions.question_e import QuestionNotFoundException
 from apps.qna.models import Question
+from apps.qna.utils.constants import ErrorMessages
 
 logger = logging.getLogger(__name__)
 
@@ -48,18 +48,18 @@ class QuestionQueryService:
                 queryset = queryset.order_by("-view_count")
 
             if not queryset.exists():
-                raise QuestionNotFoundException(detail="조회 가능한 질문이 존재하지 않습니다.")
+                raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION_LIST)
             return queryset
 
         except QuestionNotFoundException:
             raise
         except Exception as e:
-            logger.error(f"유효하지 않은 목록 조회 요청입니다.\nMessage: {str(e)}", exc_info=True)
-            raise QuestionBaseException(detail="유효하지 않은 목록 조회 요청입니다.")
+            logger.error(f"{ErrorMessages.INVALID_QUESTION_DETAIL}\nMessage: {str(e)}", exc_info=True)
+            raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_DETAIL)
 
     @staticmethod
     def get_question_detail(question_id: int) -> Question:
-        """질문 상세 정보 조회 (조회수 증가 포함)"""
+        """질문 상세 정보 조회 (조회수 증가)"""
         try:
             # 질문 조회 및 관련 데이터 Loading
             question = (
@@ -77,9 +77,7 @@ class QuestionQueryService:
             return question
 
         except Question.DoesNotExist:
-            raise QuestionNotFoundException(detail="해당 질문을 찾을 수 없습니다.")
+            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
         except Exception as e:
-            logger.error(
-                f"유효하지 않은 질문 상세 조회 요청입니다. ID: {question_id}\nMessage: {str(e)}", exc_info=True
-            )
-            raise QuestionBaseException(detail="유효하지 않은 질문 상세 조회 요청입니다.")
+            logger.error(f"{ErrorMessages.INVALID_QUESTION_DETAIL} ID: {question_id}\nMessage: {str(e)}", exc_info=True)
+            raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_DETAIL)

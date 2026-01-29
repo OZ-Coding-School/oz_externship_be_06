@@ -3,8 +3,10 @@ from typing import Any
 
 from django.db import transaction
 
-from apps.qna.exceptions.question_exception import QuestionBaseException
+from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
+from apps.qna.utils.constants import ErrorMessages
+from apps.qna.utils.model_types import User
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +18,7 @@ class QuestionCommandService:
 
     @staticmethod
     @transaction.atomic
-    def create_question(author: Any, data: dict[str, Any]) -> Question:
+    def create_question(author: User, data: dict[str, Any]) -> Question:
         """질문 생성 로직"""
         try:
             category_id = data.pop("category_id")
@@ -25,5 +27,5 @@ class QuestionCommandService:
             return question
 
         except Exception as e:
-            logger.error(f"유효하지 않은 질문 등록 요청입니다.\nMessage{str(e)}", exc_info=True)
-            raise QuestionBaseException(detail="유효하지 않은 질문 등록 요청입니다.")
+            logger.error(f"{ErrorMessages.INVALID_QUESTION_CREATE}\nMessage{str(e)}", exc_info=True)
+            raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_CREATE)
