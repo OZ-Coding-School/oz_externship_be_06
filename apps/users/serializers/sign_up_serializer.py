@@ -114,10 +114,11 @@ class SignUpSerializer(serializers.ModelSerializer[User]):
         # 비밀번호 추출
         password = validated_data.pop("password")
 
-        # 유저 생성
+        # 유저 생성 (인증 완료했으므로 is_active=True)
         user = User.objects.create_user(
             email=validated_data.pop("email"),
             password=password,
+            is_active=True,
             **validated_data,
         )
 
