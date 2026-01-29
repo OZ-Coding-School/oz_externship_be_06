@@ -133,7 +133,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             deployment=self.deployment,
             started_at=timezone.now(),
             cheating_count=0,
-            answers_json={},
+            answers_json=[],
             score=0,
             correct_answer_count=0,
         )
