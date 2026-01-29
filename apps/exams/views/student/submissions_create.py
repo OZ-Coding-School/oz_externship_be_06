@@ -17,7 +17,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
-    tags=["Exams"],
+    tags=["exams"],
     summary="쪽지시험 제출 API",
     description="""
     로그인한 사용자가 쪽지시험 답안을 제출합니다.
