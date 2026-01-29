@@ -5,11 +5,11 @@ from rest_framework import serializers
 from apps.qna.models import Question, QuestionImage
 from apps.qna.serializers.answer.response import AnswerSerializer
 from apps.qna.serializers.base import QnaValidationMixin
-from apps.qna.utils.constants import ErrorMessages
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
 )
+from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.content_parser import ContentParser
 
 

@@ -9,9 +9,9 @@ from rest_framework.response import Response
 from apps.qna.serializers.answer import request as ser_ans_reqs
 from apps.qna.serializers.answer import response as ser_ans_rep
 from apps.qna.services.answer import command as svc_ans_cmd
+from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import CanWriteAnswer
 from apps.qna.views.base_view import QnaBaseAPIView
-from apps.qna.utils.model_types import User
 
 
 class AnswerCreateAPIView(QnaBaseAPIView):

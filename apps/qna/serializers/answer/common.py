@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.qna.utils.model_types import User
 
+
 class AnswerAuthorSerializer(serializers.Serializer[User]):
     """
     답변 및 댓글 작성자 정보 시리얼라이저

@@ -22,7 +22,7 @@ class QnaBaseException(APIException):
             detail = self.default_detail
 
         # Enum 객체 체크 및 값 추출
-        if hasattr(detail, 'value'):
+        if hasattr(detail, "value"):
             detail = detail.value
 
         # 딕셔너리 형태 체크 및 메시지 추출

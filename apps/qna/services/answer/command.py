@@ -43,7 +43,7 @@ class AnswerCommandService:
                 raise QuestionNotFoundException(detail="해당 질문을 찾을 수 없습니다.")
 
             # 답변 생성
-            content =cast(str, data["content"])
+            content = cast(str, data["content"])
             answer = Answer.objects.create(question=question, author=author, content=content)
 
             # 이미지 Bulk Create

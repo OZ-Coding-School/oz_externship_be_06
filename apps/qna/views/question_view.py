@@ -10,10 +10,10 @@ from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
 from apps.qna.services.question import command as svc_q_cmd
 from apps.qna.services.question import query as svc_q_qry
+from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.question_list_pagination import QnAPaginator
 from apps.qna.views.base_view import QnaBaseAPIView
-from apps.qna.utils.model_types import User
 
 
 class QuestionCreateListAPIView(QnaBaseAPIView):
@@ -143,7 +143,9 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        question = svc_q_cmd.QuestionCommandService.create_question(author=cast(User, request.user), data=serializer.validated_data)
+        question = svc_q_cmd.QuestionCommandService.create_question(
+            author=cast(User, request.user), data=serializer.validated_data
+        )
 
         # 응답 출력
         response_serializer = ser_q_res.QuestionCreateResponseSerializer(question)
