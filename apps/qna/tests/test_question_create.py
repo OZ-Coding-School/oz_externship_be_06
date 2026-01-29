@@ -3,7 +3,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
@@ -15,6 +15,7 @@ from apps.qna.models import Question, QuestionCategory
 User = get_user_model()
 
 
+@override_settings(USE_QNA_MOCK=False)
 class QuestionCreateAPITest(TestCase):
     """
     질문 등록 API (POST) 테스트
