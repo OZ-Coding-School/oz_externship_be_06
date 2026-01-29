@@ -1,22 +1,30 @@
-from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from apps.posts.models.post_category import PostCategory
-from apps.posts.serializers.post_category import PostCategorySerializer
+from ..models.post_category import PostCategory
+from ..serializers.post_category_serializers import PostCategorySerializer
 
 
-@extend_schema(
-    operation_id="v1_post_categories_list",
-    tags=["Posts"],
-    summary="커뮤니티 게시글 카테고리 목록 조회 API",
-    responses={200: PostCategorySerializer(many=True)},
-)
-class PostCategoryListAPIView(generics.ListAPIView):  # type: ignore[type-arg]
-    permission_classes = [AllowAny]
-    serializer_class = PostCategorySerializer
-    pagination_class = None
+class PostCategoryListView(APIView):
+    def handle_exception(self, exc: Exception) -> Response:
+        """
+        에러 발생 시 응답 형식을 {'error_detail': ...}로 통일하는 공통 예외 처리
+        """
+        response = super().handle_exception(exc)
+        if isinstance(response.data, dict):
+            detail = response.data.get("detail", response.data)
+            response.data = {"error_detail": detail}
+        return response
 
-    def get_queryset(self) -> QuerySet[PostCategory]:
-        return PostCategory.objects.filter(status=True).only("id", "name").order_by("id")
+    @extend_schema(
+        tags=["posts"],
+        summary="게시글 카테고리 목록 조회",
+        description="활성화된 모든 게시글 카테고리 목록을 조회합니다.",
+        responses={200: PostCategorySerializer(many=True)},
+    )
+    def get(self, request: Request) -> Response:
+        categories = PostCategory.objects.filter(status=True)
+        serializer = PostCategorySerializer(categories, many=True)
+        return Response(serializer.data)

@@ -1,5 +1,5 @@
-from .post_category_views import PostCategoryListAPIView
+from .post_category_views import PostCategoryListView
 
 __all__ = [
-    "PostCategoryListAPIView",
+    "PostCategoryListView",
 ]
