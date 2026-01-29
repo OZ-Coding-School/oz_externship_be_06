@@ -19,8 +19,13 @@ User = get_user_model()
 class QuestionCreateAPITest(TestCase):
     """
     질문 등록 API (POST) 테스트
-    - 등록 성공 검증
-    - 400, 401, 403 에러 매핑 검증
+    - 성공 케이스 (권한 있는 유저)
+    - 실패 케이스
+        - 401 Unauthorized: 로그인하지 않은 유저
+        - 403 Forbidden: 수강생이 아닌 유저
+        - 400 Bad Request: 존재하지 않는 카테고리
+        - 400 Bad Request: 필수 입력값(제목 등) 누락
+    - 성능 테스트 (쿼리 수 검증)
     """
 
     def setUp(self) -> None:
@@ -142,7 +147,15 @@ class QuestionCreateAPITest(TestCase):
             "category_id": self.category.id,
         }
 
-        # 쿼리 발생 내역 캡처
+        # Query Expectation:
+        # 1. Auth check (User)
+        # 2. Permission check (Role)
+        # 3. Create Question
+        # 4. Atomic transaction overhead / signals?
+        # 5. Get Category validation
+        # 6. Response serialization (if necessary)
+
+        # Allow roughly 6 queries
         with CaptureQueriesContext(connection) as context:
             self.client.post(
                 self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
