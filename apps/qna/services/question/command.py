@@ -19,7 +19,20 @@ class QuestionCommandService:
     @staticmethod
     @transaction.atomic
     def create_question(author: User, data: dict[str, Any]) -> Question:
-        """질문 생성 로직"""
+        """
+        새로운 질문 생성
+
+        Args:
+            author (User): 질문 작성자 객체 (User Instance)
+            data (dict): title(str), content(str), category_id(int)를 포함한 검증된 데이터
+
+        Returns:
+            Question: 생성된 질문 객체
+
+        Raises:
+            QuestionCategory.DoesNotExist: 카테고리가 존재하지 않을 경우 (하지만 보통 Serializer에서 걸러짐)
+            QuestionBaseException: 기타 등록 처리 오류 시
+        """
         try:
             category_id = data.pop("category_id")
             category = QuestionCategory.objects.get(id=category_id)  # 카테고리 획득
