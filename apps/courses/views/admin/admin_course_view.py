@@ -18,13 +18,13 @@ from apps.courses.services.course_service import (
     delete_course,
     update_course,
 )
-from apps.courses.utils.permissions import IsStaffOrAdmin
+from apps.core.utils.permissions import IsStaffRole
 
 
 # 어드민 과정 등록
 class AdminCourseCreateAPIView(APIView):
 
-    permission_classes = [IsAuthenticated, IsStaffOrAdmin]
+    permission_classes = [IsAuthenticated, IsStaffRole]
 
     @extend_schema(
         tags=["admin_courses"],
@@ -56,7 +56,7 @@ class AdminCourseCreateAPIView(APIView):
 # 어드민 과정 수정
 class AdminCourseUpdateAPIView(APIView):
 
-    permission_classes = [IsAuthenticated, IsStaffOrAdmin]
+    permission_classes = [IsAuthenticated, IsStaffRole]
 
     @extend_schema(
         tags=["admin_courses"],
