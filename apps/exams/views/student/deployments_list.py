@@ -24,7 +24,6 @@ from drf_spectacular.utils import (
 from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from apps.core.utils.pagination import SimplePagePagination
 from apps.courses.models import CohortStudent
@@ -93,12 +92,6 @@ class ExamListView(ExamsExceptionMixin, ListAPIView[ExamDeployment]):
     permission_classes = [IsAuthenticated]
     serializer_class = ExamDeploymentListSerializer
     pagination_class = SimplePagePagination
-
-    def handle_exception(self, exc: Exception) -> Response:
-        if isinstance(exc, ErrorDetailException):
-            return Response({"error_detail": str(exc.detail)}, status=exc.http_status)
-
-        return super().handle_exception(exc)
 
     def get_queryset(self) -> QuerySet[ExamDeployment]:
         user_id = self.request.user.id

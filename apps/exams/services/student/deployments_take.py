@@ -5,7 +5,6 @@ from typing import Any
 
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
@@ -31,14 +30,14 @@ def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     try:
         deployment = ExamDeployment.objects.select_related("exam", "exam__subject").get(id=deployment_id)
     except ExamDeployment.DoesNotExist as exc:
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_FOUND.value}) from exc
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
 
     if not is_deployment_activated(deployment):
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
 
     now = timezone.now()
     if not is_deployment_opened(deployment, now=now):
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
     if is_deployment_time_closed(deployment, now=now):
         raise ErrorDetailException(ErrorMessages.EXAM_CLOSED.value, status.HTTP_410_GONE)
 

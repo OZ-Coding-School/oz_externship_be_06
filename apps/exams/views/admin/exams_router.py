@@ -18,9 +18,10 @@ from apps.exams.serializers.admin.exams_create import (
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
 from apps.exams.views.admin.exams_list import AdminExamListView
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-class AdminExamRouterAPIView(APIView):
+class AdminExamRouterAPIView(ExamsExceptionMixin, APIView):
 
     @extend_schema(
         tags=["admin_exams"],
