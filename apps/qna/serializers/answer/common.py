@@ -9,4 +9,4 @@ class AnswerAuthorSerializer(serializers.Serializer[User]):
 
     id = serializers.IntegerField(help_text="작성자 ID")
     nickname = serializers.CharField(help_text="작성자 닉네임")
-    profile_image_url = serializers.ImageField(source="profile_image", use_url=True, help_text="프로필 이미지 URL")
+    profile_image_url = serializers.ImageField(source="profile_img_url", use_url=True, help_text="프로필 이미지 URL")
