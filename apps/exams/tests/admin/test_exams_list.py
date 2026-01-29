@@ -45,6 +45,7 @@ class AdminExamListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1995, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         self.normal_user = User.objects.create_user(
@@ -56,6 +57,7 @@ class AdminExamListAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2000, 1, 1),
             role=User.Role.USER,
+            is_active=True,
         )
 
         self.url = "/api/v1/admin/exams"

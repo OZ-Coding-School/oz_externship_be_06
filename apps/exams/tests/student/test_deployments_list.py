@@ -44,6 +44,7 @@ class ExamDeploymentListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         CohortStudent.objects.create(user=self.student, cohort=self.cohort)

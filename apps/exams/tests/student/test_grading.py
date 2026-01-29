@@ -151,6 +151,7 @@ class GradeSubmissionTests(TestCase):
             nickname="테스트유저",
             name="테스트 이름",
             phone_number="010-0000-0000",
+            is_active=True,
         )
 
         course = Course.objects.create(name="테스트 강좌", tag="TST")

@@ -94,6 +94,7 @@ class AdminStudentScoreAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         # 조교 유저
@@ -106,6 +107,7 @@ class AdminStudentScoreAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1995, 5, 5),
             role=User.Role.TA,
+            is_active=True,
         )
 
         # 학생 유저
@@ -118,6 +120,7 @@ class AdminStudentScoreAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         CohortStudent.objects.create(user=self.student, cohort=self.cohort)
 
@@ -149,6 +152,7 @@ class AdminStudentScoreAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 5, 5),
             role=User.Role.USER,
+            is_active=True,
         )
 
     def _get_url(self, student_id: int) -> str:
@@ -211,6 +215,7 @@ class AdminStudentScoreAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2001, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         response = self.client.get(

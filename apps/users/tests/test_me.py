@@ -23,6 +23,7 @@ class MeAPITests(TestCase):
             name="테스터",
             nickname="tester",
             gender="MALE",
+            is_active=True,
         )
 
         access = str(RefreshToken.for_user(self.user).access_token)

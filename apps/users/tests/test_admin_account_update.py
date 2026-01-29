@@ -25,6 +25,7 @@ class AdminAccountUpdateAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         # 조교 유저
@@ -37,6 +38,7 @@ class AdminAccountUpdateAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1995, 5, 5),
             role=User.Role.TA,
+            is_active=True,
         )
 
         # 일반 유저 (수정 대상)
@@ -49,6 +51,7 @@ class AdminAccountUpdateAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.USER,
+            is_active=True,
         )
 
         # 일반 유저 (권한 없음)
@@ -61,6 +64,7 @@ class AdminAccountUpdateAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2000, 2, 2),
             role=User.Role.USER,
+            is_active=True,
         )
 
     def _get_url(self, account_id: int) -> str:

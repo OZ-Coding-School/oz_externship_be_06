@@ -52,6 +52,7 @@ class ExamResultRetrieveAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.submission = ExamSubmission.objects.create(

@@ -79,6 +79,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
         self.normal_user = User.objects.create_user(
             email="user@example.com",
@@ -89,6 +90,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2000, 1, 2),
             role=User.Role.USER,
+            is_active=True,
         )
         self.student1 = User.objects.create_user(
             email="student1@example.com",
@@ -99,6 +101,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 3),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         self.student2 = User.objects.create_user(
             email="student2@example.com",
@@ -109,6 +112,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2000, 1, 4),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         self.student3 = User.objects.create_user(
             email="student3@example.com",
@@ -119,6 +123,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 5),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         CohortStudent.objects.create(user=self.student1, cohort=self.cohort)
         CohortStudent.objects.create(user=self.student2, cohort=self.cohort)

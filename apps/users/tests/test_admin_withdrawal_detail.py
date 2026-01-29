@@ -47,6 +47,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         # 조교 유저
@@ -59,6 +60,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1995, 5, 5),
             role=User.Role.TA,
+            is_active=True,
         )
 
         # 탈퇴한 학생 유저
@@ -149,6 +151,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 5, 5),
             role=User.Role.USER,
+            is_active=True,
         )
 
     def _get_url(self, withdrawal_id: int) -> str:

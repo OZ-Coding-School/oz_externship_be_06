@@ -29,6 +29,7 @@ class AdminCohortCreateAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -40,6 +41,7 @@ class AdminCohortCreateAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(
@@ -168,6 +170,7 @@ class CohortListAPITests(TestCase):
             nickname="user",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")
@@ -241,6 +244,7 @@ class AdminCohortUpdateAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -252,6 +256,7 @@ class AdminCohortUpdateAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")
@@ -346,6 +351,7 @@ class AdminCohortAvgScoresAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -357,6 +363,7 @@ class AdminCohortAvgScoresAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")
@@ -436,6 +443,7 @@ class AdminCohortStudentsAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student1 = User.objects.create_user(
@@ -447,6 +455,7 @@ class AdminCohortStudentsAPITests(TestCase):
             nickname="ryuact",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.student2 = User.objects.create_user(
@@ -458,6 +467,7 @@ class AdminCohortStudentsAPITests(TestCase):
             nickname="kwonnode",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")
@@ -547,6 +557,7 @@ class AdminSubjectListAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -558,6 +569,7 @@ class AdminSubjectListAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")
@@ -648,6 +660,7 @@ class AdminSubjectScatterAPITests(TestCase):
             gender="MALE",
             role=User.Role.ADMIN,
             is_staff=True,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -659,6 +672,7 @@ class AdminSubjectScatterAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(name="백엔드", tag="BE")

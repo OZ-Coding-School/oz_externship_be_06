@@ -41,6 +41,7 @@ class QuestionDetailAPITest(TestCase):
             role="STUDENT",
             gender="MALE",
             birthday="2000-01-01",
+            is_active=True,
         )
 
         # 질문 생성

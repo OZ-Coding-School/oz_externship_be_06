@@ -78,7 +78,7 @@ class User(TimeStampModel, AbstractBaseUser, PermissionsMixin):
 
     profile_img_url = models.CharField(max_length=255, null=True, blank=True)
 
-    is_active: bool = models.BooleanField(default=True)
+    is_active: bool = models.BooleanField(default=False)
     is_staff: bool = models.BooleanField(default=False)
 
     role = models.CharField(
