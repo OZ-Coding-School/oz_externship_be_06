@@ -22,6 +22,9 @@ class LoginAPIView(APIView):
 - 성공 시 `access_token`과 `refresh_token`이 반환됩니다.
 - JWT 토큰을 사용하여 인증이 필요한 API 호출 시 헤더에 포함하세요.
 
+## 토큰 유효기간
+access token: 60분!
+refresh token: 7일!
         """,
         request=LoginSerializer,
         responses={

@@ -103,3 +103,8 @@ class AdminWithdrawalDetailSerializer(serializers.ModelSerializer[Withdrawal]):
 
     def get_reason_display(self, obj: Withdrawal) -> str:
         return obj.get_reason_display()
+
+
+# 어드민 탈퇴 취소
+class AdminWithdrawalCancelSerializer(serializers.Serializer[Any]):
+    detail = serializers.CharField()
