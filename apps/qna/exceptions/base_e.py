@@ -14,12 +14,21 @@ class QnaBaseException(APIException):
     """
 
     status_code: int = status.HTTP_400_BAD_REQUEST
-    default_detail = ErrorMessages.INVALID_REQUEST
+    default_detail: str | ErrorMessages = ErrorMessages.INVALID_REQUEST
     default_code = "qna_bad_request"
 
     def __init__(self, detail: Any = None, code: Any = None):
+        if detail is None:
+            detail = self.default_detail
+
+        # Enum 객체 체크 및 값 추출
+        if hasattr(detail, 'value'):
+            detail = detail.value
+
+        # 딕셔너리 형태 체크 및 메시지 추출
         if isinstance(detail, dict):
             detail = detail.get("error_detail") or detail.get("detail") or str(detail)
+
         super().__init__(detail, code)
 
 
