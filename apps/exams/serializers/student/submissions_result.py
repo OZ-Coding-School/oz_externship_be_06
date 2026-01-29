@@ -4,6 +4,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.exams.models import Exam, ExamSubmission
+from apps.exams.services.answers_json import normalize_answers_json
 
 
 class ExamSimpleSerializer(serializers.ModelSerializer[Exam]):
@@ -44,38 +45,22 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
         return int(seconds // 60)
 
     def _answers_map(self, obj: ExamSubmission) -> dict[int, object]:
-        data = obj.answers_json
+        normalized = normalize_answers_json(obj.answers_json)
+        if obj.answers_json != normalized:
+            obj.answers_json = normalized
+            obj.save(update_fields=["answers_json"])
 
-        if isinstance(data, list):
-            m: dict[int, object] = {}
-            for item in data:
-                if not isinstance(item, dict):
-                    continue
-                qid = item.get("question_id")
-                if qid is None:
-                    continue
-                try:
-                    qid_int = int(qid)
-                except (TypeError, ValueError):
-                    continue
-                m[qid_int] = item.get("submitted_answer")
-            return m
-
-        if isinstance(data, dict):
-            if "answers" in data and isinstance(data["answers"], list):
-                obj.answers_json = data["answers"]
-                return self._answers_map(obj)
-
-            m2: dict[int, Any] = {}
-            for k, v in data.items():
-                try:
-                    qid_int = int(k)
-                except (TypeError, ValueError):
-                    continue
-                m2[qid_int] = v
-            return m2
-
-        return {}
+        m: dict[int, object] = {}
+        for item in normalized:
+            qid = item.get("question_id")
+            if qid is None:
+                continue
+            try:
+                qid_int = int(qid)
+            except (TypeError, ValueError):
+                continue
+            m[qid_int] = item.get("submitted_answer")
+        return m
 
     def get_questions(self, obj: ExamSubmission) -> list[dict[str, Any]]:
         exam = getattr(obj.deployment, "exam", None)

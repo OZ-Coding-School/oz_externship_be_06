@@ -15,6 +15,7 @@ from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingResponseSerializer,
 )
 from apps.exams.services.grading import grade_submission
+from apps.exams.services.answers_json import normalize_answers_json
 from apps.exams.services.student.deployments_status import (
     get_exam_status,
     is_deployment_active_now,
@@ -67,7 +68,7 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
         if is_closed:
             request_serializer = ExamCheatingRequestSerializer(data=request.data)
             request_serializer.is_valid(raise_exception=True)
-            answers_json = request_serializer.validated_data.get("answers_json", [])
+            answers_json = normalize_answers_json(request_serializer.validated_data.get("answers_json", []))
 
             if cache.add(submit_lock_key, "1", timeout=5):
                 with transaction.atomic():

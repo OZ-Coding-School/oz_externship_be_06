@@ -3,6 +3,7 @@ from typing import Any
 from django.db import transaction
 
 from apps.exams.models import ExamQuestion, ExamSubmission
+from apps.exams.services.answers_json import normalize_answers_json
 
 
 def judge(question: ExamQuestion, user_answer: Any) -> int:
@@ -91,7 +92,10 @@ def judge(question: ExamQuestion, user_answer: Any) -> int:
 @transaction.atomic
 def grade_submission(submission: ExamSubmission) -> None:
     # 제출자 답안
-    answers_list = submission.answers_json or []
+    answers_list = normalize_answers_json(submission.answers_json)
+    if submission.answers_json != answers_list:
+        submission.answers_json = answers_list
+        submission.save(update_fields=["answers_json"])
 
     # 리스트 → dict 변환: {qid: submitted_answer}
     answers = {}
