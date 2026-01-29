@@ -1,5 +1,6 @@
 from typing import NoReturn
 
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,7 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin.exams_delete import (
     AdminExamDeleteResponseSerializer,
 )
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.exams_delete import (
     ExamDeleteConflictError,
     ExamDeleteNotFoundError,
@@ -20,6 +22,64 @@ from apps.exams.services.admin.exams_delete import (
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
+@extend_schema(
+    tags=["admin_exams"],
+    summary="어드민 시험 삭제",
+    description="쪽지시험을 삭제합니다.",
+    responses={
+        200: AdminExamDeleteResponseSerializer,
+        400: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Bad Request",
+            examples=[
+                OpenApiExample(
+                    "유효하지 않은 요청",
+                    value={"error_detail": ErrorMessages.INVALID_EXAM_DELETE_REQUEST.value},
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.NO_EXAM_DELETE_PERMISSION.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "시험 정보 없음",
+                    value={"error_detail": ErrorMessages.EXAM_DELETE_NOT_FOUND.value},
+                ),
+            ],
+        ),
+        409: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Conflict",
+            examples=[
+                OpenApiExample(
+                    "삭제 충돌",
+                    value={"error_detail": ErrorMessages.EXAM_DELETE_CONFLICT.value},
+                ),
+            ],
+        ),
+    },
+)
 class AdminExamDeleteAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 삭제 API."""
 

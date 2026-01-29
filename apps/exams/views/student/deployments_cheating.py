@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,6 +11,7 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
@@ -23,6 +25,65 @@ from apps.exams.services.student.deployments_status import (
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
+@extend_schema(
+    tags=["exams"],
+    summary="부정행위 횟수 갱신",
+    description="부정행위 횟수를 증가시키고 강제 제출 여부를 판단합니다.",
+    request=ExamCheatingRequestSerializer,
+    responses={
+        200: ExamCheatingResponseSerializer,
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "시험 정보 없음",
+                    value={"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
+                ),
+            ],
+        ),
+        409: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Conflict",
+            examples=[
+                OpenApiExample(
+                    "이미 제출됨",
+                    value={"error_detail": ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value},
+                ),
+            ],
+        ),
+        410: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Gone",
+            examples=[
+                OpenApiExample(
+                    "시험 종료",
+                    value={"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
+                ),
+            ],
+        ),
+    },
+)
 class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
     """부정행위 횟수를 증가시키고 종료 여부를 판단."""
 

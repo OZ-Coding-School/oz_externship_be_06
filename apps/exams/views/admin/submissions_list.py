@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import NoReturn
 
 from django.db.models import Q
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -17,9 +18,58 @@ from apps.exams.models import ExamSubmission
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
+@extend_schema(
+    tags=["admin_exams"],
+    summary="어드민 응시 내역 목록 조회",
+    description="쪽지시험 응시 내역을 조회합니다.",
+    responses={
+        200: AdminExamSubmissionListResponseSerializer,
+        400: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Bad Request",
+            examples=[
+                OpenApiExample(
+                    "유효하지 않은 조회 요청",
+                    value={"error_detail": ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value},
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.NO_SUBMISSION_LIST_PERMISSION.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "응시 내역 없음",
+                    value={"error_detail": ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value},
+                ),
+            ],
+        ),
+    },
+)
 class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 응시 내역 목록 조회 API."""
 

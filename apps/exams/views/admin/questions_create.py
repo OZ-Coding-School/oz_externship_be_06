@@ -1,5 +1,6 @@
 from typing import NoReturn
 
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,7 @@ from apps.exams.serializers.admin.questions_create import (
     AdminExamQuestionCreateRequestSerializer,
     AdminExamQuestionCreateResponseSerializer,
 )
+from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.questions_create import (
     ExamNotFoundError,
     ExamQuestionLimitError,
@@ -21,6 +23,65 @@ from apps.exams.services.admin.questions_create import (
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
+@extend_schema(
+    tags=["admin_exams"],
+    summary="어드민 문제 등록",
+    description="쪽지시험 문제를 등록합니다.",
+    request=AdminExamQuestionCreateRequestSerializer,
+    responses={
+        201: AdminExamQuestionCreateResponseSerializer,
+        400: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Bad Request",
+            examples=[
+                OpenApiExample(
+                    "유효하지 않은 문제 등록 요청",
+                    value={"error_detail": ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value},
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.NO_QUESTION_CREATE_PERMISSION.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "시험 정보 없음",
+                    value={"error_detail": ErrorMessages.EXAM_ADMIN_NOT_FOUND.value},
+                ),
+            ],
+        ),
+        409: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Conflict",
+            examples=[
+                OpenApiExample(
+                    "문제 등록 제한 초과",
+                    value={"error_detail": ErrorMessages.QUESTION_CREATE_CONFLICT.value},
+                ),
+            ],
+        ),
+    },
+)
 class AdminExamQuestionCreateAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 문제 등록 API."""
 
