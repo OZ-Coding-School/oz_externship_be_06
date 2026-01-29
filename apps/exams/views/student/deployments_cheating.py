@@ -14,8 +14,8 @@ from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
 )
-from apps.exams.services.grading import grade_submission
 from apps.exams.services.answers_json import normalize_answers_json
+from apps.exams.services.grading import grade_submission
 from apps.exams.services.student.deployments_status import (
     get_exam_status,
     is_deployment_active_now,
