@@ -32,7 +32,10 @@ from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.serializers.student.deployments_list import ExamDeploymentListSerializer
+from apps.exams.serializers.student.deployments_list import (
+    ExamDeploymentListSerializer,
+    ExamListQuerySerializer,
+)
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -106,9 +109,10 @@ class ExamListView(ExamsExceptionMixin, ListAPIView[ExamDeployment]):
         if cohort_id is None:
             raise ErrorDetailException(ErrorMessages.USER_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
-        status_param = self.request.query_params.get("status", "all").lower()
-        if status_param not in ("all", "done", "pending"):
+        query_serializer = ExamListQuerySerializer(data=self.request.query_params)
+        if not query_serializer.is_valid():
             raise ErrorDetailException(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value, status.HTTP_404_NOT_FOUND)
+        status_param = query_serializer.validated_data["status"]
 
         latest_sub = ExamSubmission.objects.filter(submitter_id=user_id, deployment_id=OuterRef("pk")).order_by(
             "-created_at"
