@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.exams.serializers.student.deployments_status import ExamBaseResponseSerializer
+from apps.exams.serializers.student.submissions_create import ExamAnswerSerializer
 
 
 class ExamCheatingResponseSerializer(ExamBaseResponseSerializer):
@@ -14,4 +15,4 @@ class ExamCheatingResponseSerializer(ExamBaseResponseSerializer):
 class ExamCheatingRequestSerializer(serializers.Serializer[Any]):
     """부정행위 카운트 요청 스키마."""
 
-    answers_json = serializers.JSONField(required=False)
+    answers_json = ExamAnswerSerializer(many=True, required=False)

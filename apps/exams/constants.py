@@ -25,6 +25,8 @@ class ErrorMessages(str, Enum):
     INVALID_SUBMISSION_LIST_REQUEST = "유효하지 않은 조회 요청입니다."
     INVALID_SUBMISSION_DETAIL_REQUEST = "유효하지 않은 상세 조회 요청입니다."
     INVALID_SUBMISSION_DELETE_REQUEST = "유효하지 않은 응시 내역 삭제 요청입니다."
+    INVALID_SHORT_ANSWER_TYPE = "주관식 단답형 답안은 문자열이어야 합니다."
+    INVALID_SHORT_ANSWER_LENGTH = "주관식 단답형 답안은 20자 이하로 입력해야 합니다."
 
     # 401
     UNAUTHORIZED = "자격 인증 데이터가 제공되지 않았습니다."

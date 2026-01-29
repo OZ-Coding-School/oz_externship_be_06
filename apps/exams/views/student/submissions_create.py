@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -26,7 +26,24 @@ from apps.exams.views.mixins import ExamsExceptionMixin
     request=ExamSubmissionCreateSerializer,
     responses={
         201: ExamSubmissionCreateResponseSerializer,
-        400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_SESSION.value),
+        400: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Bad Request",
+            examples=[
+                OpenApiExample(
+                    "유효하지 않은 시험 응시 세션",
+                    value={"error_detail": ErrorMessages.INVALID_EXAM_SESSION.value},
+                ),
+                OpenApiExample(
+                    "주관식 단답형 타입 오류",
+                    value={"error_detail": ErrorMessages.INVALID_SHORT_ANSWER_TYPE.value},
+                ),
+                OpenApiExample(
+                    "주관식 단답형 길이 초과",
+                    value={"error_detail": ErrorMessages.INVALID_SHORT_ANSWER_LENGTH.value},
+                ),
+            ],
+        ),
         401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
         403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
         404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
