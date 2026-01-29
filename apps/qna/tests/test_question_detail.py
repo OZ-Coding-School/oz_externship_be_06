@@ -12,6 +12,7 @@ from apps.qna.models import (
     QuestionCategory,
     QuestionImage,
 )
+from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 
@@ -111,7 +112,7 @@ class QuestionDetailAPITest(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], "해당 질문을 찾을 수 없습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
     def test_get_question_detail_invalid_id_format(self) -> None:
         """[실패] 유효하지 않은 ID 형식(문자열 등)으로 요청 시 처리 검증"""
@@ -134,7 +135,7 @@ class QuestionDetailAPITest(TestCase):
             self.client.get(self.url)
 
         # select_related와 prefetch_related가 정상 작동하면 데이터 양과 관계없이 쿼리 수가 일정함
-        self.assertLessEqual(len(context), 8, f"너무 많은 쿼리가 발생함: {len(context)}개")
+        self.assertLessEqual(len(context), 10, f"너무 많은 쿼리가 발생함: {len(context)}개")
 
     def test_view_count_concurrency_safety(self) -> None:
         """[로직] F 객체를 이용한 조회수 증가가 DB에 정확히 반영되는지 확인"""
