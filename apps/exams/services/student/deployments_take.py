@@ -80,6 +80,9 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
             # 타입 매핑 (모델 타입 -> 명세서 타입)
             type_mapping = {
                 "MULTI_SELECT": "multiple_choice",
+                "MULTIPLE_CHOICE": "multiple_choice",
+                "SINGLE_SELECT": "single_choice",
+                "SINGLE_CHOICE": "single_choice",
                 "FILL_IN_BLANK": "fill_blank",
                 "ORDERING": "ordering",
                 "SHORT_ANSWER": "short_answer",
