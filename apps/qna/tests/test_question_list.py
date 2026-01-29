@@ -7,8 +7,8 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
-from apps.qna.exceptions.question_exception import QuestionNotFoundException
 from apps.qna.models import Answer, Question, QuestionCategory
+from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 
@@ -16,8 +16,15 @@ User = get_user_model()
 class QuestionListAPITest(TestCase):
     """
     질문 목록 조회 API (GET) 테스트
-    - 검색, 필터링, 정렬 및 페이지네이션 검증
-    - 400, 404 에러 매핑 검증
+    - 성공 케이스 (전체 목록, 필터링, 검색, 정렬, 페이지네이션)
+    - 실패 케이스
+        - 404 Not Found: 존재하지 않는 카테고리 ID
+        - 404 Not Found: 검색 결과 없음
+        - 404 Not Found: 필터 결과 없음 (답변 대기 중 등)
+        - 400 Bad Request: 잘못된 정렬(sort) 옵션
+        - 400 Bad Request: 잘못된 답변 상태(answer_status) 옵션
+        - 400 Bad Request: 잘못된 페이지 번호 형식
+    - 성능 테스트 (쿼리 수 검증)
     """
 
     def setUp(self) -> None:
@@ -155,13 +162,13 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"category_id": 9999})
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
 
     def test_search_no_results_returns_404(self) -> None:
         """[404] 검색 결과가 전혀 없을 경우 404 반환 검증"""
         response = self.client.get(self.url, {"search_keyword": "절대로없을법한검색어123"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
 
     def test_filter_status_no_results_returns_404(self) -> None:
         """[404] 필터 조건에 부합하는 데이터가 없을 경우 404 반환 검증"""
@@ -171,7 +178,7 @@ class QuestionListAPITest(TestCase):
         # 'waiting' 상태를 조회하면 결과가 0건이므로 404 발생
         response = self.client.get(self.url, {"answer_status": "waiting"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], "조회 가능한 질문이 존재하지 않습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
 
     # --- 400 Bad Request ---------------------
 
@@ -182,19 +189,19 @@ class QuestionListAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # Mixin에 의해 error_detail에 커스텀 에러 메시지가 담겨있는지 확인
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_invalid_answer_status_choice_returns_400(self) -> None:
         """[400] 허용되지 않은 answer_status 옵션 입력 시 400 반환 검증"""
         response = self.client.get(self.url, {"answer_status": "pending"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_invalid_page_type_returns_400(self) -> None:
         """[400] 숫자가 아닌 페이지 번호 입력 시 400 반환 검증(IntegerField 검증)"""
         response = self.client.get(self.url, {"page": "first_page"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 목록 조회 요청입니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_question_list_performance(self) -> None:
         """[성공] 질문 목록 조회 시 발생하는 쿼리 수 검증"""
@@ -202,7 +209,14 @@ class QuestionListAPITest(TestCase):
         for i in range(5):
             Question.objects.create(author=self.user, category=self.category_be, title=f"Q{i}", content="내용")
 
-        # 쿼리 발생 내역 캡처
+        # Query Expectation:
+        # 1. Count query (Pagination)
+        # 2. Main list query (Question)
+        # 3. Prefetch Related (if any, e.g. images, author)
+        # 4. Auth check (User info)
+        # 5. Session/Cookie overhead (potentially)
+
+        # Allow roughly 5 queries
         with CaptureQueriesContext(connection) as context:
             self.client.get(self.url)
 

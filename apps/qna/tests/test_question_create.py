@@ -9,8 +9,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.qna.exceptions.question_exception import QuestionBaseException
+from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
+from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 
@@ -18,8 +19,13 @@ User = get_user_model()
 class QuestionCreateAPITest(TestCase):
     """
     질문 등록 API (POST) 테스트
-    - 등록 성공 검증
-    - 400, 401, 403 에러 매핑 검증
+    - 성공 케이스 (권한 있는 유저)
+    - 실패 케이스
+        - 401 Unauthorized: 로그인하지 않은 유저
+        - 403 Forbidden: 수강생이 아닌 유저
+        - 400 Bad Request: 존재하지 않는 카테고리
+        - 400 Bad Request: 필수 입력값(제목 등) 누락
+    - 성능 테스트 (쿼리 수 검증)
     """
 
     def setUp(self) -> None:
@@ -88,7 +94,7 @@ class QuestionCreateAPITest(TestCase):
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.json()["error_detail"], "로그인한 수강생만 질문을 등록할 수 있습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED_QUESTION_CREATE.value)
 
     def test_create_question_forbidden(self) -> None:
         """[실패] 수강생이 아닌 유저의 요청 시 403 에러 반환 검증"""
@@ -101,7 +107,7 @@ class QuestionCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.json()["error_detail"], "질문 등록 권한이 없습니다.")
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_QUESTION_CREATE.value)
 
     def test_create_question_invalid_category(self) -> None:
         """[실패] 존재하지 않는 카테고리 ID 전송 시 400 에러 반환 검증"""
@@ -113,8 +119,8 @@ class QuestionCreateAPITest(TestCase):
             self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
         )
 
-        self.assertEqual(response.status_code, QuestionBaseException.status_code)
-        self.assertEqual(response.json()["error_detail"], "유효하지 않은 질문 등록 요청입니다.")
+        self.assertEqual(response.status_code, QnaBaseException.status_code)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE.value)
 
     def test_create_question_bad_request(self) -> None:
         """[실패] 필수 데이터 누락 시 400 에러 반환 검증"""
@@ -128,8 +134,8 @@ class QuestionCreateAPITest(TestCase):
         )
         res_data = response.json()
 
-        self.assertEqual(response.status_code, QuestionBaseException.status_code)
-        self.assertEqual(res_data["error_detail"], "유효하지 않은 질문 등록 요청입니다.")
+        self.assertEqual(response.status_code, QnaBaseException.status_code)
+        self.assertEqual(res_data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE.value)
 
     def test_create_question_performance(self) -> None:
         """[성공] 질문 등록 시 발생하는 쿼리 수 검증"""
@@ -141,7 +147,15 @@ class QuestionCreateAPITest(TestCase):
             "category_id": self.category.id,
         }
 
-        # 쿼리 발생 내역 캡처
+        # Query Expectation:
+        # 1. Auth check (User)
+        # 2. Permission check (Role)
+        # 3. Create Question
+        # 4. Atomic transaction overhead / signals?
+        # 5. Get Category validation
+        # 6. Response serialization (if necessary)
+
+        # Allow roughly 6 queries
         with CaptureQueriesContext(connection) as context:
             self.client.post(
                 self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
