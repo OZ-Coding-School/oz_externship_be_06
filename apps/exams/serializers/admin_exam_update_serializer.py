@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.exams.models import Exam
 from apps.courses.models import Subject
+from apps.exams.constants import ErrorMessages
 
 class AdminExamUpdateRequestSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=50)
@@ -16,8 +17,14 @@ class AdminExamUpdateRequestSerializer(serializers.ModelSerializer):
     # 409 제목 중복
     def validate_title(self, value):
         if Exam.objects.filter(title=value).exclude(id=self.instance.id).exists():
-            raise serializers.ValidationError("동일한 이름의 쪽지시험이 이미 존재합니다.")
+            raise serializers.ValidationError(ErrorMessages.EXAM_UPDATE_CONFLICT.value)
         return value
+
+    # 400 title 또는 subject 누락
+    def validate(self, data):
+        if not data.get("title") or not data.get("subject"):
+            raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_UPDATE_REQUEST.value)
+        return data
 
 class AdminExamUpdateResponseSerializer(serializers.ModelSerializer):
     subject_id = serializers.IntegerField(source="subject.id")

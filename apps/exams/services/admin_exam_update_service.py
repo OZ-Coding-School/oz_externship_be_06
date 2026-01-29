@@ -1,9 +1,7 @@
 from django.db import transaction
 
 from apps.exams.models import Exam
-from apps.exams.exceptions import (
-    ExamNotFoundError,
-)
+from apps.exams.constants import ErrorMessages
 from apps.courses.models import Subject
 
 
@@ -21,7 +19,7 @@ def update_exam(
     try:
         exam = Exam.objects.select_for_update().get(id=exam_id)
     except Exam.DoesNotExist:
-        raise ExamNotFoundError()
+        raise Exception(ErrorMessages.EXAM_UPDATE_NOT_FOUND.value)
 
     # 기본 필드 수정
     exam.title = title
