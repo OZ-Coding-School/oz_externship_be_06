@@ -45,6 +45,7 @@ class ExamSubmissionTest(APITestCase):
             nickname="테스트유저",
             name="테스트 이름",
             phone_number="010-0000-0000",
+            is_active=True,
         )
 
         # JWT 토큰 생성

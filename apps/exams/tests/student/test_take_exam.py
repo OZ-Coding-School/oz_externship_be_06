@@ -24,6 +24,7 @@ class TakeExamAPITest(APITestCase):
             gender=User.Gender.MALE,
             birthday="2000-01-01",
             role=User.Role.STUDENT,
+            is_active=True,
         )
         self.admin_user = User.objects.create_user(
             email="admin@test.com",
@@ -34,6 +35,7 @@ class TakeExamAPITest(APITestCase):
             gender=User.Gender.MALE,
             birthday="1990-01-01",
             role=User.Role.ADMIN,
+            is_active=True,
         )
         self.course = Course.objects.create(name="테스트 강좌")
         self.subject = Subject.objects.create(

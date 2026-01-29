@@ -64,6 +64,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+            is_active=True,
         )
         self.staff_user = User.objects.create_user(
             email="staff@example.com",
@@ -74,6 +75,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.TA,
+            is_active=True,
         )
         self.student = User.objects.create_user(
             email="student@example.com",
@@ -84,6 +86,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         self.submission = ExamSubmission.objects.create(
             submitter=self.student,

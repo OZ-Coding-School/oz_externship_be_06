@@ -18,11 +18,13 @@ class ChatbotSessionDeleteAPITest(TestCase):
             email="user1@test.com",
             password="password",
             birthday="2000-01-01",
+            is_active=True,
         )
         self.other_user = User.objects.create_user(
             email="user2@test.com",
             password="password",
             birthday="2000-01-01",
+            is_active=True,
         )
 
         self.category = QuestionCategory.objects.create(

@@ -18,11 +18,13 @@ class TestChatbotSessionAPI(APITestCase):
             email="user1@test.com",
             password="pw1234",
             birthday=date(2000, 1, 1),
+            is_active=True,
         )
         self.other = User.objects.create_user(
             email="user2@test.com",
             password="pw1234",
             birthday=date(2000, 1, 2),
+            is_active=True,
         )
 
         self.category = QuestionCategory.objects.create(

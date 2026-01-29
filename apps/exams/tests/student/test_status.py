@@ -61,6 +61,7 @@ class ExamStatusCheckAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+            is_active=True,
         )
         self.other_user = User.objects.create_user(
             email="user@example.com",
@@ -71,6 +72,7 @@ class ExamStatusCheckAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2000, 1, 2),
             role=User.Role.USER,
+            is_active=True,
         )
 
     def _auth_headers(self, user: User) -> Any:

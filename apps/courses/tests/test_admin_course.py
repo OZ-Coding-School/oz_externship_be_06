@@ -26,6 +26,7 @@ class AdminCourseCreateAPITests(TestCase):
             nickname="admin",
             gender="MALE",
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -37,6 +38,7 @@ class AdminCourseCreateAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
     def _set_auth(self, user: User) -> None:
@@ -120,6 +122,7 @@ class AdminCourseUpdateAPITests(TestCase):
             nickname="admin",
             gender="MALE",
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -131,6 +134,7 @@ class AdminCourseUpdateAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(
@@ -219,6 +223,7 @@ class AdminCourseDeleteAPITests(TestCase):
             nickname="admin",
             gender="MALE",
             role=User.Role.ADMIN,
+            is_active=True,
         )
 
         self.student_user = User.objects.create_user(
@@ -230,6 +235,7 @@ class AdminCourseDeleteAPITests(TestCase):
             nickname="student",
             gender="MALE",
             role=User.Role.STUDENT,
+            is_active=True,
         )
 
         self.course = Course.objects.create(
