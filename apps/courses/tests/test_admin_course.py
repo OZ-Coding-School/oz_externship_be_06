@@ -15,7 +15,7 @@ class AdminCourseCreateAPITests(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.url = "/api/v1/admin/courses/"
+        self.url = "/api/v1/admin/courses"
 
         self.admin_user = User.objects.create_user(
             email="admin@example.com",
@@ -139,7 +139,7 @@ class AdminCourseUpdateAPITests(TestCase):
             description="기존 설명",
         )
 
-        self.url = f"/api/v1/admin/courses/{self.course.id}/"
+        self.url = f"/api/v1/admin/courses/{self.course.id}"
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -179,7 +179,7 @@ class AdminCourseUpdateAPITests(TestCase):
     def test_update_course_not_found_404(self) -> None:
         self._set_auth(self.admin_user)
 
-        url = "/api/v1/admin/courses/99999/"
+        url = "/api/v1/admin/courses/99999"
         data = {"name": "없는 과정"}
 
         res = self.client.patch(url, data, format="json")
@@ -237,7 +237,7 @@ class AdminCourseDeleteAPITests(TestCase):
             tag="DEL",
         )
 
-        self.url = f"/api/v1/admin/courses/{self.course.id}/"
+        self.url = f"/api/v1/admin/courses/{self.course.id}"
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -292,7 +292,7 @@ class AdminCourseDeleteAPITests(TestCase):
     def test_delete_course_not_found_404(self) -> None:
         self._set_auth(self.admin_user)
 
-        url = "/api/v1/admin/courses/99999/"
+        url = "/api/v1/admin/courses/99999"
 
         res = self.client.delete(url)
 
