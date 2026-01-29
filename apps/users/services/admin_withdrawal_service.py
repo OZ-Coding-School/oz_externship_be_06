@@ -129,9 +129,8 @@ def _get_assigned_courses_for_lc(user: User) -> list[dict[str, Any]]:
         for lc in learning_coachs
     ]
 
-
+#유저 권한에 따라 다른 과정 목록을 반환
 def get_assigned_courses(user: User) -> list[dict[str, Any]]:
-    """유저의 권한에 따라 담당/수강 과정 목록을 반환합니다."""
     if user.role == User.Role.STUDENT:
         return _get_assigned_courses_for_student(user)
     elif user.role == User.Role.TA:
@@ -142,20 +141,9 @@ def get_assigned_courses(user: User) -> list[dict[str, Any]]:
         return _get_assigned_courses_for_lc(user)
     return []
 
-
+#탈퇴내역 상세 정보 조회
 def get_withdrawal_detail(withdrawal_id: int) -> Withdrawal:
-    """
-    회원 탈퇴 내역 상세 정보를 조회합니다.
 
-    Args:
-        withdrawal_id: 탈퇴 내역 ID
-
-    Returns:
-        Withdrawal 객체
-
-    Raises:
-        WithdrawalNotFoundError: 탈퇴 내역을 찾을 수 없는 경우
-    """
     try:
         return Withdrawal.objects.select_related("user").get(id=withdrawal_id)
     except Withdrawal.DoesNotExist as exc:

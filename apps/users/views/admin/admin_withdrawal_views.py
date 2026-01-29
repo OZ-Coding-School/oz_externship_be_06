@@ -111,7 +111,7 @@ class AdminWithdrawalListAPIView(APIView):
         return Response(serializer.data)
 
 
-# 어드민 탈퇴 내역 상세 조회 api
+#어드민 탈퇴 내역 상세 조회 api
 class AdminWithdrawalDetailAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
