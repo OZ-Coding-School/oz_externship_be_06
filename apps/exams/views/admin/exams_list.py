@@ -19,7 +19,7 @@ from apps.exams.models import Exam
 from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_exam_list import (
+from apps.exams.services.admin.exams_list import (
     AdminExamListService,
     InvalidAdminExamListParams,
 )

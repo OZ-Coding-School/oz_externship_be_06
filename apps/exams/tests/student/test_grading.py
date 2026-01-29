@@ -11,7 +11,7 @@ from apps.exams.services.grading import grade_submission, judge
 User = get_user_model()
 
 
-class JudgeLogicTests(SimpleTestCase):
+class JudgeOxTests(SimpleTestCase):
     def test_ox_correct(self) -> None:
         q = ExamQuestion(type=ExamQuestion.TypeChoices.OX, answer="O", point=5)
 
@@ -24,6 +24,8 @@ class JudgeLogicTests(SimpleTestCase):
 
         self.assertEqual(judge(q, "X"), 0)
 
+
+class JudgeShortAnswerTests(SimpleTestCase):
     def test_short_answer_correct(self) -> None:
         q = ExamQuestion(type=ExamQuestion.TypeChoices.SHORT_ANSWER, answer="Django", point=5)
 
@@ -34,6 +36,8 @@ class JudgeLogicTests(SimpleTestCase):
 
         self.assertEqual(judge(q, "Flask"), 0)
 
+
+class JudgeMultiSelectTests(SimpleTestCase):
     def test_multi_select_all_correct(self) -> None:
         q = ExamQuestion(
             type=ExamQuestion.TypeChoices.MULTI_SELECT,
@@ -81,6 +85,8 @@ class JudgeLogicTests(SimpleTestCase):
 
         self.assertEqual(judge(q, [3]), 0)
 
+
+class JudgeOrderingTests(SimpleTestCase):
     def test_ordering_correct(self) -> None:
         q = ExamQuestion(
             type=ExamQuestion.TypeChoices.ORDERING,
@@ -108,6 +114,8 @@ class JudgeLogicTests(SimpleTestCase):
 
         self.assertEqual(judge(q, ["a", "b"]), 0)
 
+
+class JudgeFillBlankTests(SimpleTestCase):
     def test_fill_in_blank_all_correct(self) -> None:
         q = ExamQuestion(
             type=ExamQuestion.TypeChoices.FILL_IN_BLANK,
