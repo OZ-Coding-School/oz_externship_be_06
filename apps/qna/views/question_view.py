@@ -143,7 +143,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        question = svc_q_cmd.QuestionCommandService.create_question(author=request.user, data=serializer.validated_data)
+        question = svc_q_cmd.QuestionCommandService.create_question(author=cast(User, request.user), data=serializer.validated_data)
 
         # 응답 출력
         response_serializer = ser_q_res.QuestionCreateResponseSerializer(question)
