@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.utils.permissions import IsStaffRole
 from apps.courses.serializers.admin.admin_course_serializer import (
     CourseCreateRequestSerializer,
     CourseCreateResponseSerializer,
@@ -18,7 +19,6 @@ from apps.courses.services.course_service import (
     delete_course,
     update_course,
 )
-from apps.core.utils.permissions import IsStaffRole
 
 
 # 어드민 과정 등록
