@@ -4,9 +4,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment
-from apps.core.utils.permissions import IsStudentRole
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
 )

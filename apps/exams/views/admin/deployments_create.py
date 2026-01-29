@@ -7,8 +7,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.exams.constants import ErrorMessages
 from apps.core.utils.permissions import IsStaffRole
+from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin.deployments_create import (
     AdminExamDeploymentCreateRequestSerializer,
     AdminExamDeploymentCreateResponseSerializer,

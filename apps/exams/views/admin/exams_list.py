@@ -13,10 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from apps.core.utils.pagination import AdminExamPagination
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam
-from apps.core.utils.permissions import IsStaffRole
 from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.exams_list import (
