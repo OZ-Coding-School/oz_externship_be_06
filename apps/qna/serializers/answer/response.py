@@ -27,7 +27,7 @@ class AnswerSerializer(serializers.ModelSerializer[Answer]):
     """
 
     author = AnswerAuthorSerializer(read_only=True)
-    comments = AnswerCommentSerializer(source="answer_comments", many=True, read_only=True)
+    comments = AnswerCommentSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:

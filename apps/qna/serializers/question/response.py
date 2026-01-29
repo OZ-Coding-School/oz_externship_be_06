@@ -3,8 +3,9 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.qna.models import Question, QuestionImage
-from apps.qna.serializers.answer.response import AnswerCreateResponseSerializer
+from apps.qna.serializers.answer.response import AnswerSerializer
 from apps.qna.serializers.base import QnaValidationMixin
+from apps.qna.utils.constants import ErrorMessages
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
@@ -28,7 +29,7 @@ class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     page = serializers.IntegerField(default=1)
     size = serializers.IntegerField(default=10)
 
-    default_error_message = "유효하지 않은 목록 조회 요청입니다."
+    default_error_message = ErrorMessages.INVALID_QUESTION_LIST
 
 
 class QuestionListSerializer(serializers.ModelSerializer[Question]):
@@ -87,7 +88,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
     category = QuestionCategoryListSerializer(read_only=True)
     author = QuestionAuthorSerializer(read_only=True)
     images = QuestionImageSerializer(many=True, read_only=True)
-    answers = AnswerCreateResponseSerializer(many=True, read_only=True)
+    answers = AnswerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Question

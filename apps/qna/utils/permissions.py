@@ -38,6 +38,6 @@ class CanWriteAnswer(BasePermission):
         # 유저의 role이 ALLOWED_ROLES이 아닌 경우
         user_role = getattr(request.user, "role", None)
         if not user_role or str(user_role).upper() not in self.ALLOWED_ROLES:
-            raise QuestionPermissionDeniedException(detail=ErrorMessages.FORBIDDEN_ANSWER_CREATE.value)
+            raise QuestionPermissionDeniedException(detail=ErrorMessages.FORBIDDEN_ANSWER_CREATE)
 
         return True
