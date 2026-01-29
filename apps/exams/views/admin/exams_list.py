@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from django.db.models import QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -6,21 +8,22 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from rest_framework.request import Request
 
 from apps.core.utils.pagination import AdminExamPagination
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam
-from apps.exams.permissions import IsExamStaff
 from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin_exam_list import (
+from apps.exams.services.admin.exams_list import (
     AdminExamListService,
     InvalidAdminExamListParams,
 )
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
@@ -58,36 +61,33 @@ from apps.exams.services.admin_exam_list import (
         ),
     },
 )
-class AdminExamListView(ListAPIView[Exam]):
-    permission_classes = [IsAuthenticated, IsExamStaff]
+class AdminExamListView(ExamsExceptionMixin, ListAPIView[Exam]):
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = AdminExamListItemSerializer
     pagination_class = AdminExamPagination
 
-    def handle_exception(self, exc: Exception) -> Response:
-        if isinstance(exc, NotAuthenticated):
-            return Response(
-                {"error_detail": ErrorMessages.UNAUTHORIZED.value},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        if isinstance(exc, PermissionDenied):
-            return Response(
-                {"error_detail": ErrorMessages.NO_EXAM_LIST_PERMISSION.value},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        if isinstance(exc, InvalidAdminExamListParams):
-            return Response(
-                {"error_detail": str(exc)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return super().handle_exception(exc)
+    def permission_denied(
+        self,
+        request: Request,
+        message: str | None = None,
+        code: str | None = None,
+    ) -> NoReturn:
+        from rest_framework.exceptions import NotAuthenticated, PermissionDenied
+
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated()
+        raise PermissionDenied(detail=ErrorMessages.NO_EXAM_LIST_PERMISSION.value)
 
     def get_queryset(self) -> QuerySet[Exam]:
         qp = self.request.query_params
 
-        params = AdminExamListService.parse_params(
-            search_keyword=qp.get("search_keyword"),
-            subject_id=qp.get("subject_id"),
-            sort=qp.get("sort"),
-            order=qp.get("order"),
-        )
+        try:
+            params = AdminExamListService.parse_params(
+                search_keyword=qp.get("search_keyword"),
+                subject_id=qp.get("subject_id"),
+                sort=qp.get("sort"),
+                order=qp.get("order"),
+            )
+        except InvalidAdminExamListParams as exc:
+            raise ErrorDetailException(str(exc), status.HTTP_400_BAD_REQUEST) from exc
         return AdminExamListService.get_queryset(params)

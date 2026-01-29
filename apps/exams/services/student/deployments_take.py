@@ -4,10 +4,16 @@ from dataclasses import dataclass
 from typing import Any
 
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
+from rest_framework import status
 
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamDeployment, ExamSubmission
+from apps.exams.services.student.deployments_status import (
+    is_deployment_activated,
+    is_deployment_opened,
+    is_deployment_time_closed,
+)
 from apps.users.models import User
 
 
@@ -19,21 +25,21 @@ class TakeExamResult:
 
 def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     if user.role != User.Role.STUDENT:
-        raise ValidationError({"detail": ErrorMessages.FORBIDDEN.value})
+        raise ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
 
     try:
         deployment = ExamDeployment.objects.select_related("exam", "exam__subject").get(id=deployment_id)
     except ExamDeployment.DoesNotExist as exc:
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_FOUND.value}) from exc
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
 
-    if deployment.status != ExamDeployment.StatusChoices.ACTIVATED:
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
+    if not is_deployment_activated(deployment):
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
 
     now = timezone.now()
-    if now < deployment.open_at:
-        raise ValidationError({"detail": ErrorMessages.EXAM_NOT_AVAILABLE.value})
-    if now > deployment.close_at:
-        raise ValidationError({"detail": ErrorMessages.EXAM_CLOSED.value})
+    if not is_deployment_opened(deployment, now=now):
+        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
+    if is_deployment_time_closed(deployment, now=now):
+        raise ErrorDetailException(ErrorMessages.EXAM_CLOSED.value, status.HTTP_410_GONE)
 
     submission, _created = ExamSubmission.objects.get_or_create(
         submitter=user,
@@ -74,6 +80,9 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
             # 타입 매핑 (모델 타입 -> 명세서 타입)
             type_mapping = {
                 "MULTI_SELECT": "multiple_choice",
+                "MULTIPLE_CHOICE": "multiple_choice",
+                "SINGLE_SELECT": "single_choice",
+                "SINGLE_CHOICE": "single_choice",
                 "FILL_IN_BLANK": "fill_blank",
                 "ORDERING": "ordering",
                 "SHORT_ANSWER": "short_answer",
@@ -90,8 +99,17 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
                 "prompt": question_data.get("prompt"),
                 "blank_count": question_data.get("blank_count") if question_type == "fill_blank" else None,
                 "options": question_data.get("options") if question_type in ["multiple_choice", "ordering"] else None,
-                "answer_input": None,  # 응시자가 입력할 답안 필드 (초기값은 None)
+                "answer_input": None,
             }
+
+            if question_type == "fill_blank":
+                blank_count = question_data.get("blank_count") or 0
+                question["answer_input"] = [""] * max(0, int(blank_count))
+            elif question_type in ["multiple_choice", "ordering"]:
+                question["answer_input"] = []
+            elif question_type in ["short_answer", "ox", "single_choice"]:
+                question["answer_input"] = ""
+
             questions.append(question)
 
     return {

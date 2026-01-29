@@ -31,7 +31,7 @@ class QuestionSerializer(serializers.Serializer[Any]):
     prompt = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     blank_count = serializers.IntegerField(allow_null=True, required=False)
     options = serializers.ListField(child=serializers.CharField(), allow_null=True, required=False)
-    answer_input = serializers.CharField(allow_null=True, required=False)
+    answer_input = serializers.JSONField(allow_null=True, required=False)
 
 
 class TakeExamResponseSerializer(serializers.Serializer[Any]):

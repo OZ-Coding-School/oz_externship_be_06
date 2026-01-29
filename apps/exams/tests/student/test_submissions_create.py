@@ -91,7 +91,7 @@ class ExamSubmissionTest(APITestCase):
             submitter=self.user,
             deployment=self.deployment,
             started_at=self.deployment.open_at,
-            answers_json={},
+            answers_json=[],
         )
 
     def test_submission_exam_success(self) -> None:

@@ -225,7 +225,7 @@ class AdminExamListAPITest(TestCase):
         deployment.submissions.create(
             submitter=self.normal_user,
             started_at=timezone.now() - timedelta(minutes=5),
-            answers_json={"answers": []},
+            answers_json=[],
             score=20,
             correct_answer_count=2,
             cheating_count=0,

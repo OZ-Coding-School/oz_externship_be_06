@@ -159,7 +159,7 @@ class ExamCheatingUpdateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.FORBIDDEN.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.FORBIDDEN.value)
 
     def test_cheating_requires_authentication(self) -> None:
         self._clear_cache()
@@ -167,7 +167,7 @@ class ExamCheatingUpdateAPITest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_cheating_returns_404_when_deployment_missing(self) -> None:
         self._clear_cache()

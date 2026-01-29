@@ -1,66 +1,95 @@
-from typing import NoReturn
-
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
-from apps.exams.permissions import IsStudentRole
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
 )
+from apps.exams.services.answers_json import normalize_answers_json
 from apps.exams.services.grading import grade_submission
-from apps.exams.services.student.deployments_status import is_exam_active
+from apps.exams.services.student.deployments_status import (
+    get_exam_status,
+    is_deployment_active_now,
+)
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-class ExamCheatingUpdateAPIView(APIView):
+@extend_schema(
+    tags=["exams"],
+    summary="부정행위 횟수 갱신",
+    description="부정행위 횟수를 증가시키고 강제 제출 여부를 판단합니다.",
+    request=ExamCheatingRequestSerializer,
+    responses={
+        200: ExamCheatingResponseSerializer,
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "시험 정보 없음",
+                    value={"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
+                ),
+            ],
+        ),
+        409: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Conflict",
+            examples=[
+                OpenApiExample(
+                    "이미 제출됨",
+                    value={"error_detail": ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value},
+                ),
+            ],
+        ),
+        410: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Gone",
+            examples=[
+                OpenApiExample(
+                    "시험 종료",
+                    value={"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
+                ),
+            ],
+        ),
+    },
+)
+class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
     """부정행위 횟수를 증가시키고 종료 여부를 판단."""
 
     permission_classes = [IsAuthenticated, IsStudentRole]
     serializer_class = ExamCheatingResponseSerializer
 
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
-        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
-
-    @extend_schema(
-        tags=["exams"],
-        summary="쪽지시험 부정행위 카운트 업데이트 API",
-        description="""
-        시험 응시 중 화면 이탈 등 부정행위가 발생했을 때 카운트를 증가시킵니다.
-        부정행위 3회 이상이면 force_submit=True로 종료 처리 응답을 반환합니다.
-        """,
-        request=ExamCheatingRequestSerializer,
-        parameters=[
-            OpenApiParameter(
-                name="deployment_id",
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.PATH,
-                required=True,
-                description="시험 배포 ID",
-            )
-        ],
-        responses={
-            200: ExamCheatingResponseSerializer,
-            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
-            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
-            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
-            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value),
-            410: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_ALREADY_CLOSED.value),
-        },
-    )
     def post(self, request: Request, deployment_id: int) -> Response:
         user = request.user
 
@@ -72,7 +101,7 @@ class ExamCheatingUpdateAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if not is_exam_active(deployment):
+        if not is_deployment_active_now(deployment):
             return Response(
                 {"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
                 status=status.HTTP_410_GONE,
@@ -100,7 +129,7 @@ class ExamCheatingUpdateAPIView(APIView):
         if is_closed:
             request_serializer = ExamCheatingRequestSerializer(data=request.data)
             request_serializer.is_valid(raise_exception=True)
-            answers_json = request_serializer.validated_data.get("answers_json", [])
+            answers_json = normalize_answers_json(request_serializer.validated_data.get("answers_json", []))
 
             if cache.add(submit_lock_key, "1", timeout=5):
                 with transaction.atomic():
@@ -119,10 +148,11 @@ class ExamCheatingUpdateAPIView(APIView):
                         submission.save(update_fields=["cheating_count", "answers_json"])
                     grade_submission(submission)
                 cache.delete(submit_lock_key)
+        status_value = ExamStatus.CLOSED.value if is_closed else get_exam_status(deployment).value
         serializer = self.serializer_class(
             data={
                 "cheating_count": cheating_count,
-                "exam_status": (ExamStatus.CLOSED if is_closed else ExamStatus.ACTIVATED).value,
+                "exam_status": status_value,
                 "force_submit": is_closed,
             }
         )

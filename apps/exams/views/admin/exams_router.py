@@ -18,9 +18,10 @@ from apps.exams.serializers.admin.exams_create import (
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
 from apps.exams.views.admin.exams_list import AdminExamListView
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-class AdminExamRouterAPIView(APIView):
+class AdminExamRouterAPIView(ExamsExceptionMixin, APIView):
 
     @extend_schema(
         tags=["admin_exams"],
@@ -92,11 +93,56 @@ class AdminExamRouterAPIView(APIView):
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,
-            400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value),
-            401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
-            403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.NO_EXAM_CREATE_PERMISSION.value),
-            404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBJECT_NOT_FOUND.value),
-            409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_CONFLICT.value),
+            400: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Bad Request",
+                examples=[
+                    OpenApiExample(
+                        "유효하지 않은 시험 생성 요청",
+                        value={"error_detail": ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value},
+                    )
+                ],
+            ),
+            401: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Unauthorized",
+                examples=[
+                    OpenApiExample(
+                        "인증 실패",
+                        value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                    )
+                ],
+            ),
+            403: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden",
+                examples=[
+                    OpenApiExample(
+                        "권한 없음",
+                        value={"error_detail": ErrorMessages.NO_EXAM_CREATE_PERMISSION.value},
+                    )
+                ],
+            ),
+            404: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Not Found",
+                examples=[
+                    OpenApiExample(
+                        "과목 정보 없음",
+                        value={"error_detail": ErrorMessages.SUBJECT_NOT_FOUND.value},
+                    )
+                ],
+            ),
+            409: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Conflict",
+                examples=[
+                    OpenApiExample(
+                        "시험 이름 중복",
+                        value={"error_detail": ErrorMessages.EXAM_CONFLICT.value},
+                    )
+                ],
+            ),
         },
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:

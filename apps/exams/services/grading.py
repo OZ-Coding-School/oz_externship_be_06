@@ -1,97 +1,119 @@
-from typing import Any
+from typing import Any, Callable
 
 from django.db import transaction
 
 from apps.exams.models import ExamQuestion, ExamSubmission
+from apps.exams.services.answers_json import normalize_answers_json
+
+
+def _judge_ox(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+    return point if (str(user_answer).strip().upper() == str(correct_answer).strip().upper()) else 0
+
+
+def _judge_short_answer(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+    return point if (str(user_answer).strip().lower() == str(correct_answer).strip().lower()) else 0
+
+
+def _judge_multi_select(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+
+    if isinstance(user_answer, (str, int)):
+        user_answer = [user_answer]
+
+    if not isinstance(user_answer, (list, tuple)):
+        return 0
+
+    if not isinstance(correct_answer, (list, tuple)):
+        correct_answer = [correct_answer]
+
+    correct_set = set(correct_answer)
+    user_set = set(user_answer)
+
+    matched = len(correct_set & user_set)
+    total = len(correct_set)
+
+    if total == 0:
+        return 0
+
+    return int(point * matched / total)
+
+
+def _judge_ordering(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+
+    if not isinstance(user_answer, (list, tuple)):
+        return 0
+
+    if not isinstance(correct_answer, (list, tuple)):
+        if isinstance(correct_answer, (str, int)):
+            correct_answer = [correct_answer]
+        else:
+            return 0
+
+    if len(user_answer) != len(correct_answer):
+        return 0
+
+    return point if list(user_answer) == list(correct_answer) else 0
+
+
+def _judge_fill_in_blank(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+
+    if isinstance(user_answer, (str, int)):
+        user_answer = [user_answer]
+
+    if not isinstance(user_answer, (list, tuple)):
+        return 0
+
+    if isinstance(correct_answer, (str, int)):
+        correct_answer = [correct_answer]
+
+    if not isinstance(correct_answer, (list, tuple)):
+        return 0
+
+    matched = 0
+    total = len(correct_answer)
+
+    for ua, ca in zip(user_answer, correct_answer):
+        if str(ua).strip().lower() == str(ca).strip().lower():
+            matched += 1
+
+    if total == 0:
+        return 0
+
+    return int(point * matched / total)
+
+
+_JUDGERS: dict[str, Callable[[ExamQuestion, Any], int]] = {
+    ExamQuestion.TypeChoices.OX: _judge_ox,
+    ExamQuestion.TypeChoices.SHORT_ANSWER: _judge_short_answer,
+    ExamQuestion.TypeChoices.MULTI_SELECT: _judge_multi_select,
+    ExamQuestion.TypeChoices.ORDERING: _judge_ordering,
+    ExamQuestion.TypeChoices.FILL_IN_BLANK: _judge_fill_in_blank,
+}
 
 
 def judge(question: ExamQuestion, user_answer: Any) -> int:
-    correct_answer = question.answer
-    q_type = question.type
-    point = question.point
-
-    # OX 문제
-    if q_type == ExamQuestion.TypeChoices.OX:
-        return point if (str(user_answer).strip().upper() == str(correct_answer).strip().upper()) else 0
-
-    # 주관식 단답형
-    if q_type == ExamQuestion.TypeChoices.SHORT_ANSWER:
-        return point if (str(user_answer).strip().lower() == str(correct_answer).strip().lower()) else 0
-
-    # 객관식
-    if q_type == ExamQuestion.TypeChoices.MULTI_SELECT:
-        if isinstance(user_answer, (str, int)):
-            user_answer = [user_answer]
-
-        if not isinstance(user_answer, (list, tuple)):
-            return 0
-
-        if not isinstance(correct_answer, (list, tuple)):
-            correct_answer = [correct_answer]
-
-        correct_set = set(correct_answer)
-        user_set = set(user_answer)
-
-        matched = len(correct_set & user_set)
-        total = len(correct_set)
-
-        if total == 0:
-            return 0
-
-        return int(point * matched / total)  # 부분 점수 (소수점 버림)
-
-    # 순서 정렬
-    if q_type == ExamQuestion.TypeChoices.ORDERING:
-        if not isinstance(user_answer, (list, tuple)):
-            return 0
-
-        if not isinstance(correct_answer, (list, tuple)):
-            if isinstance(correct_answer, (str, int)):
-                correct_answer = [correct_answer]
-            else:
-                return 0
-
-        if len(user_answer) != len(correct_answer):
-            return 0
-
-        return point if list(user_answer) == list(correct_answer) else 0
-
-    # 빈칸 채우기
-    if q_type == ExamQuestion.TypeChoices.FILL_IN_BLANK:
-        if isinstance(user_answer, (str, int)):
-            user_answer = [user_answer]
-
-        if not isinstance(user_answer, (list, tuple)):
-            return 0
-
-        if isinstance(correct_answer, (str, int)):
-            correct_answer = [correct_answer]
-
-        if not isinstance(correct_answer, (list, tuple)):
-            return 0
-
-        # if len(user_answer) != len(correct_answer):
-        #     return 0
-
-        matched = 0
-        total = len(correct_answer)
-
-        for ua, ca in zip(user_answer, correct_answer):
-            if str(ua).strip().lower() == str(ca).strip().lower():
-                matched += 1
-
-        if total == 0:
-            return 0
-
-        return int(point * matched / total)
-
-    return 0
+    handler = _JUDGERS.get(question.type)
+    if handler is None:
+        return 0
+    return handler(question, user_answer)
 
 
 @transaction.atomic
 def grade_submission(submission: ExamSubmission) -> None:
     # 제출자 답안
-    answers_list = submission.answers_json or []
+    answers_list = normalize_answers_json(submission.answers_json)
+    if submission.answers_json != answers_list:
+        submission.answers_json = answers_list
+        submission.save(update_fields=["answers_json"])
 
     # 리스트 → dict 변환: {qid: submitted_answer}
     answers = {}

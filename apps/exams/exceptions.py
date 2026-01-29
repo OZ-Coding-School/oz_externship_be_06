@@ -9,3 +9,4 @@ class ErrorDetailException(APIException):
     def __init__(self, detail: str, http_status: int) -> None:
         super().__init__(detail=detail)
         self.http_status = http_status
+        self.status_code = http_status

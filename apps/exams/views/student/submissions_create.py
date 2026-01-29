@@ -1,8 +1,5 @@
-from typing import NoReturn
-
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,10 +13,11 @@ from apps.exams.serializers import (
 )
 from apps.exams.services.grading import grade_submission
 from apps.exams.services.student.submissions_create import submit_exam
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
-    tags=["Exams"],
+    tags=["exams"],
     summary="쪽지시험 제출 API",
     description="""
     로그인한 사용자가 쪽지시험 답안을 제출합니다.
@@ -28,23 +26,71 @@ from apps.exams.services.student.submissions_create import submit_exam
     request=ExamSubmissionCreateSerializer,
     responses={
         201: ExamSubmissionCreateResponseSerializer,
-        400: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.INVALID_EXAM_SESSION.value),
-        401: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.UNAUTHORIZED.value),
-        403: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.FORBIDDEN.value),
-        404: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.EXAM_NOT_FOUND.value),
-        409: OpenApiResponse(ErrorResponseSerializer, description=ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value),
+        400: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Bad Request",
+            examples=[
+                OpenApiExample(
+                    "유효하지 않은 시험 응시 세션",
+                    value={"error_detail": ErrorMessages.INVALID_EXAM_SESSION.value},
+                ),
+                OpenApiExample(
+                    "주관식 단답형 타입 오류",
+                    value={"error_detail": ErrorMessages.INVALID_SHORT_ANSWER_TYPE.value},
+                ),
+                OpenApiExample(
+                    "주관식 단답형 길이 초과",
+                    value={"error_detail": ErrorMessages.INVALID_SHORT_ANSWER_LENGTH.value},
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Unauthorized",
+            examples=[
+                OpenApiExample(
+                    "인증 실패",
+                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Forbidden",
+            examples=[
+                OpenApiExample(
+                    "권한 없음",
+                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
+                ),
+            ],
+        ),
+        404: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Not Found",
+            examples=[
+                OpenApiExample(
+                    "시험 정보 없음",
+                    value={"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
+                ),
+            ],
+        ),
+        409: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            description="Conflict",
+            examples=[
+                OpenApiExample(
+                    "이미 제출됨",
+                    value={"error_detail": ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value},
+                ),
+            ],
+        ),
     },
 )
-class ExamSubmissionCreateAPIView(APIView):
+class ExamSubmissionCreateAPIView(ExamsExceptionMixin, APIView):
     # 인증과 권한 관리
     # 여기에서 401, 403 잡아주고 메세지는 자동으로 만들어줌
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
-        raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
 
     def post(self, request: Request) -> Response:
         serializer = ExamSubmissionCreateSerializer(

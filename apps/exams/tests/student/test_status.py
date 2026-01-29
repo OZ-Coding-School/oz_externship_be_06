@@ -112,14 +112,14 @@ class ExamStatusCheckAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.FORBIDDEN.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.FORBIDDEN.value)
 
     def test_status_requires_authentication(self) -> None:
         response = self.client.get(f"/api/v1/exams/deployments/{self.deployment.id}/status/")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
-        self.assertEqual(data["detail"], ErrorMessages.UNAUTHORIZED.value)
+        self.assertEqual(data["error_detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_status_returns_404_when_deployment_missing(self) -> None:
         response = self.client.get(

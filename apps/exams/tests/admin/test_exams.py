@@ -67,7 +67,7 @@ class AdminExamCreateAPITest(TestCase):
             is_active=True,
         )
 
-    def _auth_headers(self, user: User) -> Any:
+    def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)
         return {"HTTP_AUTHORIZATION": f"Bearer {token}"}
 
@@ -113,9 +113,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        self.assertEqual(
-            response.json()["detail"], "자격 인증데이터(authentication credentials)가 제공되지 않았습니다."
-        )
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED.value)
 
     def test_admin_exam_create_returns_403_when_not_staff(self) -> None:
         image_file = self._create_image_file()
@@ -129,7 +127,7 @@ class AdminExamCreateAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()["detail"], ErrorMessages.NO_EXAM_CREATE_PERMISSION.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NO_EXAM_CREATE_PERMISSION.value)
 
     def test_admin_exam_create_returns_404_when_subject_missing(self) -> None:
         image_file = self._create_image_file()

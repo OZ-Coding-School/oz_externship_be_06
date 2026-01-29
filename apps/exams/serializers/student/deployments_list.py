@@ -7,6 +7,10 @@ from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exams import Exam
 
 
+class ExamListQuerySerializer(serializers.Serializer[object]):
+    status = serializers.ChoiceField(choices=["all", "done", "pending"], required=False, default="all")
+
+
 class SubjectSerializer(serializers.ModelSerializer[Subject]):
     class Meta:
         model = Subject

@@ -9,6 +9,8 @@ from rest_framework.exceptions import APIException, ErrorDetail
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers import ErrorResponseSerializer
+from apps.exams.services.answers_json import normalize_answers_json
+from apps.exams.services.student.deployments_status import is_deployment_time_closed
 from apps.users.models import User
 
 
@@ -50,7 +52,7 @@ def submit_exam(
         raise InvalidSubmissionError()
 
     # 시험 마감 후 제출
-    if timezone.now() > submission.deployment.close_at:
+    if is_deployment_time_closed(submission.deployment):
         raise InvalidSubmissionError()
 
     # 이미 제출됨
@@ -58,7 +60,7 @@ def submit_exam(
         raise AlreadySubmittedError()
 
     # 답안 저장
-    submission.answers_json = answers
+    submission.answers_json = normalize_answers_json(answers)
     submission.started_at = started_at
     submission.cheating_count = cheating_count
     submission.save(update_fields=["answers_json", "started_at", "cheating_count", "updated_at"])
