@@ -1,16 +1,17 @@
 from django.db import transaction
+from rest_framework.exceptions import NotFound, ValidationError
 
-from apps.exams.models import Exam
-from apps.exams.constants import ErrorMessages
 from apps.courses.models import Subject
+from apps.exams.constants import ErrorMessages
+from apps.exams.models import Exam
 
 
 @transaction.atomic
 def update_exam(
     *,
     exam_id: int,
-    title: str,
-    subject: Subject,   # serializer가 조회한 subject_id의 인스턴스
+    title: str | None = None,
+    subject: Subject | None = None,
     thumbnail_img_url: str | None = None,
 ) -> Exam:
 
@@ -19,13 +20,15 @@ def update_exam(
     try:
         exam = Exam.objects.select_for_update().get(id=exam_id)
     except Exam.DoesNotExist:
-        raise Exception(ErrorMessages.EXAM_UPDATE_NOT_FOUND.value)
+        raise NotFound(ErrorMessages.EXAM_UPDATE_NOT_FOUND.value)
 
-    # 기본 필드 수정
-    exam.title = title
-    exam.subject = subject
+    if title is not None:
+        exam.title = title
 
-    # 썸네일 처리
+    if subject is not None:
+        exam.subject = subject
+
+    # title, subject 수정없이 thumbnail만 수정할 경우
     if thumbnail_img_url is not None:
         exam.thumbnail_img_url = thumbnail_img_url
 

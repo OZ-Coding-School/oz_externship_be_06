@@ -1,3 +1,7 @@
+from .admin.exams_update import (
+    AdminExamUpdateRequestSerializer,
+    AdminExamUpdateResponseSerializer,
+)
 from .admin.submissions_list import AdminExamSubmissionListResponseSerializer
 from .error_serializers import ErrorResponseSerializer
 from .student.deployments_status import ExamStatusResponseSerializer
@@ -13,6 +17,8 @@ from .student.submissions_create import (
 
 __all__ = [
     "AdminExamSubmissionListResponseSerializer",
+    "AdminExamUpdateRequestSerializer",
+    "AdminExamUpdateResponseSerializer",
     "CheckCodeRequestSerializer",
     "ExamStatusResponseSerializer",
     "TakeExamRequestSerializer",
