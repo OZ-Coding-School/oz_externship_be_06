@@ -1,5 +1,6 @@
 from django.urls import path
 
+from apps.qna.views import presigned_url_view
 from apps.qna.views.answer_view import AnswerCreateAPIView
 from apps.qna.views.question_view import (
     QuestionCategoryTreeAPIView,
@@ -13,4 +14,9 @@ urlpatterns = [
     path("questions/<int:question_id>", QuestionDetailAPIView.as_view(), name="question-detail"),
     path("questions/<int:question_id>/answers", AnswerCreateAPIView.as_view(), name="answer-create"),
     path("categories", QuestionCategoryTreeAPIView.as_view(), name="question-category-list"),
+
+    # --- Presigned URL Endpoints ---
+    path("questions/presigned-url",presigned_url_view.QuestionPresignedUrlAPIView.as_view(),name="question-presigned-url",), # fmt: skip
+    path("answers/presigned-url", presigned_url_view.AnswerPresignedUrlAPIView.as_view(), name="answer-presigned-url"),
+
 ]
