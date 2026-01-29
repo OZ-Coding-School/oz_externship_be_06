@@ -20,6 +20,7 @@ class ChangePasswordAPITest(TestCase):
             phone_number="01012345678",
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
+            is_active=True,
         )
         self.api_client = APIClient()
 
@@ -100,6 +101,7 @@ class FindPasswordAPITest(TestCase):
             phone_number="01012345678",
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
+            is_active=True,
         )
 
     def test_find_password_success(self) -> None:
@@ -165,6 +167,7 @@ class TokenRefreshAPITest(TestCase):
             phone_number="01012345678",
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
+            is_active=True,
         )
 
     def test_token_refresh_success(self) -> None:

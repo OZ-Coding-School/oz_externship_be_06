@@ -61,6 +61,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+        is_active=True,
         )
 
         # 조교 유저
@@ -73,6 +74,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1995, 5, 5),
             role=User.Role.TA,
+        is_active=True,
         )
         # 조교 담당 기수 연결
         TrainingAssistant.objects.create(user=self.ta_user, cohort=self.cohort)
@@ -88,6 +90,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1992, 3, 3),
             role=User.Role.LC,
+        is_active=True,
         )
         # 러닝코치 담당 과정 연결
         LearningCoach.objects.create(user=self.lc_user, course=self.course)
@@ -102,6 +105,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1993, 4, 4),
             role=User.Role.OM,
+        is_active=True,
         )
         # 운영매니저 담당 과정 연결
         OperationManager.objects.create(user=self.om_user, course=self.course)
@@ -117,6 +121,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.STUDENT,
+        is_active=True,
         )
         # 수강생 기수 연결
         CohortStudent.objects.create(user=self.student_user, cohort=self.cohort)
@@ -131,6 +136,7 @@ class AdminAccountDetailAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 2, 2),
             role=User.Role.USER,
+        is_active=True,
         )
 
     def _get_url(self, account_id: int) -> str:

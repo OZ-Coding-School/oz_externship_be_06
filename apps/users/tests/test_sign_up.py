@@ -30,6 +30,9 @@ class SignUpAPIViewTest(TestCase):
         response = self.client.post(self.url, data, content_type="application/json")
         self.assertEqual(response.status_code, 201)
         self.assertTrue(User.objects.filter(email=self.email).exists())
+        # 인증 완료 후 회원가입했으므로 is_active=True 확인
+        user = User.objects.get(email=self.email)
+        self.assertTrue(user.is_active)
 
     def test_signup_missing_required_field(self) -> None:
         data = {

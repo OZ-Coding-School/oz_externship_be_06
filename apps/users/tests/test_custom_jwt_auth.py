@@ -25,6 +25,7 @@ class CustomJwtAuthTests(TestCase):
             name="테스터",
             nickname="tester",
             gender="male",
+        is_active=True,
         )
 
         self.user.is_active = False

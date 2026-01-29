@@ -26,6 +26,7 @@ class AvailableCoursesAPITests(TestCase):
             name="테스터",
             nickname="tester",
             gender="MALE",
+            is_active=True,
         )
 
         self.course = Course.objects.create(
@@ -89,6 +90,7 @@ class EnrolledCoursesAPITests(TestCase):
             name="테스터2",
             nickname="tester2",
             gender="MALE",
+            is_active=True,
         )
 
         self.course = Course.objects.create(

@@ -59,6 +59,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
+        is_active=True,
         )
 
         # 조교 유저
@@ -71,6 +72,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(1995, 5, 5),
             role=User.Role.TA,
+        is_active=True,
         )
 
         # 일반 유저들 (등록 요청자)
@@ -83,6 +85,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
             role=User.Role.USER,
+        is_active=True,
         )
         self.user2 = User.objects.create_user(
             email="user2@example.com",
@@ -93,6 +96,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.FEMALE,
             birthday=date(2001, 2, 2),
             role=User.Role.USER,
+        is_active=True,
         )
         self.user3 = User.objects.create_user(
             email="user3@example.com",
@@ -103,6 +107,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2002, 3, 3),
             role=User.Role.USER,
+        is_active=True,
         )
 
         # 등록 요청 생성
@@ -132,6 +137,7 @@ class AdminStudentEnrollmentListAPITest(TestCase):
             gender=User.Gender.MALE,
             birthday=date(2000, 5, 5),
             role=User.Role.USER,
+        is_active=True,
         )
 
     def _get_url(self) -> str:

@@ -39,6 +39,7 @@ class FindEmailAPITest(TestCase):
             phone_number="01012345678",
             gender=User.Gender.MALE,
             birthday=date(2000, 1, 1),
+            is_active=True,
         )
 
     def test_find_email_success(self) -> None:

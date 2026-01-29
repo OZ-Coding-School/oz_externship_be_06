@@ -27,6 +27,7 @@ class LoginAPITests(TestCase):
             name="테스터",
             nickname="tester",
             gender="MALE",
+            is_active=True,
         )
 
     def test_login_success_200(self) -> None:
@@ -90,6 +91,7 @@ class LogoutAPITests(TestCase):
             name="테스터2",
             nickname="tester2",
             gender="MALE",
+            is_active=True,
         )
 
         access = str(RefreshToken.for_user(self.user).access_token)

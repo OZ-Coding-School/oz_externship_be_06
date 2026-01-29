@@ -27,6 +27,7 @@ class EnrollStudentAPITests(TestCase):
             nickname="tester",
             gender="MALE",
             role="USER",
+            is_active=True,
         )
 
         self.course = Course.objects.create(
