@@ -3,7 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.qna.models import Question, QuestionImage
-from apps.qna.serializers.answer.response import AnswerSerializer
+from apps.qna.serializers.answer.response import AnswerCreateResponseSerializer
 from apps.qna.serializers.base import QnaValidationMixin
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
@@ -13,7 +13,8 @@ from apps.qna.utils.content_parser import ContentParser
 
 
 # ==============================================================================
-# Question List [GET] (/api/v1/qna/questions)
+# [GET] Question List
+# /api/v1/qna/questions
 # ==============================================================================
 class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
@@ -65,10 +66,8 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
-
-
-# ==============================================================================
-# Question Detail [GET] (/api/v1/qna/questions/{question_id})
+# [GET] Question Detail
+# /api/v1/qna/questions/{question_id}
 # ==============================================================================
 class QuestionImageSerializer(serializers.ModelSerializer[QuestionImage]):
     """
@@ -88,7 +87,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
     category = QuestionCategoryListSerializer(read_only=True)
     author = QuestionAuthorSerializer(read_only=True)
     images = QuestionImageSerializer(many=True, read_only=True)
-    answers = AnswerSerializer(many=True, read_only=True)
+    answers = AnswerCreateResponseSerializer(many=True, read_only=True)
 
     class Meta:
         model = Question
@@ -106,12 +105,10 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
-
-
+# [ACTION RESPONSES] POST Success
+# [POST] Question Create
+# /api/v1/qna/questions/
 # ==============================================================================
-# ACTION RESPONSES (POST/PUT/DELETE Success)
-# ==============================================================================
-# Question Create [POST] (/api/v1/qna/questions/)
 class QuestionCreateResponseSerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
     질문 등록 응답 시리얼라이저
