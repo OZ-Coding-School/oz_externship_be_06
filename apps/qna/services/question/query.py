@@ -58,21 +58,19 @@ class QuestionQueryService:
             raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_DETAIL)
 
     @staticmethod
+    @transaction.atomic
     def get_question_detail(question_id: int) -> Question:
         """질문 상세 정보 조회 (조회수 증가)"""
         try:
-            # 질문 조회 및 관련 데이터 Loading
+            # 조회수 증가
+            Question.objects.filter(id=question_id).update(view_count=F("view_count") + 1)
+
+            # 질문 조회 및 관련 데이터 로딩
             question = (
                 Question.objects.select_related("author", "category__parent__parent")
                 .prefetch_related("images", "answers__author", "answers__comments__author")
                 .get(id=question_id)
             )
-
-            # 조회수 증가
-            Question.objects.filter(id=question_id).update(view_count=F("view_count") + 1)
-
-            # 메모리 상의 객체도 업데이트 (응답용)
-            question.view_count += 1
 
             return question
 
