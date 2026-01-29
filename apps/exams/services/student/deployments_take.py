@@ -96,8 +96,17 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
                 "prompt": question_data.get("prompt"),
                 "blank_count": question_data.get("blank_count") if question_type == "fill_blank" else None,
                 "options": question_data.get("options") if question_type in ["multiple_choice", "ordering"] else None,
-                "answer_input": None,  # 응시자가 입력할 답안 필드 (초기값은 None)
+                "answer_input": None,
             }
+
+            if question_type == "fill_blank":
+                blank_count = question_data.get("blank_count") or 0
+                question["answer_input"] = [""] * max(0, int(blank_count))
+            elif question_type in ["multiple_choice", "ordering"]:
+                question["answer_input"] = []
+            elif question_type in ["short_answer", "ox", "single_choice"]:
+                question["answer_input"] = ""
+
             questions.append(question)
 
     return {
