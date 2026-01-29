@@ -40,7 +40,8 @@ class LoginAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         data = res.json()
         self.assertIn("access_token", data)
-        self.assertIn("refresh_token", data)
+        # refresh_token은 httpOnly 쿠키로 설정됨
+        self.assertIn("refresh_token", res.cookies)
 
     def test_login_invalid_email_400(self) -> None:
         res = self.client.post(
