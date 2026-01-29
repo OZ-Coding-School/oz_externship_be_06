@@ -1,33 +1,19 @@
-from typing import Any
+from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.qna.exceptions.question_exception import qna_exception_handler
 from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
 from apps.qna.services.question import command as svc_q_cmd
 from apps.qna.services.question import query as svc_q_qry
 from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.question_list_pagination import QnAPaginator
-
-
-class QnaBaseAPIView(APIView):
-    """
-    QnA 앱의 모든 View가 상속받을 베이스 뷰.
-    이 뷰를 상속받으면 settings.py를 건드리지 않고도 QnA 전용 에러 규격이 적용됩니다.
-    """
-
-    def handle_exception(self, exc: Exception) -> Response:
-        response = qna_exception_handler(exc, self.get_renderer_context())
-        if response is None:
-            raise exc
-        response.exception = True
-        return response
+from apps.qna.views.base_view import QnaBaseAPIView
+from apps.qna.utils.model_types import User
 
 
 class QuestionCreateListAPIView(QnaBaseAPIView):
