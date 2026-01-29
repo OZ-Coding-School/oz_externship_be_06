@@ -21,7 +21,7 @@ class AnswerCommandService:
     @transaction.atomic
     def create_answer(question_id: int, author: User, data: dict[str, Any]) -> Answer:
         """
-        특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장합니다.
+        특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
 
         Args:
             question_id (int): 답변을 달 질문의 ID (PK)
