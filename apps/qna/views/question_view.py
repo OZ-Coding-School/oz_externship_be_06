@@ -1,5 +1,8 @@
+from datetime import datetime
 from typing import Any
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,6 +11,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.qna.exceptions.question_exception import qna_exception_handler
+from apps.qna.models import (
+    Answer,
+    AnswerComment,
+    Question,
+    QuestionCategory,
+    QuestionImage,
+)
 from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
 from apps.qna.services.question import command as svc_q_cmd
@@ -92,8 +102,35 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         query_serializer = ser_q_res.QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        # 데이터 조회
-        queryset = svc_q_qry.QuestionQueryService.get_question_list(query_serializer.validated_data)
+        # Mock Data 생성
+        if settings.USE_EXAM_MOCK:
+            User = get_user_model()
+            mock_user = User(
+                id=1,
+                nickname="MockUser",
+                profile_img_url="https://ssl.pstatic.net/static/pwe/address/img_profile.png",
+            )
+
+            cat_root = QuestionCategory(id=1, name="개발")
+            cat_mid = QuestionCategory(id=2, name="백엔드", parent=cat_root)
+            cat_leaf = QuestionCategory(id=3, name="Django", parent=cat_mid)
+
+            queryset: Any = []
+            for i in range(1, 11):
+                q = Question(
+                    id=i,
+                    author=mock_user,
+                    category=cat_leaf,
+                    title=f"Mock 질문 제목 {i}",
+                    content=f"Mock 질문 내용입니다. {i} ![image](https://via.placeholder.com/150)",
+                    view_count=i * 10,
+                    created_at=datetime.now(),
+                )
+                # Annotate field manual injection
+                setattr(q, "answer_count", i % 3)
+                queryset.append(q)
+        else:
+            queryset = svc_q_qry.QuestionQueryService.get_question_list(query_serializer.validated_data)
 
         # Response 생성
         return QnAPaginator.get_paginated_data_response(
@@ -230,6 +267,68 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         tags=["qna"],
     )
     def get(self, request: Request, question_id: int) -> Response:
-        question = svc_q_qry.QuestionQueryService.get_question_detail(question_id)
+        # Mock Data 생성
+        if settings.USE_EXAM_MOCK:
+            User = get_user_model()
+            mock_user = User(
+                id=1,
+                nickname="MockUser",
+                profile_img_url="https://ssl.pstatic.net/static/pwe/address/img_profile.png",
+            )
+
+            cat_root = QuestionCategory(id=1, name="개발")
+            cat_mid = QuestionCategory(id=2, name="백엔드", parent=cat_root)
+            cat_leaf = QuestionCategory(id=3, name="Django", parent=cat_mid)
+
+            question = Question(
+                id=question_id,
+                author=mock_user,
+                category=cat_leaf,
+                title=f"Mock 상세 질문 제목 {question_id}",
+                content=f"Mock 상세 질문 내용입니다.\n\n![img](https://via.placeholder.com/200)",
+                view_count=123,
+                created_at=datetime.now(),
+            )
+
+            # Mock Images
+            setattr(
+                question,
+                "images",
+                [
+                    QuestionImage(id=1, img_url="https://via.placeholder.com/200"),
+                    QuestionImage(id=2, img_url="https://via.placeholder.com/201"),
+                ],
+            )
+
+            # Mock Answers
+            ans1 = Answer(
+                id=1,
+                question=question,
+                author=mock_user,
+                content="Mock 답변 내용 1",
+                created_at=datetime.now(),
+                is_adopted=False,
+            )
+
+            # Mock Comments for Answer
+            setattr(
+                ans1,
+                "comments",
+                [
+                    AnswerComment(
+                        id=1,
+                        answer=ans1,
+                        author=mock_user,
+                        content="Mock 댓글 1",
+                        created_at=datetime.now(),
+                    )
+                ],
+            )
+
+            setattr(question, "answers", [ans1])
+
+        else:
+            question = svc_q_qry.QuestionQueryService.get_question_detail(question_id)
+
         serializer = ser_q_res.QuestionDetailSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)

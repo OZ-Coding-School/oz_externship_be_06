@@ -242,3 +242,4 @@ AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME", "")
 
 # Data Using Settings
 USE_EXAM_MOCK = os.getenv("USE_EXAM_MOCK", "false").lower() == "true"
+USE_QNA_MOCK = os.getenv("USE_QNA_MOCK", "false").lower() == "true"
