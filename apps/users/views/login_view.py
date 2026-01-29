@@ -1,3 +1,4 @@
+from django.conf import settings
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -19,12 +20,10 @@ class LoginAPIView(APIView):
 이메일과 비밀번호로 로그인합니다.
 
 ## 응답
-- 성공 시 `access_token`과 `refresh_token`이 반환됩니다.
-- JWT 토큰을 사용하여 인증이 필요한 API 호출 시 헤더에 포함하세요.
+- 성공 시 `access_token`이 반환됩니다.
 
 ## 토큰 유효기간
-access token: 60분!
-refresh token: 7일!
+access token: 60분
         """,
         request=LoginSerializer,
         responses={
@@ -61,7 +60,23 @@ refresh token: 7일!
 
         result = serializer.save()
 
-        return Response(result, status=status.HTTP_200_OK)
+        # access_token만 body로 반환, refresh_token은 httpOnly 쿠키로 설정
+        response = Response(
+            {"access_token": result["access_token"]},
+            status=status.HTTP_200_OK,
+        )
+
+        # refresh_token을 httpOnly 쿠키로 설정
+        response.set_cookie(
+            key="refresh_token",
+            value=result["refresh_token"],
+            max_age=7 * 24 * 60 * 60,  # 7일
+            httponly=True,
+            secure=not settings.DEBUG,  # 프로덕션에서는 HTTPS만
+            samesite="Lax",
+        )
+
+        return response
 
 
 class LogoutAPIView(APIView):
@@ -75,11 +90,12 @@ class LogoutAPIView(APIView):
 
 ## 주의사항
 - 인증 토큰이 필요합니다. (`Authorization: Bearer {access_token}`)
-- 클라이언트에서 저장된 토큰을 삭제해야 완전한 로그아웃이 됩니다.
         """,
         responses={
             200: OpenApiResponse(description="로그아웃 성공"),
         },
     )
     def post(self, request: Request) -> Response:
-        return Response({"detail": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
+        response = Response({"detail": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
+        response.delete_cookie("refresh_token")
+        return response

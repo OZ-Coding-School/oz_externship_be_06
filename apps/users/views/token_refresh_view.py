@@ -23,9 +23,6 @@ class TokenRefreshAPIView(APIView):
         description="""
 `refresh_token`을 사용하여 새로운 `access_token`을 발급받습니다.
 
-## 사용 시점
-- `access_token`이 만료되었을 때 (401 Unauthorized 응답)
-- 재로그인 없이 세션을 유지하고 싶을 때
 
         """,
         request=TokenRefreshRequestSerializer,
@@ -36,18 +33,22 @@ class TokenRefreshAPIView(APIView):
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = TokenRefreshRequestSerializer(data=request.data)
+        # 쿠키에서 refresh_token 먼저 확인, 없으면 body에서 확인
+        refresh_token = request.COOKIES.get("refresh_token")
 
-        if not serializer.is_valid():
-            return Response(
-                {"error_detail": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if not refresh_token:
+            serializer = TokenRefreshRequestSerializer(data=request.data)
 
-        refresh_token = serializer.validated_data["refresh_token"]
+            if not serializer.is_valid():
+                return Response(
+                    {"error_detail": serializer.errors},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            refresh_token = str(serializer.validated_data["refresh_token"])
 
         try:
-            refresh = RefreshToken(refresh_token)
+            refresh = RefreshToken(refresh_token)  # type: ignore[arg-type]
             access_token = str(refresh.access_token)
         except (InvalidToken, TokenError):
             return Response(
