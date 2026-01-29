@@ -11,6 +11,7 @@ from apps.exams.views.admin.deployments_status import (
 )
 from apps.exams.views.admin.exams_delete import AdminExamDeleteAPIView
 from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
+from apps.exams.views.admin.exams_update import AdminExamUpdateAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
 from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView
@@ -36,4 +37,5 @@ urlpatterns = [
         AdminExamDeploymentStatusAPIView.as_view(),
         name="admin-exam-deployment-status",
     ),
+    path("exams/<int:exam_id>/update", AdminExamUpdateAPIView.as_view(), name="admin-exam-update"),
 ]
