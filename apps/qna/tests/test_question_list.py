@@ -44,7 +44,6 @@ class QuestionListAPITest(TestCase):
             role="USER",
             gender="MALE",
             birthday="1990-01-01",
-            is_active=True,
         )
 
         # 테스트용 질문
