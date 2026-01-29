@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.models import ExamDeployment, ExamSubmission
-from apps.exams.permissions import IsStudentRole
+from apps.core.utils.permissions import IsStudentRole
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,

@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from apps.core.utils.pagination import SimplePagePagination
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
-from apps.exams.permissions import IsExamStaff
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
@@ -23,7 +23,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 응시 내역 목록 조회 API."""
 
-    permission_classes = [IsAuthenticated, IsExamStaff]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     pagination_class = SimplePagePagination
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:

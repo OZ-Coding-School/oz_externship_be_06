@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.permissions import IsExamStaff
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.serializers.admin.questions_create import (
     AdminExamQuestionCreateRequestSerializer,
     AdminExamQuestionCreateResponseSerializer,
@@ -24,7 +24,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 class AdminExamQuestionCreateAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 문제 등록 API."""
 
-    permission_classes = [IsAuthenticated, IsExamStaff]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = AdminExamQuestionCreateRequestSerializer
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:

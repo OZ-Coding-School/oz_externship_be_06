@@ -16,7 +16,7 @@ from apps.core.utils.pagination import AdminExamPagination
 from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam
-from apps.exams.permissions import IsExamStaff
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.exams_list import (
@@ -62,7 +62,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
     },
 )
 class AdminExamListView(ExamsExceptionMixin, ListAPIView[Exam]):
-    permission_classes = [IsAuthenticated, IsExamStaff]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     serializer_class = AdminExamListItemSerializer
     pagination_class = AdminExamPagination
 

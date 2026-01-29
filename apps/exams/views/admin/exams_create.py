@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.permissions import IsExamStaff
+from apps.core.utils.permissions import IsStaffRole
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
@@ -27,7 +27,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
     """관리자 쪽지시험 생성 API."""
 
-    permission_classes = [IsAuthenticated, IsExamStaff]
+    permission_classes = [IsAuthenticated, IsStaffRole]
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = AdminExamCreateRequestSerializer
 
