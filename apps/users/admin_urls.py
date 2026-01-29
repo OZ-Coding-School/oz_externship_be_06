@@ -8,13 +8,13 @@ from apps.users.views.admin.admin_account_role_views import (
     AdminAccountRoleUpdateAPIView,
 )
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
+from apps.users.views.admin.admin_analytics_views import AdminSignupTrendsAPIView
 from apps.users.views.admin.admin_student_enrollment_views import (
     AdminStudentEnrollmentAcceptAPIView,
     AdminStudentEnrollmentListAPIView,
     AdminStudentEnrollmentRejectAPIView,
 )
 from apps.users.views.admin.admin_student_list_views import AdminStudentListAPIView
-from apps.users.views.admin.admin_analytics_views import AdminSignupTrendsAPIView
 from apps.users.views.admin.admin_student_score_views import AdminStudentScoreAPIView
 from apps.users.views.admin.admin_withdrawal_views import (
     AdminWithdrawalDetailAPIView,

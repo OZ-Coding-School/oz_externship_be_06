@@ -14,7 +14,8 @@ from apps.users.serializers.admin.admin_analytics_serializers import (
 )
 from apps.users.services.admin_analytics_service import get_signup_trends
 
-#회원가입 추세 분석
+
+# 회원가입 추세 분석
 class AdminSignupTrendsAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]

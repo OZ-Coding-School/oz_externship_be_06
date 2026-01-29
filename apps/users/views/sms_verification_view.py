@@ -25,7 +25,8 @@ def get_twilio_client() -> Client:
 def generate_sms_token() -> str:
     return secrets.token_urlsafe(24)
 
-#sms 인증코드 발송
+
+# sms 인증코드 발송
 class SendSmsVerificationAPIView(APIView):
 
     permission_classes = [AllowAny]
@@ -86,7 +87,8 @@ class SendSmsVerificationAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-#sms 인증코드 확인
+
+# sms 인증코드 확인
 class VerifySmsAPIView(APIView):
 
     permission_classes = [AllowAny]

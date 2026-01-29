@@ -79,7 +79,7 @@ class AdminSignupTrendsAPITest(TestCase):
         """관리자가 특정 연도의 월별 회원가입 추세를 조회할 수 있다."""
         response = self.client.get(
             self.url,
-            {"interval": "monthly", "year": 2025},
+            {"interval": "monthly", "year": "2025"},
             **self._auth_headers(self.admin_user),
         )
 
@@ -229,7 +229,7 @@ class AdminSignupTrendsAPITest(TestCase):
         current_year = date.today().year
         response = self.client.get(
             self.url,
-            {"interval": "monthly", "year": current_year},
+            {"interval": "monthly", "year": str(current_year)},
             **self._auth_headers(self.admin_user),
         )
 
@@ -238,9 +238,7 @@ class AdminSignupTrendsAPITest(TestCase):
 
         # 현재 월의 count가 최소 3 이상 (admin, ta, normal)
         current_period = date.today().strftime("%Y-%m")
-        current_item = next(
-            (item for item in data["items"] if item["period"] == current_period), None
-        )
+        current_item = next((item for item in data["items"] if item["period"] == current_period), None)
         assert current_item is not None
         self.assertGreaterEqual(current_item["count"], 3)
 
@@ -248,7 +246,7 @@ class AdminSignupTrendsAPITest(TestCase):
         """월별 items가 1월부터 12월 순서로 정렬된다."""
         response = self.client.get(
             self.url,
-            {"interval": "monthly", "year": 2025},
+            {"interval": "monthly", "year": "2025"},
             **self._auth_headers(self.admin_user),
         )
 

@@ -15,7 +15,7 @@ class WithdrawalUserSerializer(serializers.Serializer[Any]):
     birthday = serializers.DateField()
 
 
-#유저 상태 계산
+# 유저 상태 계산
 def _get_user_status(user: User) -> str:
     if user.is_active:
         return "ACTIVATED"
@@ -57,7 +57,7 @@ class AdminWithdrawalListSerializer(serializers.ModelSerializer[Withdrawal]):
         return obj.get_reason_display()
 
 
-#어드민 탈퇴 내역 상세 조회
+# 어드민 탈퇴 내역 상세 조회
 class AdminWithdrawalDetailSerializer(serializers.ModelSerializer[Withdrawal]):
     user = serializers.SerializerMethodField()
     assigned_courses = serializers.SerializerMethodField()
@@ -105,6 +105,6 @@ class AdminWithdrawalDetailSerializer(serializers.ModelSerializer[Withdrawal]):
         return obj.get_reason_display()
 
 
-#어드민 탈퇴 취소
+# 어드민 탈퇴 취소
 class AdminWithdrawalCancelSerializer(serializers.Serializer[Any]):
     detail = serializers.CharField()
