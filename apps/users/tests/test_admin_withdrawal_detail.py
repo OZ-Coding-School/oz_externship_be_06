@@ -329,3 +329,55 @@ class AdminWithdrawalDetailAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # 탈퇴 취소 API 테스트
+    def test_admin_can_cancel_withdrawal(self) -> None:
+        """관리자가 탈퇴를 취소할 수 있다."""
+        response = self.client.delete(
+            self._get_url(self.withdrawal_student.id),
+            **self._auth_headers(self.admin_user),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["detail"], "회원 탈퇴 취소처리 완료.")
+
+        # 탈퇴 내역이 삭제되었는지 확인
+        self.assertFalse(Withdrawal.objects.filter(id=self.withdrawal_student.id).exists())
+
+        # 유저가 활성화되었는지 확인
+        self.withdrawn_student.refresh_from_db()
+        self.assertTrue(self.withdrawn_student.is_active)
+
+    def test_ta_can_cancel_withdrawal(self) -> None:
+        """조교가 탈퇴를 취소할 수 있다."""
+        response = self.client.delete(
+            self._get_url(self.withdrawal_ta.id),
+            **self._auth_headers(self.ta_user),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_cancel_withdrawal_returns_404_when_not_found(self) -> None:
+        """존재하지 않는 탈퇴 내역 취소 시 404를 받는다."""
+        response = self.client.delete(
+            self._get_url(99999),
+            **self._auth_headers(self.admin_user),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json()["error_detail"], "회원탈퇴 정보를 찾을 수 없습니다.")
+
+    def test_cancel_withdrawal_returns_401_when_unauthenticated(self) -> None:
+        """인증되지 않은 사용자는 탈퇴 취소 시 401을 받는다."""
+        response = self.client.delete(self._get_url(self.withdrawal_student.id))
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_cancel_withdrawal_returns_403_for_normal_user(self) -> None:
+        """일반 유저는 탈퇴 취소 시 403을 받는다."""
+        response = self.client.delete(
+            self._get_url(self.withdrawal_student.id),
+            **self._auth_headers(self.normal_user),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

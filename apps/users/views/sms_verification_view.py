@@ -19,22 +19,19 @@ from apps.users.utils.redis_utils import save_sms_token
 
 
 def get_twilio_client() -> Client:
-    """Twilio 클라이언트 생성."""
     return Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
 
 
 def generate_sms_token() -> str:
-    """SMS 인증 토큰 생성."""
     return secrets.token_urlsafe(24)
 
-
+#sms 인증코드 발송
 class SendSmsVerificationAPIView(APIView):
-    """SMS 인증 코드 발송 API (Twilio Verify)."""
 
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["accounts"],
+        tags=["accounts_verification"],
         summary="통합 SMS 인증 발송 API",
         description="""
 휴대폰 번호로 6자리 인증 코드를 발송합니다.
@@ -89,14 +86,13 @@ class SendSmsVerificationAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
+#sms 인증코드 확인
 class VerifySmsAPIView(APIView):
-    """SMS 인증 코드 확인 API (Twilio Verify)."""
 
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["accounts"],
+        tags=["accounts_verification"],
         summary="통합 SMS 인증 API",
         description="""
 휴대폰으로 발송된 인증 코드를 검증합니다.

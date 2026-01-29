@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.db import transaction
 from django.db.models import Q, QuerySet
 
 from apps.courses.models import CohortStudent
@@ -146,3 +147,19 @@ def get_withdrawal_detail(withdrawal_id: int) -> Withdrawal:
         return Withdrawal.objects.select_related("user").get(id=withdrawal_id)
     except Withdrawal.DoesNotExist as exc:
         raise WithdrawalNotFoundError from exc
+
+
+# 탈퇴 취소 (회원 복구)
+def cancel_withdrawal(withdrawal_id: int) -> None:
+    try:
+        withdrawal = Withdrawal.objects.select_related("user").get(id=withdrawal_id)
+    except Withdrawal.DoesNotExist as exc:
+        raise WithdrawalNotFoundError from exc
+
+    user = withdrawal.user
+
+    with transaction.atomic():
+        withdrawal.delete()
+        if user:
+            user.is_active = True
+            user.save(update_fields=["is_active"])

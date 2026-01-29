@@ -9,11 +9,13 @@ from rest_framework.views import APIView
 
 from apps.users.permissions import IsAdminStaff
 from apps.users.serializers.admin.admin_withdrawal_serializers import (
+    AdminWithdrawalCancelSerializer,
     AdminWithdrawalDetailSerializer,
     AdminWithdrawalListSerializer,
 )
 from apps.users.services.admin_withdrawal_service import (
     WithdrawalNotFoundError,
+    cancel_withdrawal,
     get_withdrawal_detail,
     get_withdrawal_list,
 )
@@ -157,3 +159,39 @@ class AdminWithdrawalDetailAPIView(APIView):
 
         serializer = AdminWithdrawalDetailSerializer(withdrawal)
         return Response(serializer.data)
+
+    @extend_schema(
+        tags=["admin_accounts"],
+        summary="어드민 페이지 탈퇴 취소 API",
+        description="""
+        스태프(조교, 러닝코치, 운영매니저) 또는 관리자가 회원 탈퇴를 취소합니다.
+
+        해당 유저의 탈퇴요청은 삭제되며 해당 유저는 즉시 이용가능한 상태로 복구됩니다.
+        """,
+        parameters=[
+            OpenApiParameter(
+                name="withdrawal_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                required=True,
+                description="탈퇴 내역 ID",
+            ),
+        ],
+        responses={
+            200: AdminWithdrawalCancelSerializer,
+            401: OpenApiResponse(description="자격 인증 데이터가 제공되지 않았습니다."),
+            403: OpenApiResponse(description="권한이 없습니다."),
+            404: OpenApiResponse(description="회원탈퇴 정보를 찾을 수 없습니다."),
+        },
+    )
+    def delete(self, request: Request, withdrawal_id: int) -> Response:
+        try:
+            cancel_withdrawal(withdrawal_id)
+        except WithdrawalNotFoundError:
+            return Response(
+                {"error_detail": "회원탈퇴 정보를 찾을 수 없습니다."},
+                status=404,
+            )
+
+        serializer = AdminWithdrawalCancelSerializer({"detail": "회원 탈퇴 취소처리 완료."})
+        return Response(serializer.data, status=200)

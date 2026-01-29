@@ -37,7 +37,7 @@ class SendEmailVerificationAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["accounts"],
+        tags=["accounts_verification"],
         summary="통합 이메일 인증 발송 API",
         description="""
 이메일로 6자리 인증 코드를 발송합니다.
@@ -101,7 +101,7 @@ class VerifyEmailAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["accounts"],
+        tags=["accounts_verification"],
         summary="통합 이메일 인증 API",
         description="""
 이메일로 발송된 인증 코드를 검증합니다.
