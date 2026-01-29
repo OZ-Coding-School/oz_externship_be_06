@@ -15,6 +15,6 @@ class SubjectListSerializer(serializers.ModelSerializer[Subject]):
         return "activated" if obj.status else "deactivated"
 
 
-class SubjectScatterSerializer(serializers.Serializer):
+class SubjectScatterSerializer(serializers.Serializer):  # type: ignore[type-arg]
     time = serializers.FloatField()
     score = serializers.IntegerField()

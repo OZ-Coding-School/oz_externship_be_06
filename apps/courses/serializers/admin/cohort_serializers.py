@@ -1,9 +1,11 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.courses.models import Cohort
 
 
-class CohortCreateRequestSerializer(serializers.Serializer):
+class CohortCreateRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]
     course_id = serializers.IntegerField(required=True)
     number = serializers.IntegerField(required=True)
     max_student = serializers.IntegerField(required=True)
@@ -11,20 +13,20 @@ class CohortCreateRequestSerializer(serializers.Serializer):
     end_date = serializers.DateField(required=True)
     status = serializers.ChoiceField(choices=Cohort.StatusChoices.choices, required=False)
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if attrs["end_date"] <= attrs["start_date"]:
             raise serializers.ValidationError({"end_date": ["종료일은 시작일 이후여야 합니다."]})
         return attrs
 
 
-class CohortUpdateRequestSerializer(serializers.Serializer):
+class CohortUpdateRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]
     number = serializers.IntegerField(required=False)
     max_student = serializers.IntegerField(required=False)
     start_date = serializers.DateField(required=False)
     end_date = serializers.DateField(required=False)
     status = serializers.ChoiceField(choices=Cohort.StatusChoices.choices, required=False)
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
 
@@ -46,11 +48,11 @@ class CohortUpdateResponseSerializer(serializers.ModelSerializer[Cohort]):
         fields = ["id", "course_id", "number", "max_student", "start_date", "end_date", "status", "updated_at"]
 
 
-class CohortAvgScoreSerializer(serializers.Serializer):
+class CohortAvgScoreSerializer(serializers.Serializer):  # type: ignore[type-arg]
     name = serializers.CharField()
     score = serializers.IntegerField()
 
 
-class CohortStudentSerializer(serializers.Serializer):
+class CohortStudentSerializer(serializers.Serializer):  # type: ignore[type-arg]
     value = serializers.CharField()
-    label = serializers.CharField()
+    label = serializers.CharField()  # type: ignore[assignment]

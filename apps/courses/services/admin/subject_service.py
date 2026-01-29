@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.db.models import QuerySet
 
 from apps.courses.models import Subject
@@ -24,7 +26,7 @@ class AdminSubjectService:
             raise SubjectNotFoundError(ErrorMessages.SUBJECT_NOT_FOUND.value)
 
     @staticmethod
-    def get_scatter_data(subject: Subject) -> list[dict]:
+    def get_scatter_data(subject: Subject) -> list[dict[str, Any]]:
         submissions = ExamSubmission.objects.filter(deployment__exam__subject=subject).select_related("deployment")
 
         result = []

@@ -7,6 +7,8 @@ from apps.courses.services.course_service import CourseNotFoundError
 from apps.courses.utils.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 
+__all__ = ["AdminCohortService", "CohortNotFoundError", "CourseNotFoundError"]
+
 
 class CohortNotFoundError(Exception):
     pass
@@ -15,7 +17,7 @@ class CohortNotFoundError(Exception):
 class AdminCohortService:
     @staticmethod
     def create_cohort(validated_data: dict[str, Any]) -> Cohort:
-        course_id = validated_data.get("course_id")
+        course_id: int = validated_data["course_id"]
         if not Course.objects.filter(id=course_id).exists():
             raise CourseNotFoundError(ErrorMessages.COURSE_NOT_FOUND.value)
         return Cohort.objects.create(**validated_data)
@@ -40,7 +42,7 @@ class AdminCohortService:
             raise CourseNotFoundError(ErrorMessages.COURSE_NOT_FOUND.value)
 
     @staticmethod
-    def get_cohort_avg_scores(course_id: int) -> list[dict]:
+    def get_cohort_avg_scores(course_id: int) -> list[dict[str, Any]]:
         avg_subquery = (
             ExamSubmission.objects.filter(submitter__cohort_students__cohort=OuterRef("pk"))
             .values("submitter__cohort_students__cohort")
@@ -58,7 +60,7 @@ class AdminCohortService:
         ]
 
     @staticmethod
-    def get_students(cohort: Cohort) -> list[dict]:
+    def get_students(cohort: Cohort) -> list[dict[str, Any]]:
         students = cohort.cohort_students.select_related("user").all()
 
         return [{"value": cs.user.nickname, "label": cs.user.name} for cs in students]
