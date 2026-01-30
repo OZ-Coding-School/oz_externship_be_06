@@ -8,7 +8,12 @@ from apps.qna.serializers.base import QnaValidationMixin
 from apps.qna.utils.constants import ErrorMessages
 
 
-class PresignedUrlRequestSerializer(QnaValidationMixin, serializers.Serializer):
+# ==============================================================================
+# [PUT] Presigned-url Update
+# /api/v1/qna/questions/presigned-url
+# /api/v1/qna/answer/presigned-url
+# ==============================================================================
+class PresignedUrlRequestSerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
     Presigned URL 발급 요청 시리얼라이저
     """

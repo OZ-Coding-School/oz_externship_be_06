@@ -8,7 +8,6 @@ from apps.qna.utils.s3_utils import S3Handler
 class PresignedUrlCommandService:
     """
     공통 이미지 업로드 URL 발급 서비스
-    (새로운 권한/자원을 생성하는 작업이므로 Command로 분류)
     """
 
     # 도메인별 S3 저장 경로 정의
@@ -19,9 +18,7 @@ class PresignedUrlCommandService:
 
     @classmethod
     def get_presigned_url(cls, domain: str, file_name: str) -> Dict[str, str]:
-        """
-        도메인(질문/답변)에 따라 경로를 결정하여 URL 발급
-        """
+        """도메인(질문/답변)에 따라 경로를 결정하여 URL 발급"""
         folder_path = cls.FOLDER_MAP.get(domain)
         if not folder_path:
             raise QnaBaseException(detail=ErrorMessages.INVALID_UPLOAD_DOMAIN)

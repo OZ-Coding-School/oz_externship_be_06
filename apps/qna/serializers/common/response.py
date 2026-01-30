@@ -1,7 +1,15 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class PresignedUrlResponseSerializer(serializers.Serializer):
+# ==============================================================================
+# [ACTION RESPONSES] POST Success
+# [PUT] Presigned-url Update
+# /api/v1/qna/questions/presigned-url
+# /api/v1/qna/answer/presigned-url
+# ==============================================================================
+class PresignedUrlResponseSerializer(serializers.Serializer[Any]):
     """
     Presigned URL 발급 성공 응답 시리얼라이저
     """

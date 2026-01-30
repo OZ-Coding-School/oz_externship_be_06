@@ -15,7 +15,7 @@ class S3Handler:
     AWS S3 관련 저수준 작업을 처리하는 핸들러
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # S3 Signature 버전 v4 강제 및 리전 설정
         self.s3_client = boto3.client(
             "s3",
@@ -29,9 +29,7 @@ class S3Handler:
     def generate_presigned_put_url(
         self, folder_path: str, file_name: str, expiration: int = 3600
     ) -> Optional[Dict[str, str]]:
-        """
-        파일 업로드를 위한 Presigned URL 발급
-        """
+        """파일 업로드를 위한 Presigned URL 발급"""
         # 파일명 충돌 방지를 위한 UUID 결합
         unique_file_name = f"{uuid.uuid4()}_{file_name}"
         object_key = f"{folder_path}/{unique_file_name}"
