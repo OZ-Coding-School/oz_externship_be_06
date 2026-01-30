@@ -1,6 +1,6 @@
 import logging
 import uuid
-from typing import Literal, cast
+from typing import Literal
 from urllib.parse import urlencode
 
 import requests
@@ -27,25 +27,21 @@ from apps.users.utils.social_login import (
 logger = logging.getLogger(__name__)
 
 
-# 프론트엔드 리다이렉트
 def frontend_redirect(*, provider: str, is_success: bool = True) -> HttpResponseRedirect:
     base = getattr(settings, "FRONTEND_SOCIAL_REDIRECT_URL", "") or "/"
     params = {"provider": provider, "is_success": str(is_success).lower()}
     return redirect(f"{base}?{urlencode(params)}")
 
 
-# 인증토큰을 쿠키에 설정
 def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -> None:
-    secure = getattr(settings, "SESSION_COOKIE_SECURE", False)
-    samesite = cast(
-        Literal["Lax", "Strict", "None", False] | None,
-        getattr(settings, "SESSION_COOKIE_SAMESITE", "Lax"),
-    )
+    secure = not settings.DEBUG
+    samesite: Literal["Lax", "Strict", "None", False] = "Lax"
     cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
 
     resp.set_cookie(
         "access_token",
         access,
+        max_age=60 * 60,  # 60분 (이메일 로그인과 동일하게 구현)
         domain=cookie_domain,
         httponly=False,
         secure=secure,
@@ -56,6 +52,7 @@ def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -
     resp.set_cookie(
         "refresh_token",
         refresh,
+        max_age=7 * 24 * 60 * 60,  # 7일 (이메일 로그인과 동일)
         domain=cookie_domain,
         httponly=True,
         secure=secure,
