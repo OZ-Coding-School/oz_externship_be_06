@@ -67,10 +67,12 @@ access token: 60분
         )
 
         # refresh_token을 httpOnly 쿠키로 설정
+        cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
         response.set_cookie(
             key="refresh_token",
             value=result["refresh_token"],
             max_age=7 * 24 * 60 * 60,  # 7일
+            domain=cookie_domain,
             httponly=True,
             secure=not settings.DEBUG,  # 프로덕션에서는 HTTPS만
             samesite="Lax",
@@ -98,4 +100,5 @@ class LogoutAPIView(APIView):
     def post(self, request: Request) -> Response:
         response = Response({"detail": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         response.delete_cookie("refresh_token")
+        response.delete_cookie("access_token")  # 소셜 로그인 사용자용
         return response
