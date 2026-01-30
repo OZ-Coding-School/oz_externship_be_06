@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from apps.users.permissions import IsAdmin, IsAdminStaff
+from apps.users.views.admin.account_views import AdminUserListView
 from apps.users.views.admin.admin_account_delete_views import AdminAccountDeleteAPIView
 from apps.users.views.admin.admin_account_detail_views import AdminAccountDetailAPIView
 from apps.users.views.admin.admin_account_role_views import (
@@ -37,6 +38,13 @@ class AdminAccountAPIView(AdminAccountDetailAPIView, AdminAccountUpdateAPIView, 
 
 
 urlpatterns = [
+    #  어드민 회원 목록 조회
+    path(
+        "accounts/",
+        AdminUserListView.as_view(),
+        name="admin-account-list",
+    ),
+    # 어드민 회원 상세/수정/삭제
     path(
         "accounts/<int:account_id>/",
         AdminAccountAPIView.as_view(),
@@ -47,16 +55,9 @@ urlpatterns = [
         AdminAccountRoleUpdateAPIView.as_view(),
         name="admin-account-role",
     ),
-    path(
-        "students/",
-        AdminStudentListAPIView.as_view(),
-        name="admin-student-list",
-    ),
-    path(
-        "student-enrollments/",
-        AdminStudentEnrollmentListAPIView.as_view(),
-        name="admin-student-enrollment-list",
-    ),
+    # Students
+    path("students/", AdminStudentListAPIView.as_view(), name="admin-student-list"),
+    path("student-enrollments/", AdminStudentEnrollmentListAPIView.as_view(), name="admin-student-enrollment-list"),
     path(
         "student-enrollments/accept",
         AdminStudentEnrollmentAcceptAPIView.as_view(),
@@ -67,6 +68,12 @@ urlpatterns = [
         AdminStudentEnrollmentRejectAPIView.as_view(),
         name="admin-student-enrollment-reject",
     ),
+    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
+    # Withdrawals
+    path("withdrawals/", AdminWithdrawalListAPIView.as_view(), name="admin-withdrawal-list"),
+    path("withdrawals/<int:withdrawal_id>/", AdminWithdrawalDetailAPIView.as_view(), name="admin-withdrawal-detail"),
+    # Analytics
+    path("analytics/signup/trends", AdminSignupTrendsAPIView.as_view(), name="admin-signup-trends"),
     path(
         "students/<int:student_id>/scores",
         AdminStudentScoreAPIView.as_view(),
