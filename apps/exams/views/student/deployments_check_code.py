@@ -11,13 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.models import ExamDeployment
 from apps.exams.serializers import CheckCodeRequestSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.student.deployments_status import (
-    is_deployment_activated,
-    is_deployment_opened,
-    is_deployment_time_closed,
+    get_deployment_or_404,
+    validate_deployment_active,
 )
 from apps.exams.views.mixins import ExamsExceptionMixin
 from apps.users.models import User
@@ -97,13 +95,7 @@ class CheckCodeAPIView(ExamsExceptionMixin, APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deployment = ExamDeployment.objects.get(id=deployment_id)
-        except ExamDeployment.DoesNotExist:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        deployment = get_deployment_or_404(deployment_id)
 
         # 참가 코드 검증
         if deployment.access_code != serializer.validated_data["code"]:
@@ -120,25 +112,7 @@ class CheckCodeAPIView(ExamsExceptionMixin, APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # 시험 상태 확인
-        if not is_deployment_activated(deployment):
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_CHECK_CODE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # 시험 시간 확인
-        now = timezone.now()
-        if not is_deployment_opened(deployment, now=now):
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_NOT_AVAILABLE.value},
-                status=status.HTTP_423_LOCKED,
-            )
-        if is_deployment_time_closed(deployment, now=now):
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_ALREADY_CLOSED.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        validate_deployment_active(deployment, now=timezone.now())
 
         # 검증 성공 - 204 No Content 반환
         return Response(status=status.HTTP_204_NO_CONTENT)
