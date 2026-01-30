@@ -9,7 +9,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.qna.exceptions.question_exception import qna_exception_handler
 from apps.qna.models import (
     Answer,
     AnswerComment,
