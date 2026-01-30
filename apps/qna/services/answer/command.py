@@ -40,7 +40,7 @@ class AnswerCommandService:
             try:
                 question = Question.objects.select_for_update().get(id=question_id)
             except Question.DoesNotExist:
-                raise QuestionNotFoundException(detail="해당 질문을 찾을 수 없습니다.")
+                raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
 
             # 답변 생성
             content = cast(str, data["content"])

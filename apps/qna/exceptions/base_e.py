@@ -1,3 +1,5 @@
+import logging
+import sys
 from typing import Any
 
 from rest_framework import status
@@ -6,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from apps.qna.utils.constants import ErrorMessages
+
+logger = logging.getLogger("apps.qna.exceptions")
 
 
 class QnaBaseException(APIException):
@@ -33,12 +37,32 @@ class QnaBaseException(APIException):
 
 
 def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
-    """QnA 앱 예외 처리기"""
+    """QnA 앱 예외 처리기 + 로깅"""
     response = exception_handler(exc, context)
 
     # View 클래스명을 통해 현재 에러가 발생한 도메인이 Question인지 Answer인지 판별
     view = context.get("view")
-    view_name = view.__class__.__name__ if view else ""
+    view_name = view.__class__.__name__ if view else "UnknownView"
+    request = context.get("request")
+    user = request.user if request else "Anonymous"
+
+    # 로깅 처리
+    log_payload = f"[{view_name}] User:{user} | Exception: {type(exc).__name__} | Detail: {str(exc)}"
+
+    is_testing = "test" in sys.argv or "pytest" in sys.modules or any("test" in arg for arg in sys.argv)
+
+    if not is_testing:
+        if response is not None:
+            # 400번대 에러 (사용자 입력 오류 등)는 Warning 레벨로 기록
+            if response.status_code < 500:
+                logger.warning(log_payload)
+            else:
+                # 500번대 혹은 예상치 못한 에러는 Error 레벨 + 트레이스백 기록
+                logger.error(log_payload, exc_info=True)
+        else:
+            # DRF가 처리하지 못한 예상치 못한 시스템 에러
+            logger.error(f"[Unhandled] {log_payload}", exc_info=True)
+
     is_answer = "Answer" in view_name
 
     # 401 Unauthorized 처리

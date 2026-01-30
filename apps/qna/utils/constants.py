@@ -14,7 +14,10 @@ class ErrorMessages(str, Enum):
     INVALID_ANSWER_ADOPT = "유효하지 않은 답변 채택 요청입니다."
     INVALID_AI_REQUEST = "유효하지 않은 데이터 요청입니다."
     INVALID_COMMENT_LENGTH = "댓글 내용은 1~500자 사이로 입력해야 합니다."
+    # 400 - Presigned URL & S3
     UNSUPPORTED_FILE_FORMAT = "지원하지 않는 파일 형식입니다."
+    S3_CONNECTION_ERROR = "이미지 서버 연결에 실패했습니다."
+    INVALID_UPLOAD_DOMAIN = "유효하지 않은 업로드 도메인입니다."
 
     # --- 401 Unauthorized (Authentication Required) ---
     UNAUTHORIZED_QUESTION_CREATE = "로그인한 수강생만 질문을 등록할 수 있습니다."
@@ -44,3 +47,7 @@ class ErrorMessages(str, Enum):
     # --- 409 Conflict (Business Logic Collision) ---
     ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
     ALREADY_EXISTS_ADOPTED_ANSWER = "이미 채택된 답변이 존재합니다."
+
+    # --- 500 Internal Server Error & Unexpected (System) ---
+    SYSTEM_ERROR = "데이터 처리 중 오류가 발생했습니다."
+    DATABASE_ERROR = "데이터베이스 연결 중 오류가 발생했습니다."
