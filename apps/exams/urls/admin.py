@@ -1,10 +1,10 @@
 from django.urls import path
 
-from apps.exams.views.admin.deployments_create import (
-    AdminExamDeploymentCreateAPIView,
-)
 from apps.exams.views.admin.deployments_detail import (
     AdminExamDeploymentDetailAPIView,
+)
+from apps.exams.views.admin.deployments_router import (
+    AdminExamDeploymentRouterAPIView,
 )
 from apps.exams.views.admin.deployments_status import (
     AdminExamDeploymentStatusAPIView,
@@ -25,7 +25,7 @@ urlpatterns = [
         AdminExamQuestionDeleteAPIView.as_view(),
         name="admin-exam-question-delete",
     ),
-    path("exams/deployments/", AdminExamDeploymentCreateAPIView.as_view(), name="admin-exam-deployment-create"),
+    path("exams/deployments/", AdminExamDeploymentRouterAPIView.as_view(), name="admin-exam-deployments"),
     path(
         "exams/deployments/<int:deployment_id>/",
         AdminExamDeploymentDetailAPIView.as_view(),
