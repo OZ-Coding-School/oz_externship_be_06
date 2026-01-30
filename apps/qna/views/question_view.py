@@ -10,11 +10,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.qna.models import (
-    Answer,
-    AnswerComment,
     Question,
     QuestionCategory,
-    QuestionImage,
 )
 from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
@@ -89,7 +86,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         query_serializer.is_valid(raise_exception=True)
 
         # Mock Data 생성
-        if settings.USE_EXAM_MOCK:
+        if settings.USE_QNA_MOCK:
             User = get_user_model()
             mock_user = User(
                 id=1,
@@ -256,19 +253,20 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     )
     def get(self, request: Request, question_id: int) -> Response:
         # Mock Data 생성
-        if settings.USE_EXAM_MOCK:
-            User = get_user_model()
-            mock_user = User(
+        if settings.USE_QNA_MOCK:
+            from types import SimpleNamespace
+
+            mock_user = SimpleNamespace(
                 id=1,
                 nickname="MockUser",
                 profile_img_url="https://ssl.pstatic.net/static/pwe/address/img_profile.png",
             )
 
-            cat_root = QuestionCategory(id=1, name="개발")
-            cat_mid = QuestionCategory(id=2, name="백엔드", parent=cat_root)
-            cat_leaf = QuestionCategory(id=3, name="Django", parent=cat_mid)
+            cat_root = SimpleNamespace(id=1, name="개발", parent=None)
+            cat_mid = SimpleNamespace(id=2, name="백엔드", parent=cat_root)
+            cat_leaf = SimpleNamespace(id=3, name="Django", parent=cat_mid)
 
-            question = Question(
+            question = SimpleNamespace(
                 id=question_id,
                 author=mock_user,
                 category=cat_leaf,
@@ -279,41 +277,38 @@ class QuestionDetailAPIView(QnaBaseAPIView):
             )
 
             # Mock Images
-            setattr(
-                question,
-                "images",
-                [
-                    QuestionImage(id=1, img_url="https://via.placeholder.com/200"),
-                    QuestionImage(id=2, img_url="https://via.placeholder.com/201"),
-                ],
+            question.images = [
+                SimpleNamespace(id=1, img_url="https://via.placeholder.com/200"),
+                SimpleNamespace(id=2, img_url="https://via.placeholder.com/201"),
+            ]
+
+            # Mock Comments for Answer
+            # AnswerComment also needs to be SimpleNamespace
+            comment1 = SimpleNamespace(
+                id=1,
+                author=mock_user,
+                content="Mock 댓글 1",
+                created_at=datetime.now(),
             )
+            # Answer needs to link to comment
+            # Note: The AnswerSerializer typically expects 'comments' related name or field.
+            # In the model, it is related_name='comments'.
+            pass
 
             # Mock Answers
-            ans1 = Answer(
+            ans1 = SimpleNamespace(
                 id=1,
                 question=question,
                 author=mock_user,
                 content="Mock 답변 내용 1",
                 created_at=datetime.now(),
                 is_adopted=False,
+                comments=[comment1],  # Directly assign list
             )
+            # Fix comment reference back to answer if needed (usually circular not needed for serialization if one way)
+            comment1.answer = ans1
 
-            # Mock Comments for Answer
-            setattr(
-                ans1,
-                "comments",
-                [
-                    AnswerComment(
-                        id=1,
-                        answer=ans1,
-                        author=mock_user,
-                        content="Mock 댓글 1",
-                        created_at=datetime.now(),
-                    )
-                ],
-            )
-
-            setattr(question, "answers", [ans1])
+            question.answers = [ans1]
 
         else:
             question = svc_q_qry.QuestionQueryService.get_question_detail(question_id)
