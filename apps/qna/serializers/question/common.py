@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.qna.models import QuestionCategory
-from apps.users.models import User
+from apps.qna.utils.model_types import User
 
 
 class QuestionCategoryListSerializer(serializers.ModelSerializer[QuestionCategory]):

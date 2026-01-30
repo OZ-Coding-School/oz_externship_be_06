@@ -2,7 +2,8 @@ import logging
 
 from rest_framework import serializers
 
-from apps.qna.exceptions.question_exception import QuestionBaseException
+from apps.qna.exceptions.base_e import QnaBaseException
+from apps.qna.utils.constants import ErrorMessages
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +18,16 @@ class QnaValidationMixin:
         try:
             return super().is_valid(raise_exception=raise_exception)  # type: ignore
         except serializers.ValidationError:
-            # Serializer에 정의된 커스텀 에러 메시지 사용
-            error_message = getattr(self, "default_error_message", "유효하지 않은 요청입니다.")
+            error_message = getattr(self, "default_error_message", ErrorMessages.INVALID_REQUEST)
             if raise_exception:
-                raise QuestionBaseException(detail=error_message)
+                raise QnaBaseException(detail=error_message)
             return False
+
         except Exception as e:
             logger.error(
-                f"데이터 검증 중 예상치 못한 서버 에러 발생. "
-                f"Serializer: {self.__class__.__name__}, Exception: {str(e)}",
+                f"데이터 검증 중 예상치 못한 에러 발생. " f"Serializer: {self.__class__.__name__}, Exception: {str(e)}",
                 exc_info=True,
             )
-
             if raise_exception:
-                raise QuestionBaseException(detail=f"데이터 검증 중 오류 발생: {str(e)}")
+                raise QnaBaseException(detail=f"데이터 검증 중 오류 발생: {str(e)}")
             return False

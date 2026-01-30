@@ -9,11 +9,13 @@ from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
 )
+from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.content_parser import ContentParser
 
 
 # ==============================================================================
-# Question List [GET] (/api/v1/qna/questions)
+# [GET] Question List
+# /api/v1/qna/questions
 # ==============================================================================
 class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
@@ -27,7 +29,7 @@ class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
     page = serializers.IntegerField(default=1)
     size = serializers.IntegerField(default=10)
 
-    default_error_message = "유효하지 않은 목록 조회 요청입니다."
+    default_error_message = ErrorMessages.INVALID_QUESTION_LIST
 
 
 class QuestionListSerializer(serializers.ModelSerializer[Question]):
@@ -65,10 +67,8 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
-
-
-# ==============================================================================
-# Question Detail [GET] (/api/v1/qna/questions/{question_id})
+# [GET] Question Detail
+# /api/v1/qna/questions/{question_id}
 # ==============================================================================
 class QuestionImageSerializer(serializers.ModelSerializer[QuestionImage]):
     """
@@ -106,12 +106,10 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
-
-
+# [ACTION RESPONSES] POST Success
+# [POST] Question Create
+# /api/v1/qna/questions/
 # ==============================================================================
-# ACTION RESPONSES (POST/PUT/DELETE Success)
-# ==============================================================================
-# Question Create [POST] (/api/v1/qna/questions/)
 class QuestionCreateResponseSerializer(QnaValidationMixin, serializers.Serializer[Any]):
     """
     질문 등록 응답 시리얼라이저
