@@ -36,7 +36,7 @@ class AdminExamUpdateAPITests(APITestCase):
         )
 
         # URL
-        self.url = reverse("admin-exam-update", kwargs={"exam_id": self.exam.id})
+        self.url = reverse("admin-exam-detail", kwargs={"exam_id": self.exam.id})
 
         # 유저 생성
         self.staff_user = User.objects.create_user(
@@ -72,7 +72,7 @@ class AdminExamUpdateAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(
-            response.data["detail"],
+            response.data["error_detail"],
             ErrorMessages.UNAUTHORIZED.value,
         )
 
@@ -89,7 +89,7 @@ class AdminExamUpdateAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(
-            response.data["detail"],
+            response.data["error_detail"],
             ErrorMessages.NO_EXAM_UPDATE_PERMISSION.value,
         )
 
@@ -129,7 +129,7 @@ class AdminExamUpdateAPITests(APITestCase):
     def test_update_exam_not_found(self) -> None:
         self.client.force_authenticate(user=self.staff_user)
 
-        url = reverse("admin-exam-update", kwargs={"exam_id": 999999})
+        url = reverse("admin-exam-detail", kwargs={"exam_id": 999999})
 
         payload = {
             "title": "수정된 시험",

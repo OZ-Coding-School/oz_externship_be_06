@@ -1,15 +1,17 @@
 from django.db import transaction
-from rest_framework.exceptions import NotFound, APIException
 from rest_framework import status
+from rest_framework.exceptions import APIException, NotFound
 
 from apps.courses.models import Subject
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam
 
+
 class ConflictException(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "Conflict"
     default_code = "conflict"
+
 
 @transaction.atomic
 def update_exam(
