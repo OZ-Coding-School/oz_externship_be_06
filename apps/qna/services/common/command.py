@@ -1,6 +1,7 @@
 from typing import Dict
 
 from apps.qna.exceptions.base_e import QnaBaseException
+from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.s3_utils import S3Handler
 
 
@@ -23,12 +24,12 @@ class PresignedUrlCommandService:
         """
         folder_path = cls.FOLDER_MAP.get(domain)
         if not folder_path:
-            raise QnaBaseException(detail="유효하지 않은 업로드 도메인입니다.")
+            raise QnaBaseException(detail=ErrorMessages.INVALID_UPLOAD_DOMAIN)
 
         s3_handler = S3Handler()
         result = s3_handler.generate_presigned_put_url(folder_path, file_name)
 
         if not result:
-            raise QnaBaseException(detail="이미지 서버 연결에 실패했습니다.")
+            raise QnaBaseException(detail=ErrorMessages.S3_CONNECTION_ERROR)
 
         return result
