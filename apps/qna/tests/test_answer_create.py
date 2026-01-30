@@ -37,6 +37,7 @@ class AnswerCreateAPITest(TestCase):
             nickname="학생",
             role="STUDENT",
             birthday="2000-01-01",
+            is_active=True,
         )
         self.regular_user = User.objects.create_user(
             email="user@ozcoding.com",
@@ -44,6 +45,7 @@ class AnswerCreateAPITest(TestCase):
             nickname="일반유저",
             role="USER",
             birthday="2000-01-01",
+            is_active=True,
         )
 
         # Base Data
