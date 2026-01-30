@@ -8,7 +8,7 @@ from apps.core.models import TimeStampModel
 
 class PostLike(TimeStampModel):
     """
-    ERD의 post_likes 테이블: 게시글에 대한 사용자의 좋아요 상태를 관리합니다.
+    post_likes 테이블: 게시글에 대한 사용자의 좋아요 상태를 관리합니다.
     """
 
     user = models.ForeignKey(

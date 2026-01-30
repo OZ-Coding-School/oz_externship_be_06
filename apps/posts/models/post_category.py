@@ -6,7 +6,7 @@ from apps.core.models import TimeStampModel
 
 class PostCategory(TimeStampModel):
     """
-    ERD의 post_category 테이블: 게시글의 카테고리를 관리합니다.
+    post_category 테이블: 게시글의 카테고리를 관리합니다.
     """
 
     name = models.CharField(max_length=20, null=False, verbose_name="카테고리명")

@@ -7,7 +7,7 @@ from apps.core.models import TimeStampModel
 
 class PostAttachment(TimeStampModel):
     """
-    ERD의 post_attachments 테이블: 게시글에 첨부된 일반 파일들을 관리합니다.
+    post_attachments 테이블: 게시글에 첨부된 일반 파일들을 관리합니다.
     """
 
     post = models.ForeignKey("posts.Post", on_delete=models.CASCADE, related_name="attachments", verbose_name="게시글")
