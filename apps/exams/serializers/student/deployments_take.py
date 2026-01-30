@@ -37,6 +37,7 @@ class QuestionSerializer(serializers.Serializer[Any]):
 class TakeExamResponseSerializer(serializers.Serializer[Any]):
     exam_id = serializers.IntegerField()
     exam_name = serializers.CharField()
+    exam_thumbnail_img_url = serializers.CharField(allow_null=True, required=False)
     duration_time = serializers.IntegerField()
     elapsed_time = serializers.IntegerField()
     cheating_count = serializers.IntegerField()
