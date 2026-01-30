@@ -5,6 +5,7 @@ from django.db.models import Count, Min
 from django.db.models.functions import TruncMonth, TruncYear
 
 from apps.users.models import User
+from apps.users.models.withdrawal import Withdrawal
 
 
 class TrendItem(TypedDict):
@@ -77,6 +78,77 @@ def get_signup_trends(interval: str, year: int | None = None) -> dict[str, Any]:
 
         # 가장 오래된 연도부터 현재 연도까지 전체 항목 생성
         items = []
+        current_year = from_date.year
+        while current_year <= today.year:
+            period_str = str(current_year)
+            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
+            current_year += 1
+
+    total = sum(item["count"] for item in items)
+
+    return {
+        "interval": interval,
+        "from_date": from_date,
+        "to_date": to_date,
+        "total": total,
+        "items": items,
+    }
+def get_withdrawal_trends(interval: str) -> dict[str, Any]:
+    today = date.today()
+
+    if interval == "monthly":
+        target_year = today.year
+        from_date = date(target_year, 1, 1)
+        to_date = date(target_year, 12, 31)
+
+        queryset = (
+            Withdrawal.objects.filter(
+                created_at__date__gte=from_date,
+                created_at__date__lte=to_date,
+            )
+            .annotate(period=TruncMonth("created_at"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
+
+        period_counts: dict[str, int] = {}
+        for item in queryset:
+            period_str = item["period"].strftime("%Y-%m")
+            period_counts[period_str] = item["count"]
+
+        items: list[TrendItem] = []
+        for month in range(1, 13):
+            period_str = f"{target_year}-{month:02d}"
+            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
+
+    else:
+        oldest_date = Withdrawal.objects.aggregate(oldest=Min("created_at"))["oldest"]
+
+        if oldest_date:
+            from_date = date(oldest_date.year, 1, 1)
+        else:
+            from_date = date(today.year, 1, 1)
+
+        to_date = date(today.year, 12, 31)
+
+        queryset = (
+            Withdrawal.objects.filter(
+                created_at__date__gte=from_date,
+                created_at__date__lte=to_date,
+            )
+            .annotate(period=TruncYear("created_at"))
+            .values("period")
+            .annotate(count=Count("id"))
+            .order_by("period")
+        )
+
+        period_counts: dict[str, int] = {}
+        for item in queryset:
+            period_str = str(item["period"].year)
+            period_counts[period_str] = item["count"]
+
+        items: list[TrendItem] = []
         current_year = from_date.year
         while current_year <= today.year:
             period_str = str(current_year)
