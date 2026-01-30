@@ -119,7 +119,7 @@ class AdminExamUpdateAPITests(APITestCase):
 
         response = self.client.put(self.url, payload, format="json")
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn(
             ErrorMessages.EXAM_UPDATE_CONFLICT.value,
             str(response.data),

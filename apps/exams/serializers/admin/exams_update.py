@@ -15,13 +15,6 @@ class AdminExamUpdateRequestSerializer(serializers.ModelSerializer[Exam]):
         model = Exam
         fields = ["title", "subject_id", "thumbnail_img"]
 
-    # 409 제목 중복
-    def validate_title(self, value: str) -> str:
-        if isinstance(self.instance, Exam):
-            if Exam.objects.filter(title=value).exclude(id=self.instance.id).exists():
-                raise serializers.ValidationError(ErrorMessages.EXAM_UPDATE_CONFLICT.value)
-        return value
-
     # payload가 아예 비었을 때
     def validate(self, data: dict[str, object]) -> dict[str, object]:
         if not data:
