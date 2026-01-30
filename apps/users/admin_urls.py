@@ -91,5 +91,5 @@ urlpatterns = [
         "analytics/withdrawals/trends/",
         AdminWithdrawalTrendsAPIView.as_view(),
         name="admin-withdrawal-trends",
-    )
+    ),
 ]

@@ -14,7 +14,10 @@ from apps.users.serializers.admin.admin_analytics_serializers import (
     WithdrawalTrendsRequestSerializer,
     WithdrawalTrendsResponseSerializer,
 )
-from apps.users.services.admin_analytics_service import get_signup_trends, get_withdrawal_trends
+from apps.users.services.admin_analytics_service import (
+    get_signup_trends,
+    get_withdrawal_trends,
+)
 
 
 # 회원가입 추세 분석
@@ -73,6 +76,7 @@ class AdminSignupTrendsAPIView(APIView):
         response_serializer = SignupTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
 
+
 class AdminWithdrawalTrendsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
@@ -107,7 +111,6 @@ class AdminWithdrawalTrendsAPIView(APIView):
             403: OpenApiResponse(description="권한이 없습니다."),
         },
     )
-
     def get(self, request: Request) -> Response:
         serializer = WithdrawalTrendsRequestSerializer(data=request.query_params)
         if not serializer.is_valid():

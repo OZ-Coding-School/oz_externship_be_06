@@ -28,6 +28,7 @@ class SignupTrendsResponseSerializer(serializers.Serializer[Any]):
     total = serializers.IntegerField()
     items = TrendsItemSerializer(many=True)
 
+
 # 화원탈퇴 추세 분석 요청
 class WithdrawalTrendsRequestSerializer(serializers.Serializer[Any]):
     INTERVAL_CHOICES = [
@@ -36,6 +37,7 @@ class WithdrawalTrendsRequestSerializer(serializers.Serializer[Any]):
     ]
 
     interval = serializers.ChoiceField(choices=INTERVAL_CHOICES, required=True)
+
 
 # 회원탈퇴 추세 분석
 class WithdrawalTrendsResponseSerializer(serializers.Serializer[Any]):

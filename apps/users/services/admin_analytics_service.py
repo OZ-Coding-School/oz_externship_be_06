@@ -93,8 +93,13 @@ def get_signup_trends(interval: str, year: int | None = None) -> dict[str, Any]:
         "total": total,
         "items": items,
     }
+
+
 def get_withdrawal_trends(interval: str) -> dict[str, Any]:
     today = date.today()
+
+    period_counts: dict[str, int]
+    items: list[TrendItem]
 
     if interval == "monthly":
         target_year = today.year
@@ -112,12 +117,12 @@ def get_withdrawal_trends(interval: str) -> dict[str, Any]:
             .order_by("period")
         )
 
-        period_counts: dict[str, int] = {}
+        period_counts = {}
         for item in queryset:
             period_str = item["period"].strftime("%Y-%m")
             period_counts[period_str] = item["count"]
 
-        items: list[TrendItem] = []
+        items = []
         for month in range(1, 13):
             period_str = f"{target_year}-{month:02d}"
             items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
@@ -143,12 +148,12 @@ def get_withdrawal_trends(interval: str) -> dict[str, Any]:
             .order_by("period")
         )
 
-        period_counts: dict[str, int] = {}
+        period_counts = {}
         for item in queryset:
             period_str = str(item["period"].year)
             period_counts[period_str] = item["count"]
 
-        items: list[TrendItem] = []
+        items = []
         current_year = from_date.year
         while current_year <= today.year:
             period_str = str(current_year)
