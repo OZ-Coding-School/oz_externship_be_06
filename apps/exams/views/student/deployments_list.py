@@ -97,6 +97,9 @@ class ExamListView(ExamsExceptionMixin, ListAPIView[ExamDeployment]):
     pagination_class = SimplePagePagination
 
     def get_queryset(self) -> QuerySet[ExamDeployment]:
+        if getattr(self, "swagger_fake_view", False):
+            return ExamDeployment.objects.none()
+
         user_id = self.request.user.id
         assert user_id is not None
         cohort_id = (
