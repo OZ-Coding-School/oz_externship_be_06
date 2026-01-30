@@ -266,7 +266,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
             cat_mid = SimpleNamespace(id=2, name="백엔드", parent=cat_root)
             cat_leaf = SimpleNamespace(id=3, name="Django", parent=cat_mid)
 
-            question = SimpleNamespace(
+            question: Any = SimpleNamespace(
                 id=question_id,
                 author=mock_user,
                 category=cat_leaf,
