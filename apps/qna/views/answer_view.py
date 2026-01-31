@@ -11,7 +11,7 @@ from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
-from apps.qna.docs.api_rquest_examples import (
+from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
     RequestBodyExamples,
 )
