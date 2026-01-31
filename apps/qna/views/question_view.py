@@ -17,6 +17,7 @@ from apps.qna.docs.api_request_examples import (
 from apps.qna.models import (
     Question,
     QuestionCategory,
+)
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
