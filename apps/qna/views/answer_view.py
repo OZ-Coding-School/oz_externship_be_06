@@ -7,13 +7,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
-from apps.qna.docs.api_response_examples import (
-    ErrorResponseExamples,
-    SuccessResponseExamples,
-)
 from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
     RequestBodyExamples,
+)
+from apps.qna.docs.api_response_examples import (
+    ErrorResponseExamples,
+    SuccessResponseExamples,
 )
 from apps.qna.serializers.answer import request as ser_ans_reqs
 from apps.qna.serializers.answer import response as ser_ans_rep

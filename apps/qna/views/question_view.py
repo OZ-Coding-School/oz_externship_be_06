@@ -10,10 +10,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
-from apps.qna.docs.api_response_examples import (
-    ErrorResponseExamples,
-    SuccessResponseExamples,
-)
 from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
     RequestBodyExamples,
@@ -21,6 +17,9 @@ from apps.qna.docs.api_request_examples import (
 from apps.qna.models import (
     Question,
     QuestionCategory,
+from apps.qna.docs.api_response_examples import (
+    ErrorResponseExamples,
+    SuccessResponseExamples,
 )
 from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
