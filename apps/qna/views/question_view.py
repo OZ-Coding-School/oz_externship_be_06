@@ -9,6 +9,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.qna.docs.api_descriptions import ApiDescriptions
+from apps.qna.docs.api_response_examples import (
+    ErrorResponseExamples,
+    SuccessResponseExamples,
+)
+from apps.qna.docs.api_rquest_examples import (
+    QueryParameterExamples,
+    RequestBodyExamples,
+)
 from apps.qna.models import (
     Question,
     QuestionCategory,
@@ -33,48 +42,73 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
             return [IsAuthenticated(), IsStudent()]
         return [AllowAny()]
 
-    # 질의응답 목록 조회
-    # [GET] /api/v1/qna/questions
+    # 질문 등록
+    # [POST] /api/v1/qna/questions
     @extend_schema(
-        summary="질문 목록 조회 API",
-        description="""
-        ### 등록된 모든 질문 목록을 최신순으로 조회합니다.
-        **질의응답 목록에서 조회가능한 항목**
-        - 질의응답 카테고리 (대분류 > 중분류 > 소분류 형태)
-        - 작성자 정보
-            - 프로필 이미지
-            - 닉네임
-        - 질의응답 제목
-        - 질문 내용
-        - 답변 수
-        - 조회수
-        - 질문 작성일시
-        - 질문 내용에 포함된 이미지의 썸네일 이미지
-        """,
-        parameters=[ser_q_res.QuestionQuerySerializer],
+        summary="질문 등록 API",
+        description=ApiDescriptions.QUESTION_CREATE,
+        request=ser_q_req.QuestionCreateSerializer,
+        examples=RequestBodyExamples.QUESTION_CREATE,
         responses={
-            200: ser_q_res.QuestionListSerializer(many=True),
+            201: OpenApiResponse(
+                description="Created",
+                response=ser_q_res.QuestionCreateResponseSerializer,
+                examples=SuccessResponseExamples.QUESTION_CREATE,
+            ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="잘못된 요청 예시",
-                        value={"error_detail": "유효하지 않은 목록 조회 요청입니다."},
-                        description="잘못된 요청 예시",
-                    ),
-                ],
+                examples=ErrorResponseExamples.QUESTION_CREATE_400,
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=ErrorResponseExamples.QUESTION_CREATE_401,
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=ErrorResponseExamples.QUESTION_CREATE_403,
+            ),
+        },
+        tags=["qna"],
+    )
+    def post(self, request: Request) -> Response:
+        """질문 생성"""
+        serializer = ser_q_req.QuestionCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 서비스 호출
+        question = svc_q_cmd.QuestionCommandService.create_question(
+            author=cast(User, request.user), data=serializer.validated_data
+        )
+
+        # 응답 출력
+        response_serializer = ser_q_res.QuestionCreateResponseSerializer(question)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    # 질문 목록 조회
+    # [GET] /api/v1/qna/questions
+    @extend_schema(
+        summary="질문 목록 조회 API",
+        description=ApiDescriptions.QUESTION_LIST,
+        parameters=[ser_q_req.QuestionQuerySerializer],
+        examples=QueryParameterExamples.QUESTION_LIST,
+        responses={
+            200: OpenApiResponse(
+                description="OK",
+                response=ser_q_res.QuestionListSerializer(many=True),
+                examples=SuccessResponseExamples.QUESTION_LIST,
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=ErrorResponseExamples.QUESTION_LIST_400,
             ),
             404: OpenApiResponse(
                 description="Not Found",
                 response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="데이터 없음 예시",
-                        value={"error_detail": "조회 가능한 질문이 존재하지 않습니다."},
-                        description="데이터 없음 예시",
-                    ),
-                ],
+                examples=ErrorResponseExamples.QUESTION_LIST_404,
             ),
         },
         tags=["qna"],
@@ -82,7 +116,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
         # 쿼리 파라미터 검증
-        query_serializer = ser_q_res.QuestionQuerySerializer(data=request.query_params)
+        query_serializer = ser_q_req.QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
         # Mock Data 생성
@@ -120,71 +154,6 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
             queryset=queryset, request=request, serializer_class=ser_q_res.QuestionListSerializer, view=self
         )
 
-    # 질문 등록
-    # [POST] /api/v1/qna/questions
-    @extend_schema(
-        summary="질문 등록 API",
-        description="""
-        ### 수강생 권한을 가진 로그인 유저가 질문을 등록합니다.
-        **질문 등록 시 입력 항목**
-        - 제목: 질문의 핵심 요약
-        - 질문내용: 마크다운 문법 사용 가능, 이미지 첨부 가능
-        - 카테고리: 대분류 > 중분류 > 소분류
-        - 내용에 포함된 이미지들의 PK 리스트
-        """,
-        request=ser_q_req.QuestionCreateSerializer,
-        responses={
-            201: OpenApiResponse(response=ser_q_res.QuestionCreateResponseSerializer, description="질문 등록 성공"),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="잘못된 요청 예시",
-                        value={"error_detail": "유효하지 않은 질문 등록 요청입니다."},
-                        description="잘못된 요청 예시",
-                    ),
-                ],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="인증 실패 예시",
-                        value={"error_detail": "로그인한 수강생만 질문을 등록할 수 있습니다."},
-                        description="인증 실패 예시",
-                    ),
-                ],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="권한 없음 예시",
-                        value={"error_detail": "질문 등록 권한이 없습니다."},
-                        description="권한 없음 예시",
-                    ),
-                ],
-            ),
-        },
-        tags=["qna"],
-    )
-    def post(self, request: Request) -> Response:
-        """질문 생성"""
-        serializer = ser_q_req.QuestionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # 서비스 호출
-        question = svc_q_cmd.QuestionCommandService.create_question(
-            author=cast(User, request.user), data=serializer.validated_data
-        )
-
-        # 응답 출력
-        response_serializer = ser_q_res.QuestionCreateResponseSerializer(question)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
 
 class QuestionDetailAPIView(QnaBaseAPIView):
     """
@@ -197,56 +166,22 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     # GET /api/v1/qna/questions/{question_id}
     @extend_schema(
         summary="질문 상세 조회 API",
-        description="""
-    ### 특정 항목을 클릭 시 상세조회 페이지로 이동합니다.
-    **상세 조회 페이지에서 확인 가능한 항목**
-    - 질문 제목
-    - 질문 내용
-    - 질문 내용에 첨부된 이미지
-    - 질문 작성자 정보
-        - 프로필 썸네일 이미지
-        - 닉네임
-    - 질문 카테고리 정보
-        - 대, 중, 소분류 카테고리 이름
-    - 질문 조회수
-    - 질문 작성일시
-    - 답변 목록
-        - 답변 작성자 정보
-            - 프로필 썸네일 이미지
-            - 닉네임
-        - 답변 내용
-        - 답변 작성일시
-        - 답변 채택 여부
-        - 답변에 대한 댓글 목록
-            - 댓글 작성자 정보
-                - 프로필 썸네일 이미지
-                - 유저 닉네임
-            - 댓글 내용
-            - 댓글 작성일시
-        """,
+        description=ApiDescriptions.QUESTION_DETAIL,
         responses={
-            200: ser_q_res.QuestionDetailSerializer,
+            200: OpenApiResponse(
+                description="OK",
+                response=ser_q_res.QuestionDetailSerializer,
+                examples=SuccessResponseExamples.QUESTION_DETAIL,
+            ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="잘못된 요청 예시",
-                        value={"error_detail": "유효하지 않은 질문 상세 조회 요청입니다."},
-                        description="잘못된 요청 예시",
-                    ),
-                ],
+                examples=ErrorResponseExamples.QUESTION_DETAIL_400,
             ),
             404: OpenApiResponse(
                 description="Not Found",
                 response=dict,
-                examples=[
-                    OpenApiExample(
-                        name="존재하지 않는 질문 예시",
-                        value={"error_detail": "해당 질문을 찾을 수 없습니다."},
-                        description="존재하지 않는 질문 예시",
-                    ),
-                ],
+                examples=ErrorResponseExamples.QUESTION_DETAIL_404,
             ),
         },
         tags=["qna"],
