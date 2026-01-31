@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rest_framework import serializers
 
 from apps.qna.models import QuestionCategory
@@ -16,23 +18,25 @@ class QuestionCategoryListSerializer(serializers.ModelSerializer[QuestionCategor
         model = QuestionCategory
         fields = ["id", "depth", "names"]
 
-    def get_depth(self, obj: QuestionCategory) -> int:
+    def get_depth(self, obj: Optional[QuestionCategory]) -> int:
         """모델에 필드가 없으므로 부모를 거슬러 올라가며 깊이를 계산"""
         depth = 0
-        curr = obj.parent
+        curr = getattr(obj, "parent", None)
         while curr:
             depth += 1
-            curr = curr.parent
+            curr = getattr(curr, "parent", None)
         return depth
 
-    def get_names(self, obj: QuestionCategory) -> list[str]:
+    def get_names(self, obj: Optional[QuestionCategory]) -> list[str]:
         """부모 카테고리를 거슬러 올라가며 전체 경로 이름을 리스트로 생성"""
         names: list[str] = []
         curr: QuestionCategory | None = obj
         while curr:
-            names.insert(0, curr.name)
-            curr = curr.parent
-        return names
+            name = getattr(curr, "name", None)
+            if name:
+                names.append(name)
+            curr = getattr(curr, "parent", None)
+        return names[::-1]
 
 
 class QuestionAuthorSerializer(serializers.ModelSerializer[User]):
