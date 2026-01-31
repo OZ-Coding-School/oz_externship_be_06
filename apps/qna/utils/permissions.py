@@ -3,8 +3,8 @@ from typing import Any
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.question_e import QuestionPermissionDeniedException
-from apps.qna.utils.constants import ErrorMessages
 
 
 class IsStudent(BasePermission):

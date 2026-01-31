@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer
 from apps.qna.serializers.base import QnaValidationMixin
-from apps.qna.utils.constants import ErrorMessages
 
 
 # ==============================================================================

@@ -9,8 +9,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
-from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 

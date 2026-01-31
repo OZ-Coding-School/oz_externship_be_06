@@ -3,9 +3,10 @@ from typing import Any
 
 from django.db import transaction
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.models import Question, QuestionCategory
-from apps.qna.utils.constants import ErrorMessages
+from apps.qna.models import Question, QuestionCategory, QuestionImage
+from apps.qna.utils.content_parser import ContentParser
 from apps.qna.utils.model_types import User
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,14 @@ class QuestionCommandService:
             category_id = data.pop("category_id")
             category = QuestionCategory.objects.get(id=category_id)  # 카테고리 획득
             question = Question.objects.create(author=author, category=category, **data)  # 질문 생성
+
+            content = data.get("content", "")
+            image_urls = ContentParser.extract_all_image_urls(content)
+
+            if image_urls:
+                image_objects = [QuestionImage(question=question, img_url=url) for url in image_urls]
+                QuestionImage.objects.bulk_create(image_objects)
+
             return question
 
         except Exception as e:

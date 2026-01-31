@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class ErrorMessages(str, Enum):
+    """
+    QnA 서비스 전역에서 사용되는 에러 메시지 상수
+    """
 
     # --- 400 Bad Request (Invalid Inputs) ---
     INVALID_REQUEST = "유효하지 않은 요청입니다."

@@ -3,15 +3,15 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 

@@ -1,7 +1,7 @@
 from rest_framework import status
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.utils.constants import ErrorMessages
 
 
 class QuestionPermissionDeniedException(QnaBaseException):
