@@ -63,9 +63,9 @@ class SuccessResponseExamples:
                             "id": "14231",
                             "content": "댓글 content",
                             "created_at": "2025-03-05 10:33:33",
-                            "author": {"id": "324120", "nickname": "댓글 작성자 닉네임", "profile_image_url": None}
+                            "author": {"id": "324120", "nickname": "댓글 작성자 닉네임", "profile_image_url": None},
                         }
-                    ]
+                    ],
                 }
             ],
         },

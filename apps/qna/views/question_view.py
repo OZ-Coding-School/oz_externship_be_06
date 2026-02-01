@@ -14,13 +14,13 @@ from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
     RequestBodyExamples,
 )
-from apps.qna.models import (
-    Question,
-    QuestionCategory,
-)
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
+)
+from apps.qna.models import (
+    Question,
+    QuestionCategory,
 )
 from apps.qna.serializers.question import request as ser_q_req
 from apps.qna.serializers.question import response as ser_q_res
