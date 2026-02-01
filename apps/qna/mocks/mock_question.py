@@ -40,14 +40,12 @@ class QuestionMockService:
             item["id"] = i
             item["title"] = f"Mock 질문 제목 {i}"
             item["view_count"] = i * 15  # 조회수 가변 처리
-
+            item["content_preview"] = f"{i}번째 미리보기. " + item.get("content_preview", "")
             # 객체 변환
             obj = cast(SafeMockObject, cls._dict_to_obj(item))
             # 데이터 정제(Hydration) 수행
-            cls._hydrate_mock_object(obj)
-
+            cls._hydrate_mock_object(obj, is_list=True)
             mock_list.append(obj)
-
         return mock_list
 
     def get_mock_category_tree(cls) -> List[SafeMockObject]:
@@ -65,13 +63,12 @@ class QuestionMockService:
         raw_data["id"] = question_id
 
         obj = cast(SafeMockObject, cls._dict_to_obj(raw_data))
-        # 상세 조회 데이터도 목록과 동일한 로직으로 정제
         cls._hydrate_mock_object(obj)
 
         return obj
 
     @classmethod
-    def _hydrate_mock_object(cls, obj: SafeMockObject) -> None:
+    def _hydrate_mock_object(cls, obj: SafeMockObject, is_list: bool = False) -> None:
         """Serializer 인터페이스에 맞게 Mock 객체 데이터를 재구성"""
         # Serializer의 parent 순회 로직 대응
         if hasattr(obj, "category") and obj.category:
@@ -82,9 +79,20 @@ class QuestionMockService:
                     node_id = obj.category.id if i == len(names) - 1 else 0
                     current_node = SafeMockObject(id=node_id, name=name_str, parent=parent_node)
                     parent_node = current_node
-
+                obj.category = parent_node
                 # Serializer가 참조할 최종 계층 구조 객체로 교체
                 obj.category = parent_node
+
+        # Content & Thumbnail 처리
+        content = getattr(obj, "content", None)
+        # 목록 조회 시 content가 없고 content_preview만 있는 경우 대응
+        if is_list and not content:
+            content = getattr(obj, "content_preview", "Mock Content Body")
+            setattr(obj, "content", content)
+
+        if is_list:
+            setattr(obj, "content_preview", ContentParser.extract_content_preview(content, 50))
+            setattr(obj, "thumbnail_img_url", ContentParser.extract_thumbnail_img_url(content))
 
         #  ContentParser 대응
         current_content = getattr(obj, "content", None)
@@ -93,17 +101,14 @@ class QuestionMockService:
             preview_source = getattr(obj, "content_preview", "Mock Content Body")
             setattr(obj, "content", preview_source)
 
-        # Serializer의 ImageField 대응
+        # Author 이미지 및 필드 매핑
         if hasattr(obj, "author") and obj.author:
             author = obj.author
-            # JSON 예시의 문자열 URL을 DRF ImageField가 기대하는 .url 속성을 가진 객체로 변환
             img_url = getattr(author, "profile_image_url", None)
             if img_url and isinstance(img_url, str):
-                setattr(author, "profile_image_url", SafeMockObject(url=img_url))
-
-            # source="profile_image" 매핑 대응
-            if not getattr(author, "profile_image", None):
-                setattr(author, "profile_image", getattr(author, "profile_image_url", None))
+                wrapper = SafeMockObject(url=img_url)
+                setattr(author, "profile_img_url", wrapper)
+                setattr(author, "profile_image", wrapper)
 
     @staticmethod
     def _dict_to_obj(data: Any) -> Any:
