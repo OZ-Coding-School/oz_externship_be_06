@@ -28,8 +28,8 @@ class BasePresignedUrlAPIView(QnaBaseAPIView):
         result = PresignedUrlCommandService.get_presigned_url(
             domain=self.domain, file_name=serializer.validated_data["file_name"]
         )
-
-        return Response(result)
+        response_serializer = PresignedUrlResponseSerializer(result)
+        return Response(response_serializer.data)
 
 
 class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
