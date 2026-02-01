@@ -26,7 +26,7 @@ class SuccessResponseExamples:
                     "category": {"id": 12, "depth": 2, "names": ["백엔드", "Django", "ORM"]},
                     "author": {
                         "id": 211,
-                        "nickname": "한율_회장",
+                        "nickname": "오즈 백엔드 15기 김동석",
                         "profile_image_url": "https://cdn.ozcodingschool.com/profiles/user_123.png",
                     },
                     "title": "Django ORM 역참조는 어떻게 사용하나요?",
@@ -81,20 +81,20 @@ class SuccessResponseExamples:
             "images": [{"id": 3, "img_url": "https://cdn.ozcodingschool.com/qna/img_20250301_101530.png"}],
             "view_count": 88,
             "created_at": "2025-03-01 10:25:33",
-            "author": {"id": 211, "nickname": "한솔_회장", "profile_image_url": None},
+            "author": {"id": 211, "nickname": "나일론동서크", "profile_image_url": None},
             "answers": [
                 {
                     "id": "31429",
                     "content": "답변 content",
                     "created_at": "2025-03-02 10:33:33",
                     "is_adopted": "FALSE",
-                    "author": {"id": "33", "nickname": "나일론동서크", "profile_image_url": None},
+                    "author": {"id": "33", "nickname": "소민 조교님", "profile_image_url": None},
                     "comments": [
                         {
                             "id": "14231",
                             "content": "댓글 content",
                             "created_at": "2025-03-05 10:33:33",
-                            "author": {"id": "324120", "nickname": "댓글 작성자 닉네임", "profile_image_url": None},
+                            "author": {"id": "324120", "nickname": "이준 조교님", "profile_image_url": None},
                         }
                     ],
                 }
