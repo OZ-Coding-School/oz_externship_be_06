@@ -24,9 +24,10 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
 
     category = QuestionCategoryListSerializer(read_only=True)
     author = QuestionAuthorSerializer(read_only=True)
-    content_preview = serializers.SerializerMethodField()
     answer_count = serializers.IntegerField(read_only=True)
-    thumbnail_img_url = serializers.SerializerMethodField()
+
+    content_preview = serializers.ReadOnlyField()
+    thumbnail_img_url = serializers.ReadOnlyField()
 
     class Meta:
         model = Question
@@ -41,14 +42,6 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
             "created_at",
             "thumbnail_img_url",
         ]
-
-    def get_content_preview(self, obj: Question) -> str:
-        """본문 프리뷰 생성"""
-        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
-
-    def get_thumbnail_img_url(self, obj: Question) -> Any:
-        """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
-        return ContentParser.extract_thumbnail_img_url(obj.content)
 
 
 # ==============================================================================
