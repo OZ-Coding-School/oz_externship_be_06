@@ -133,7 +133,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        queryset: Union[QuerySet[Question], list[SimpleNamespace]]
+        queryset: Union[QuerySet[Question], list[Any]]
         mock_param = str(request.query_params.get("mock", "")).lower()
         is_mock_requested = mock_param in ["true"]
         if settings.USE_QNA_MOCK or is_mock_requested:

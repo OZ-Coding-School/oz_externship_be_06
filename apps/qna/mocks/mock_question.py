@@ -37,7 +37,7 @@ class QuestionMockService:
         for i in range(1, 11):
             # 템플릿을 복사하여 각 항목별로 고유한 값을 주입
             item = template_item.copy()
-            item["id"] = i + 1
+            item["id"] = i
             item["title"] = f"Mock 질문 제목 {i}"
             item["view_count"] = i * 15  # 조회수 가변 처리
 
