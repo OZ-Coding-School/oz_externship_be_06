@@ -40,7 +40,7 @@ class QuestionCommandService:
             question = Question.objects.create(author=author, category=category, **data)  # 질문 생성
 
             content = data.get("content", "")
-            image_urls = ContentParser.extract_all_image_urls(content)
+            image_urls = ""  # ContentParser.extract_all_image_urls(content)
 
             if image_urls:
                 image_objects = [QuestionImage(question=question, img_url=url) for url in image_urls]
