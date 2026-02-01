@@ -19,6 +19,9 @@ class PostErrorMessage:
     COMMENT_NOT_FOUND = "해당 댓글을 찾을 수 없습니다."
     LIKE_NOT_FOUND = "좋아요 기록을 찾을 수 없습니다."
 
+    # 500 Internal Server Error (추가)
+    SERVER_ERROR = "서버에서 알 수 없는 오류가 발생했습니다."
+
 
 class PostSuccessMessage:
     """
