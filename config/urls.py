@@ -15,7 +15,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/admin/", include("apps.exams.urls.admin")),
     path("api/v1/admin/", include("apps.courses.admin_urls")),
     path("api/v1/exams/", include("apps.exams.urls.student")),
-    path("api/v1/qna/", include("apps.qna.urls.question_urls")),
+    path("api/v1/qna/", include("apps.qna.urls.qna_urls")),
     path("api/v1/chatbot/", include("apps.chatbot.urls")),
     path("api/v1/", include("apps.courses.urls")),
     path("api/v1/posts/", include("apps.posts.urls")),
