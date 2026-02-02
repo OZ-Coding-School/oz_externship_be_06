@@ -29,20 +29,18 @@ class PostListCreateView(APIView):
         raise PostUnauthorizedException()
 
     def get_permissions(self) -> list[Any]:
-        if self.request.method == 'POST':
+        if self.request.method == "POST":
             return [IsAuthenticated()]
         return [AllowAny()]
 
     @extend_schema(
         summary="게시글 목록 조회",
-        parameters=[
-            OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터")
-        ],
+        parameters=[OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터")],
         responses={200: PostListSerializer(many=True)},
-        tags=["posts"]
+        tags=["posts"],
     )
     def get(self, request: Request) -> Response:
-        category_id_param = request.query_params.get('category_id')
+        category_id_param = request.query_params.get("category_id")
         category_id = int(category_id_param) if category_id_param else None
 
         posts = PostSelector.get_post_list(category_id=category_id)
@@ -67,11 +65,9 @@ class PostListCreateView(APIView):
         try:
             post = PostService.create_post(user=user, **serializer.validated_data)
             return Response(
-                {"detail": PostSuccessMessage.POST_CREATE_SUCCESS, "pk": post.id},
-                status=status.HTTP_201_CREATED
+                {"detail": PostSuccessMessage.POST_CREATE_SUCCESS, "pk": post.id}, status=status.HTTP_201_CREATED
             )
         except Exception:
             return Response(
-                {"error_detail": PostErrorMessage.SERVER_ERROR},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

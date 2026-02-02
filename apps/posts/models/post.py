@@ -12,18 +12,10 @@ class Post(TimeStampModel):
     """
 
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="posts",
-        null=False,
-        verbose_name="작성자"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts", null=False, verbose_name="작성자"
     )
     category = models.ForeignKey(
-        "posts.PostCategory",
-        on_delete=models.PROTECT,
-        related_name="posts",
-        null=False,
-        verbose_name="카테고리"
+        "posts.PostCategory", on_delete=models.PROTECT, related_name="posts", null=False, verbose_name="카테고리"
     )
     title = models.CharField(max_length=50, null=False, verbose_name="제목")
     content = models.TextField(null=False, verbose_name="내용")

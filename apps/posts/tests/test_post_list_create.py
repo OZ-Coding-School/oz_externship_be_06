@@ -6,10 +6,12 @@ from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
 from apps.posts.models import Post, PostCategory
 from apps.users.models import User
 
+
 class PostListCreateTest(APITestCase):
     """
     Django 내장 APITestCase를 사용하여 추가 설치 없이 동작하는 테스트 클래스입니다.
     """
+
     user: User
     category_1: PostCategory
     category_2: PostCategory
@@ -28,7 +30,7 @@ class PostListCreateTest(APITestCase):
             name="김개발",
             phone_number="010-1234-5678",
             gender="MALE",
-            birthday="1990-01-01"
+            birthday="1990-01-01",
         )
 
         # 테스트 카테고리 생성
@@ -39,16 +41,13 @@ class PostListCreateTest(APITestCase):
         posts = []
         for i in range(15):
             category = cls.category_1 if i < 10 else cls.category_2
-            posts.append(Post(
-                author=cls.user,
-                title=f"테스트 제목 {i}",
-                content=f"테스트 내용입니다. {i}",
-                category=category
-            ))
+            posts.append(
+                Post(author=cls.user, title=f"테스트 제목 {i}", content=f"테스트 내용입니다. {i}", category=category)
+            )
         Post.objects.bulk_create(posts)
 
         # API URL (urls.py의 namespace:name 확인 필요)
-        cls.url = reverse('posts:post-list-create')
+        cls.url = reverse("posts:post-list-create")
 
     def test_get_posts_list_pagination_success(self) -> None:
         """게시글 목록 조회의 페이지네이션 구조를 검증합니다."""
@@ -60,7 +59,7 @@ class PostListCreateTest(APITestCase):
 
     def test_get_posts_filtering_by_category(self) -> None:
         """카테고리 ID를 통한 필터링 기능이 정확한지 검증합니다."""
-        response = self.client.get(self.url, {'category_id': self.category_2.id})
+        response = self.client.get(self.url, {"category_id": self.category_2.id})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # category_2에 해당하는 게시글은 5개 생성됨
@@ -69,11 +68,7 @@ class PostListCreateTest(APITestCase):
     def test_create_post_authenticated_success(self) -> None:
         """인증된 유저가 게시글을 정상적으로 생성하는지 검증합니다."""
         self.client.force_authenticate(user=self.user)
-        data = {
-            "title": "실무형 게시글",
-            "content": "내용입니다.",
-            "category_id": self.category_1.id
-        }
+        data = {"title": "실무형 게시글", "content": "내용입니다.", "category_id": self.category_1.id}
         response = self.client.post(self.url, data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

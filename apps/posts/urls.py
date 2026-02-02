@@ -6,6 +6,6 @@ from apps.posts.views.post_views import PostListCreateView
 app_name = "posts"
 
 urlpatterns = [
-    path('', PostListCreateView.as_view(), name='post-list-create'),
-    path('categories', CategoryListView.as_view(), name="category-list"),
+    path("", PostListCreateView.as_view(), name="post-list-create"),
+    path("categories", CategoryListView.as_view(), name="category-list"),
 ]
