@@ -114,8 +114,10 @@ class AdminWithdrawalTrendsAPIView(APIView):
     def get(self, request: Request) -> Response:
         serializer = WithdrawalTrendsRequestSerializer(data=request.query_params)
         if not serializer.is_valid():
-            return Response({"error_detail": serializer.errors}, status=400)
-
+            return Response(
+                {"detail": serializer.errors},
+                status=400,
+            )
         interval = serializer.validated_data["interval"]
 
         result = get_withdrawal_trends(interval)
