@@ -82,8 +82,8 @@ class AdminWithdrawalTrendsAPIView(APIView):
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
+            raise NotAuthenticated(detail={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."})
+        raise PermissionDenied(detail={"error_detail": "권한이 없습니다."})
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -114,10 +114,8 @@ class AdminWithdrawalTrendsAPIView(APIView):
     def get(self, request: Request) -> Response:
         serializer = WithdrawalTrendsRequestSerializer(data=request.query_params)
         if not serializer.is_valid():
-            return Response(
-                {"detail": serializer.errors},
-                status=400,
-            )
+            return Response({"error_detail": "잘못된 요청입니다."}, status=400)
+
         interval = serializer.validated_data["interval"]
 
         result = get_withdrawal_trends(interval)
