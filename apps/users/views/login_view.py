@@ -43,7 +43,7 @@ access token: 60분
 
         user: User = serializer.validated_data["user"]
 
-        # 탈퇴 신청한 계정인지 확인
+        #탈퇴 신청한 계정인지 비활성화된 계정인지 확인
         try:
             withdrawal = Withdrawal.objects.get(user=user)
             return Response(
@@ -56,7 +56,17 @@ access token: 60분
                 status=status.HTTP_403_FORBIDDEN,
             )
         except Withdrawal.DoesNotExist:
-            pass
+            # Withdrawal 레코드 없이 비활성화된 계정
+            if not user.is_active:
+                return Response(
+                    {
+                        "error_detail": {
+                            "detail": "비활성화된 계정입니다.",
+                            "expire_at": None,
+                        }
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         result = serializer.save()
 
