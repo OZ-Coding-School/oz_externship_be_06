@@ -59,7 +59,7 @@ class PresignedUrlAPITest(TestCase):
 
     @patch("apps.qna.utils.s3_utils.S3Handler.generate_presigned_put_url")
     def test_presigned_url_server_error(self, mock_s3: Any) -> None:
-        """[실패] S3Handler가 None을 반환할 때(S3 장애 등) 400 에러 처리 검증"""
+        """[실패] S3Handler가 None을 반환할 때(S3 장애 등) 500 에러 처리 검증"""
         mock_s3.return_value = None
 
         data = {"file_name": "test.png"}
@@ -67,7 +67,7 @@ class PresignedUrlAPITest(TestCase):
             self.q_url, data=json.dumps(data), content_type="application/json", headers=self._get_auth_header(self.user)
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.S3_CONNECTION_ERROR.value)
 
     def test_presigned_url_unsupported_format(self) -> None:
