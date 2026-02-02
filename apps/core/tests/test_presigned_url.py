@@ -57,7 +57,8 @@ class PresignedUrlRequestSerializerTest(unittest.TestCase):
         serializer = PresignedUrlRequestSerializer(data={"file_name": "virus.exe"})
         with self.assertRaises(CoreBaseException) as cm:
             serializer.is_valid(raise_exception=True)
-        self.assertEqual(cm.exception.detail, "지원하지 않는 파일 형식입니다.")
+        detail = cast(dict[str, Any], cm.exception.detail)
+        self.assertEqual(detail["error_detail"], "지원하지 않는 파일 형식입니다.")
 
 
 class PresignedUrlCommandServiceTest(unittest.TestCase):
