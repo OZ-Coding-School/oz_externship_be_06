@@ -1,7 +1,6 @@
 import json
-import unittest
 from typing import Any, Dict
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -9,17 +8,16 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
-from apps.qna.utils.model_types import User
-
 from apps.core.services.command import StorageTarget
+from apps.qna.utils.model_types import User
 
 UserModel = get_user_model()
 
 
 class PresignedUrlAPITest(TestCase):
     """
-    질문/답변 도메인별 API 연결 및 권한 검증
+    질문/답변 도메인별 API 연결 검증
+    - 성공 케이스 (QUSTION, ANSWER 도메인)
     """
 
     def setUp(self) -> None:
@@ -48,7 +46,7 @@ class PresignedUrlAPITest(TestCase):
             self.question_url,
             data=json.dumps({"file_name": "test.png"}),
             content_type="application/json",
-            headers=self._get_auth_header(self.user)
+            headers=self._get_auth_header(self.user),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -65,7 +63,7 @@ class PresignedUrlAPITest(TestCase):
             self.answer_url,
             data=json.dumps({"file_name": "test.png"}),
             content_type="application/json",
-            headers=self._get_auth_header(self.user)
+            headers=self._get_auth_header(self.user),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
