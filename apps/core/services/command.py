@@ -2,9 +2,10 @@ from enum import Enum
 from typing import Dict
 
 from botocore.exceptions import ClientError
-from apps.core.utils.s3_utils import S3Handler
-from apps.core.exceptions.base import CoreBaseException
 from rest_framework import status
+
+from apps.core.exceptions.base import CoreBaseException
+from apps.core.utils.s3_utils import S3Handler
 
 
 class StorageTarget(Enum):
@@ -31,13 +32,10 @@ class PresignedUrlCommandService:
         s3_handler = S3Handler()
 
         if target is None:
-            raise CoreBaseException("유효하지 않은 업로드 도메인입니다.",status.HTTP_400_BAD_REQUEST)
+            raise CoreBaseException("유효하지 않은 업로드 도메인입니다.", status.HTTP_400_BAD_REQUEST)
 
         try:
-            result = s3_handler.generate_presigned_put_url(
-                target.s3_path,
-                file_name
-            )
+            result = s3_handler.generate_presigned_put_url(target.s3_path, file_name)
         except ClientError:
             raise CoreBaseException("S3 연결 중 오류가 발생했습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
 

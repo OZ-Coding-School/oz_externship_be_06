@@ -1,5 +1,5 @@
-import uuid
 import mimetypes
+import uuid
 from typing import Dict, Optional
 
 import boto3
@@ -51,4 +51,3 @@ class S3Handler:
         img_url = f"https://{self.bucket_name}.s3.{settings.AWS_S3_REGION}.amazonaws.com/{object_key}"
 
         return {"presigned_url": presigned_url, "img_url": img_url, "key": object_key}
-

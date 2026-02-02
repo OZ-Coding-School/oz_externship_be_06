@@ -10,9 +10,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.core.utils.s3_utils import S3Handler
 from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.model_types import User
-from apps.core.utils.s3_utils import S3Handler
 
 UserModel = get_user_model()
 

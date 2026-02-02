@@ -1,13 +1,12 @@
-
 from __future__ import annotations
 
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.services.command import PresignedUrlCommandService, StorageTarget
 from apps.core.serializers.request import PresignedUrlRequestSerializer
 from apps.core.serializers.response import PresignedUrlResponseSerializer
+from apps.core.services.command import PresignedUrlCommandService, StorageTarget
 
 
 class BasePresignedUrlAPIView(APIView):

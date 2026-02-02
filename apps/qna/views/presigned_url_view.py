@@ -1,11 +1,11 @@
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.views.presigned_url import BasePresignedUrlAPIView
 from apps.core.serializers.request import PresignedUrlRequestSerializer
 from apps.core.serializers.response import PresignedUrlResponseSerializer
 from apps.core.services.command import StorageTarget
+from apps.core.views.presigned_url import BasePresignedUrlAPIView
 
 
 class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
@@ -30,7 +30,7 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
                         value={"error_detail": "지원하지 않는 파일 형식입니다."},
                     ),
                 ],
-            )
+            ),
         },
         tags=["qna"],
     )
@@ -60,7 +60,7 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
                         value={"error_detail": "지원하지 않는 파일 형식입니다."},
                     ),
                 ],
-            )
+            ),
         },
         tags=["qna"],
     )
