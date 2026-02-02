@@ -12,6 +12,7 @@ from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
 from apps.posts.selectors.post_selectors import PostSelector
 from apps.posts.serializers.post_serializers import (
     PostCreateSerializer,
+    PostFilterSerializer,
     PostListSerializer,
 )
 from apps.posts.services.post_services import PostService
@@ -35,15 +36,32 @@ class PostListCreateView(APIView):
 
     @extend_schema(
         summary="게시글 목록 조회",
-        parameters=[OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터")],
+        parameters=[
+            OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터"),
+            OpenApiParameter(name="search", type=str, description="검색어"),
+        ],
         responses={200: PostListSerializer(many=True)},
         tags=["posts"],
     )
     def get(self, request: Request) -> Response:
-        category_id_param = request.query_params.get("category_id")
-        category_id = int(category_id_param) if category_id_param else None
+        # 1. 시리얼라이저를 통한 쿼리 파라미터 검증
+        filter_serializer = PostFilterSerializer(data=request.query_params)
 
-        posts = PostSelector.get_post_list(category_id=category_id)
+        # 잘못된 값이 들어오면 400 Bad Request와 함께 에러 상세 반환
+        if not filter_serializer.is_valid():
+            return Response({"error_detail": filter_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        validated_data = filter_serializer.validated_data
+        category_id = validated_data.get("category_id")
+        search_keyword = validated_data.get("search")
+
+        # 2. 검증된 데이터를 Selector로 전달
+        posts = PostSelector.get_post_list(
+            category_id=validated_data.get("category_id"),
+            search=validated_data.get("search"),
+            sort=validated_data.get("sort"),
+        )
+
         paginator = PostPagination()
         page = paginator.paginate_queryset(posts, request, view=self)
 
