@@ -4,23 +4,13 @@ from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 
 
-class AnswerPermissionDeniedException(QnaBaseException):
-    """
-    [403] Forbidden(권한 부족)
-    """
-
-    status_code = status.HTTP_403_FORBIDDEN
-    default_detail = ErrorMessages.FORBIDDEN_ANSWER_UPDATE
-    default_code = "answer_permission_denied"
-
-
 class AnswerNotFoundException(QnaBaseException):
     """
     [404] Not Found(데이터가 존재하지 않음)
     """
 
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = ErrorMessages.NOT_FOUND_ANSWER
+    default_detail = ErrorMessages.DEFAULT_MESSAGE_409
     default_code = "answer_not_found"
 
 

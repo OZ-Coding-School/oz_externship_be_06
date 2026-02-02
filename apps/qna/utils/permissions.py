@@ -3,9 +3,6 @@ from typing import Any
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
-from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.question_e import QuestionPermissionDeniedException
-
 
 class IsStudent(BasePermission):
     """
@@ -16,7 +13,7 @@ class IsStudent(BasePermission):
         """role이 STUDENT인지 검증"""
         user_role = getattr(request.user, "role", None)
         if not user_role or str(user_role) != "STUDENT":
-            raise QuestionPermissionDeniedException()
+            return False
 
         return True  # user_role이 STUDENT일때 True
 
@@ -38,6 +35,6 @@ class CanWriteAnswer(BasePermission):
         # 유저의 role이 ALLOWED_ROLES이 아닌 경우
         user_role = getattr(request.user, "role", None)
         if not user_role or str(user_role).upper() not in self.ALLOWED_ROLES:
-            raise QuestionPermissionDeniedException(detail=ErrorMessages.FORBIDDEN_ANSWER_CREATE)
+            return False
 
         return True
