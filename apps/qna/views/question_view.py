@@ -166,7 +166,6 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [AllowAny]
-    serializer_classes = ser_q_res.QuestionDetailSerializer
 
     # 질의응답 상세 조회
     # GET /api/v1/qna/questions/{question_id}
