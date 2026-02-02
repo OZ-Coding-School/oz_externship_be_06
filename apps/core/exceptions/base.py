@@ -9,9 +9,11 @@ class CoreBaseException(APIException):
     core용 기본 예외 클래스
     """
 
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, detail: str, status_code: int | None = None) -> None:
         if status_code is not None:
             self.status_code = status_code
-        super().__init__(detail=detail)
+
+        custom_detail = {"error_detail": detail}
+        super().__init__(detail=custom_detail)

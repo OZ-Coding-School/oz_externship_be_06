@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +17,7 @@ class BasePresignedUrlAPIView(APIView):
     도메인을 결정을 위해 StorageTarget Enum 값 상속 필요
     """
 
-    permission_classes: list = []
+    permission_classes: list[type[Any]] = []
     storage_target: StorageTarget
 
     def put(self, request: Request) -> Response:
