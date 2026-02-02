@@ -1,5 +1,6 @@
 import logging
 import uuid
+import mimetypes
 from typing import Dict, Optional
 
 import boto3
@@ -34,20 +35,24 @@ class S3Handler:
         unique_file_name = f"{uuid.uuid4()}_{file_name}"
         object_key = f"{folder_path}/{unique_file_name}"
 
-        try:
-            presigned_url = self.s3_client.generate_presigned_url(
-                "put_object",
-                Params={
-                    "Bucket": self.bucket_name,
-                    "Key": object_key,
-                },
-                ExpiresIn=expiration,
-            )
+        # 파일명을 통한 MIME 타입 추론
+        content_type, _ = mimetypes.guess_type(file_name)
+        # 추론 불가 시 기본값 설정
+        if not content_type:
+            content_type = "application/octet-stream"
 
-            # 최종 접근 가능한 이미지 URL
-            img_url = f"https://{self.bucket_name}.s3.{settings.AWS_S3_REGION}.amazonaws.com/{object_key}"
+        presigned_url = self.s3_client.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": self.bucket_name,
+                "Key": object_key,
+                "ContentType": content_type,
+            },
+            ExpiresIn=expiration,
+        )
 
-            return {"presigned_url": presigned_url, "img_url": img_url, "key": object_key}
-        except ClientError as e:
-            logger.error(f"S3 Presigned URL 생성 실패: {str(e)}", exc_info=True)
-            return None
+        # 최종 접근 가능한 이미지 URL
+        img_url = f"https://{self.bucket_name}.s3.{settings.AWS_S3_REGION}.amazonaws.com/{object_key}"
+
+        return {"presigned_url": presigned_url, "img_url": img_url, "key": object_key}
+
