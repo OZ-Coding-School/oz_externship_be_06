@@ -250,3 +250,39 @@ class QuestionDetailAPIView(QnaBaseAPIView):
 
         serializer = ser_q_res.QuestionDetailSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class QuestionCategoryTreeAPIView(QnaBaseAPIView):
+    """
+    질의응답 카테고리 전체 계층 구조 조회 API
+    """
+
+    permission_classes = [AllowAny]
+
+    # 카테고리 목록 조회
+    # [GET] /api/v1/qna/categories
+    @extend_schema(
+        summary="카테고리 계층 구조 조회",
+        description=ApiDescriptions.QUESTION_CATEGORY_LIST,
+        responses={
+            200: OpenApiResponse(
+                description="OK",
+                response=ser_q_res.QuestionCategoryTreeResponseSerializer,
+                examples=[SuccessResponseExamples.QUESTION_CATEGORY_LIST],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request", examples=[ErrorResponseExamples.QUESTION_CATEGORY_LIST_400]
+            ),
+        },
+        tags=["qna"],
+    )
+    def get(self, request: Request) -> Response:
+        mock_param = str(request.query_params.get("mock", "")).lower()
+        is_mock_requested = mock_param in ["true"]
+        if settings.USE_QNA_MOCK or is_mock_requested:
+            categories_tree = SuccessResponseExamples.QUESTION_CATEGORY_LIST.value["categories"]
+        else:
+            categories_tree = svc_q_qry.QuestionQueryService.get_question_category_tree()
+        response_serializer = ser_q_res.QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
+
+        return Response(response_serializer.data)

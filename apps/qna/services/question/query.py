@@ -4,10 +4,10 @@ from typing import Any
 from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 
-from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.exceptions.question_e import QuestionNotFoundException
-from apps.qna.models import Question
+from apps.qna.models import Question, QuestionCategory
+from apps.qna.utils.constants import ErrorMessages
 
 logger = logging.getLogger(__name__)
 
@@ -103,3 +103,12 @@ class QuestionQueryService:
         except Exception as e:
             logger.error(f"{ErrorMessages.INVALID_QUESTION_DETAIL} ID: {question_id}\nMessage: {str(e)}", exc_info=True)
             raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_DETAIL)
+
+    @staticmethod
+    def get_question_category_tree() -> QuerySet[QuestionCategory]:
+        """전체 카테고리를 계층 구조(Tree)로 조회하기 위해 최상위 카테고리 목록을 반환"""
+        return (
+            QuestionCategory.objects.filter(parent__isnull=True)
+            .prefetch_related("subcategories__subcategories")
+            .order_by("name")
+        )
