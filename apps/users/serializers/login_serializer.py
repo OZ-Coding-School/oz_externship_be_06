@@ -19,16 +19,24 @@ class LoginSerializer(serializers.Serializer[dict[str, Any]]):
     )
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        email = attrs.get("email")
-        password = attrs.get("password")
+        email: str = attrs["email"]
+        password: str = attrs["password"]
 
-        user = authenticate(email=email, password=password)
-
-        if user is None:
+        # 먼저 유저 존재 여부 확인
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             raise serializers.ValidationError({"detail": "이메일 또는 비밀번호가 올바르지 않습니다."})
 
+        # 비활성화된 계정은 별도 처리를 위해 플래그 설정
         if not user.is_active:
-            raise serializers.ValidationError({"detail": "비활성화된 계정입니다."})
+            attrs["user"] = user
+            attrs["is_inactive"] = True
+            return attrs
+
+        # 비밀번호 검증
+        if not user.check_password(password):
+            raise serializers.ValidationError({"detail": "이메일 또는 비밀번호가 올바르지 않습니다."})
 
         attrs["user"] = user
         return attrs
