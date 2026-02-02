@@ -38,7 +38,7 @@ class QnaValidationMixin:
             is_required_msg = extracted_msg and ("필수 항목" in extracted_msg or "required" in extracted_msg.lower())
 
             if is_generic or is_required_msg or not extracted_msg:
-                raw_default = getattr(self, "default_error_message", ErrorMessages.INVALID_REQUEST)
+                raw_default = getattr(self, "default_error_message", ErrorMessages.DEFAULT_MESSAGE_400)
                 extracted_msg = raw_default.value if isinstance(raw_default, Enum) else raw_default
 
             if raise_exception:

@@ -107,7 +107,7 @@ class AnswerCreateAPITest(TestCase):
         response = self.client.post(invalid_url, data=json.dumps(data), content_type="application/json", **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_ANSWER_CREATE.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
     def test_create_answer_invalid_input(self) -> None:
         """[실패] 필수 필드(content) 누락 시 400 반환 검증"""

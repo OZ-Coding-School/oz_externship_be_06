@@ -31,7 +31,6 @@ class QuestionQueryService:
             QuerySet[Question]: 필터링된 질문 QuerySet
         - Raises:
             QuestionNotFoundException: 조건에 맞는 질문이 하나도 없을 경우 (404)
-            QuestionBaseException: 기타 조회 처리 오류 시
         """
         queryset = Question.objects.select_related("author", "category__parent__parent").annotate(
             answer_count=Count("answers")
@@ -93,7 +92,7 @@ class QuestionQueryService:
             return question
 
         except Question.DoesNotExist:
-            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION_DETAIL)
+            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
 
     @staticmethod
     def get_question_category_tree() -> QuerySet[QuestionCategory]:

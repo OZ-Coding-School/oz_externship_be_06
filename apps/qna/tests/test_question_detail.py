@@ -116,7 +116,7 @@ class QuestionDetailAPITest(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_DETAIL.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
     def test_get_question_detail_invalid_id_format(self) -> None:
         """[실패] 유효하지 않은 ID 형식(문자열 등)으로 요청 시 처리 검증"""
