@@ -176,7 +176,7 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
     def delete(self, request: Request, exam_id: int) -> Response:
         if exam_id <= 0:
             return Response(
-                {"error_detail": ErrorMessages.INVALID_EXAM_UPDATE_REQUEST.value},
+                {"error_detail": ErrorMessages.INVALID_EXAM_DELETE_REQUEST.value},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
