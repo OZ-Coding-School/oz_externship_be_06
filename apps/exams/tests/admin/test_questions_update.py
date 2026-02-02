@@ -2,8 +2,10 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from datetime import date
 
 from apps.exams.models import Exam, ExamQuestion
+from apps.courses.models import Subject, Course
 
 User = get_user_model()
 
@@ -13,19 +15,37 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         # 관리자 유저
         self.admin = User.objects.create_user(
             email="admin@test.com",
-            password="pass",
-            is_staff=True,
+            password="password",
+            birthday=date(1990, 1, 1),
+            role=User.Role.ADMIN,
         )
 
         # 일반 유저
         self.user = User.objects.create_user(
             email="user@test.com",
-            password="pass",
+            password="password",
+            birthday=date(1995, 5, 5),
             is_staff=False,
         )
 
+        # 수강
+        self.course = Course.objects.create(
+            name="테스트 강좌",
+            tag="T01",
+            description="테스트 강좌 설명",
+        )
+
+        # 과목
+        self.subject = Subject.objects.create(
+            course=self.course,
+            title="테스트 과목",
+            number_of_days=30,
+            number_of_hours=10,
+            status=True,
+        )
+
         # 시험
-        self.exam = Exam.objects.create(title="테스트 시험")
+        self.exam = Exam.objects.create(title="테스트 시험", subject=self.subject)
 
         # 기존 문제
         self.question = ExamQuestion.objects.create(
@@ -89,7 +109,10 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
     def test_update_question_not_found(self) -> None:
         self.client.force_authenticate(self.admin)
 
-        url = "/api/v1/admin/exams/questions/999999"
+        url = reverse(
+            "admin-exam-question-update",
+            kwargs={"question_id": 999999}
+        )
 
         response = self.client.put(url, {"point": 5}, format="json")
 

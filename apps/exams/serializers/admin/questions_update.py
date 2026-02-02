@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, cast
 from rest_framework import serializers
 
 from apps.exams.models import ExamQuestion
@@ -36,7 +36,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
 
     # list -> json 변환
     def to_internal_value(self, data: Any) -> Dict[str, Any]:
-        ret = super().to_internal_value(data)
+        ret = cast(Dict[str, Any], super().to_internal_value(data))
         if "options_json" in ret and isinstance(ret["options_json"], list):
             ret["options_json"] = json.dumps(ret["options_json"])
         return ret
@@ -51,6 +51,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
 
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):
     question_id = serializers.IntegerField(source="id")
+    options = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamQuestion
@@ -67,13 +68,10 @@ class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[Exam
         ]
 
     # json -> list 변환
-    def to_representation(self, instance: ExamQuestion) -> dict[str, Any]:
-        ret = super().to_representation(instance)
-        if instance.options_json:
+    def get_options(self, obj: ExamQuestion) -> list[Any]:
+        if obj.options_json:
             try:
-                ret["options"] = json.loads(instance.options_json)
+                return cast(list[Any], json.loads(obj.options_json))
             except Exception:
-                ret["options"] = []
-        else:
-            ret["options"] = []
-        return ret
+                return []
+        return []
