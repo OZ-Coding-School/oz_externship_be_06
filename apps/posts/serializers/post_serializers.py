@@ -82,3 +82,28 @@ class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
         choices=["all", "title", "content", "nickname"], default="all", required=False
     )
     sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)
+
+class PostDetailSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    category = serializers.SerializerMethodField()
+    like_count = serializers.IntegerField()
+
+    class Meta:
+        model = Post
+        fields = [
+            'id', 'title', 'author', 'category', 'content',
+            'view_count', 'like_count', 'created_at', 'updated_at'
+        ]
+
+    def get_author(self, obj: Post) -> dict:
+        return {
+            "id": obj.author.id,
+            "nickname": obj.author.nickname,
+            "profile_img_url": obj.author.profile_img_url if obj.author.profile_img_url else None
+        }
+
+    def get_category(self, obj: Post) -> dict:
+        return {
+            "id": obj.category.id,
+            "name": obj.category.name
+        }

@@ -1,6 +1,7 @@
 from typing import Any, Never, cast
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from moto.dynamodb.models.dynamo_type import serializer
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -14,6 +15,7 @@ from apps.posts.serializers.post_serializers import (
     PostCreateSerializer,
     PostFilterSerializer,
     PostListSerializer,
+    PostDetailSerializer,
 )
 from apps.posts.services.post_services import PostService
 from apps.posts.utils.pagination import PostPagination
@@ -90,3 +92,27 @@ class PostListCreateView(APIView):
             return Response(
                 {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class PostDetailView(APIView):
+    """
+    GET: 게시글 상세 조회 및 조회수 증가
+    """
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="게시글 상세 조회",
+        responses={200: PostDetailSerializer},
+        tags=['posts'],
+    )
+    def get(self, request: Request, post_id: int) -> Response:
+        # Selector
+        post = PostSelector.get_post_detail(post_id=post_id)
+
+        # Service
+        PostService.increment_view_count(post)
+
+        # Serializer
+        post.refresh_from_db()
+        serializer = PostDetailSerializer(post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
