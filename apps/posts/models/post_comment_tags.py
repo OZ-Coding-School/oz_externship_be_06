@@ -8,7 +8,7 @@ from apps.core.models import TimeStampModel
 
 class PostCommentTag(TimeStampModel):
     """
-    ERD의 post_comment_tags 테이블: 댓글 내에서 언급(태그)된 사용자를 관리합니다.
+    post_comment_tags 테이블: 댓글 내에서 언급(태그)된 사용자를 관리합니다.
     """
 
     tagged_user = models.ForeignKey(

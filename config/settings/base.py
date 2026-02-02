@@ -180,7 +180,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-
 # drf-spectacular 관련 설정
 SPECTACULAR_SETTINGS = {
     "TITLE": "오즈 코딩 스쿨 Backend API",

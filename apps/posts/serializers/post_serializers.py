@@ -1,0 +1,84 @@
+from typing import Any, Optional  # Any 임포트 추가
+
+from rest_framework import serializers
+
+from apps.posts.models.post import Post
+from apps.users.models import User
+
+
+class PostCreateSerializer(serializers.ModelSerializer[Post]):
+    """
+    게시글 생성을 위한 시리얼라이저입니다.
+    """
+
+    category_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Post
+        fields = ["title", "content", "category_id"]
+
+
+class PostAuthorSerializer(serializers.ModelSerializer[User]):
+    """
+    게시글 작성자 정보를 간단히 노출하기 위한 시리얼라이저입니다.
+    """
+
+    class Meta:
+        model = User
+        fields = ["id", "nickname", "profile_img_url"]
+
+
+class PostListSerializer(serializers.ModelSerializer[Post]):
+    """
+    게시글 목록 조회 시 사용되는 최적화된 시리얼라이저입니다.
+    """
+
+    author = PostAuthorSerializer(read_only=True)
+    thumbnail_img_url = serializers.SerializerMethodField()
+    content_preview = serializers.SerializerMethodField()
+
+    comments_count = serializers.IntegerField(read_only=True)
+    likes_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = [
+            "id",
+            "author",
+            "title",
+            "thumbnail_img_url",
+            "content_preview",
+            "comments_count",
+            "view_count",
+            "likes_count",
+            "created_at",
+            "updated_at",
+            "category_id",
+        ]
+
+    def get_thumbnail_img_url(self, obj: Post) -> Optional[str]:
+        """
+        N+1 문제를 방지하기 위해 Prefetch된 데이터를 메모리 상에서 조회합니다.
+        """
+        # .all()을 사용하여 이미 Prefetch된 쿼리셋 캐시를 활용함으로써 추가 쿼리를 방지합니다.
+        images = list(obj.images.all())
+        return images[0].img_url if images else None
+
+    def get_content_preview(self, obj: Post) -> str:
+        """
+        게시글 본문의 앞부분 50자만 추출하여 반환합니다.
+        """
+        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
+
+
+class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
+    """
+    게시글 목록 조회를 위한 쿼리 파라미터 검증 시리얼라이저입니다.
+    """
+
+    category_id = serializers.IntegerField(required=False)
+    search = serializers.CharField(required=False, max_length=100)
+    search_filter = serializers.ChoiceField(
+        choices=["all", "title", "content", "nickname"], default="all", required=False
+    )
+    sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)

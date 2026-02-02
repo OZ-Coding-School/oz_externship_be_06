@@ -1,7 +1,11 @@
 from django.urls import path
 
-from apps.posts.views.post_category_views import PostCategoryListAPIView
+from apps.posts.views.category_views import CategoryListView
+from apps.posts.views.post_views import PostListCreateView
+
+app_name = "posts"
 
 urlpatterns = [
-    path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
+    path("", PostListCreateView.as_view(), name="post-list-create"),
+    path("categories", CategoryListView.as_view(), name="category-list"),
 ]

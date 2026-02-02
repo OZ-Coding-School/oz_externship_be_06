@@ -8,7 +8,7 @@ from apps.core.models import TimeStampModel
 
 class PostComment(TimeStampModel):
     """
-    ERD의 post_comment 테이블: 게시글에 달린 댓글을 관리합니다.
+    post_comment 테이블: 게시글에 달린 댓글을 관리합니다.
     """
 
     author = models.ForeignKey(
