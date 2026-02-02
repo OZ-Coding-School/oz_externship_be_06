@@ -88,7 +88,7 @@ def _handle_permission_errors(exc: Exception, view_name: str, method: str) -> Re
                 ErrorMessages.UNAUTHORIZED_QUESTION_CREATE if is_auth_error else ErrorMessages.FORBIDDEN_QUESTION_CREATE
             )
 
-        elif method in "PUT":
+        elif method == "PUT":
             msg = (
                 ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE if is_auth_error else ErrorMessages.FORBIDDEN_QUESTION_UPDATE
             )
@@ -111,7 +111,7 @@ def _handle_permission_errors(exc: Exception, view_name: str, method: str) -> Re
         elif method == "GET":
             msg = ErrorMessages.UNAUTHORIZED_AI_REQUEST if is_auth_error else ErrorMessages.FORBIDDEN_AI_REQUEST
 
-        elif method in "PUT":
+        elif method == "PUT":
             msg = ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE if is_auth_error else ErrorMessages.FORBIDDEN_ANSWER_UPDATE
 
     status_code = status.HTTP_401_UNAUTHORIZED if is_auth_error else status.HTTP_403_FORBIDDEN
