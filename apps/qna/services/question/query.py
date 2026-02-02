@@ -4,10 +4,10 @@ from typing import Any
 from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.exceptions.question_e import QuestionNotFoundException
 from apps.qna.models import Question, QuestionCategory
-from apps.qna.utils.constants import ErrorMessages
 
 logger = logging.getLogger(__name__)
 
