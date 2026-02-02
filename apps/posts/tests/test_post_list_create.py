@@ -1,9 +1,10 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
 from apps.posts.models import Post, PostCategory
 from apps.users.models import User
-from apps.posts.constants.post_const import PostSuccessMessage, PostErrorMessage
 
 class PostListCreateTest(APITestCase):
     """

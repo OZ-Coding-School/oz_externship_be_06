@@ -1,7 +1,9 @@
-from typing import Optional, List
+from typing import List, Optional
+
 from django.db import transaction
 from django.db.models import Q, QuerySet
-from apps.posts.models import Post, PostImage, PostAttachment
+
+from apps.posts.models import Post, PostAttachment, PostImage
 from apps.users.models import User
 
 class PostService:
