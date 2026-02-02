@@ -76,6 +76,7 @@ class AdminSignupTrendsAPIView(APIView):
         response_serializer = SignupTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
 
+
 class AdminWithdrawalTrendsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
@@ -88,7 +89,11 @@ class AdminWithdrawalTrendsAPIView(APIView):
             if isinstance(detail, dict) and "error_detail" in detail:
                 message = detail["error_detail"]
             else:
-                default_msg = "자격 인증 데이터가 제공되지 않았습니다." if isinstance(exc, NotAuthenticated) else "권한이 없습니다."
+                default_msg = (
+                    "자격 인증 데이터가 제공되지 않았습니다."
+                    if isinstance(exc, NotAuthenticated)
+                    else "권한이 없습니다."
+                )
                 message = detail if isinstance(detail, str) else default_msg
 
             response.data = {"error_detail": message}
