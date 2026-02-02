@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -38,7 +38,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     """
 
     serializer_classes = {
-        "GET": ser_q_res.QuestionQuerySerializer,
+        "GET": ser_q_req.QuestionQuerySerializer,
         "POST": ser_q_req.QuestionCreateSerializer,
     }
 

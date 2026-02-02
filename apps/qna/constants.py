@@ -67,9 +67,9 @@ class ErrorMessages(str, Enum):
 
     # --- 404 Not Found (Resource Missing) ---
     DEFAULT_MESSAGE_404 = "404 Not Found"
+    NOT_FOUND_QUESTION = "해당 질문을 찾을 수 없습니다."
     NOT_FOUND_QUESTION_LIST = "조회 가능한 질문이 존재하지 않습니다."
-    NOT_FOUND_QUESTION_DETAIL = "해당 질문을 찾을 수 없습니다."
-    NOT_FOUND_ANSWER_CREATE = "해당 질문을 찾을 수 없습니다."
+    NOT_FOUND_ANSWER = "해당 답변을 찾을 수 없습니다."
     NOT_FOUND_QUESTION_OR_ANSWER = "해당 질문 또는 답변을 찾을 수 없습니다."
     NOT_FOUND_AI_QUESTION = "질문 데이터를 찾을 수 없습니다."
     # 404 - Admin
