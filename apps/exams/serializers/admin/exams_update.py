@@ -9,11 +9,11 @@ class AdminExamUpdateRequestSerializer(serializers.ModelSerializer[Exam]):
     title = serializers.CharField(max_length=50, required=False)
     # 모든 Subject 중, 요청으로 들어온 ID인 Subject 객체를 매핑
     subject_id = serializers.PrimaryKeyRelatedField(source="subject", queryset=Subject.objects.all(), required=False)
-    thumbnail_img = serializers.ImageField(required=False)
+    thumbnail_img_url = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Exam
-        fields = ["title", "subject_id", "thumbnail_img"]
+        fields = ["title", "subject_id", "thumbnail_img_url"]
 
     # payload가 아예 비었을 때
     def validate(self, data: dict[str, object]) -> dict[str, object]:
