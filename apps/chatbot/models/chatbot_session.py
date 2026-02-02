@@ -19,7 +19,7 @@ class ChatbotSession(TimeStampModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="chatbot_sessions", verbose_name="사용자 ID"
     )
     question = models.ForeignKey(
-        "qna.Question", blank=True, on_delete=models.CASCADE, related_name="chatbot_sessions", verbose_name="질문 ID"
+        "qna.Question", null=True, blank=True, on_delete=models.CASCADE, related_name="chatbot_sessions", verbose_name="질문 ID"
     )
     title = models.CharField(max_length=30, verbose_name="세션 제목")
     using_model = models.CharField(
