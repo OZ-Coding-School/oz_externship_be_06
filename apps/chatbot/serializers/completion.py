@@ -8,6 +8,6 @@ class ChatbotCompletionCreateSerializer(serializers.Serializer):  # type: ignore
         max_length=1000,
         error_messages={
             "required": "이 필드는 필수 항목입니다.",
-            "blank": "이 필드는 blank일 수 없습니다.",
+            "blank": "이 필드는 공란일 수 없습니다.",
         },
     )

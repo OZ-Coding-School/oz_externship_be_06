@@ -19,7 +19,7 @@ urlpatterns = [
     ),
     # 시스템 챗봇 세션 생성 (플로팅 버튼 진입)
     path(
-        "support/",
+        "support",
         ChatbotSupportSessionCreateAPIView.as_view(),
         name="chatbot-support-session",
     ),
