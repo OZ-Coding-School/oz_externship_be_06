@@ -1,9 +1,9 @@
-from django.db.models import Count, Q
+from django.db.models import Count, Q, QuerySet
 from apps.posts.models.post import Post
 
 class PostSelector:
     @staticmethod
-    def get_post_list(category_id: int = None):
+    def get_post_list(category_id: int | None = None) -> QuerySet[Post]:
         queryset = Post.objects.select_related('author', 'category')
         queryset = queryset.annotate(
             comment_count=Count('comments', distinct=True),

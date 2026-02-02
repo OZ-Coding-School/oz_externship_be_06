@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework.exceptions import APIException
 from rest_framework import status
 from apps.posts.constants.post_const import PostErrorMessage
@@ -7,7 +9,7 @@ class PostUnauthorizedException(APIException):
     default_detail = PostErrorMessage.UNAUTHORIZED
     default_code = 'unauthorized'
 
-    def __init__(self, detail=None, code=None):
+    def __init__(self, detail: Any = None, code: Any = None) -> None:
         if detail is None:
             detail = self.default_detail
 
