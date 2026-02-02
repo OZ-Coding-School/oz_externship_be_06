@@ -19,7 +19,7 @@ class SimplePagePagination(PageNumberPagination):
     max_page_size = 100
 
 
-class QnAPagination(PageNumberPagination):
+class QnaPagination(PageNumberPagination):
     """
     질의응답 목록 조회를 위한 페이지네이션
     """

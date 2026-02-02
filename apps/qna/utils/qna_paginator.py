@@ -3,7 +3,7 @@ from typing import Any, Type
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-from apps.core.utils.pagination import QnAPagination
+from apps.core.utils.pagination import QnaPagination
 
 
 class QnAPaginator:
@@ -17,7 +17,7 @@ class QnAPaginator:
     ) -> Response:
         """QuerySet 기반 페이지네이션 응답 객체 생성"""
         # core에 정의된 페이지네이션 인스턴스 생성
-        instance = QnAPagination()
+        instance = QnaPagination()
         page = instance.paginate_queryset(queryset, request, view=view)
 
         if page is not None:

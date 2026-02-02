@@ -28,7 +28,7 @@ from apps.qna.services.question import command as svc_q_cmd
 from apps.qna.services.question import query as svc_q_qry
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
-from apps.qna.utils.question_list_pagination import QnAPaginator
+from apps.qna.utils.qna_paginator import QnAPaginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -166,6 +166,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [AllowAny]
+    serializer_classes = ser_q_res.QuestionDetailSerializer
 
     # 질의응답 상세 조회
     # GET /api/v1/qna/questions/{question_id}
