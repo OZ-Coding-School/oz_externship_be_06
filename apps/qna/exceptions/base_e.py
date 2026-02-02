@@ -24,7 +24,7 @@ class QnaBaseException(APIException):
     """
 
     status_code: int = status.HTTP_400_BAD_REQUEST
-    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_MESSAGE_400_
+    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_MESSAGE_400
     default_code = "qna_bad_request"
 
     def __init__(self, detail: Any = None, code: Any = None):
