@@ -7,7 +7,7 @@ class ErrorMessages(str, Enum):
     """
 
     # --- 400 Bad Request (Invalid Inputs) ---
-    INVALID_REQUEST = "유효하지 않은 요청입니다."
+    DEFAULT_MESSAGE_400 = "400 Bad Request"
     INVALID_QUESTION_CREATE = "유효하지 않은 질문 등록 요청입니다."
     INVALID_QUESTION_LIST = "유효하지 않은 질문 목록 조회 요청입니다."
     INVALID_QUESTION_CATEGORY_LIST = "유효하지 않은 카테고리 목록 조회 요청입니다."
@@ -66,8 +66,9 @@ class ErrorMessages(str, Enum):
     FORBIDDEN_ADMIN_ANSWER_DELETE = "답변 삭제 권한이 없습니다."
 
     # --- 404 Not Found (Resource Missing) ---
-    NOT_FOUND_QUESTION = "해당 질문을 찾을 수 없습니다."
+    DEFAULT_MESSAGE_404 = "404 Not Found"
     NOT_FOUND_QUESTION_LIST = "조회 가능한 질문이 존재하지 않습니다."
+    NOT_FOUND_QUESTION_DETAIL = "해당 질문을 찾을 수 없습니다"
     NOT_FOUND_ANSWER = "해당 답변을 찾을 수 없습니다."
     NOT_FOUND_QUESTION_OR_ANSWER = "해당 질문 또는 답변을 찾을 수 없습니다."
     NOT_FOUND_AI_QUESTION = "질문 데이터를 찾을 수 없습니다."
@@ -78,6 +79,7 @@ class ErrorMessages(str, Enum):
     NOT_FOUND_ADMIN_ANSWER = "삭제할 답변을 찾을 수 없습니다."
 
     # --- 409 Conflict (Business Logic Collision) ---
+    DEFAULT_MESSAGE_409 = "409 Conflict"
     ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
     ALREADY_EXISTS_ADOPTED_ANSWER = "이미 채택된 답변이 존재합니다."
     # 409 - Admin
