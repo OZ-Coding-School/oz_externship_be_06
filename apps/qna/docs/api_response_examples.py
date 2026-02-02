@@ -87,7 +87,7 @@ class SuccessResponseExamples:
                     "id": "31429",
                     "content": "답변 content",
                     "created_at": "2025-03-02 10:33:33",
-                    "is_adopted": "FALSE",
+                    "is_adopted": False,
                     "author": {"id": "33", "nickname": "소민 조교님", "profile_image_url": None},
                     "comments": [
                         {
