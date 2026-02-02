@@ -1,11 +1,11 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict
 
 from botocore.exceptions import ClientError
-from apps.qna.utils.s3_utils import S3Handler
-from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.utils.constants import ErrorMessages
+from apps.core.utils.s3_utils import S3Handler
+from apps.core.exceptions.base import CoreBaseException
 from rest_framework import status
+
 
 class StorageTarget(Enum):
     """
@@ -26,15 +26,12 @@ class PresignedUrlCommandService:
     """
 
     @classmethod
-    def get_presigned_url(cls, target: StorageTarget, file_name: str) -> Optional[Dict[str, str]]:
+    def get_presigned_url(cls, target: StorageTarget, file_name: str) -> Dict[str, str]:
         """도메인(질문/답변)에 따라 경로를 결정하여 URL 발급"""
         s3_handler = S3Handler()
 
         if target is None:
-            raise BaseException(
-                ErrorMessages.INVALID_UPLOAD_DOMAIN,
-                status.HTTP_400_BAD_REQUEST
-            )
+            raise CoreBaseException("유효하지 않은 업로드 도메인입니다.",status.HTTP_400_BAD_REQUEST)
 
         try:
             result = s3_handler.generate_presigned_put_url(
@@ -42,14 +39,8 @@ class PresignedUrlCommandService:
                 file_name
             )
         except ClientError:
-            raise BaseException(
-                ErrorMessages.S3_CONNECTION_ERROR,
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            raise CoreBaseException("S3 연결 중 오류가 발생했습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if not result:
-            raise BaseException(
-                ErrorMessages.PRESIGNED_URL_GENERATION_ERROR,
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            raise CoreBaseException("URL 생성에 실패했습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
         return result
