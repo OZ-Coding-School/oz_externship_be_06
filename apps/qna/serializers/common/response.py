@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 
 # ==============================================================================
-# [ACTION RESPONSES] POST Success
 # [PUT] Presigned-url Update
 # /api/v1/qna/questions/presigned-url
 # /api/v1/qna/answer/presigned-url
@@ -16,4 +15,4 @@ class PresignedUrlResponseSerializer(serializers.Serializer[Any]):
 
     presigned_url = serializers.CharField(help_text="S3 업로드용 임시 URL")
     img_url = serializers.CharField(help_text="이미지 접근용 Public URL")
-    key = serializers.CharField(help_text="S3 객체 키 (DB 저장용)")
+    key = serializers.CharField(help_text="S3 객체 키")

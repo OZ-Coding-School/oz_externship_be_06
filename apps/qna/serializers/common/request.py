@@ -13,7 +13,7 @@ from apps.qna.utils.constants import ErrorMessages
 # /api/v1/qna/questions/presigned-url
 # /api/v1/qna/answer/presigned-url
 # ==============================================================================
-class PresignedUrlRequestSerializer(QnaValidationMixin, serializers.Serializer[Any]):
+class PresignedUrlRequestSerializer(serializers.Serializer[Any]):
     """
     Presigned URL 발급 요청 시리얼라이저
     """

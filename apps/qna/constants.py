@@ -28,7 +28,6 @@ class ErrorMessages(str, Enum):
     INVALID_ADMIN_ANSWER_DELETE = "유효하지 않은 답변 삭제 요청입니다."
     # 400 - Presigned URL & S3
     UNSUPPORTED_FILE_FORMAT = "지원하지 않는 파일 형식입니다."
-    S3_CONNECTION_ERROR = "이미지 서버 연결에 실패했습니다."
     INVALID_UPLOAD_DOMAIN = "유효하지 않은 업로드 도메인입니다."
 
     # --- 401 Unauthorized (Authentication Required) ---
@@ -91,5 +90,7 @@ class ErrorMessages(str, Enum):
 
     # --- 500 Internal Server Error & Unexpected (System) ---
     DEFAULT_500 = "500 Internal Server Error"
+    PRESIGNED_URL_GENERATION_ERROR = "파일 업로드 URL 생성 중 오류가 발생했습니다."
+    S3_CONNECTION_ERROR = "이미지 서버 연결에 실패했습니다."
     SYSTEM_ERROR = "데이터 처리 중 오류가 발생했습니다."
     DATABASE_ERROR = "데이터베이스 연결 중 오류가 발생했습니다."
