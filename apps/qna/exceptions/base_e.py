@@ -7,7 +7,7 @@ from rest_framework.exceptions import APIException, NotAuthenticated, Permission
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
-from apps.qna.utils.constants import ErrorMessages
+from apps.qna.constants import ErrorMessages
 
 logger = logging.getLogger("apps.qna.exceptions")
 

@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import List, Optional, Tuple
 
 
 class ContentParser:
@@ -7,9 +7,13 @@ class ContentParser:
     질문 본문(Markdown 등)에서 정보를 추출하는 유틸리티 클래스
     """
 
-    @staticmethod
-    def extract_thumbnail_img_url(content: str) -> Optional[str]:
+    @classmethod
+    def extract_thumbnail_img_url(cls, content: Optional[str]) -> Optional[str]:
         """본문 텍스트 내 이미지 태그를 찾아 첫 번째 이미지의 URL을 반환"""
+        # 입력값 검증
+        if not content or not isinstance(content, str):
+            return None
+
         # 마크다운 이미지 패턴: ![...](url)
         markdown_image_pattern = r"!\[.*?\]\((.*?)\)"
         match = re.search(markdown_image_pattern, content)
@@ -23,3 +27,22 @@ class ContentParser:
             return match.group(1)
 
         return None
+
+    @classmethod
+    def extract_preview_and_thumbnail(cls, content: Optional[str]) -> Tuple[str, Optional[str]]:
+        """목록 조회를 위해 이미지 태그 제거 텍스트, 썸네일 URL 반환"""
+        # 입력값 검증
+        if not content or not isinstance(content, str):
+            return "", None
+
+        # 2. 썸네일 추출
+        thumbnail = cls.extract_thumbnail_img_url(content)
+
+        # 이미지 태그 제거 (마크다운 & HTML)
+        clean_text = re.sub(r"!\[.*?\]\(.*?\)", "", content)
+        clean_text = re.sub(r"<img [^>]*>", "", clean_text)
+
+        # 불필요한 공백 및 줄바꿈 정리
+        clean_text = re.sub(r"\s+", " ", clean_text).strip()
+
+        return clean_text, thumbnail

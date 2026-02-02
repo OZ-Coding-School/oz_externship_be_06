@@ -4,12 +4,10 @@ from rest_framework import serializers
 
 from apps.qna.models import Question, QuestionImage
 from apps.qna.serializers.answer.response import AnswerSerializer
-from apps.qna.serializers.base import QnaValidationMixin
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
 )
-from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.content_parser import ContentParser
 
 
@@ -17,21 +15,6 @@ from apps.qna.utils.content_parser import ContentParser
 # [GET] Question List
 # /api/v1/qna/questions
 # ==============================================================================
-class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
-    """
-    질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
-    """
-
-    search_keyword = serializers.CharField(required=False, allow_blank=True)
-    category_id = serializers.IntegerField(required=False)
-    answer_status = serializers.ChoiceField(choices=["waiting", "answered"], required=False)
-    sort = serializers.ChoiceField(choices=["latest", "oldest", "most_views"], default="latest")
-    page = serializers.IntegerField(default=1)
-    size = serializers.IntegerField(default=10)
-
-    default_error_message = ErrorMessages.INVALID_QUESTION_LIST
-
-
 class QuestionListSerializer(serializers.ModelSerializer[Question]):
     """
     질의응답 목록 조회 카드 형태 항목 시리얼라이저
@@ -110,7 +93,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
 # [POST] Question Create
 # /api/v1/qna/questions/
 # ==============================================================================
-class QuestionCreateResponseSerializer(QnaValidationMixin, serializers.Serializer[Any]):
+class QuestionCreateResponseSerializer(serializers.Serializer[Any]):
     """
     질문 등록 응답 시리얼라이저
     """

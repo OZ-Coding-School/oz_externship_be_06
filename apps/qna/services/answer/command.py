@@ -3,10 +3,10 @@ from typing import Any, cast
 
 from django.db import transaction
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 from apps.qna.exceptions.question_e import QuestionNotFoundException
 from apps.qna.models import Answer, AnswerImage, Question
-from apps.qna.utils.constants import ErrorMessages
 from apps.qna.utils.model_types import User
 
 logger = logging.getLogger(__name__)

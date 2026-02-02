@@ -5,6 +5,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.models import (
     Answer,
     AnswerComment,
@@ -12,7 +13,6 @@ from apps.qna.models import (
     QuestionCategory,
     QuestionImage,
 )
-from apps.qna.utils.constants import ErrorMessages
 
 User = get_user_model()
 

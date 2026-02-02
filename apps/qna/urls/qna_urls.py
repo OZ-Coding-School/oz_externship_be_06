@@ -7,6 +7,7 @@ from apps.qna.views.question_view import (
 )
 
 urlpatterns = [
+    # --- QnA URL Endpoints ---
     path("questions", QuestionCreateListAPIView.as_view(), name="question-list-create"),
     path("questions/<int:question_id>", QuestionDetailAPIView.as_view(), name="question-detail"),
     path("questions/<int:question_id>/answers", AnswerCreateAPIView.as_view(), name="answer-create"),

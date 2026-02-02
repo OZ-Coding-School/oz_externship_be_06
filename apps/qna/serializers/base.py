@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 from rest_framework import serializers
 from rest_framework.exceptions import ErrorDetail
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.utils.constants import ErrorMessages
 
 logger = logging.getLogger(__name__)
 
