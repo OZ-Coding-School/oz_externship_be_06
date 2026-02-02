@@ -1,5 +1,8 @@
-from rest_framework import serializers
+from __future__ import annotations
 
+from typing import Any
+
+from rest_framework import serializers
 from apps.qna.models import Answer, AnswerComment
 from apps.qna.serializers.answer.common import AnswerAuthorSerializer
 
@@ -40,6 +43,22 @@ class AnswerSerializer(serializers.ModelSerializer[Answer]):
             "author",
             "comments",
         ]
+
+
+# ==============================================================================
+# [GET] AI Answer
+# /api/v1/qna/questions/{question_id}/ai-answer
+# ==============================================================================
+class AIAnswerResponseSerializer(serializers.Serializer[Any]):
+    """
+    AI 답변 생성 및 조회 응답 시리얼라이저
+    """
+
+    id = serializers.IntegerField(help_text="AI 답변 ID")
+    question_id = serializers.IntegerField(source="question.id", help_text="질문 ID")
+    output = serializers.CharField(help_text="AI가 생성한 답변 내용")
+    using_model = serializers.CharField(help_text="사용된 AI 모델 명")
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", help_text="생성 일시")
 
 
 # ==============================================================================
