@@ -1,56 +1,55 @@
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.posts.constants.post_const import PostSuccessMessage, PostErrorMessage
 from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
-from apps.posts.serializers.post_serializers import PostCreateSerializer
+from apps.posts.selectors.post_selectors import PostSelector
+from apps.posts.serializers.post_serializers import PostCreateSerializer, PostListSerializer
 from apps.posts.services.post_services import PostService
+from apps.posts.utils.pagination import PostPagination
 
 
-class PostCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+class PostListCreateView(APIView):
+    """
+    GET: 게시글 목록 조회 (AllowAny)
+    POST: 게시글 작성 (IsAuthenticated)
+    """
 
-    # 401 명세서와 일치
-    def permission_denied(self, request, message = None, code = None):
+    # 401 Unauthorized 명세서 대응
+    def permission_denied(self, request, message=None, code=None):
         raise PostUnauthorizedException()
 
-    @extend_schema(
-        summary="게시글 생성",
-        request=PostCreateSerializer,
-        tags=["posts"],
-    )
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+    @extend_schema(summary="게시글 목록 조회", responses={200: PostListSerializer(many=True)}, tags=["posts"])
+    def get(self, request: Request) -> Response:
+        category_id = request.query_params.get('category_id')
+        posts = PostSelector.get_post_list(category_id=category_id)
+        paginator = PostPagination()
+        page = paginator.paginate_queryset(posts, request, view=self)
+
+        if page is not None:
+            serializer = PostListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = PostListSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(summary="게시글 생성", request=PostCreateSerializer, tags=["posts"])
     def post(self, request: Request) -> Response:
         serializer = PostCreateSerializer(data=request.data)
-
-        # 400 : Bad Request
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            post = PostService.create_post(
-                user=request.user,
-                **serializer.validated_data,
-            )
-
-            # 201 : Created
-            return Response(
-                {
-                    "detail": PostSuccessMessage.POST_CREATE_SUCCESS,
-                    "pk": post.id
-                },
-                status=status.HTTP_201_CREATED
-            )
+            post = PostService.create_post(user=request.user, **serializer.validated_data)
+            return Response({"detail": PostSuccessMessage.POST_CREATE_SUCCESS, "pk": post.id}, status=status.HTTP_201_CREATED)
         except Exception:
-            # 500 : Internal Server Error
-            return Response(
-                {"error_detail": PostErrorMessage.SERVER_ERROR},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
