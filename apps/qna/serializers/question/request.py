@@ -2,8 +2,8 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.qna.models import Question
 from apps.qna.constants import ErrorMessages
+from apps.qna.models import Question
 
 
 # ==============================================================================

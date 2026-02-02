@@ -1,15 +1,15 @@
-from typing import Any, Optional
+from typing import Any
 
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 
+from apps.qna.constants import ErrorMessages
 from apps.qna.models import Question, QuestionCategory, QuestionImage
 from apps.qna.serializers.answer.response import AnswerSerializer
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
 )
-from apps.qna.constants import ErrorMessages
 from apps.qna.utils.content_parser import ContentParser
 
 
