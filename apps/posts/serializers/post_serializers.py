@@ -1,4 +1,4 @@
-from typing import Any, Optional  # Any 임포트 추가
+from typing import Any, Dict, Optional
 
 from rest_framework import serializers
 
@@ -83,7 +83,8 @@ class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
     )
     sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)
 
-class PostDetailSerializer(serializers.ModelSerializer):
+
+class PostDetailSerializer(serializers.ModelSerializer[Post]):
     author = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     like_count = serializers.IntegerField()
@@ -91,19 +92,23 @@ class PostDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = [
-            'id', 'title', 'author', 'category', 'content',
-            'view_count', 'like_count', 'created_at', 'updated_at'
+            "id",
+            "title",
+            "author",
+            "category",
+            "content",
+            "view_count",
+            "like_count",
+            "created_at",
+            "updated_at",
         ]
 
-    def get_author(self, obj: Post) -> dict:
+    def get_author(self, obj: Post) -> Dict[str, Any]:
         return {
             "id": obj.author.id,
             "nickname": obj.author.nickname,
-            "profile_img_url": obj.author.profile_img_url if obj.author.profile_img_url else None
+            "profile_img_url": obj.author.profile_img_url if obj.author.profile_img_url else None,
         }
 
-    def get_category(self, obj: Post) -> dict:
-        return {
-            "id": obj.category.id,
-            "name": obj.category.name
-        }
+    def get_category(self, obj: Post) -> Dict[str, Any]:
+        return {"id": obj.category.id, "name": obj.category.name}

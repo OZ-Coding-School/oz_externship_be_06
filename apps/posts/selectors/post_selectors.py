@@ -56,12 +56,8 @@ class PostSelector:
         작성자, 카테고리 정보를 JOIN으로 가져오고 좋아요 개수 합산
         """
 
-        queryset = Post.objects.select_related('author', 'category').annotate(
-            like_count=Count(
-                'likes',
-                filter=Q(likes__is_liked=True),
-                distinct=True
-            )
+        queryset = Post.objects.select_related("author", "category").annotate(
+            like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
         )
 
         try:

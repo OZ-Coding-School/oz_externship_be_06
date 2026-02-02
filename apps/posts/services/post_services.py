@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from django.db import transaction
-from django.db.models import Q, QuerySet, F
+from django.db.models import F, Q, QuerySet
 
 from apps.posts.models import Post, PostAttachment, PostImage
 from apps.users.models import User
@@ -42,5 +42,5 @@ class PostService:
         F 객체 : 경쟁 상태 없음, 순서 상관없음, 안전
         """
 
-        post.view_count = F('view_count') + 1
-        post.save(update_fields=['view_count'])
+        post.view_count = F("view_count") + 1
+        post.save(update_fields=["view_count"])
