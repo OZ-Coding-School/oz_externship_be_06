@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
