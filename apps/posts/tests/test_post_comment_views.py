@@ -5,11 +5,13 @@ from rest_framework.test import APITestCase
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
+from apps.posts.views.post_comment_views import AUTH_MSG, PERMISSION_DENIED_MSG, POST_NOT_FOUND_MSG, COMMENT_NOT_FOUND_MSG
 
 User = get_user_model()
 
 
 class PostCommentAPITestCase(APITestCase):
+        # ⭐ 인증 없이 요청 시 401 반환 테스트 함수들
     def setUp(self) -> None:
         self.user = User.objects.create_user(username="testuser", email="testuser@example.com", password="testpass")
         self.post = Post.objects.create(author=self.user, title="test post", content="test content")
@@ -35,14 +37,14 @@ class PostCommentAPITestCase(APITestCase):
         self.assertIn("이 필드는 필수 항목입니다.", response.data["error_detail"]["content"])
 
     def test_comment_create_unauthorized(self) -> None:
-        # 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
         self.client.force_authenticate(user=None)
         url = reverse("postcomment-list", args=[self.post.id])
         data = {"content": "test"}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 401)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "자격 인증 데이터가 제공되지 않았습니다.")
+        self.assertEqual(response.data["error_detail"], AUTH_MSG)
 
     def test_comment_create_post_not_found(self) -> None:
         # 존재하지 않는 게시글에 댓글 작성 시 404 반환 및 에러 메시지 확인
@@ -51,7 +53,7 @@ class PostCommentAPITestCase(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "해당 게시글을 찾을 수 없습니다.")
+        self.assertEqual(response.data["error_detail"], POST_NOT_FOUND_MSG)
 
     def test_comment_list_pagination_and_structure(self) -> None:
         PostComment.objects.create(post=self.post, author=self.user, content="comment1")
@@ -86,7 +88,7 @@ class PostCommentAPITestCase(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "해당 게시글을 찾을 수 없습니다.")
+        self.assertEqual(response.data["error_detail"], POST_NOT_FOUND_MSG)
 
     def test_comment_update_success(self) -> None:
         # 본인 댓글을 정상적으로 수정하는 경우 (PUT)
@@ -111,15 +113,12 @@ class PostCommentAPITestCase(APITestCase):
         self.assertIn("이 필드는 필수 항목입니다.", response.data["error_detail"]["content"])
 
     def test_comment_update_unauthorized(self) -> None:
-        # 인증 없이 요청 시 401 반환 및 에러 메시지 확인
-        comment = PostComment.objects.create(post=self.post, author=self.user, content="old content")
+        # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
         self.client.force_authenticate(user=None)
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
-        data = {"content": "test"}
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, 401)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "자격 인증 데이터가 제공되지 않았습니다.")
+        self.assertEqual(response.data["error_detail"], AUTH_MSG)
 
     def test_comment_update_forbidden(self) -> None:
         # 본인 외 사용자가 수정 시 403 반환 및 에러 메시지 확인
@@ -130,7 +129,7 @@ class PostCommentAPITestCase(APITestCase):
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, 403)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "권한이 없습니다.")
+        self.assertEqual(response.data["error_detail"], PERMISSION_DENIED_MSG)
 
     def test_comment_update_not_found(self) -> None:
         # 존재하지 않는 댓글 수정 시 404 반환 및 에러 메시지 확인
@@ -139,7 +138,7 @@ class PostCommentAPITestCase(APITestCase):
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "해당 댓글을 찾을 수 없습니다.")
+        self.assertEqual(response.data["error_detail"], COMMENT_NOT_FOUND_MSG)
 
     def test_comment_delete_success(self) -> None:
         # 본인 댓글을 정상적으로 삭제하는 경우
@@ -152,24 +151,24 @@ class PostCommentAPITestCase(APITestCase):
         self.assertFalse(PostComment.objects.filter(id=comment.id).exists())
 
     def test_comment_delete_unauthorized(self) -> None:
-        # 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
-        comment = PostComment.objects.create(post=self.post, author=self.user, content="to delete")
+        # ⭐ 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
+            # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
         self.client.force_authenticate(user=None)
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 401)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "자격 인증 데이터가 제공되지 않았습니다.")
+            # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        self.assertEqual(response.data["error_detail"], AUTH_MSG)
 
     def test_comment_delete_forbidden(self) -> None:
         # 본인 외 사용자가 삭제 시 403 반환 및 에러 메시지 확인
-        other = User.objects.create_user(username="other", email="other@example.com", password="pass")
+            # ⭐ 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
         comment = PostComment.objects.create(post=self.post, author=other, content="to delete")
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 403)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "권한이 없습니다.")
+        self.assertEqual(response.data["error_detail"], PERMISSION_DENIED_MSG)
 
     def test_comment_delete_not_found(self) -> None:
         # 존재하지 않는 댓글 삭제 시 404 반환 및 에러 메시지 확인
@@ -177,4 +176,4 @@ class PostCommentAPITestCase(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], "해당 댓글을 찾을 수 없습니다.")
+        self.assertEqual(response.data["error_detail"], COMMENT_NOT_FOUND_MSG)

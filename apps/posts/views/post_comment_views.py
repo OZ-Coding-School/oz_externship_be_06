@@ -30,8 +30,12 @@ from apps.posts.serializers.post_comment import (
     PostCommentUpdateSerializer,
 )
 
-# 인증 실패 메시지 상수
+
+# 에러 메시지 상수 (서비스/테스트/시리얼라이저/테스트코드에서 공유)
 AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
+PERMISSION_DENIED_MSG = "권한이 없습니다."
+POST_NOT_FOUND_MSG = "해당 게시글을 찾을 수 없습니다."
+COMMENT_NOT_FOUND_MSG = "해당 댓글을 찾을 수 없습니다."
 
 
 # 닉네임 자동완성 mock 데이터
@@ -96,7 +100,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         try:
             return Post.objects.get(pk=post_id, is_visible=True)
         except Post.DoesNotExist as e:
-            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.") from e
+            raise NotFound(detail=POST_NOT_FOUND_MSG) from e
 
     def get_queryset(self) -> QuerySet[PostComment]:
         # 해당 게시글의 댓글 목록 쿼리셋 반환
@@ -189,7 +193,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         if isinstance(exc, NotFound):
             return Response({"error_detail": str(exc.detail)}, status=status.HTTP_404_NOT_FOUND)
         if isinstance(exc, PermissionDenied):
-            detail = str(getattr(exc, "detail", "")) or "권한이 없습니다."
+            detail = str(getattr(exc, "detail", "")) or PERMISSION_DENIED_MSG
             return Response({"error_detail": detail}, status=status.HTTP_403_FORBIDDEN)
         if isinstance(exc, ValidationError):
             return Response({"error_detail": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
@@ -201,13 +205,13 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
-            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.") from e
+            raise NotFound(detail=POST_NOT_FOUND_MSG) from e
 
     def _get_comment_id(self) -> int:
         # 댓글 ID 유효성 검사
         comment_id = int(self.kwargs["comment_id"])
         if comment_id <= 0:
-            raise NotFound(detail="해당 댓글을 찾을 수 없습니다.")
+            raise NotFound(detail=COMMENT_NOT_FOUND_MSG)
         return comment_id
 
     @extend_schema(tags=["Comments"], summary="댓글 상세 조회 API")
@@ -239,7 +243,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         comment_id = self._get_comment_id()
         post = self._get_post()
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail="권한이 없습니다.")
+            raise PermissionDenied(detail=PERMISSION_DENIED_MSG)
         # mock 객체로 serializer 검증
         mock_comment = type("Comment", (), {})()
         mock_comment.id = comment_id
@@ -267,5 +271,5 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         self._get_comment_id()
         post = self._get_post()
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail="권한이 없습니다.")
+            raise PermissionDenied(detail=PERMISSION_DENIED_MSG)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)

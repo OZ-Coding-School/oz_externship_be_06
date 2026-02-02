@@ -8,7 +8,9 @@ from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDeni
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 
-AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
+
+# 에러 메시지 상수 (서비스/테스트와 공유)
+from apps.posts.views.post_comment_views import AUTH_MSG, PERMISSION_DENIED_MSG, POST_NOT_FOUND_MSG, COMMENT_NOT_FOUND_MSG
 
 
 class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
@@ -56,7 +58,7 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
-            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.")
+            raise NotFound(detail=POST_NOT_FOUND_MSG)
 
         # perform_create/save(author=..., post=...)로 들어오는 케이스 방어
         author = validated_data.pop("author", user)
