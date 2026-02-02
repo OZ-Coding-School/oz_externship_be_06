@@ -18,6 +18,7 @@ class ErrorMessages(str, Enum):
     INVALID_QUESTION_UPDATE_REQUEST = "유효하지 않은 문제 수정 데이터입니다."
     INVALID_QUESTION_DELETE_REQUEST = "유효하지 않은 문제 삭제 요청입니다."
     INVALID_DEPLOYMENT_CREATE_REQUEST = "유효하지 않은 배포 생성 요청입니다."
+    INVALID_DEPLOYMENT_LIST_REQUEST = "유효하지 않은 조회 요청입니다."
     INVALID_DEPLOYMENT_DETAIL_REQUEST = "유효하지 않은 배포 상세 조회 요청입니다."
     INVALID_DEPLOYMENT_UPDATE_REQUEST = "유효하지 않은 배포 수정 요청입니다."
     INVALID_DEPLOYMENT_STATUS_REQUEST = "유효하지 않은 배포 상태 요청입니다."

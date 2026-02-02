@@ -25,6 +25,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 
 @extend_schema(
     tags=["admin_exams"],
+    operation_id="admin_exam_deployments_detail",
     summary="어드민 배포 상세 조회",
     description="쪽지시험 배포 상세 정보를 조회합니다.",
     responses={
