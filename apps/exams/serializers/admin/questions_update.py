@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Dict
 from rest_framework import serializers
 
 from apps.exams.models import ExamQuestion
@@ -35,7 +35,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
         ]
 
     # list -> json 변환
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Dict[str, Any]:
         ret = super().to_internal_value(data)
         if "options_json" in ret and isinstance(ret["options_json"], list):
             ret["options_json"] = json.dumps(ret["options_json"])
@@ -49,7 +49,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
             )
         return data
 
-class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer):
+class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):
     question_id = serializers.IntegerField(source="id")
 
     class Meta:
@@ -67,7 +67,7 @@ class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer):
         ]
 
     # json -> list 변환
-    def to_representation(self, instance):
+    def to_representation(self, instance: ExamQuestion) -> dict[str, Any]:
         ret = super().to_representation(instance)
         if instance.options_json:
             try:

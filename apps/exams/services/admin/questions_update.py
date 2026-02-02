@@ -35,7 +35,7 @@ def update_exam_question(
     prompt = update_data.get("prompt", instance.prompt)
     options_json = update_data.get("options_json", instance.options_json)
     blank_count = update_data.get("blank_count", instance.blank_count)
-    correct_answer = update_data.get("correct_answer", instance.correct_answer)
+    correct_answer = update_data.get("answer", instance.answer)
     point = update_data.get("point", instance.point)
 
     # 2. 공통 필수 정책

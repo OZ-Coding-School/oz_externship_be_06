@@ -9,17 +9,17 @@ User = get_user_model()
 
 
 class AdminExamQuestionUpdateAPITests(APITestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # 관리자 유저
         self.admin = User.objects.create_user(
-            username="admin",
+            email="admin@test.com",
             password="pass",
             is_staff=True,
         )
 
         # 일반 유저
         self.user = User.objects.create_user(
-            username="user",
+            email="user@test.com",
             password="pass",
             is_staff=False,
         )
@@ -46,7 +46,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         )
 
     # 1. 성공 (200)
-    def test_update_question_success(self):
+    def test_update_question_success(self) -> None:
         self.client.force_authenticate(self.admin)
 
         payload = {
@@ -66,7 +66,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertEqual(response.data["explanation"], "수정된 해설")
 
     # 2. 인증 안됨 (401)
-    def test_update_question_unauthenticated(self):
+    def test_update_question_unauthenticated(self) -> None:
         payload = {"point": 5}
 
         response = self.client.put(self.url, payload, format="json")
@@ -75,7 +75,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertIn("error_detail", response.data)
 
     # 3. 권한 없음 (403)
-    def test_update_question_forbidden(self):
+    def test_update_question_forbidden(self) -> None:
         self.client.force_authenticate(self.user)
 
         payload = {"point": 5}
@@ -86,7 +86,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertIn("error_detail", response.data)
 
     # 4. 시험 문제 없음 (404)
-    def test_update_question_not_found(self):
+    def test_update_question_not_found(self) -> None:
         self.client.force_authenticate(self.admin)
 
         url = "/api/v1/admin/exams/questions/999999"
@@ -98,7 +98,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
 
     # 5. 비즈니스 룰 위반 (400)
     # ORDERING인데 options 비움
-    def test_update_question_business_rule_error(self):
+    def test_update_question_business_rule_error(self) -> None:
         self.client.force_authenticate(self.admin)
 
         payload = {
@@ -112,7 +112,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertIn("error_detail", response.data)
 
     # 6. 총점 초과 (409)
-    def test_update_question_conflict_total_score(self):
+    def test_update_question_conflict_total_score(self) -> None:
         self.client.force_authenticate(self.admin)
 
         payload = {"point": 200}
