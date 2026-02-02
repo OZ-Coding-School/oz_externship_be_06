@@ -37,8 +37,8 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
     thumbnail_img_url = serializers.SerializerMethodField()
     content_preview = serializers.SerializerMethodField()
 
-    comment_count = serializers.IntegerField(read_only=True)
-    like_count = serializers.IntegerField(read_only=True)
+    comments_count = serializers.IntegerField(read_only=True)
+    likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
@@ -48,9 +48,9 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
             "title",
             "thumbnail_img_url",
             "content_preview",
-            "comment_count",
+            "comments_count",
             "view_count",
-            "like_count",
+            "likes_count",
             "created_at",
             "updated_at",
             "category_id",
@@ -78,4 +78,7 @@ class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
 
     category_id = serializers.IntegerField(required=False)
     search = serializers.CharField(required=False, max_length=100)
+    search_filter = serializers.ChoiceField(
+        choices=["all", "title", "content", "nickname"], default="all", required=False
+    )
     sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)

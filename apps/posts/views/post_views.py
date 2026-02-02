@@ -39,6 +39,8 @@ class PostListCreateView(APIView):
         parameters=[
             OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터"),
             OpenApiParameter(name="search", type=str, description="검색어"),
+            OpenApiParameter(name="search_filter", type=str, description="검색 필터 (all, title, content, nickname)"),
+            OpenApiParameter(name="sort", type=str, description="정렬 (latest, likes, comments, oldest)"),
         ],
         responses={200: PostListSerializer(many=True)},
         tags=["posts"],
@@ -52,13 +54,12 @@ class PostListCreateView(APIView):
             return Response({"error_detail": filter_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = filter_serializer.validated_data
-        category_id = validated_data.get("category_id")
-        search_keyword = validated_data.get("search")
 
         # 2. 검증된 데이터를 Selector로 전달
         posts = PostSelector.get_post_list(
             category_id=validated_data.get("category_id"),
             search=validated_data.get("search"),
+            search_filter=validated_data.get("search_filter"),
             sort=validated_data.get("sort"),
         )
 
