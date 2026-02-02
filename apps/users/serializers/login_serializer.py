@@ -28,7 +28,7 @@ class LoginSerializer(serializers.Serializer[dict[str, Any]]):
         except User.DoesNotExist:
             raise serializers.ValidationError({"detail": "이메일 또는 비밀번호가 올바르지 않습니다."})
 
-        #비활성화된 계정은 별도 처리를 위해 플래그 설정
+        # 비활성화된 계정은 별도 처리를 위해 플래그 설정
         if not user.is_active:
             attrs["user"] = user
             attrs["is_inactive"] = True

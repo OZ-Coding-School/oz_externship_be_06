@@ -43,7 +43,7 @@ access token: 60분
 
         user: User = serializer.validated_data["user"]
 
-        #탈퇴 신청한 계정인지 비활성화된 계정인지 확인
+        # 탈퇴 신청한 계정인지 비활성화된 계정인지 확인
         try:
             withdrawal = Withdrawal.objects.get(user=user)
             return Response(
