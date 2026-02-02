@@ -37,6 +37,11 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     질문 등록 및 목록 조회 API View
     """
 
+    serializer_classes = {
+        "GET": ser_q_res.QuestionQuerySerializer,
+        "POST": ser_q_req.QuestionCreateSerializer,
+    }
+
     def get_permissions(self) -> list[Any]:
         if self.request.method == "POST":
             return [IsAuthenticated(), IsStudent()]

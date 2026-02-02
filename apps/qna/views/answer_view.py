@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.qna.serializers.answer import request as ser_ans_req
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
@@ -29,6 +30,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
+    serializer_class = ser_ans_req.AnswerCreateSerializer
 
     # 답변 등록
     # [POST] /api/v1/qna/questions/{question_id}/answers
@@ -68,7 +70,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request, question_id: int) -> Response:
         """답변 생성"""
-        serializer = ser_ans_reqs.AnswerCreateSerializer(data=request.data)
+        serializer = ser_ans_req.AnswerCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
