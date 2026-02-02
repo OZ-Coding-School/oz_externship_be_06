@@ -17,7 +17,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
         source="options_json",
     )
     blank_count = serializers.IntegerField(required=False, allow_null=True, min_value=0)
-    correct_answer = serializers.JSONField(required=False)
+    correct_answer = serializers.JSONField(required=False, source="answer")
     point = serializers.IntegerField(min_value=1, max_value=10, required=False)
     explanation = serializers.CharField(allow_blank=True, required=False)
 

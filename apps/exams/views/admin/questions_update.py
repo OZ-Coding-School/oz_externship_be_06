@@ -8,12 +8,12 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.exams.models import ExamQuestion
-from apps.exams.serializers import (
+from apps.exams.serializers import ErrorResponseSerializer
+from apps.exams.serializers.admin.questions_update import (
     AdminExamQuestionUpdateRequestSerializer,
     AdminExamQuestionUpdateResponseSerializer,
-    ErrorResponseSerializer,
 )
-from apps.exams.services import (
+from apps.exams.services.admin.questions_update import (
     update_exam_question,
     BusinessRuleError,
     ConflictRuleError,
