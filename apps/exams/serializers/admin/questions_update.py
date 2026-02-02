@@ -18,7 +18,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
     )
     blank_count = serializers.IntegerField(required=False, allow_null=True, min_value=0)
     correct_answer = serializers.JSONField(required=False)
-    point = serializers.IntegerField(min_value=1, required=False)
+    point = serializers.IntegerField(min_value=1, max_value=10, required=False)
     explanation = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
@@ -48,24 +48,6 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
                 ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value
             )
         return data
-
-        # 여긴 서비스에 넣을것
-        # 문제 유형에 따라 options / blank_count 필수 여부 검사
-        # q_type = data.get("type") or getattr(self.instance, "type", None)
-        #
-        # if q_type in [ExamQuestion.TypeChoices.MULTIPLE, ExamQuestion.TypeChoices.ORDERING]:
-        #     if not data.get("options") and not getattr(self.instance, "options", None):
-        #         raise serializers.ValidationError(
-        #             "선택형 또는 순서형 문제는 options가 필요합니다."
-        #         )
-        #
-        # if q_type == ExamQuestion.TypeChoices.FILL:
-        #     if data.get("blank_count") is None and getattr(self.instance, "blank_count", None) is None:
-        #         raise serializers.ValidationError(
-        #             "빈칸 문제는 blank_count가 필요합니다."
-        #         )
-        #
-        # return data
 
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer):
     question_id = serializers.IntegerField(source="id")

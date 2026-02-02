@@ -51,29 +51,27 @@ def update_exam_question(
     # 3. 유형별 정책
     # 다지선다 / 순서정렬
     if q_type in [
-        ExamQuestion.TypeChoices.MULTIPLE,
+        ExamQuestion.TypeChoices.MULTI_SELECT,
         ExamQuestion.TypeChoices.ORDERING,
     ]:
         if not options_json:
-            raise BusinessRuleError("선택형/순서형 문제는 options가 필요합니다.")
+            raise BusinessRuleError("객관식/순서정렬 문제는 options_json가 필요합니다.")
 
         try:
             options = (
-                json.loads(options_json)
-                if isinstance(options_json, str)
-                else options_json
+                json.loads(options_json) if isinstance(options_json, str) else options_json
             )
         except Exception:
-            raise BusinessRuleError("options 형식이 올바르지 않습니다.")
+            raise BusinessRuleError("options_json 형식이 올바르지 않습니다.")
 
         # 순서정렬: 보기 최소 2개
         if q_type == ExamQuestion.TypeChoices.ORDERING and len(options) < 2:
             raise BusinessRuleError(
-                "순서 정렬형 문제는 보기 2개 이상이 필요합니다."
+                "순서 정렬 문제는 보기 2개 이상이 필요합니다."
             )
 
     # 빈칸 채우기
-    if q_type == ExamQuestion.TypeChoices.FILL:
+    if q_type == ExamQuestion.TypeChoices.FILL_IN_BLANK:
         if not prompt:
             raise BusinessRuleError(
                 "빈칸 채우기 문제는 지문(prompt)이 필요합니다."
@@ -87,8 +85,8 @@ def update_exam_question(
     # 단답형 / OX 는 공통 필수만으로 충분
 
     # 4. 총점 100점 제한 정책
-    deployment = instance.deployment
-    questions = ExamQuestion.objects.filter(deployment=deployment)
+    exam = instance.exam
+    questions = ExamQuestion.objects.filter(exam=exam)
 
     current_total = sum(q.point for q in questions)
 
@@ -100,12 +98,14 @@ def update_exam_question(
 
     if current_total > 100:
         raise ConflictRuleError(
-            ErrorMessages.EXAM_QUESTION_SCORE_OVER.value
+            ErrorMessages.QUESTION_UPDATE_CONFLICT.value
         )
 
     # 5. 실제 업데이트 반영
     for field, value in update_data.items():
-        setattr(instance, field, value)
+        # 모델에 없는 필드 무시
+        if hasattr(instance, field):
+            setattr(instance, field, value)
 
     instance.save()
 
