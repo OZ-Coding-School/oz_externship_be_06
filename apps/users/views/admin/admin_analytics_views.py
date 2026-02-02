@@ -1,7 +1,6 @@
 from typing import NoReturn
 
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
-from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -77,14 +76,29 @@ class AdminSignupTrendsAPIView(APIView):
         response_serializer = SignupTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
 
-
 class AdminWithdrawalTrendsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
+    def handle_exception(self, exc: Exception) -> Response:
+        response = super().handle_exception(exc)
+
+        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
+            detail = response.data.get("detail")
+
+            if isinstance(detail, dict) and "error_detail" in detail:
+                message = detail["error_detail"]
+            else:
+                default_msg = "자격 인증 데이터가 제공되지 않았습니다." if isinstance(exc, NotAuthenticated) else "권한이 없습니다."
+                message = detail if isinstance(detail, str) else default_msg
+
+            response.data = {"error_detail": message}
+
+        return response
+
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail={"error_detail": "자격 인증 데이터가 제공되지 않았습니다."})
-        raise PermissionDenied(detail={"error_detail": "권한이 없습니다."})
+            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
+        raise PermissionDenied(detail="권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_accounts"],
