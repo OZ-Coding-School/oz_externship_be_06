@@ -24,7 +24,7 @@ class QnaBaseException(APIException):
     """
 
     status_code: int = status.HTTP_400_BAD_REQUEST
-    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_400.value
+    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_400
     default_code = "qna_bad_request"
 
     def __init__(self, detail: Any = None, code: Any = None):
@@ -42,9 +42,40 @@ class QnaBaseException(APIException):
         super().__init__(detail, code)
 
 
+# ==============================================================================
+# 에러 메시지 매핑 테이블 (View + Method 조합)
+# ==============================================================================
+_PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
+    # Question - POST (Create)
+    ("Question", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
+    ("Question", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
+    # Question - PUT (Update)
+    ("Question", "PUT", True): ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE,
+    ("Question", "PUT", False): ErrorMessages.FORBIDDEN_QUESTION_UPDATE,
+    # Answer - POST (Create)
+    ("AnswerCreate", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
+    ("AnswerCreate", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
+    # Answer - POST (Adopt)
+    ("AnswerAdopt", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
+    ("AnswerAdopt", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
+    # Answer - PUT (Update)
+    ("Answer", "PUT", True): ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE,
+    ("Answer", "PUT", False): ErrorMessages.FORBIDDEN_ANSWER_UPDATE,
+    # Answer - GET (AI Request)
+    ("Answer", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
+    ("Answer", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
+    # Comment - POST (Create)
+    ("Comment", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
+    ("Comment", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
+}
+
+# 기본 폴백 메시지
+_DEFAULT_AUTH_ERROR = ErrorMessages.DEFAULT_401
+_DEFAULT_PERM_ERROR = ErrorMessages.DEFAULT_403
+
+
 def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[Response]:
-    """QnA 앱 예외 처리기 + 로깅"""
-    # 기본 정보 추출
+    """QnA 앱 예외 처리기 + 로깅 중앙화"""
     request = context.get("request")
     view = context.get("view")
     method = request.method.upper() if request else ""
@@ -52,19 +83,22 @@ def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[R
     user_info = f"User({request.user.pk})" if request and request.user.is_authenticated else "Anonymous"
 
     # 예외 종류별 응답 생성
-    response: Optional[Response]
+    response: Optional[Response] = None
+
     if isinstance(exc, (NotAuthenticated, PermissionDenied)):
         response = _handle_permission_errors(exc, view_name, method)
+
+    elif isinstance(exc, ObjectDoesNotExist):
+        # Django ORM DoesNotExist → 404 또는 400으로 변환
+        response = _handle_object_not_found(exc, view)
+
     else:
-        # DRF 기본 핸들러 실행 (ValidationError 등 포함)
+        # DRF 기본 핸들러 실행 (ValidationError, QnaBaseException 등 포함)
         response = exception_handler(exc, context)
 
-    # 3. 중앙 로깅 (401, 403, 400, 404, 409, 500 통합)
+    # 중앙 로깅 (401, 403, 400, 404, 409, 500 통합)
     if response is not None:
-        if response.status_code >= 500:
-            logger.error(f"[System Error] {view_name} {method} | {user_info} | {str(exc)}", exc_info=True)
-        else:
-            logger.warning(f"[Business Error] {response.status_code} | {view_name} {method} | {user_info} | {str(exc)}")
+        _log_exception(response.status_code, view_name, method, user_info, exc)
     else:
         # 핸들러가 잡지 못한 치명적 에러 (500)
         logger.error(f"[Critical Error] {view_name} {method} | {user_info} | {str(exc)}", exc_info=True)
@@ -72,7 +106,7 @@ def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[R
             {"error_detail": ErrorMessages.SYSTEM_ERROR.value}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-    # 최종 메시지 가공 (Serializer의 default_error_message 있으면 자동 활용)
+    # 최종 메시지 가공 (Serializer의 default_error_message 자동 반영)
     msg = _extract_custom_msg(exc, response.data, view)
     response.data = {"error_detail": msg}
     return response
@@ -82,75 +116,129 @@ def _handle_permission_errors(exc: Exception, view_name: str, method: str) -> Re
     """권한 에러 발생 시 View 이름과 Method를 조합하여 커스텀 메시지 출력"""
     is_auth_error = isinstance(exc, NotAuthenticated)
 
-    if "Question" in view_name:
-        if method == "POST":
-            msg = (
-                ErrorMessages.UNAUTHORIZED_QUESTION_CREATE if is_auth_error else ErrorMessages.FORBIDDEN_QUESTION_CREATE
-            )
+    # 매핑 테이블에서 키 탐색
+    msg: Optional[ErrorMessages] = None
 
-        elif method == "PUT":
-            msg = (
-                ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE if is_auth_error else ErrorMessages.FORBIDDEN_QUESTION_UPDATE
-            )
+    for (view_key, method_key, auth_flag), error_msg in _PERMISSION_ERROR_MAP.items():
+        if view_key in view_name and method_key == method and auth_flag == is_auth_error:
+            msg = error_msg
+            break
 
-    elif "Answer" in view_name:
-        if method == "POST":
-            if "Create" in view_name:
-                msg = (
-                    ErrorMessages.UNAUTHORIZED_ANSWER_CREATE if is_auth_error else ErrorMessages.FORBIDDEN_ANSWER_CREATE
-                )
-            elif "Adopt" in view_name:
-                msg = ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT if is_auth_error else ErrorMessages.FORBIDDEN_ANSWER_ADOPT
-            elif "Comment" in view_name:
-                msg = (
-                    ErrorMessages.UNAUTHORIZED_COMMENT_CREATE
-                    if is_auth_error
-                    else ErrorMessages.FORBIDDEN_COMMENT_CREATE
-                )
-
-        elif method == "GET":
-            msg = ErrorMessages.UNAUTHORIZED_AI_REQUEST if is_auth_error else ErrorMessages.FORBIDDEN_AI_REQUEST
-
-        elif method == "PUT":
-            msg = ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE if is_auth_error else ErrorMessages.FORBIDDEN_ANSWER_UPDATE
+    # 폴백 메시지 (매핑되지 않은 경우)
+    msg_str: str
+    if msg is None:
+        msg_str = _DEFAULT_AUTH_ERROR.value if is_auth_error else _DEFAULT_PERM_ERROR.value
+    else:
+        msg_str = msg.value
 
     status_code = status.HTTP_401_UNAUTHORIZED if is_auth_error else status.HTTP_403_FORBIDDEN
-    return Response({"error_detail": msg.value}, status=status_code)
+    return Response({"error_detail": msg_str}, status=status_code)
+
+
+def _handle_object_not_found(exc: Exception, view: Any) -> Response:
+    """Django ORM의 DoesNotExist 예외를 400 또는 404로 변환"""
+    # 모델명 추출 시도
+    model_name = ""
+    if hasattr(exc, "model"):
+        model_name = exc.model.__name__
+    elif hasattr(exc, "__class__") and hasattr(exc.__class__, "__qualname__"):
+        # Model.DoesNotExist 형태에서 모델명 추출
+        qualname = exc.__class__.__qualname__
+        if "." in qualname:
+            model_name = qualname.split(".")[0]
+
+    # 모델별 에러 메시지 매핑
+    not_found_messages = {
+        "Question": ErrorMessages.NOT_FOUND_QUESTION,
+        "Answer": ErrorMessages.NOT_FOUND_ANSWER,
+        "QuestionCategory": ErrorMessages.NOT_FOUND_ADMIN_CATEGORY,
+    }
+
+    error_msg = not_found_messages.get(model_name, ErrorMessages.DEFAULT_404)
+
+    # 입력값으로 인한 DoesNotExist는 400, 리소스 조회는 404
+    # View 이름에 Detail이 포함되면 404, 아니면 400 (생성/수정 시 FK 조회 실패)
+    view_name = view.__class__.__name__ if view else ""
+    if "Detail" in view_name or "List" in view_name:
+        return Response({"error_detail": error_msg.value}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({"error_detail": error_msg.value}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def _log_exception(status_code: int, view_name: str, method: str, user_info: str, exc: Exception) -> None:
+    """상태 코드별 로깅 레벨 분기"""
+    log_prefix = f"{view_name} {method} | {user_info}"
+
+    if status_code >= 500:
+        logger.error(f"[System Error] {log_prefix} | {str(exc)}", exc_info=True)
+    elif status_code == 401:
+        logger.info(f"[Auth Required] {status_code} | {log_prefix}")
+    elif status_code == 403:
+        logger.warning(f"[Permission Denied] {status_code} | {log_prefix} | {str(exc)}")
+    elif status_code == 404:
+        logger.info(f"[Not Found] {status_code} | {log_prefix} | {str(exc)}")
+    elif status_code == 409:
+        logger.warning(f"[Conflict] {status_code} | {log_prefix} | {str(exc)}")
+    else:
+        # 400 Bad Request 등
+        logger.warning(f"[Client Error] {status_code} | {log_prefix} | {str(exc)}")
 
 
 def _extract_custom_msg(exc: Exception, data: Any, view: Any) -> str:
-    """
-    시리얼라이저의 default_error_message 설정을 자동으로 반영합니다.
-    """
-    status_code = getattr(exc, "status_code", None)
+    """시리얼라이저의 default_error_message 설정을 자동으로 반영"""
+    try:
+        # QnaBaseException 하위 클래스는 예외 자체의 메시지를 우선 사용
+        if isinstance(exc, QnaBaseException):
+            return str(exc.detail)
 
-    # [수정] ObjectDoesNotExist 예외가 발생한 경우도 400 Bad Request 상황으로 간주합니다.
-    is_not_found_input = isinstance(exc, ObjectDoesNotExist)
+        status_code = getattr(exc, "status_code", None)
+        is_not_found_input = isinstance(exc, ObjectDoesNotExist)
 
-    if status_code == 400 or isinstance(exc, ValidationError) or is_not_found_input:
-        serializer_class = None
+        # ValidationError 또는 Django ORM DoesNotExist는 Serializer의 default_error_message 사용
+        if status_code == 400 or isinstance(exc, ValidationError) or is_not_found_input:
+            serializer_class = _get_serializer_class(view)
 
-        if hasattr(view, "get_serializer_class"):
-            try:
-                serializer_class = view.get_serializer_class()
-            except Exception:
-                pass
+            if serializer_class:
+                custom_msg = getattr(serializer_class, "default_error_message", None)
+                if custom_msg:
+                    return str(custom_msg.value) if isinstance(custom_msg, Enum) else str(custom_msg)
 
-        if not serializer_class and hasattr(view, "serializer_classes"):
-            request = getattr(view, "request", None)
-            method = request.method.upper() if request else ""
-            classes = getattr(view, "serializer_classes")
-            if isinstance(classes, dict):
-                serializer_class = classes.get(method)
+        return _get_first_message(data)
 
-        if not serializer_class and hasattr(view, "serializer_class"):
-            serializer_class = view.serializer_class
+    except Exception as e:
+        # 메시지 추출 실패 시 안전하게 폴백
+        logger.warning(f"[Message Extraction Failed] {str(e)}")
+        return _get_first_message(data)
 
-        if serializer_class:
-            custom_msg = getattr(serializer_class, "default_error_message", None)
-            if custom_msg:
-                return str(custom_msg.value) if isinstance(custom_msg, Enum) else str(custom_msg)
-    return _get_first_message(data)
+
+def _get_serializer_class(view: Any) -> Optional[type[Any]]:
+    """View에서 현재 요청에 해당하는 Serializer 클래스를 추출"""
+    if view is None:
+        return None
+
+    # get_serializer_class() 메서드
+    if hasattr(view, "get_serializer_class"):
+        try:
+            result = view.get_serializer_class()
+            return result if isinstance(result, type) else None
+        except Exception:
+            pass
+
+    # serializer_classes 딕셔너리 (메서드별 분기)
+    if hasattr(view, "serializer_classes"):
+        request = getattr(view, "request", None)
+        method = request.method.upper() if request else ""
+        classes = getattr(view, "serializer_classes")
+        if isinstance(classes, dict):
+            result = classes.get(method)
+            return result if isinstance(result, type) else None
+
+    # 단일 serializer_class
+    if hasattr(view, "serializer_class"):
+        result = view.serializer_class
+        return result if isinstance(result, type) else None
+
+    return None
 
 
 def _get_first_message(data: Any) -> str:
