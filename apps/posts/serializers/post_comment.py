@@ -5,11 +5,10 @@ from typing import Any, Dict, List, cast
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDenied
 
+from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.post_serializers import PostAuthorSerializer
-
-AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
 
 
 class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
@@ -63,11 +62,11 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or not user.is_authenticated:
             # 테스트 기대 문구로 통일
-            raise NotAuthenticated(detail=AUTH_MSG)
+            raise NotAuthenticated(detail=PostErrorMessage.UNAUTHORIZED)
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
-            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.")
+            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
 
         # perform_create/save(author=..., post=...)로 들어오는 케이스 방어
         author = validated_data.pop("author", user)
@@ -95,10 +94,10 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or not user.is_authenticated:
             # 테스트 기대 문구로 통일
-            raise NotAuthenticated(detail=AUTH_MSG)
+            raise NotAuthenticated(detail=PostErrorMessage.UNAUTHORIZED)
 
         if self.instance is not None and cast(PostComment, self.instance).author != user:
-            raise PermissionDenied(detail="권한이 없습니다.")
+            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
 
         return attrs
 

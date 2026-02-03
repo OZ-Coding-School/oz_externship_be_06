@@ -22,6 +22,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 
+from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
+from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.post_comment import (
@@ -29,13 +31,6 @@ from apps.posts.serializers.post_comment import (
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
 )
-
-# 에러 메시지 상수 (서비스/테스트/시리얼라이저/테스트코드에서 공유)
-AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
-PERMISSION_DENIED_MSG = "권한이 없습니다."
-POST_NOT_FOUND_MSG = "해당 게시글을 찾을 수 없습니다."
-COMMENT_NOT_FOUND_MSG = "해당 댓글을 찾을 수 없습니다."
-
 
 # 닉네임 자동완성 mock 데이터
 MOCK_NICKNAMES = [
@@ -99,7 +94,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
-            raise NotFound(detail=POST_NOT_FOUND_MSG) from e
+            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET) from e
 
     def get_queryset(self) -> QuerySet[PostComment]:
         # 해당 게시글의 댓글 목록 쿼리셋 반환
@@ -163,6 +158,8 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         - 정상 인증이면 201 반환 (DB 저장은 mock)
         - 게시글 없으면 404 반환
         """
+        if not request.user or not request.user.is_authenticated:
+            raise PostUnauthorizedException()
         post = self._get_post()
         serializer = PostCommentCreateSerializer(
             data=request.data,
@@ -188,14 +185,16 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     def handle_exception(self, exc: Exception) -> Response:
         # 에러 응답 포맷을 테스트 요구사항에 맞게 강제
         if isinstance(exc, NotAuthenticated):
-            return Response({"error_detail": AUTH_MSG}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error_detail": PostErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
         if isinstance(exc, NotFound):
             return Response({"error_detail": str(exc.detail)}, status=status.HTTP_404_NOT_FOUND)
         if isinstance(exc, PermissionDenied):
-            detail = str(getattr(exc, "detail", "")) or PERMISSION_DENIED_MSG
+            detail = str(getattr(exc, "detail", "")) or PostErrorMessage.FORBIDDEN
             return Response({"error_detail": detail}, status=status.HTTP_403_FORBIDDEN)
         if isinstance(exc, ValidationError):
             return Response({"error_detail": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(exc, PostUnauthorizedException):
+            return Response(exc.detail, status=exc.status_code)
         return super().handle_exception(exc)
 
     def _get_post(self) -> Post:
@@ -204,13 +203,13 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
-            raise NotFound(detail=POST_NOT_FOUND_MSG) from e
+            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET) from e
 
     def _get_comment_id(self) -> int:
         # 댓글 ID 유효성 검사
         comment_id = int(self.kwargs["comment_id"])
         if comment_id <= 0:
-            raise NotFound(detail=COMMENT_NOT_FOUND_MSG)
+            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
         return comment_id
 
     @extend_schema(tags=["Comments"], summary="댓글 상세 조회 API")
@@ -242,7 +241,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         comment_id = self._get_comment_id()
         post = self._get_post()
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail=PERMISSION_DENIED_MSG)
+            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
         # mock 객체로 serializer 검증
         mock_comment = type("Comment", (), {})()
         mock_comment.id = comment_id
@@ -270,5 +269,5 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         self._get_comment_id()
         post = self._get_post()
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail=PERMISSION_DENIED_MSG)
+            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
