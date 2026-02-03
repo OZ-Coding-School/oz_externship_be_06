@@ -1,6 +1,5 @@
 import logging
-from enum import Enum
-from typing import Dict
+from typing import Dict, Protocol, runtime_checkable
 
 from botocore.exceptions import ClientError
 from rest_framework import status
@@ -11,17 +10,14 @@ from apps.core.utils.s3_handler import S3Handler
 logger = logging.getLogger("django")
 
 
-class StorageTarget(Enum):
+@runtime_checkable
+class StorageTargetProtocol(Protocol):
     """
-    이미지 업로드 도메인 및 S3 경로 정의 Enum
+    S3 업로드 타겟의 추상 규격
     """
 
-    QUESTION = ("question", "uploads/images/questions")
-    ANSWER = ("answer", "uploads/images/answers")
-
-    def __init__(self, domain: str, s3_path: str):
-        self.domain = domain
-        self.s3_path = s3_path
+    domain: str
+    s3_path: str
 
 
 class PresignedUrlCommandService:
@@ -30,9 +26,10 @@ class PresignedUrlCommandService:
     """
 
     @classmethod
-    def get_presigned_url(cls, target: StorageTarget, file_name: str) -> Dict[str, str]:
+    def get_presigned_url(cls, target: StorageTargetProtocol, file_name: str) -> Dict[str, str]:
         """도메인(질문/답변)에 따라 경로를 결정하여 URL 발급"""
-        if target is None:
+        if not isinstance(target, StorageTargetProtocol):
+            logger.error(f"[INVALID_TARGET] Target {type(target)} does not implement StorageTargetProtocol")
             raise CoreBaseException("유효하지 않은 업로드 도메인입니다.", status.HTTP_400_BAD_REQUEST)
 
         s3_handler = S3Handler()

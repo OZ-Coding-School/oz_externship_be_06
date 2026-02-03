@@ -1,11 +1,25 @@
+from enum import Enum
+
+
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.serializers.request import PresignedUrlRequestSerializer
-from apps.core.serializers.response import PresignedUrlResponseSerializer
-from apps.core.services.command import StorageTarget
+from apps.core.serializers.presigned_url import PresignedUrlResponseSerializer, PresignedUrlRequestSerializer
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
+
+
+class StorageTarget(Enum):
+    """
+    이미지 업로드 도메인 및 S3 경로 정의 Enum
+    """
+
+    QUESTION = ("question", "uploads/images/questions")
+    ANSWER = ("answer", "uploads/images/answers")
+
+    def __init__(self, domain: str, s3_path: str):
+        self.domain = domain
+        self.s3_path = s3_path
 
 
 class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
