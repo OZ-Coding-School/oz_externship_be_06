@@ -10,7 +10,6 @@ class CohortInfoSerializer(serializers.Serializer[Any]):
     number = serializers.IntegerField()
     start_date = serializers.DateField(format="%Y-%m-%d")
     end_date = serializers.DateField(format="%Y-%m-%d")
-    status = serializers.CharField()
 
 
 # 과정 정보
@@ -29,11 +28,11 @@ class CourseDetailInfoSerializer(serializers.Serializer[Any]):
     thumbnail_img_url = serializers.CharField(allow_null=True)
 
 
-# 수강신청 가능한 기수 응답
+# 수강신청 가능한 과정/기수
 class AvailableCourseResponseSerializer(serializers.Serializer[Any]):
 
-    cohort = CohortInfoSerializer()
     course = CourseInfoSerializer()
+    cohorts = CohortInfoSerializer(many=True)
 
 
 # 내 수강 목록 응답

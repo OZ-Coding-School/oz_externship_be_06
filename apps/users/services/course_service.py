@@ -1,29 +1,39 @@
 from typing import Any
 
-from apps.courses.models import Cohort
+from django.db.models import Prefetch
+
+from apps.courses.models import Cohort, Course
 from apps.courses.models.cohort_students import CohortStudent
 from apps.users.models import User
 
 
-# 수강신청 가능한 기수 목록 조회
+# 수강신청 가능한 과정 및 기수 목록 조회
 def get_available_courses() -> list[dict[str, Any]]:
-    cohorts = Cohort.objects.filter(status=Cohort.StatusChoices.PREPARING).select_related("course")
+    preparing_cohorts = Cohort.objects.filter(status=Cohort.StatusChoices.PREPARING)
+
+    courses = (
+        Course.objects.filter(cohorts__status=Cohort.StatusChoices.PREPARING)
+        .prefetch_related(Prefetch("cohorts", queryset=preparing_cohorts, to_attr="preparing_cohorts"))
+        .distinct()
+    )
 
     return [
         {
-            "cohort": {
-                "id": cohort.id,
-                "number": cohort.number,
-                "start_date": cohort.start_date,
-                "end_date": cohort.end_date,
-                "status": cohort.status,
-            },
             "course": {
-                "id": cohort.course.id,
-                "name": cohort.course.name,
+                "id": course.id,
+                "name": course.name,
             },
+            "cohorts": [
+                {
+                    "id": cohort.id,
+                    "number": cohort.number,
+                    "start_date": cohort.start_date,
+                    "end_date": cohort.end_date,
+                }
+                for cohort in course.preparing_cohorts  # type: ignore[attr-defined]
+            ],
         }
-        for cohort in cohorts
+        for course in courses
     ]
 
 

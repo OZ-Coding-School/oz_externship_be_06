@@ -29,14 +29,20 @@ class AvailableCoursesAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(
+        self.course_backend = Course.objects.create(
             name="백엔드 과정",
             tag="BE",
             description="백엔드 부트캠프",
         )
 
-        self.cohort_preparing = Cohort.objects.create(
-            course=self.course,
+        self.course_frontend = Course.objects.create(
+            name="프론트엔드 과정",
+            tag="FE",
+            description="프론트엔드 부트캠프",
+        )
+
+        self.cohort_backend_1 = Cohort.objects.create(
+            course=self.course_backend,
             number=1,
             max_student=30,
             start_date=date(2025, 1, 1),
@@ -44,27 +50,76 @@ class AvailableCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
-        self.cohort_in_progress = Cohort.objects.create(
-            course=self.course,
+        self.cohort_backend_2 = Cohort.objects.create(
+            course=self.course_backend,
             number=2,
+            max_student=30,
+            start_date=date(2025, 7, 1),
+            end_date=date(2025, 12, 31),
+            status=Cohort.StatusChoices.PREPARING,
+        )
+
+        self.cohort_backend_in_progress = Cohort.objects.create(
+            course=self.course_backend,
+            number=3,
             max_student=30,
             start_date=date(2024, 1, 1),
             end_date=date(2024, 6, 30),
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
 
+        self.cohort_frontend_1 = Cohort.objects.create(
+            course=self.course_frontend,
+            number=4,
+            max_student=30,
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 6, 30),
+            status=Cohort.StatusChoices.PREPARING,
+        )
+
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
-    def test_available_courses_success_200(self) -> None:
+    def test_available_courses_nested_structure_success_200(self) -> None:
+        """과정별 기수가 중첩 구조로 반환되는지 확인"""
         res = self.client.get(self.url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         data = res.json()
         self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]["cohort"]["id"], self.cohort_preparing.id)
-        self.assertEqual(data[0]["course"]["name"], "백엔드 과정")
+        self.assertEqual(len(data), 2)
+
+        # 과정 이름 확인
+        course_names = [item["course"]["name"] for item in data]
+        self.assertIn("백엔드 과정", course_names)
+        self.assertIn("프론트엔드 과정", course_names)
+
+    def test_available_courses_backend_cohorts_200(self) -> None:
+        """백엔드 과정에 PREPARING 상태의 기수만 포함되는지 확인"""
+        res = self.client.get(self.url)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+
+        backend_data = next(item for item in data if item["course"]["name"] == "백엔드 과정")
+        cohort_numbers = [cohort["number"] for cohort in backend_data["cohorts"]]
+
+        self.assertEqual(len(backend_data["cohorts"]), 2)
+        self.assertIn(1, cohort_numbers)
+        self.assertIn(2, cohort_numbers)
+        self.assertNotIn(3, cohort_numbers)  # IN_PROGRESS 상태는 제외
+
+    def test_available_courses_frontend_cohorts_200(self) -> None:
+        """프론트엔드 과정의 기수가 올바르게 반환되는지 확인"""
+        res = self.client.get(self.url)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        data = res.json()
+
+        frontend_data = next(item for item in data if item["course"]["name"] == "프론트엔드 과정")
+
+        self.assertEqual(len(frontend_data["cohorts"]), 1)
+        self.assertEqual(frontend_data["cohorts"][0]["number"], 4)
 
     def test_available_courses_unauthenticated_401(self) -> None:
         self.client.credentials()
