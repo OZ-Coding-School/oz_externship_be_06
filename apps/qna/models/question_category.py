@@ -23,3 +23,12 @@ class QuestionCategory(TimeStampModel):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def depth(self) -> int:
+        d = 0
+        curr = self.parent
+        while curr:
+            d += 1
+            curr = curr.parent
+        return d

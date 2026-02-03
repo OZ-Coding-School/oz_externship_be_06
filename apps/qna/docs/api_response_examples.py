@@ -40,6 +40,37 @@ class SuccessResponseExamples:
         },
     )
 
+    QUESTION_CATEGORY_LIST = OpenApiExample(
+        name="카테고리 목록 조회 성공 response body 예시",
+        value={
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "백엔드",
+                    "depth": 0,
+                    "subcategories": [
+                        {
+                            "id": 5,
+                            "name": "Django",
+                            "depth": 1,
+                            "subcategories": [
+                                {"id": 12, "name": "ORM", "depth": 2, "subcategories": []},
+                                {"id": 13, "name": "DRF", "depth": 2, "subcategories": []},
+                            ],
+                        },
+                        {"id": 6, "name": "Python", "depth": 1, "subcategories": []},
+                    ],
+                },
+                {
+                    "id": 2,
+                    "name": "프론트엔드",
+                    "depth": 0,
+                    "subcategories": [{"id": 8, "name": "React", "depth": 1, "subcategories": []}],
+                },
+            ]
+        },
+    )
+
     QUESTION_DETAIL = OpenApiExample(
         name="질문 상세 조회 성공 response body 예시",
         value={
@@ -249,7 +280,11 @@ class ErrorResponseExamples:
         name="질문 목록 조회 실패 response body 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION_LIST.value},
     )
-
+    #  ---QUESTION_CATEGORY_LIST ---
+    QUESTION_CATEGORY_LIST_400 = OpenApiExample(
+        name="카테고리 목록 조회 실패 response body 예시 - 잘못된 요청",
+        value={"error_detail": ErrorMessages.INVALID_QUESTION_CATEGORY_LIST.value},
+    )
     # --- QUESTION_DETAIL ---
     QUESTION_DETAIL_400 = OpenApiExample(
         name="질문 상세 조회 실패 response body 예시 - 잘못된 요청",

@@ -11,7 +11,7 @@ from apps.qna.serializers.base import QnaValidationMixin
 # [GET] Question List
 # /api/v1/qna/questions
 # ==============================================================================
-class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Any]):
+class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Question]):
     """
     질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
     """
