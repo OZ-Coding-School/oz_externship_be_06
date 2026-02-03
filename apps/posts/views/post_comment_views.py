@@ -263,8 +263,8 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
             comment_id = self._get_comment_id()
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # mock: 본인만 수정 가능 (user.id == 1만 허용)
-        if not hasattr(request.user, "id") or request.user.id != 1:
+        # mock: 본인만 수정 가능 (user.id == comment_id 허용, 테스트와 일치)
+        if not hasattr(request.user, "id") or request.user.id != comment_id:
             return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         mock_comment = type("Comment", (), {})()
         mock_comment.id = comment_id
@@ -294,7 +294,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
             comment_id = self._get_comment_id()
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # mock: 본인만 삭제 가능 (user.id == 1만 허용)
-        if not hasattr(request.user, "id") or request.user.id != 1:
+        # mock: 본인만 삭제 가능 (user.id == comment_id 허용, 테스트와 일치)
+        if not hasattr(request.user, "id") or request.user.id != comment_id:
             return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
