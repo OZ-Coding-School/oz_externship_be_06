@@ -20,7 +20,7 @@ class StorageTargetProtocol(Protocol):
     s3_path: str
 
 
-class PresignedUrlCommandService:
+class PresignedUrlService:
     """
     공통 이미지 업로드 URL 발급 서비스
     """

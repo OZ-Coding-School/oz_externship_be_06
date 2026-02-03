@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.serializers.presigned_url import PresignedUrlResponseSerializer, PresignedUrlRequestSerializer
-from apps.core.services.presigned_url import PresignedUrlCommandService, StorageTargetProtocol
+from apps.core.services.presigned_url import PresignedUrlService, StorageTargetProtocol
 
 
 class BasePresignedUrlAPIView(APIView):
@@ -25,7 +25,7 @@ class BasePresignedUrlAPIView(APIView):
         serializer = PresignedUrlRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        result = PresignedUrlCommandService.get_presigned_url(
+        result = PresignedUrlService.get_presigned_url(
             target=self.storage_target, file_name=serializer.validated_data["file_name"]
         )
 
