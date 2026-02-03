@@ -131,7 +131,7 @@ class SuccessResponseExamples:
         response_only=True,
     )
 
-    AI_ANSWER_GENERATE = OpenApiExample(
+    AI_GEN_ANSWER = OpenApiExample(
         name="AI 답변 생성 성공 response body 예시",
         value={
             "id": 8751,
@@ -418,27 +418,27 @@ class ErrorResponseExamples:
     )
 
     # --- AI_ANSWER_GENERATE ---
-    AI_ANSWER_GENERATE_400 = OpenApiExample(
+    AI_GEN_ANSWER_400 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_AI_REQUEST.value},
         response_only=True,
     )
-    AI_ANSWER_GENERATE_401 = OpenApiExample(
+    AI_GEN_ANSWER_401 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_AI_REQUEST.value},
         response_only=True,
     )
-    AI_ANSWER_GENERATE_403 = OpenApiExample(
+    AI_GEN_ANSWER_403 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_AI_REQUEST.value},
         response_only=True,
     )
-    AI_ANSWER_GENERATE_404 = OpenApiExample(
+    AI_GEN_ANSWER_404 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_AI_QUESTION.value},
         response_only=True,
     )
-    AI_ANSWER_GENERATE_409 = OpenApiExample(
+    AI_GEN_ANSWER_409 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 이미 생성됨",
         value={"error_detail": ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value},
         response_only=True,
