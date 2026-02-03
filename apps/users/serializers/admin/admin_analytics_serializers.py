@@ -27,3 +27,22 @@ class SignupTrendsResponseSerializer(serializers.Serializer[Any]):
     to_date = serializers.DateField()
     total = serializers.IntegerField()
     items = TrendsItemSerializer(many=True)
+
+
+# 화원탈퇴 추세 분석 요청
+class WithdrawalTrendsRequestSerializer(serializers.Serializer[Any]):
+    INTERVAL_CHOICES = [
+        ("monthly", "monthly"),
+        ("yearly", "yearly"),
+    ]
+
+    interval = serializers.ChoiceField(choices=INTERVAL_CHOICES, required=True)
+
+
+# 회원탈퇴 추세 분석
+class WithdrawalTrendsResponseSerializer(serializers.Serializer[Any]):
+    interval = serializers.CharField()
+    from_date = serializers.DateField()
+    to_date = serializers.DateField()
+    total = serializers.IntegerField()
+    items = TrendsItemSerializer(many=True)
