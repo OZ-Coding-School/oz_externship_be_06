@@ -10,7 +10,7 @@ class AnswerNotFoundException(QnaBaseException):
     """
 
     status_code = status.HTTP_404_NOT_FOUND
-    default_detail = ErrorMessages.DEFAULT_MESSAGE_409
+    default_detail = ErrorMessages.DEFAULT_MESSAGE_404
     default_code = "answer_not_found"
 
 
@@ -20,5 +20,5 @@ class AdoptedAnswerConflictException(QnaBaseException):
     """
 
     status_code = status.HTTP_409_CONFLICT
-    default_detail = ErrorMessages.ALREADY_EXISTS_ADOPTED_ANSWER
+    default_detail = ErrorMessages.DEFAULT_MESSAGE_409
     default_code = "answer_already_adopted"
