@@ -56,6 +56,7 @@ urlpatterns = [
     # 수강 관련
     path("available-courses/", AvailableCoursesAPIView.as_view(), name="available-courses"),
     path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
+    # 탈퇴/복구
     path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
     path("restore/", RestoreAPIView.as_view(), name="restore"),
     # 소셜 로그인

@@ -10,10 +10,14 @@ from drf_spectacular.views import (
 
 urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),
+    #  Users (일반 사용자)
     path("api/v1/accounts/", include("apps.users.urls")),
+    #  Users Admin (어드민)
     path("api/v1/admin/", include("apps.users.admin_urls")),
+    # Other admin modules
     path("api/v1/admin/", include("apps.exams.urls.admin")),
     path("api/v1/admin/", include("apps.courses.admin_urls")),
+    # Student / Public
     path("api/v1/exams/", include("apps.exams.urls.student")),
     path("api/v1/qna/", include("apps.qna.urls.qna_urls")),
     path("api/v1/chatbot/", include("apps.chatbot.urls")),
@@ -21,13 +25,12 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("api/v1/posts/", include("apps.posts.urls", "posts")),
 ]
 
-
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     if "debug_toolbar" in settings.INSTALLED_APPS:
         urlpatterns += [
-            path("__debug__/", include("debug_toolbar.urls")),
+            path("debug/", include("debug_toolbar.urls")),
         ]
 
     if "drf_spectacular" in settings.INSTALLED_APPS:
