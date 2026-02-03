@@ -16,7 +16,7 @@ class AdminAccountListSerializer(serializers.ModelSerializer[Any]):
 
     class Meta:
         model = User
-        fields = ["id", "email", "nickname", "name", "status", "role", "created_at"]
+        fields = ["id", "email", "nickname", "name", "phone_number", "birthday", "status", "role", "created_at"]
 
     def get_status(self, obj: User) -> str:
         if hasattr(obj, "withdrawal") and obj.withdrawal is not None:
