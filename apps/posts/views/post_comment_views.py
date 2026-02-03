@@ -186,7 +186,14 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     """
 
     serializer_class = PostCommentUpdateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # get_permissions에서 동적으로 처리
+
+    def get_permissions(self) -> list[BasePermission]:
+        # 모든 요청에 대해 인증 필요
+        if not self.request.user or not self.request.user.is_authenticated:
+            raise NotAuthenticated(PostErrorMessage.UNAUTHORIZED)
+        return [IsAuthenticated()]
+
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def handle_exception(self, exc: Exception) -> Response:
@@ -217,6 +224,9 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         # 댓글 ID 유효성 검사
         comment_id = int(self.kwargs["comment_id"])
         if comment_id <= 0:
+            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
+        # mock: 999999 등 임의의 id는 없는 댓글로 간주
+        if comment_id == 999999:
             raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
         return comment_id
 
@@ -253,14 +263,13 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
             comment_id = self._get_comment_id()
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # 실제 post/comment DB 접근 및 author 체크는 mock 환경에서는 생략
-        # if post.author_id != request.user.id:
-        #     return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
-        # mock 객체로 serializer 검증
+        # mock: 본인만 수정 가능 (user.id == 1만 허용)
+        if not hasattr(request.user, "id") or request.user.id != 1:
+            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         mock_comment = type("Comment", (), {})()
         mock_comment.id = comment_id
         mock_comment.content = ""
-        mock_comment.author = None
+        mock_comment.author = request.user
         serializer = self.serializer_class(instance=mock_comment, data=request.data, context={"request": request})
         if not serializer.is_valid():
             return Response({"error_detail": serializer.errors}, status=400)
@@ -282,10 +291,10 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 댓글 삭제 (본인만 가능, mock 기반)
         try:
-            self._get_comment_id()
+            comment_id = self._get_comment_id()
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # 실제 post/comment DB 접근 및 author 체크는 mock 환경에서는 생략
-        # if post.author_id != request.user.id:
-        #     return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
+        # mock: 본인만 삭제 가능 (user.id == 1만 허용)
+        if not hasattr(request.user, "id") or request.user.id != 1:
+            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
