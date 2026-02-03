@@ -95,12 +95,14 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
             # 통일된 에러 포맷
-            from rest_framework.response import Response
             from rest_framework.exceptions import APIException
+            from rest_framework.response import Response
+
             class PostNotFoundException(APIException):
                 status_code = 404
                 default_detail = {"error_detail": PostErrorMessage.POST_NOT_FOUND_WITH_TARGET}
                 default_code = "not_found"
+
             raise PostNotFoundException()
 
     def get_queryset(self) -> QuerySet[PostComment]:
