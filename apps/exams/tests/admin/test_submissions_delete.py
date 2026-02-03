@@ -119,9 +119,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
         self.assertEqual(response.status_code, 403)
         data = response.json()
-        self.assertEqual(
-            data["error_detail"], ErrorMessages.NO_SUBMISSION_DELETE_PERMISSION.value
-        )
+        self.assertEqual(data["error_detail"], ErrorMessages.NO_SUBMISSION_DELETE_PERMISSION.value)
 
     def test_returns_404_when_submission_missing(self) -> None:
         response = self.client.delete(
@@ -131,9 +129,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
         self.assertEqual(response.status_code, 404)
         data = response.json()
-        self.assertEqual(
-            data["error_detail"], ErrorMessages.SUBMISSION_DELETE_NOT_FOUND.value
-        )
+        self.assertEqual(data["error_detail"], ErrorMessages.SUBMISSION_DELETE_NOT_FOUND.value)
 
     def test_returns_400_when_invalid_ids(self) -> None:
         response = self.client.delete(
