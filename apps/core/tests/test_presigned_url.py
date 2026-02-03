@@ -6,9 +6,15 @@ from botocore.exceptions import ClientError
 from rest_framework import status
 
 from apps.core.exceptions.base import CoreBaseException
-from apps.core.serializers.request import PresignedUrlRequestSerializer
-from apps.core.services.command import PresignedUrlCommandService, StorageTarget
+from apps.core.serializers.presigned_url import PresignedUrlRequestSerializer
+from apps.core.services.presigned_url import PresignedUrlService
 from apps.core.utils.s3_handler import S3Handler
+
+
+class MockStorageTarget:
+    """StorageTargetProtocol 규격을 만족하는 테스트용 가짜 객체"""
+    domain = "test_domain"
+    s3_path = "test/path"
 
 
 class S3HandlerUnitTest(unittest.TestCase):
@@ -64,18 +70,18 @@ class PresignedUrlRequestSerializerTest(unittest.TestCase):
 class PresignedUrlCommandServiceTest(unittest.TestCase):
     """서비스 레이어 에러 래핑 테스트"""
 
-    @patch("apps.core.services.command.S3Handler.generate_presigned_url")
+    @patch("apps.core.services.presigned_url.S3Handler.generate_presigned_url")
     def test_get_presigned_url_s3_error_wrapping(self, mock_s3: MagicMock) -> None:
         """[실패] S3 장애(ClientError) 발생 시 500 CoreBaseException으로 변환"""
         mock_s3.side_effect = ClientError({"Error": {"Code": "500", "Message": "S3 Down"}}, "PutObject")
 
         with self.assertRaises(CoreBaseException) as cm:
-            PresignedUrlCommandService.get_presigned_url(StorageTarget.QUESTION, "test.png")
+            PresignedUrlService.get_presigned_url(MockStorageTarget(), "test.png")
 
         self.assertEqual(cm.exception.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def test_get_presigned_url_target_none(self) -> None:
         """[실패] 타겟이 None일 경우 400 에러"""
         with self.assertRaises(CoreBaseException) as cm:
-            PresignedUrlCommandService.get_presigned_url(cast(Any, None), "test.png")
+            PresignedUrlService.get_presigned_url(cast(Any, None), "test.png")
         self.assertEqual(cm.exception.status_code, status.HTTP_400_BAD_REQUEST)
