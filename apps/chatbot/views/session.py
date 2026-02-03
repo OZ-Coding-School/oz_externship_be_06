@@ -25,11 +25,13 @@ class ChatbotSessionAPIView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = ChatbotSessionCreateSerializer  # 🔹 schema 추론용
 
     @extend_schema(
         tags=["chatbot"],
         summary="챗봇 세션 목록 조회",
         description="사용자의 챗봇 세션 목록을 조회합니다.",
+        responses=ChatbotSessionSerializer(many=True),
     )
     def get(self, request: Request) -> Response:
         user = cast(User, request.user)
