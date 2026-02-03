@@ -199,3 +199,28 @@ class AdminWithdrawalReasonCountsAPITest(TestCase):
         data = response.json()
         self.assertEqual(data["from_date"], f"{self.prev_year}-12-10")
         self.assertEqual(data["to_date"], f"{self.current_year}-01-10")
+
+    def test_withdrawal_percentage_is_100_when_single_item(self) -> None:
+        w_user = User.objects.create_user(
+            email="wd_percentage_1@example.com",
+            password="password123",
+            name="탈퇴퍼센트1",
+            nickname="탈퇴퍼센트1",
+            phone_number="01040000001",
+            gender=User.Gender.MALE,
+            birthday=date(1998, 2, 2),
+            role=User.Role.USER,
+            is_active=False,
+        )
+        Withdrawal.objects.create(
+            user=w_user,
+            reason=Withdrawal.Reason.OTHER,
+            reason_detail="test",
+        )
+
+        response = self.client.get(self.url, **self._auth_headers(self.admin_user))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["items"][0]["percentage"], 100.0)

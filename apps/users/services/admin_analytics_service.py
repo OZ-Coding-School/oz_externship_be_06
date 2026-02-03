@@ -253,11 +253,13 @@ def get_student_enrollment_trends(interval: str, year: int | None = None) -> dic
 def get_withdrawal_reason_counts() -> dict[str, Any]:
     total = Withdrawal.objects.count()
     qs = Withdrawal.objects.values("reason").annotate(count=Count("id"))
+
     items = [
         {
             "reason": row["reason"],
             "reason_label": Withdrawal.Reason(row["reason"]).label,
             "count": row["count"],
+            "percentage": round((row["count"] / total) * 100, 2) if total else 0.0,
         }
         for row in qs
     ]
