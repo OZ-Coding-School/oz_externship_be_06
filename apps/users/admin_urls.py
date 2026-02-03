@@ -11,6 +11,7 @@ from apps.users.views.admin.admin_account_role_views import (
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
 from apps.users.views.admin.admin_analytics_views import (
     AdminSignupTrendsAPIView,
+    AdminWithdrawalReasonCountsAPIView,
     AdminStudentEnrollmentTrendsAPIView,
     AdminWithdrawalTrendsAPIView,
 )
@@ -84,5 +85,10 @@ urlpatterns = [
         "analytics/student-enrollments/trends/",
         AdminStudentEnrollmentTrendsAPIView.as_view(),
         name="admin-student-enrollment-trends",
+    ),
+    path(
+        "analytics/withdrawals/reasons/counts/",
+        AdminWithdrawalReasonCountsAPIView.as_view(),
+        name="admin-withdrawal-reason-counts",
     ),
 ]

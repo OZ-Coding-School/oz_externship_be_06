@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any, TypedDict
 
-from django.db.models import Count, Min
+from django.db.models import Count, Max, Min
 from django.db.models.functions import TruncMonth, TruncYear
 
 from apps.courses.models.cohort_students import CohortStudent
@@ -243,6 +243,29 @@ def get_student_enrollment_trends(interval: str, year: int | None = None) -> dic
 
     return {
         "interval": interval,
+        "from_date": from_date,
+        "to_date": to_date,
+        "total": total,
+        "items": items,
+    }
+
+
+def get_withdrawal_reason_counts() -> dict[str, Any]:
+    total = Withdrawal.objects.count()
+    qs = Withdrawal.objects.values("reason").annotate(count=Count("id"))
+    items = [
+        {
+            "reason": row["reason"],
+            "reason_label": Withdrawal.Reason(row["reason"]).label,
+            "count": row["count"],
+        }
+        for row in qs
+    ]
+    oldest = Withdrawal.objects.aggregate(oldest=Min("created_at"))["oldest"]
+    from_date = oldest.date() if oldest else None
+    latest = Withdrawal.objects.aggregate(latest=Max("created_at"))["latest"]
+    to_date = latest.date() if latest else None
+    return {
         "from_date": from_date,
         "to_date": to_date,
         "total": total,
