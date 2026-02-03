@@ -14,7 +14,15 @@ User = get_user_model()
 
 class PostCommentSerializerTests(TestCase):
     def setUp(self) -> None:
-        self.user = User.objects.create_user(username="testuser", email="testuser@example.com", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com",
+            password="testpass",
+            name="테스트유저",
+            nickname="testuser",
+            phone_number="010-1234-5678",
+            gender="MALE",
+            birthday="2000-01-01",
+        )
         self.post = Post.objects.create(author=self.user, title="test post", content="test content")
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
 

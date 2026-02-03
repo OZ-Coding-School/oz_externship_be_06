@@ -20,7 +20,15 @@ User = get_user_model()
 class PostCommentAPITestCase(APITestCase):
     # ⭐ 인증 없이 요청 시 401 반환 테스트 함수들
     def setUp(self) -> None:
-        self.user = User.objects.create_user(username="testuser", email="testuser@example.com", password="testpass")
+        self.user = User.objects.create_user(
+            email="testuser@example.com",
+            password="testpass",
+            name="테스트유저",
+            nickname="testuser",
+            phone_number="010-1234-5678",
+            gender="MALE",
+            birthday="2000-01-01",
+        )
         self.post = Post.objects.create(author=self.user, title="test post", content="test content")
         self.client.force_authenticate(user=self.user)
 
@@ -131,7 +139,15 @@ class PostCommentAPITestCase(APITestCase):
 
     def test_comment_update_forbidden(self) -> None:
         # 본인 외 사용자가 수정 시 403 반환 및 에러 메시지 확인
-        other = User.objects.create_user(username="other", email="other@example.com", password="pass")
+        other = User.objects.create_user(
+            email="other@example.com",
+            password="pass",
+            name="다른유저",
+            nickname="other",
+            phone_number="010-0000-0000",
+            gender="FEMALE",
+            birthday="2001-02-02",
+        )
         comment = PostComment.objects.create(post=self.post, author=other, content="old content")
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         data = {"content": "test"}
