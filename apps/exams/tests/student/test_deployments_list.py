@@ -8,6 +8,7 @@ from apps.courses.models.cohort_students import CohortStudent
 from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam, ExamDeployment
 from apps.users.models import User
 
@@ -46,6 +47,17 @@ class ExamDeploymentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
+        self.normal_user = User.objects.create_user(
+            email="user@example.com",
+            password="password123",
+            name="일반유저",
+            nickname="유저",
+            phone_number="01098765432",
+            gender=User.Gender.MALE,
+            birthday=date(1999, 1, 1),
+            role=User.Role.USER,
+            is_active=True,
+        )
 
         CohortStudent.objects.create(user=self.student, cohort=self.cohort)
 
@@ -73,3 +85,9 @@ class ExamDeploymentListAPITest(TestCase):
     def test_list_requires_authentication(self) -> None:
         res = self.client.get(self.url)
         self.assertIn(res.status_code, [401, 403])
+
+    def test_list_returns_403_for_non_student(self) -> None:
+        res = self.client.get(self.url, HTTP_AUTHORIZATION=self._bearer(self.normal_user))
+        self.assertEqual(res.status_code, 403)
+        data = res.json()
+        self.assertEqual(data["error_detail"], ErrorMessages.FORBIDDEN.value)
