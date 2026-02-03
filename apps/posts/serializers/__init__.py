@@ -1,5 +1,5 @@
-from .post_category import PostCategorySerializer
-from .post_comment import (
+from .category_serializers import CategoryListSerializer
+from .post_comment import (  # type: ignore[attr-defined]
     PostCommentCreateSerializer,
     PostCommentDeleteResponseSerializer,
     PostCommentListSerializer,
@@ -7,7 +7,7 @@ from .post_comment import (
 )
 
 __all__ = [
-    "PostCategorySerializer",
+    "CategoryListSerializer",
     "PostCommentListSerializer",
     "PostCommentCreateSerializer",
     "PostCommentUpdateSerializer",

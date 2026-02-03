@@ -7,10 +7,9 @@ from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDeni
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
+from apps.posts.serializers.post_serializers import PostAuthorSerializer
 
-
-# 에러 메시지 상수 (서비스/테스트와 공유)
-from apps.posts.views.post_comment_views import AUTH_MSG, PERMISSION_DENIED_MSG, POST_NOT_FOUND_MSG, COMMENT_NOT_FOUND_MSG
+AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
 
 
 class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
@@ -19,12 +18,7 @@ class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
     id = serializers.IntegerField(source="tagged_user.id")
     nickname = serializers.CharField(source="tagged_user.nickname")
 
-
-class PostCommentListSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
-    """댓글 목록 조회 응답 시리얼라이저"""
-
-    # AuthorSimpleSerializer가 정의되어 있지 않아 주석 처리함
-    # author = AuthorSimpleSerializer(read_only=True)
+    author = PostAuthorSerializer(read_only=True)
     tagged_users = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,7 +52,7 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
-            raise NotFound(detail=POST_NOT_FOUND_MSG)
+            raise NotFound(detail="해당 게시글을 찾을 수 없습니다.")
 
         # perform_create/save(author=..., post=...)로 들어오는 케이스 방어
         author = validated_data.pop("author", user)

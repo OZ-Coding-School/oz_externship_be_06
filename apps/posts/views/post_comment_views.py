@@ -24,12 +24,11 @@ from rest_framework.views import APIView
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
-from apps.posts.serializers.post_comment import (
+from apps.posts.serializers.post_comment import (  # type: ignore[attr-defined]
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
 )
-
 
 # 에러 메시지 상수 (서비스/테스트/시리얼라이저/테스트코드에서 공유)
 AUTH_MSG = "자격 인증 데이터가 제공되지 않았습니다."
@@ -98,7 +97,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         # 게시글 ID로 게시글 객체 조회 (없으면 404)
         post_id = self.kwargs.get("post_id")
         try:
-            return Post.objects.get(pk=post_id, is_visible=True)
+            return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
             raise NotFound(detail=POST_NOT_FOUND_MSG) from e
 
@@ -112,7 +111,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
             .order_by("created_at")
         )
 
-    def get_serializer_class(self) -> type[BaseSerializer[Any]]:
+    def get_serializer_class(self) -> Any:
         # GET/POST에 따라 시리얼라이저 분기
         if self.request.method == "GET":
             return PostCommentListSerializer

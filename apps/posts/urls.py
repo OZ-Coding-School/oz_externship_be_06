@@ -28,6 +28,7 @@ urlpatterns = [
         PostCommentRetrieveUpdateDestroyAPIView.as_view(),
         name="post-comment-rud",
     ),
+    path("categories/", CategoryListView.as_view(), name="post-category-list"),
     path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
     path("<int:post_id>/like/", PostLikeAPIView.as_view(), name="post-like"),
 ]

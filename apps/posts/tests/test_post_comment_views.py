@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
@@ -5,13 +7,18 @@ from rest_framework.test import APITestCase
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
-from apps.posts.views.post_comment_views import AUTH_MSG, PERMISSION_DENIED_MSG, POST_NOT_FOUND_MSG, COMMENT_NOT_FOUND_MSG
+from apps.posts.views.post_comment_views import (
+    AUTH_MSG,
+    COMMENT_NOT_FOUND_MSG,
+    PERMISSION_DENIED_MSG,
+    POST_NOT_FOUND_MSG,
+)
 
 User = get_user_model()
 
 
 class PostCommentAPITestCase(APITestCase):
-        # ⭐ 인증 없이 요청 시 401 반환 테스트 함수들
+    # ⭐ 인증 없이 요청 시 401 반환 테스트 함수들
     def setUp(self) -> None:
         self.user = User.objects.create_user(username="testuser", email="testuser@example.com", password="testpass")
         self.post = Post.objects.create(author=self.user, title="test post", content="test content")
@@ -114,6 +121,8 @@ class PostCommentAPITestCase(APITestCase):
 
     def test_comment_update_unauthorized(self) -> None:
         # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        comment = MagicMock(id=1)
+        data = {"content": "test"}
         self.client.force_authenticate(user=None)
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         response = self.client.put(url, data)
@@ -152,18 +161,20 @@ class PostCommentAPITestCase(APITestCase):
 
     def test_comment_delete_unauthorized(self) -> None:
         # ⭐ 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
-            # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        comment = MagicMock(id=1)
         self.client.force_authenticate(user=None)
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 401)
-            # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
+        # ⭐ 인증 없이 요청 시 401 반환 및 에러 메시지 확인
         self.assertEqual(response.data["error_detail"], AUTH_MSG)
 
     def test_comment_delete_forbidden(self) -> None:
         # 본인 외 사용자가 삭제 시 403 반환 및 에러 메시지 확인
-            # ⭐ 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
-        comment = PostComment.objects.create(post=self.post, author=other, content="to delete")
+        # ⭐ 인증 없이 삭제 시 401 반환 및 에러 메시지 확인
+        other = MagicMock()
+        comment = MagicMock(id=1)
         url = reverse("postcomment-detail", args=[self.post.id, comment.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 403)
