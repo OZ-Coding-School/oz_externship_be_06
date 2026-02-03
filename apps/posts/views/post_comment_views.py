@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
-from apps.posts.serializers.post_comment import (  # type: ignore[attr-defined]
+from apps.posts.serializers.post_comment import (
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,

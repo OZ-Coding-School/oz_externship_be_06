@@ -1,5 +1,5 @@
 from .category_serializers import CategoryListSerializer
-from .post_comment import (  # type: ignore[attr-defined]
+from .post_comment import (
     PostCommentCreateSerializer,
     PostCommentDeleteResponseSerializer,
     PostCommentListSerializer,

@@ -30,6 +30,21 @@ class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
         return TaggedUserSerializer(tags, many=True).data  # type: ignore[return-value]
 
 
+class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
+    """댓글 목록 조회 시리얼라이저"""
+
+    author = PostAuthorSerializer(read_only=True)
+    tagged_users = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostComment
+        fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
+
+    def get_tagged_users(self, obj: PostComment) -> Any:
+        tags = obj.tags.select_related("tagged_user").all()
+        return TaggedUserSerializer(tags, many=True).data
+
+
 class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     """댓글 생성 시리얼라이저 (요청 바디: content)"""
 
