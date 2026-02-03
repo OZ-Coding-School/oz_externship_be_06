@@ -1,3 +1,5 @@
+from apps.chatbot.constants.support_prompts import SUPPORT_SYSTEM_PROMPT
+from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.users.models import User
 
@@ -8,9 +10,21 @@ def create_support_session(
     title: str,
     using_model: str,
 ) -> ChatbotSession:
-    return ChatbotSession.objects.create(
+    """고객지원(support) 전용 챗봇 세션 생성"""
+
+    # 1) support 세션 생성
+    session = ChatbotSession.objects.create(
         user=user,
         question=None,
         title=title,
         using_model=using_model,
     )
+
+    # 2) 프롬프트를 USER 메시지로 1회 저장
+    ChatbotCompletions.objects.create(
+        session=session,
+        role=ChatbotCompletions.Role.USER,
+        content=SUPPORT_SYSTEM_PROMPT,
+    )
+
+    return session
