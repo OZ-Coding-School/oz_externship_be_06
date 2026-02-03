@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.posts.models.post import Post
+from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
 from apps.posts.views.post_comment_views import (
     AUTH_MSG,
@@ -29,7 +30,10 @@ class PostCommentAPITestCase(APITestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
-        self.post = Post.objects.create(author=self.user, title="test post", content="test content")
+        self.category = PostCategory.objects.create(name="test category")
+        self.post = Post.objects.create(
+            author=self.user, title="test post", content="test content", category=self.category
+        )
         self.client.force_authenticate(user=self.user)
 
     def test_comment_create_success(self) -> None:

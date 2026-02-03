@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from apps.posts.models.post import Post
+from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.post_comment import (
     PostCommentCreateSerializer,
@@ -23,7 +24,10 @@ class PostCommentSerializerTests(TestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
-        self.post = Post.objects.create(author=self.user, title="test post", content="test content")
+        self.category = PostCategory.objects.create(name="test category")
+        self.post = Post.objects.create(
+            author=self.user, title="test post", content="test content", category=self.category
+        )
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
 
     def test_post_comment_list_serializer_fields(self) -> None:
