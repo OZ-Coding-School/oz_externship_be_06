@@ -3,8 +3,6 @@ from typing import Any, Dict, cast
 from rest_framework import serializers
 
 from apps.exams.models import ExamQuestion
-from apps.exams.constants import ErrorMessages
-
 
 class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQuestion]):
     type = serializers.ChoiceField(choices=ExamQuestion.TypeChoices.choices, required=False)
@@ -37,21 +35,22 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
     # list -> json 변환
     def to_internal_value(self, data: Any) -> Dict[str, Any]:
         ret = cast(Dict[str, Any], super().to_internal_value(data))
+
         if "options_json" in ret and isinstance(ret["options_json"], list):
             ret["options_json"] = json.dumps(ret["options_json"])
+
+        if "correct_answer" in ret:
+            ret["answer"] = ret.pop("correct_answer")
         return ret
 
     # 최소 한 필드 이상은 들어왔는지 확인
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        if not data:
-            raise serializers.ValidationError(
-                ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value
-            )
         return data
 
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):
     question_id = serializers.IntegerField(source="id")
     options = serializers.SerializerMethodField()
+    correct_answer = serializers.JSONField(source="answer")
 
     class Meta:
         model = ExamQuestion

@@ -20,6 +20,7 @@ from apps.exams.services.admin.questions_update import (
 )
 from apps.exams.constants import ErrorMessages
 from apps.core.utils.permissions import IsStaffRole
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
@@ -81,7 +82,7 @@ from apps.core.utils.permissions import IsStaffRole
         ),
     },
 )
-class AdminExamQuestionUpdateAPIView(APIView):
+class AdminExamQuestionUpdateAPIView(ExamsExceptionMixin, APIView):
     permission_classes = [IsAuthenticated, IsStaffRole]
 
     # 401, 403
@@ -118,17 +119,17 @@ class AdminExamQuestionUpdateAPIView(APIView):
                 instance=question,
                 update_data=update_data,
             )
-        # BusinessRuleError를 다 400으로 반환
-        except BusinessRuleError:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         # 409
         except ConflictRuleError:
             return Response(
                 {"error_detail": ErrorMessages.QUESTION_UPDATE_CONFLICT.value},
                 status=status.HTTP_409_CONFLICT,
+            )
+        # BusinessRuleError를 다 400으로 반환
+        except BusinessRuleError:
+            return Response(
+                {"error_detail": ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # 4.응답

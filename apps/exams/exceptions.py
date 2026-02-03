@@ -10,3 +10,4 @@ class ErrorDetailException(APIException):
         super().__init__(detail=detail)
         self.http_status = http_status
         self.status_code = http_status
+
