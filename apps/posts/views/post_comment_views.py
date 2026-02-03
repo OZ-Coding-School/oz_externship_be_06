@@ -94,7 +94,14 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist as e:
-            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET) from e
+            # 통일된 에러 포맷
+            from rest_framework.response import Response
+            from rest_framework.exceptions import APIException
+            class PostNotFoundException(APIException):
+                status_code = 404
+                default_detail = {"error_detail": PostErrorMessage.POST_NOT_FOUND_WITH_TARGET}
+                default_code = "not_found"
+            raise PostNotFoundException()
 
     def get_queryset(self) -> QuerySet[PostComment]:
         # 해당 게시글의 댓글 목록 쿼리셋 반환
@@ -138,7 +145,10 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
     )
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 댓글 목록 조회 (페이지네이션)
-        return super().get(request, *args, **kwargs)
+        try:
+            return super().get(request, *args, **kwargs)
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
 
     @extend_schema(
         tags=["Comments"],
@@ -159,13 +169,17 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         - 게시글 없으면 404 반환
         """
         if not request.user or not request.user.is_authenticated:
-            raise PostUnauthorizedException()
-        post = self._get_post()
+            return Response({"error_detail": PostErrorMessage.UNAUTHORIZED}, status=401)
+        try:
+            post = self._get_post()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
         serializer = PostCommentCreateSerializer(
             data=request.data,
             context={**self.get_serializer_context(), "request": request, "post": post},
         )
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response({"error_detail": serializer.errors}, status=400)
         return Response({"detail": "댓글이 등록되었습니다."}, status=status.HTTP_201_CREATED)
 
 
@@ -215,7 +229,10 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     @extend_schema(tags=["Comments"], summary="댓글 상세 조회 API")
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 댓글 상세 mock 응답
-        comment_id = self._get_comment_id()
+        try:
+            comment_id = self._get_comment_id()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
         return Response({"id": comment_id, "content": ""}, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -238,17 +255,24 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     )
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 댓글 수정 (본인만 가능)
-        comment_id = self._get_comment_id()
-        post = self._get_post()
+        try:
+            comment_id = self._get_comment_id()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
+        try:
+            post = self._get_post()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
+            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         # mock 객체로 serializer 검증
         mock_comment = type("Comment", (), {})()
         mock_comment.id = comment_id
         mock_comment.content = ""
         mock_comment.author = post.author
         serializer = self.serializer_class(instance=mock_comment, data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response({"error_detail": serializer.errors}, status=400)
         return Response(
             {"id": comment_id, "content": serializer.validated_data["content"], "updated_at": timezone.now()},
             status=status.HTTP_200_OK,
@@ -266,8 +290,14 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     )
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 댓글 삭제 (본인만 가능)
-        self._get_comment_id()
-        post = self._get_post()
+        try:
+            self._get_comment_id()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
+        try:
+            post = self._get_post()
+        except NotFound as e:
+            return Response({"error_detail": str(e.detail)}, status=404)
         if post.author_id != request.user.id:
-            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
+            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
