@@ -3,10 +3,7 @@ from typing import Any
 
 from django.db import transaction
 
-from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.models import Question, QuestionCategory, QuestionImage
-from apps.qna.utils.content_parser import ContentParser
+from apps.qna.models import Question, QuestionCategory
 from apps.qna.utils.model_types import User
 
 logger = logging.getLogger(__name__)
@@ -32,6 +29,6 @@ class QuestionCommandService:
 
         """
         category_id = data.pop("category_id")
-        category = QuestionCategory.objects.get(id=category_id)  # 카테고리 획득
-        question = Question.objects.create(author=author, category=category, **data)  # 질문 생성
+        category = QuestionCategory.objects.get(id=category_id)
+        question = Question.objects.create(author=author, category=category, **data)
         return question

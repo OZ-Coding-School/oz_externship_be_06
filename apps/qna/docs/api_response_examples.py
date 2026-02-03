@@ -368,7 +368,7 @@ class ErrorResponseExamples:
     )
     ANSWER_ADOPT_409 = OpenApiExample(
         name="답변 채택 실패 response body 예시 - 이미 채택됨",
-        value={"error_detail": ErrorMessages.ALREADY_EXISTS_ADOPTED_ANSWER.value},
+        value={"error_detail": ErrorMessages.CONFLICT_ANSWER_ADOPT.value},
     )
 
     # --- AI_ANSWER_GENERATE ---

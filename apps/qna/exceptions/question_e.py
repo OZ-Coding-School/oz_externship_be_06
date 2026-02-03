@@ -10,5 +10,5 @@ class QuestionNotFoundException(QnaBaseException):
     """
 
     status_code: int = status.HTTP_404_NOT_FOUND
-    default_detail = ErrorMessages.DEFAULT_MESSAGE_404
+    default_detail = ErrorMessages.NOT_FOUND_QUESTION
     default_code = "question_not_found"
