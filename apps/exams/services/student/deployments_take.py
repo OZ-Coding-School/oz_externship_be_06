@@ -115,7 +115,6 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
     return {
         "exam_id": exam.id,
         "exam_name": exam.title,
-        "exam_thumbnail_img_url": exam.thumbnail_img_url,
         "duration_time": deployment.duration_time,
         "elapsed_time": elapsed_time,
         "cheating_count": submission.cheating_count,

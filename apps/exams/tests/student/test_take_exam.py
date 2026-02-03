@@ -74,7 +74,6 @@ class TakeExamAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("exam_id", response.data)
         self.assertIn("exam_name", response.data)
-        self.assertIn("exam_thumbnail_img_url", response.data)
         self.assertIn("duration_time", response.data)
         self.assertIn("elapsed_time", response.data)
         self.assertIn("cheating_count", response.data)
