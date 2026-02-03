@@ -11,6 +11,7 @@ from apps.users.views.admin.admin_account_role_views import (
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
 from apps.users.views.admin.admin_analytics_views import (
     AdminSignupTrendsAPIView,
+    AdminStudentEnrollmentTrendsAPIView,
     AdminWithdrawalTrendsAPIView,
 )
 from apps.users.views.admin.admin_student_enrollment_views import (
@@ -57,6 +58,7 @@ urlpatterns = [
     ),
     # Students
     path("students/", AdminStudentListAPIView.as_view(), name="admin-student-list"),
+    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
     path("student-enrollments/", AdminStudentEnrollmentListAPIView.as_view(), name="admin-student-enrollment-list"),
     path(
         "student-enrollments/accept",
@@ -68,35 +70,19 @@ urlpatterns = [
         AdminStudentEnrollmentRejectAPIView.as_view(),
         name="admin-student-enrollment-reject",
     ),
-    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
     # Withdrawals
     path("withdrawals/", AdminWithdrawalListAPIView.as_view(), name="admin-withdrawal-list"),
     path("withdrawals/<int:withdrawal_id>/", AdminWithdrawalDetailAPIView.as_view(), name="admin-withdrawal-detail"),
     # Analytics
     path("analytics/signup/trends", AdminSignupTrendsAPIView.as_view(), name="admin-signup-trends"),
     path(
-        "students/<int:student_id>/scores",
-        AdminStudentScoreAPIView.as_view(),
-        name="admin-student-scores",
-    ),
-    path(
-        "withdrawals/",
-        AdminWithdrawalListAPIView.as_view(),
-        name="admin-withdrawal-list",
-    ),
-    path(
-        "withdrawals/<int:withdrawal_id>/",
-        AdminWithdrawalDetailAPIView.as_view(),
-        name="admin-withdrawal-detail",
-    ),
-    path(
-        "analytics/signup/trends",
-        AdminSignupTrendsAPIView.as_view(),
-        name="admin-signup-trends",
-    ),
-    path(
         "analytics/withdrawals/trends/",
         AdminWithdrawalTrendsAPIView.as_view(),
         name="admin-withdrawal-trends",
+    ),
+    path(
+        "analytics/student-enrollments/trends/",
+        AdminStudentEnrollmentTrendsAPIView.as_view(),
+        name="admin-student-enrollment-trends",
     ),
 ]
