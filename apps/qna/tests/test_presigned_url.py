@@ -37,7 +37,7 @@ class PresignedUrlAPITest(TestCase):
         refresh = RefreshToken.for_user(user)
         return {"Authorization": f"Bearer {str(refresh.access_token)}"}
 
-    @patch("apps.core.services.command.S3Handler.generate_presigned_put_url")
+    @patch("apps.core.services.command.S3Handler.generate_presigned_url")
     def test_question_endpoint_wiring(self, mock_s3: Any) -> None:
         """[성공] 질문 도메인이 QUESTION 경로를 사용하는지 확인"""
         mock_s3.return_value = {"presigned_url": "url", "img_url": "url", "key": "key"}
@@ -54,7 +54,7 @@ class PresignedUrlAPITest(TestCase):
         args, _ = mock_s3.call_args
         self.assertEqual(args[0], StorageTarget.QUESTION.s3_path)
 
-    @patch("apps.core.services.command.S3Handler.generate_presigned_put_url")
+    @patch("apps.core.services.command.S3Handler.generate_presigned_url")
     def test_answer_endpoint_wiring(self, mock_s3: Any) -> None:
         """[성공] 질문 도메인이 ANSWER 경로를 사용하는지 확인"""
         mock_s3.return_value = {"presigned_url": "url", "img_url": "url", "key": "key"}
