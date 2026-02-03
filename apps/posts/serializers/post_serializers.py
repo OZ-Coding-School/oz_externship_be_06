@@ -153,3 +153,36 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
         카테고리 정보 추철
         """
         return {"id": obj.category.id, "name": obj.category.name}
+
+
+class PostUpdateSerializer(serializers.ModelSerializer[Post]):
+    """
+    게시글 수정을 위한 Serializer
+    """
+
+    category_id: serializers.IntegerField = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = Post
+        fields: tuple[str, ...] = (
+            "id",
+            "title",
+            "content",
+            "category_id",
+        )
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Serializer 전체 데이터에 대한 유효성 검사
+        """
+        return attrs
+
+    def validate_title(self, value: str) -> str:
+        """
+        제목 유효성 검사
+        공백 제외 2자 이상
+        """
+
+        if len(value.strip()) < 2:
+            raise serializers.ValidationError("제목은 최소 2자 이상이어야 합니다.")
+        return value

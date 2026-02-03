@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from django.db import transaction
 from django.db.models import F, Q, QuerySet
 
+from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
 from apps.posts.models import Post, PostAttachment, PostImage
 from apps.users.models import User
 
@@ -22,6 +23,9 @@ class PostService:
         images: Optional[List[str]] = None,
         attachments: Optional[List[str]] = None,
     ) -> Post:
+        """
+        게시글 생성
+        """
 
         post: Post = Post.objects.create(author=user, category_id=category_id, title=title, content=content)
 
@@ -44,3 +48,25 @@ class PostService:
 
         post.view_count = F("view_count") + 1
         post.save(update_fields=["view_count"])
+
+    @staticmethod
+    @transaction.atomic
+    def update_post(user: User, post: Post, **data: Any) -> Post:
+        """
+        게시글 수정
+        - 요청자가 작성자인지 권한 검증 필요
+        - 전달된 데이터만 선택적 업데이트
+        """
+
+        # 권한 검증 : 작성자 본인이 아니면 예외 발생
+        if post.author != user:  # 작성자(post.author) 요청자(user)
+            raise PostUnauthorizedException()
+
+        # 데이터 업데이트
+        for attr, value in data.items():
+            setattr(post, attr, value)
+
+        # DB 저장
+        post.save()
+
+        return post

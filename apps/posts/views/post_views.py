@@ -1,6 +1,8 @@
-from typing import Any, Never, cast
+from typing import Any, Dict, Never, cast
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from moto.dynamodb.models.dynamo_type import serializer
+from numpy.f2py.crackfortran import usermodules
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -9,12 +11,14 @@ from rest_framework.views import APIView
 
 from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
 from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
+from apps.posts.models import Post
 from apps.posts.selectors.post_selectors import PostSelector
 from apps.posts.serializers.post_serializers import (
     PostCreateSerializer,
     PostDetailSerializer,
     PostFilterSerializer,
     PostListSerializer,
+    PostUpdateSerializer,
 )
 from apps.posts.services.post_services import PostService
 from apps.posts.utils.pagination import PostPagination
@@ -98,7 +102,10 @@ class PostDetailView(APIView):
     GET: 게시글 상세 조회 및 조회수 증가
     """
 
-    permission_classes = [AllowAny]
+    def get_permissions(self) -> list[Any]:
+        if self.request.method == "PATCH":
+            return [IsAuthenticated()]
+        return [AllowAny()]
 
     @extend_schema(
         summary="게시글 상세 조회",
@@ -116,3 +123,32 @@ class PostDetailView(APIView):
         post.refresh_from_db()
         serializer = PostDetailSerializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="게시글 수정", request=PostUpdateSerializer, responses={200: PostDetailSerializer}, tags=["posts"]
+    )
+    def patch(self, request: Request, post_id: int) -> Response:
+        user: User = cast(User, request.user)
+
+        # post 객체 확보
+        post: Post | None = PostSelector.get_post_detail(post_id=post_id)
+        if not post:
+            return Response({"error_detail": PostErrorMessage.POST_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serializer 검증
+        serializer: PostUpdateSerializer = PostUpdateSerializer(data=request.data, partial=True)  # 부분 수정
+        serializer.is_valid(raise_exception=True)
+
+        # Service 호출 (권한 검증 및 DB 반영)
+        try:
+            updated_post: Post = PostService.update_post(user=user, post=post, **serializer.validated_data)
+            return Response(
+                PostUpdateSerializer(updated_post).data,
+                status=status.HTTP_200_OK,
+            )
+        except PostUnauthorizedException as e:
+            raise e
+        except Exception:
+            return Response(
+                {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -15,7 +15,7 @@ class PostErrorMessage:
 
     # 404 Not Found
     POST_NOT_FOUND_WITH_TARGET = "해당 게시글을 찾을 수 없습니다."
-    POST_NOT_FOUND = "게시글을 찾을 수 없습니다."
+    POST_NOT_FOUND = "해당 게시글을 찾을 수 없습니다."
     COMMENT_NOT_FOUND = "해당 댓글을 찾을 수 없습니다."
     LIKE_NOT_FOUND = "좋아요 기록을 찾을 수 없습니다."
 
@@ -29,4 +29,5 @@ class PostSuccessMessage:
     """
 
     POST_CREATE_SUCCESS = "게시글이 성공적으로 등록되었습니다."
+    POST_UPDATE_SUCCESS = "게시글이 성공적으로 수정되었습니다."
     POST_DELETE_SUCCESS = "게시글이 삭제되었습니다."
