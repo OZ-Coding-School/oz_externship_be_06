@@ -15,22 +15,23 @@ from apps.users.services.course_service import (
 )
 
 
-# 수강신청 가능한 기수 조회
+# 수강신청 가능한 과정/기수 조회
 class AvailableCoursesAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["accounts"],
-        summary="수강신청 가능한 기수 조회 API",
+        summary="수강신청 가능한 과정/기수 조회 API",
         description="""
-현재 수강신청이 가능한 기수 목록을 조회합니다.
+수강신청이 가능한 과정 및 기수 목록을 조회합니다.
 
-## 조회 조건
-- 모집 기간(`recruitment_start_date` ~ `recruitment_end_date`) 내에 있는 기수만 조회됩니다.
-- 모집 상태가 활성화된 기수만 표시됩니다.
+## 응답 구조
+과정 별로 해당 과정의 수강 가능한 기수 목록이 중첩되어 반환
         """,
-        responses={200: AvailableCourseResponseSerializer(many=True)},
+        responses={
+            200: AvailableCourseResponseSerializer(many=True),
+        },
     )
     def get(self, request: Request) -> Response:
         courses = get_available_courses()
