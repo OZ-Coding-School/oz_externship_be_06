@@ -6,7 +6,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.serializers.presigned_url import PresignedUrlResponseSerializer, PresignedUrlRequestSerializer
+from apps.core.serializers.presigned_url import (
+    PresignedUrlRequestSerializer,
+    PresignedUrlResponseSerializer,
+)
 from apps.core.services.presigned_url import PresignedUrlService, StorageTargetProtocol
 
 

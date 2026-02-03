@@ -13,6 +13,7 @@ from apps.core.utils.s3_handler import S3Handler
 
 class MockStorageTarget:
     """StorageTargetProtocol 규격을 만족하는 테스트용 가짜 객체"""
+
     domain = "test_domain"
     s3_path = "test/path"
 
