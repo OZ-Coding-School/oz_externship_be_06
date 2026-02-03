@@ -137,3 +137,34 @@ class TakeExamAPITest(APITestCase):
             ExamSubmission.objects.filter(submitter=self.student_user, deployment=self.deployment).count(),
             1,
         )
+
+    def test_take_exam_returns_404_when_missing(self) -> None:
+        self.client.force_authenticate(user=self.student_user)
+        url = reverse("exams:take-exam", kwargs={"deployment_id": 999999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("error_detail", response.data)
+        self.assertIn(ErrorMessages.EXAM_NOT_FOUND.value, str(response.data["error_detail"]))
+
+    def test_take_exam_question_snapshot_defaults(self) -> None:
+        self.deployment.questions_snapshot_json = [
+            {"question_id": 1, "type": "SINGLE_CHOICE", "question": "Q1", "point": 5, "options": ["A", "B"]},
+            {"question_id": 2, "type": "MULTI_SELECT", "question": "Q2", "point": 5, "options": ["A", "B"]},
+            {"question_id": 3, "type": "FILL_IN_BLANK", "question": "Q3", "point": 5, "blank_count": 2},
+            {"question_id": 4, "type": "ORDERING", "question": "Q4", "point": 5, "options": ["A", "B"]},
+            {"question_id": 5, "type": "SHORT_ANSWER", "question": "Q5", "point": 5},
+            {"question_id": 6, "type": "OX", "question": "Q6", "point": 5},
+        ]
+        self.deployment.save(update_fields=["questions_snapshot_json"])
+
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.get(self._take_exam_url())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        questions = response.data["questions"]
+        self.assertEqual(questions[0]["answer_input"], "")
+        self.assertEqual(questions[1]["answer_input"], [])
+        self.assertEqual(questions[2]["answer_input"], ["", ""])
+        self.assertEqual(questions[3]["answer_input"], [])
+        self.assertEqual(questions[4]["answer_input"], "")
+        self.assertEqual(questions[5]["answer_input"], "")

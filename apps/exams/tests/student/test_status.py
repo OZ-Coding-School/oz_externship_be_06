@@ -9,7 +9,7 @@ from apps.courses.models.cohorts import Cohort
 from apps.courses.models.courses import Course
 from apps.courses.models.subjects import Subject
 from apps.exams.constants import ErrorMessages
-from apps.exams.models import Exam, ExamDeployment
+from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.users.models import User
 
 
@@ -130,3 +130,39 @@ class ExamStatusCheckAPITest(TestCase):
         self.assertEqual(response.status_code, 404)
         data = response.json()
         self.assertEqual(data["error_detail"], ErrorMessages.EXAM_NOT_FOUND.value)
+
+    def test_status_auto_submits_when_overdue(self) -> None:
+        now = timezone.now()
+        self.deployment.duration_time = 60
+        self.deployment.save(update_fields=["duration_time"])
+
+        ExamQuestion.objects.create(
+            exam=self.exam,
+            question="OX 문제",
+            type=ExamQuestion.TypeChoices.OX,
+            answer="O",
+            point=5,
+            explanation="설명",
+        )
+
+        submission = ExamSubmission.objects.create(
+            submitter=self.student,
+            deployment=self.deployment,
+            started_at=now - timedelta(minutes=61),
+            cheating_count=0,
+            answers_json=[],
+        )
+
+        response = self.client.get(
+            f"/api/v1/exams/deployments/{self.deployment.id}/status/",
+            headers=self._auth_headers(self.student),
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data["exam_status"], "closed")
+        self.assertTrue(data["force_submit"])
+
+        submission.refresh_from_db()
+        self.assertEqual(len(submission.answers_json), 1)
+        self.assertIsNone(submission.answers_json[0].get("submitted_answer"))

@@ -7,12 +7,15 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
-from apps.exams.models import ExamDeployment
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
 )
-from apps.exams.services.student.deployments_status import get_exam_status
+from apps.exams.services.student.auto_submit import auto_submit_if_overdue
+from apps.exams.services.student.deployments_status import (
+    get_deployment_or_404,
+    get_exam_status,
+)
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -61,15 +64,14 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
     serializer_class = ExamStatusResponseSerializer
 
     def get(self, request: Request, deployment_id: int) -> Response:
-        try:
-            deployment = ExamDeployment.objects.select_related("exam", "cohort").get(id=deployment_id)
-        except ExamDeployment.DoesNotExist:
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        deployment = get_deployment_or_404(deployment_id, error_message=ErrorMessages.EXAM_NOT_FOUND)
 
-        exam_status = get_exam_status(deployment)
+        user_id = request.user.id
+        if user_id is None:
+            return Response({"error_detail": ErrorMessages.UNAUTHORIZED.value}, status=status.HTTP_401_UNAUTHORIZED)
+
+        auto_submitted = auto_submit_if_overdue(deployment=deployment, user_id=user_id).submitted
+        exam_status = ExamStatus.CLOSED if auto_submitted else get_exam_status(deployment)
         is_closed = exam_status == ExamStatus.CLOSED
         serializer = self.serializer_class(
             data={
