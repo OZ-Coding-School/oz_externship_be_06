@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional
 
 from rest_framework import serializers
 
+from apps.posts.models import PostComment
 from apps.posts.models.post import Post
 from apps.users.models import User
 
@@ -83,10 +84,34 @@ class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
     )
     sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)
 
+class PostCommentTagSerializer(serializers.Serializer):
+    nickname = serializers.CharField(source="tagged_user.nickname")
+
+class PostCommentDetailSerializer(serializers.ModelSerializer[PostComment]):
+    author_nickname = serializers.CharField(source="author.nickname", read_only=True)
+    author_profile_img = serializers.URLField(source="author.profile_img_url", read_only=True)
+    tagged_users = PostCommentTagSerializer(many=True, source="tags", read_only=True)
+
+    class Meta:
+        model = PostComment
+        fields = [
+            "id",
+            "author_nickname",
+            "author_profile_img",
+            "content",
+            "created_at",
+            "tagged_users",
+        ]
 
 class PostDetailSerializer(serializers.ModelSerializer[Post]):
     author = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    images = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='image_url'
+    )
+    comments = PostCommentDetailSerializer(many=True, read_only=True)
     like_count = serializers.IntegerField()
 
     class Meta:
@@ -97,6 +122,8 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
             "author",
             "category",
             "content",
+            "images",
+            "comments",
             "view_count",
             "like_count",
             "created_at",
