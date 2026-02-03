@@ -15,10 +15,9 @@ from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
-from apps.qna.serializers.answer import request as ser_ans_req
-from apps.qna.serializers.answer import request as ser_ans_reqs
-from apps.qna.serializers.answer import response as ser_ans_rep
-from apps.qna.services.answer import command as svc_ans_cmd
+from apps.qna.serializers.answer.request import AnswerCreateSerializer
+from apps.qna.serializers.answer.response import AnswerCreateResponseSerializer
+from apps.qna.services.answer.command import AnswerCommandService
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import CanWriteAnswer
 from apps.qna.views.base_view import QnaBaseAPIView
@@ -30,19 +29,19 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
-    serializer_class = ser_ans_req.AnswerCreateSerializer
+    serializer_class = AnswerCreateSerializer
 
     # 답변 등록
     # [POST] /api/v1/qna/questions/{question_id}/answers
     @extend_schema(
         summary="답변 등록 API",
         description=ApiDescriptions.ANSWER_CREATE,
-        request=ser_ans_reqs.AnswerCreateSerializer,
+        request=AnswerCreateSerializer,
         examples=[RequestBodyExamples.ANSWER_CREATE],
         responses={
             201: OpenApiResponse(
                 description="답변 등록 성공",
-                response=ser_ans_rep.AnswerCreateResponseSerializer,
+                response=AnswerCreateResponseSerializer,
                 examples=[SuccessResponseExamples.ANSWER_CREATE],
             ),
             400: OpenApiResponse(
@@ -70,14 +69,14 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request, question_id: int) -> Response:
         """답변 생성"""
-        serializer = ser_ans_req.AnswerCreateSerializer(data=request.data)
+        serializer = AnswerCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        answer = svc_ans_cmd.AnswerCommandService.create_answer(
+        answer = AnswerCommandService.create_answer(
             question_id=question_id, author=cast(User, request.user), data=serializer.validated_data
         )
 
         # 응답 출력
-        response_serializer = ser_ans_rep.AnswerCreateResponseSerializer(answer)
+        response_serializer = AnswerCreateResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
