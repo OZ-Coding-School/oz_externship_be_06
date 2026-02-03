@@ -2,9 +2,8 @@ import logging
 from typing import Dict, Protocol, runtime_checkable
 
 from botocore.exceptions import ClientError
-from rest_framework import status
+from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.exceptions.base import CoreBaseException
 from apps.core.utils.s3_handler import S3Handler
 
 logger = logging.getLogger("django")
@@ -30,7 +29,7 @@ class PresignedUrlService:
         """도메인(질문/답변)에 따라 경로를 결정하여 URL 발급"""
         if not isinstance(target, StorageTargetProtocol):
             logger.error(f"[INVALID_TARGET] Target {type(target)} does not implement StorageTargetProtocol")
-            raise CoreBaseException("유효하지 않은 업로드 도메인입니다.", status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({"error_detail": "유효하지 않은 업로드 도메인입니다."})
 
         s3_handler = S3Handler()
 
@@ -40,9 +39,9 @@ class PresignedUrlService:
             logger.error(
                 f"[S3_API_FAILURE] Target: {target.domain} | File: {file_name} | Reason: {str(e)}", exc_info=True
             )
-            raise CoreBaseException("S3 연결 중 오류가 발생했습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise APIException({"error_detail": "S3 연결 중 오류가 발생했습니다."})
 
         if not result:
             logger.error(f"[S3_LOGIC_ERROR] Presigned URL result is empty for {file_name}")
-            raise CoreBaseException("URL 생성에 실패했습니다.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+            raise APIException({"error_detail": "URL 생성에 실패했습니다."})
         return result

@@ -1,9 +1,7 @@
 import os
 from typing import Any
 
-from rest_framework import serializers, status
-
-from apps.core.exceptions.base import CoreBaseException
+from rest_framework import exceptions, serializers, status
 
 
 class PresignedUrlRequestSerializer(serializers.Serializer[Any]):
@@ -17,8 +15,11 @@ class PresignedUrlRequestSerializer(serializers.Serializer[Any]):
         """파일 확장자 검증 (jpg, jpeg, png, gif)"""
         allowed_extensions = {".jpg", ".jpeg", ".png", ".gif"}
         _, ext = os.path.splitext(value.lower())
+
         if ext not in allowed_extensions:
-            raise CoreBaseException("지원하지 않는 파일 형식입니다.", status.HTTP_400_BAD_REQUEST)
+            error = exceptions.APIException(detail={"error_detail": "지원하지 않는 파일 형식입니다."})
+            error.status_code = status.HTTP_400_BAD_REQUEST
+            raise error
 
         return value
 

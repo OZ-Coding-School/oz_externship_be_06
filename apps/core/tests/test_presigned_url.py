@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
 from rest_framework import status
+from rest_framework.exceptions import APIException, ValidationError
 
-from apps.core.exceptions.base import CoreBaseException
 from apps.core.serializers.presigned_url import PresignedUrlRequestSerializer
 from apps.core.services.presigned_url import PresignedUrlService
 from apps.core.utils.s3_handler import S3Handler
@@ -60,11 +60,13 @@ class PresignedUrlRequestSerializerTest(unittest.TestCase):
             self.assertTrue(serializer.is_valid())
 
     def test_validate_file_name_fail(self) -> None:
-        """[실패] 허용되지 않은 확장자 차단 (CoreBaseException 발생)"""
+        """[실패] 허용되지 않은 확장자 차단 (APIException 발생)"""
         serializer = PresignedUrlRequestSerializer(data={"file_name": "virus.exe"})
-        with self.assertRaises(CoreBaseException) as cm:
+        with self.assertRaises(APIException) as cm:
             serializer.is_valid(raise_exception=True)
+
         detail = cast(dict[str, Any], cm.exception.detail)
+        # 평탄화된 응답 구조 확인
         self.assertEqual(detail["error_detail"], "지원하지 않는 파일 형식입니다.")
 
 
@@ -73,16 +75,24 @@ class PresignedUrlCommandServiceTest(unittest.TestCase):
 
     @patch("apps.core.services.presigned_url.S3Handler.generate_presigned_url")
     def test_get_presigned_url_s3_error_wrapping(self, mock_s3: MagicMock) -> None:
-        """[실패] S3 장애(ClientError) 발생 시 500 CoreBaseException으로 변환"""
+        """[실패] S3 장애(ClientError) 발생 시 500 APIException으로 변환"""
         mock_s3.side_effect = ClientError({"Error": {"Code": "500", "Message": "S3 Down"}}, "PutObject")
 
-        with self.assertRaises(CoreBaseException) as cm:
+        with self.assertRaises(APIException) as cm:
             PresignedUrlService.get_presigned_url(MockStorageTarget(), "test.png")
 
         self.assertEqual(cm.exception.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        detail = cast(dict[str, Any], cm.exception.detail)
+        self.assertEqual(detail["error_detail"], "S3 연결 중 오류가 발생했습니다.")
+
     def test_get_presigned_url_target_none(self) -> None:
-        """[실패] 타겟이 None일 경우 400 에러"""
-        with self.assertRaises(CoreBaseException) as cm:
+        """[실패] 타겟이 Protocol 규격에 맞지 않을 경우 400 ValidationError"""
+        with self.assertRaises(ValidationError) as cm:
+            # Protocol을 준수하지 않는 None 등을 주입 시 ValidationError(400) 발생
             PresignedUrlService.get_presigned_url(cast(Any, None), "test.png")
+
         self.assertEqual(cm.exception.status_code, status.HTTP_400_BAD_REQUEST)
+
+        detail = cast(dict[str, Any], cm.exception.detail)
+        self.assertEqual(detail["error_detail"], "유효하지 않은 업로드 도메인입니다.")
