@@ -12,6 +12,7 @@ from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
 from apps.posts.selectors.post_selectors import PostSelector
 from apps.posts.serializers.post_serializers import (
     PostCreateSerializer,
+    PostDetailSerializer,
     PostFilterSerializer,
     PostListSerializer,
 )
@@ -90,3 +91,28 @@ class PostListCreateView(APIView):
             return Response(
                 {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class PostDetailView(APIView):
+    """
+    GET: 게시글 상세 조회 및 조회수 증가
+    """
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="게시글 상세 조회",
+        responses={200: PostDetailSerializer},
+        tags=["posts"],
+    )
+    def get(self, request: Request, post_id: int) -> Response:
+        # Selector
+        post = PostSelector.get_post_detail(post_id=post_id)
+
+        # Service
+        PostService.increment_view_count(post)
+
+        # Serializer
+        post.refresh_from_db()
+        serializer = PostDetailSerializer(post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
