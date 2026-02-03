@@ -8,7 +8,7 @@ from rest_framework import status
 from apps.core.exceptions.base import CoreBaseException
 from apps.core.serializers.request import PresignedUrlRequestSerializer
 from apps.core.services.command import PresignedUrlCommandService, StorageTarget
-from apps.core.utils.s3_utils import S3Handler
+from apps.core.utils.s3_handler import S3Handler
 
 
 class S3HandlerUnitTest(unittest.TestCase):
@@ -20,12 +20,12 @@ class S3HandlerUnitTest(unittest.TestCase):
         mock_boto.return_value = self.mock_client
         self.handler = S3Handler()
 
-    def test_generate_presigned_put_url_success(self) -> None:
+    def test_generate_presigned_url_success(self) -> None:
         """[성공] S3 Presigned URL 생성 및 데이터 구조 검증"""
         expected_url = "https://mock-s3-url.com/presigned"
         self.mock_client.generate_presigned_url.return_value = expected_url
 
-        result = self.handler.generate_presigned_put_url("test_folder", "image.png")
+        result = self.handler.generate_presigned_url("test_folder", "image.png")
 
         self.assertIsNotNone(result)
         if result is not None:
@@ -33,14 +33,14 @@ class S3HandlerUnitTest(unittest.TestCase):
             self.assertIn("test_folder", result["key"])
             self.assertIn("image.png", result["key"])
 
-    def test_generate_presigned_put_url_client_error(self) -> None:
+    def test_generate_presigned_url_client_error(self) -> None:
         """[실패] Boto3 ClientError 발생 시 예외 전파 검증"""
         self.mock_client.generate_presigned_url.side_effect = ClientError(
             error_response={"Error": {"Code": "403", "Message": "Forbidden"}}, operation_name="GeneratePresignedUrl"
         )
 
         with self.assertRaises(ClientError):
-            self.handler.generate_presigned_put_url("test_folder", "image.png")
+            self.handler.generate_presigned_url("test_folder", "image.png")
 
 
 class PresignedUrlRequestSerializerTest(unittest.TestCase):
@@ -64,7 +64,7 @@ class PresignedUrlRequestSerializerTest(unittest.TestCase):
 class PresignedUrlCommandServiceTest(unittest.TestCase):
     """서비스 레이어 에러 래핑 테스트"""
 
-    @patch("apps.core.services.command.S3Handler.generate_presigned_put_url")
+    @patch("apps.core.services.command.S3Handler.generate_presigned_url")
     def test_get_presigned_url_s3_error_wrapping(self, mock_s3: MagicMock) -> None:
         """[실패] S3 장애(ClientError) 발생 시 500 CoreBaseException으로 변환"""
         mock_s3.side_effect = ClientError({"Error": {"Code": "500", "Message": "S3 Down"}}, "PutObject")

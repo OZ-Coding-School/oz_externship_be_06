@@ -23,7 +23,7 @@ class S3Handler:
         )
         self.bucket_name = settings.AWS_S3_BUCKET_NAME
 
-    def generate_presigned_put_url(
+    def generate_presigned_url(
         self, folder_path: str, file_name: str, expiration: int = 3600
     ) -> Optional[Dict[str, str]]:
         """파일 업로드를 위한 Presigned URL 발급"""
