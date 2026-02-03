@@ -15,7 +15,7 @@ class AdminWithdrawalTrendsAPITest(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/withdrawals/trends/"
+        self.url = "/api/v1/admin/analytics/withdrawals/trends"
 
         # 관리자 유저
         self.admin_user = User.objects.create_user(
