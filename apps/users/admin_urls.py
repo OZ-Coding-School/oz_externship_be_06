@@ -77,7 +77,7 @@ urlpatterns = [
     # Analytics
     path("analytics/signup/trends", AdminSignupTrendsAPIView.as_view(), name="admin-signup-trends"),
     path(
-        "analytics/withdrawals/trends/",
+        "analytics/withdrawals/trends",
         AdminWithdrawalTrendsAPIView.as_view(),
         name="admin-withdrawal-trends",
     ),
@@ -87,7 +87,7 @@ urlpatterns = [
         name="admin-student-enrollment-trends",
     ),
     path(
-        "analytics/withdrawals/reasons/counts/",
+        "analytics/withdrawal-reasons/counts",
         AdminWithdrawalReasonCountsAPIView.as_view(),
         name="admin-withdrawal-reason-counts",
     ),

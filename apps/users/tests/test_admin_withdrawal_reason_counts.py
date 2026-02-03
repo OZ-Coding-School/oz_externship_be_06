@@ -14,7 +14,7 @@ class AdminWithdrawalReasonCountsAPITest(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/withdrawals/reasons/counts/"
+        self.url = "/api/v1/admin/analytics/withdrawal-reasons/counts"
 
         self.admin_user = User.objects.create_user(
             email="admin_wd@example.com",

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from apps.users.permissions import IsAdminStaff
 from apps.users.serializers.admin.admin_analytics_serializers import (
+    AdminWithdrawalReasonCountsResponseSerializer,
     SignupTrendsRequestSerializer,
     SignupTrendsResponseSerializer,
     StudentEnrollmentTrendsRequestSerializer,
@@ -257,14 +258,9 @@ class AdminWithdrawalReasonCountsAPIView(APIView):
     @extend_schema(
         tags=["admin_accounts"],
         summary="어드민 페이지 전체 기간 회원 탈퇴 사유별 갯수 API",
-        responses={
-            200: OpenApiResponse(
-                description="성공",
-            ),
-            401: OpenApiResponse(description="자격 인증 데이터가 제공되지 않았습니다."),
-            403: OpenApiResponse(description="권한이 없습니다."),
-        },
+        responses={200: AdminWithdrawalReasonCountsResponseSerializer},
     )
     def get(self, request: Request) -> Response:
         result = get_withdrawal_reason_counts()
-        return Response(result, status=200)
+        serializer = AdminWithdrawalReasonCountsResponseSerializer(result)
+        return Response(serializer.data, status=200)

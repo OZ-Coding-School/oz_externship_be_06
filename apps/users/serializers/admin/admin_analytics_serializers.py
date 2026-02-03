@@ -1,6 +1,8 @@
-from typing import Any
+from typing import Any, cast
 
 from rest_framework import serializers
+
+from apps.users.models import Withdrawal
 
 
 # 회원가입 추세 분석 요청
@@ -66,3 +68,17 @@ class StudentEnrollmentTrendsResponseSerializer(serializers.Serializer[Any]):
     to_date = serializers.DateField()
     total = serializers.IntegerField()
     items = TrendsItemSerializer(many=True)
+
+
+class AdminWithdrawalReasonCountItemSerializer(serializers.Serializer[Any]):
+    reason = serializers.ChoiceField(choices=cast(Any, Withdrawal.Reason.choices))
+    reason_label = serializers.CharField()
+    count = serializers.IntegerField()
+    percentage = serializers.FloatField()
+
+
+class AdminWithdrawalReasonCountsResponseSerializer(serializers.Serializer[Any]):
+    from_date = serializers.DateField(allow_null=True)
+    to_date = serializers.DateField(allow_null=True)
+    total = serializers.IntegerField()
+    items = AdminWithdrawalReasonCountItemSerializer(many=True)
