@@ -93,17 +93,8 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         post_id = self.kwargs.get("post_id")
         try:
             return Post.objects.get(pk=post_id)
-        except Post.DoesNotExist as e:
-            # 통일된 에러 포맷
-            from rest_framework.exceptions import APIException
-            from rest_framework.response import Response
-
-            class PostNotFoundException(APIException):
-                status_code = 404
-                default_detail = {"error_detail": PostErrorMessage.POST_NOT_FOUND_WITH_TARGET}
-                default_code = "not_found"
-
-            raise PostNotFoundException()
+        except Post.DoesNotExist:
+            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
 
     def get_queryset(self) -> QuerySet[PostComment]:
         # 해당 게시글의 댓글 목록 쿼리셋 반환
@@ -211,15 +202,16 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
             return Response({"error_detail": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
         if isinstance(exc, PostUnauthorizedException):
             return Response(exc.detail, status=exc.status_code)
-        return super().handle_exception(exc)
+        # 기타 예외는 error_detail 키로 반환, 500
+        return Response({"error_detail": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _get_post(self) -> Post:
         # 게시글 ID로 게시글 객체 조회 (없으면 404)
         post_id = int(self.kwargs["post_id"])
         try:
             return Post.objects.get(pk=post_id)
-        except Post.DoesNotExist as e:
-            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET) from e
+        except Post.DoesNotExist:
+            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
 
     def _get_comment_id(self) -> int:
         # 댓글 ID 유효성 검사
