@@ -6,9 +6,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.serializers.request import PresignedUrlRequestSerializer
-from apps.core.serializers.response import PresignedUrlResponseSerializer
-from apps.core.services.command import PresignedUrlCommandService, StorageTarget
+from apps.core.serializers.presigned_url import PresignedUrlResponseSerializer, PresignedUrlRequestSerializer
+from apps.core.services.presigned_url import PresignedUrlCommandService, StorageTargetProtocol
 
 
 class BasePresignedUrlAPIView(APIView):
@@ -18,7 +17,7 @@ class BasePresignedUrlAPIView(APIView):
     """
 
     permission_classes: list[type[Any]] = []
-    storage_target: StorageTarget
+    storage_target: StorageTargetProtocol
 
     def put(self, request: Request) -> Response:
         """공통 PUT 로직: 시리얼라이저 검증 후 도메인별 서비스 호출"""
