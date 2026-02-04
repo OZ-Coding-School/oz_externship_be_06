@@ -87,7 +87,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         self.client.force_authenticate(user=self.staff_user)
 
         url = reverse(
-            "admin-exam-deployment-delete",
+            "admin-exam-deployment-detail",
             kwargs={"deployment_id": self.deployment.id},
         )
 
@@ -105,7 +105,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         self.client.force_authenticate(user=self.staff_user)
 
         url = reverse(
-            "admin-exam-deployment-delete",
+            "admin-exam-deployment-detail",
             kwargs={"deployment_id": 0},
         )
 
@@ -113,7 +113,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_401_when_not_authenticated(self) -> None:
-        url = reverse("admin-exam-deployment-delete", kwargs={"deployment_id": self.deployment.id})
+        url = reverse("admin-exam-deployment-detail", kwargs={"deployment_id": self.deployment.id})
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -122,7 +122,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         self.client.force_authenticate(user=self.normal_user)
 
         url = reverse(
-            "admin-exam-deployment-delete",
+            "admin-exam-deployment-detail",
             kwargs={"deployment_id": self.deployment.id},
         )
 
@@ -131,7 +131,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
 
     def test_404_when_deployment_not_found(self) -> None:
         self.client.force_authenticate(user=self.staff_user)
-        url = reverse("admin-exam-deployment-delete", kwargs={"deployment_id": 999999})
+        url = reverse("admin-exam-deployment-detail", kwargs={"deployment_id": 999999})
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -142,7 +142,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         mock_atomic.side_effect = Exception("Conflict!")
 
         self.client.force_authenticate(user=self.staff_user)
-        url = reverse("admin-exam-deployment-delete", kwargs={"deployment_id": self.deployment.id})
+        url = reverse("admin-exam-deployment-detail", kwargs={"deployment_id": self.deployment.id})
 
         response = self.client.delete(url)
 

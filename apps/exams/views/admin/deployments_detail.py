@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
+from apps.exams.serializers.admin.deployments_delete import (
+    AdminExamDeploymentDeleteResponseSerializer,
+)
 from apps.exams.serializers.admin.deployments_detail import (
     AdminExamDeploymentDetailResponseSerializer,
 )
@@ -22,6 +25,15 @@ from apps.exams.serializers.admin.deployments_update import (
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import update_exam_deployment
+from apps.exams.services.admin.deployments_delete import (
+    ExamDeploymentDeleteConflictError,
+    ExamDeploymentDeleteNotFoundError,
+    delete_exam_deployment,
+)
+from apps.exams.services.admin.deployments_detail import (
+    ExamDeploymentDetailNotFoundError,
+    get_exam_deployment_detail,
+)
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
