@@ -26,7 +26,8 @@ from apps.users.views.admin.admin_withdrawal_views import (
     AdminWithdrawalDetailAPIView,
     AdminWithdrawalListAPIView,
 )
-
+from django.urls import path
+from apps.users.views.admin.admin_analysis_reason_views import WithdrawalReasonMonthlyStatsView
 
 # GET, PATCH, DELETE를 같은 URL에서 처리하기 위한 combined view
 class AdminAccountAPIView(AdminAccountDetailAPIView, AdminAccountUpdateAPIView, AdminAccountDeleteAPIView):
@@ -59,7 +60,6 @@ urlpatterns = [
     ),
     # Students
     path("students/", AdminStudentListAPIView.as_view(), name="admin-student-list"),
-    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
     path("student-enrollments/", AdminStudentEnrollmentListAPIView.as_view(), name="admin-student-enrollment-list"),
     path(
         "student-enrollments/accept",
