@@ -17,7 +17,7 @@ class QnaBaseException(APIException):
     """
 
     status_code: int = status.HTTP_400_BAD_REQUEST
-    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_400.value
+    default_detail: str = ErrorMessages.DEFAULT_400.value
     default_code: str = "qna_error"
 
     def __init__(
@@ -26,20 +26,18 @@ class QnaBaseException(APIException):
         status_code: Optional[int] = None,
         code: Optional[str] = None,
     ):
-        # status_code 설정
         if status_code is not None:
             self.status_code = status_code
 
-        # message 설정
         if detail is None:
-            message = self.default_detail
+            detail = self.default_detail
 
         # Enum 객체 체크 및 값 추출
-        if hasattr(detail, "value"):
+        elif hasattr(detail, "value"):
             detail = detail.value
 
         # 딕셔너리 형태 체크 및 메시지 추출
-        if isinstance(detail, dict):
+        elif isinstance(detail, dict):
             detail = detail.get("error_detail") or detail.get("detail") or str(detail)
 
         # DRF APIException은 detail 속성 사용

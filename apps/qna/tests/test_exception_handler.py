@@ -248,12 +248,12 @@ class PermissionErrorFallbackTest(TestCase):
         from apps.qna.exceptions.handler import _PERMISSION_ERROR_MAP
 
         # 401 (인증 에러)
-        key_401 = ("Question", "POST", True)
+        key_401 = ("QuestionCreateListAPIView", "POST", True)
         self.assertIn(key_401, _PERMISSION_ERROR_MAP)
         self.assertEqual(_PERMISSION_ERROR_MAP[key_401], ErrorMessages.UNAUTHORIZED_QUESTION_CREATE)
 
         # 403 (권한 에러)
-        key_403 = ("Question", "POST", False)
+        key_403 = ("QuestionCreateListAPIView", "POST", False)
         self.assertIn(key_403, _PERMISSION_ERROR_MAP)
         self.assertEqual(_PERMISSION_ERROR_MAP[key_403], ErrorMessages.FORBIDDEN_QUESTION_CREATE)
 
@@ -261,7 +261,7 @@ class PermissionErrorFallbackTest(TestCase):
         """AnswerCreate POST 매핑 검증"""
         from apps.qna.exceptions.handler import _PERMISSION_ERROR_MAP
 
-        key_401 = ("AnswerCreate", "POST", True)
+        key_401 = ("AnswerCreateAPIView", "POST", True)
         self.assertIn(key_401, _PERMISSION_ERROR_MAP)
         self.assertEqual(_PERMISSION_ERROR_MAP[key_401], ErrorMessages.UNAUTHORIZED_ANSWER_CREATE)
 

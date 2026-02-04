@@ -15,33 +15,32 @@ from rest_framework.views import exception_handler
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 
-logger = logging.getLogger("apps.qna.exceptions")
+logger = logging.getLogger(__name__)
 
 # ==============================================================================
 # 에러 메시지 매핑 테이블 (View + Method 조합)
 # ==============================================================================
 _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
-    # Question - POST (Create)
-    ("Question", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
-    ("Question", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
-    # Question - PUT (Update)
-    ("Question", "PUT", True): ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE,
-    ("Question", "PUT", False): ErrorMessages.FORBIDDEN_QUESTION_UPDATE,
-    # Answer - POST (Create)
-    ("AnswerCreate", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
-    ("AnswerCreate", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
-    # Answer - POST (Adopt)
-    ("AnswerAdopt", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
-    ("AnswerAdopt", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
-    # Answer - PUT (Update)
-    ("Answer", "PUT", True): ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE,
-    ("Answer", "PUT", False): ErrorMessages.FORBIDDEN_ANSWER_UPDATE,
-    # Answer - GET (AI Request)
-    ("Answer", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
-    ("Answer", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
-    # Comment - POST (Create)
-    ("Comment", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
-    ("Comment", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
+# ---------- Question -----------
+# [POST] - Create
+("QuestionCreateListAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
+("QuestionCreateListAPIView", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
+# ---------- Answer -----------
+# [POST] - Create
+("AnswerCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
+("AnswerCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
+# [POST] Adopt - TODO: View 구현 시 클래스명 업데이트 필요
+("AnswerAdoptAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
+("AnswerAdoptAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
+# [PUT] Update - TODO: View 구현 시 클래스명 업데이트 필요
+("AnswerUpdateAPIView", "PUT", True): ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE,
+("AnswerUpdateAPIView", "PUT", False): ErrorMessages.FORBIDDEN_ANSWER_UPDATE,
+# [POST] Create - TODO: View 구현 시 클래스명 업데이트 필요
+("CommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
+("CommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
+# [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
+("AnswerAIRequestAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
+("AnswerAIRequestAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
 }
 
 # 기본 폴백 메시지
@@ -53,7 +52,7 @@ def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[R
     """QnA 앱 예외 처리기 + 로깅 중앙화"""
     request = context.get("request")
     view = context.get("view")
-    method = request.method.upper() if request else ""
+    method = (request.method or "").upper() if request else ""
     view_name = view.__class__.__name__ if view else ""
     user_info = f"User({request.user.pk})" if request and request.user.is_authenticated else "Anonymous"
 
@@ -182,7 +181,7 @@ def _extract_custom_msg(exc: Exception, data: Any, view: Any) -> str:
 
     except Exception as e:
         # 메시지 추출 실패 시 안전하게 폴백
-        logger.warning(f"[Message Extraction Failed] {str(e)}")
+        logger.warning(f"[Message Extraction Failed] {str(e)}", exc_info=True)
         return _get_first_message(data)
 
 
