@@ -69,6 +69,9 @@ def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[R
     else:
         # DRF 기본 핸들러 실행 (ValidationError, QnaBaseException 등 포함)
         response = exception_handler(exc, context)
+        if response is not None:
+            msg = _extract_custom_msg(exc, response.data, view)
+            response.data = {"error_detail": msg}
 
     # 중앙 로깅 (401, 403, 400, 404, 409, 500 통합)
     if response is not None:
@@ -80,9 +83,6 @@ def qna_exception_handler(exc: Exception, context: dict[str, Any]) -> Optional[R
             {"error_detail": ErrorMessages.SYSTEM_ERROR.value}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-    # 최종 메시지 가공 (Serializer의 default_error_message 자동 반영)
-    msg = _extract_custom_msg(exc, response.data, view)
-    response.data = {"error_detail": msg}
     return response
 
 
@@ -90,13 +90,8 @@ def _handle_permission_errors(exc: Exception, view_name: str, method: str) -> Re
     """권한 에러 발생 시 View 이름과 Method를 조합하여 커스텀 메시지 출력"""
     is_auth_error = isinstance(exc, NotAuthenticated)
 
-    # 매핑 테이블에서 키 탐색
-    msg: Optional[ErrorMessages] = None
-
-    for (view_key, method_key, auth_flag), error_msg in _PERMISSION_ERROR_MAP.items():
-        if view_key in view_name and method_key == method and auth_flag == is_auth_error:
-            msg = error_msg
-            break
+    key = (view_name, method, is_auth_error)
+    msg = _PERMISSION_ERROR_MAP.get(key)
 
     # 폴백 메시지 (매핑되지 않은 경우)
     msg_str: str
