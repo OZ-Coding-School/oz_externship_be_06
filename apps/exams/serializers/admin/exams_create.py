@@ -12,15 +12,9 @@ class AdminExamCreateRequestSerializer(serializers.Serializer[Any]):
 
     title = serializers.CharField(max_length=50)
     subject_id = serializers.IntegerField()
-    thumbnail_img = serializers.ImageField(
-        required=False,
-        allow_null=True,
-        help_text="썸네일 이미지(선택)",
-    )
+    thumbnail_img = serializers.ImageField()
 
     def validate_thumbnail_img(self, value: Any) -> Any:
-        if value is None:
-            return value
         content_type = getattr(value, "content_type", None)
         if content_type not in {"image/jpeg", "image/png", "image/jpg"}:
             raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value)

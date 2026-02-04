@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -13,6 +13,7 @@ from apps.exams.models import Exam, ExamDeployment, ExamQuestion, ExamSubmission
 from apps.users.models import User
 
 
+@override_settings(USE_EXAM_MOCK=False)
 class AdminExamDeploymentDetailAPITest(TestCase):
     """어드민 쪽지시험 배포 상세 조회 API 테스트."""
 

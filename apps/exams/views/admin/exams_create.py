@@ -29,7 +29,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
 @extend_schema(
     tags=["admin_exams"],
     summary="어드민 시험 생성",
-    description="관리자/스태프 권한으로 쪽지시험을 생성합니다. 썸네일 이미지는 선택 입력입니다.",
+    description="관리자/스태프 권한으로 쪽지시험을 생성합니다.",
     request=AdminExamCreateRequestSerializer,
     responses={
         201: AdminExamCreateResponseSerializer,
@@ -111,7 +111,7 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
             exam = create_exam(
                 title=data["title"],
                 subject_id=data["subject_id"],
-                thumbnail_img=data.get("thumbnail_img"),
+                thumbnail_img=data["thumbnail_img"],
             )
         except ExamCreateNotFoundError:
             return Response(

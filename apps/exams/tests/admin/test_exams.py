@@ -106,21 +106,6 @@ class AdminExamCreateAPITest(TestCase):
         self.assertIn("media/", response_data["thumbnail_img_url"])
         self.assertTrue(Exam.objects.filter(id=response_data["id"]).exists())
 
-    def test_admin_exam_create_without_thumbnail(self) -> None:
-        response = self._auth_client(self.admin_user).post(
-            "/api/v1/admin/exams",
-            data={
-                "title": "Python Basic Exam No Image",
-                "subject_id": self.subject.id,
-            },
-        )
-
-        self.assertEqual(response.status_code, 201)
-        response_data = response.json()
-        self.assertEqual(response_data["title"], "Python Basic Exam No Image")
-        self.assertEqual(response_data["subject_id"], self.subject.id)
-        self.assertTrue(Exam.objects.filter(id=response_data["id"]).exists())
-
     def test_admin_exam_create_returns_401_when_unauthenticated(self) -> None:
         response = self.client.post(
             "/api/v1/admin/exams",
