@@ -46,3 +46,23 @@ class WithdrawalTrendsResponseSerializer(serializers.Serializer[Any]):
     to_date = serializers.DateField()
     total = serializers.IntegerField()
     items = TrendsItemSerializer(many=True)
+
+
+# 수강 등록 추세 분석 요청
+class StudentEnrollmentTrendsRequestSerializer(serializers.Serializer[Any]):
+    INTERVAL_CHOICES = [
+        ("monthly", "monthly"),
+        ("yearly", "yearly"),
+    ]
+
+    interval = serializers.ChoiceField(choices=INTERVAL_CHOICES, required=True)
+    year = serializers.IntegerField(required=False, min_value=2000, max_value=2100)
+
+
+# 수강 등록 추세 분석 응답
+class StudentEnrollmentTrendsResponseSerializer(serializers.Serializer[Any]):
+    interval = serializers.CharField()
+    from_date = serializers.DateField()
+    to_date = serializers.DateField()
+    total = serializers.IntegerField()
+    items = TrendsItemSerializer(many=True)
