@@ -1,12 +1,17 @@
 import json
 from typing import Any, Dict, cast
+
 from rest_framework import serializers
 
 from apps.exams.models import ExamQuestion
 
+
 class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQuestion]):
     type = serializers.ChoiceField(choices=ExamQuestion.TypeChoices.choices, required=False)
-    question = serializers.CharField(max_length=255, required=False,)
+    question = serializers.CharField(
+        max_length=255,
+        required=False,
+    )
     prompt = serializers.CharField(allow_blank=True, required=False)
     options = serializers.ListField(
         child=serializers.CharField(max_length=255),
@@ -46,6 +51,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
     # 최소 한 필드 이상은 들어왔는지 확인
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         return data
+
 
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):
     question_id = serializers.IntegerField(source="id")

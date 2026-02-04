@@ -1,19 +1,23 @@
 import json
 from typing import Any
+
 from django.db import transaction
 from rest_framework import status
 
-from apps.exams.models import ExamQuestion
 from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
+from apps.exams.models import ExamQuestion
+
 
 class BusinessRuleError(Exception):
     # 일반 비즈니스 규칙 위반 -> 400
     pass
 
+
 class ConflictRuleError(Exception):
     # 리소스 충돌 / 상태 충돌 → 409
     pass
+
 
 @transaction.atomic
 def update_exam_question(
@@ -45,7 +49,7 @@ def update_exam_question(
 
     options_json = update_data.get("options_json")
     # options_json이 None이면 기존 값을 사용
-    options = (json.loads(options_json) if options_json is not None else json.loads(instance.options_json or "[]"))
+    options = json.loads(options_json) if options_json is not None else json.loads(instance.options_json or "[]")
     # options_json = update_data.get("options")
     # options = (options_json if options_json is not None else json.loads(instance.options_json or "[]"))
 
@@ -77,21 +81,15 @@ def update_exam_question(
 
         # 순서정렬: 보기 최소 2개
         if q_type == ExamQuestion.TypeChoices.ORDERING and len(options) < 2:
-            raise BusinessRuleError(
-                "순서 정렬 문제는 보기 2개 이상이 필요합니다."
-            )
+            raise BusinessRuleError("순서 정렬 문제는 보기 2개 이상이 필요합니다.")
 
     # 빈칸 채우기
     if q_type == ExamQuestion.TypeChoices.FILL_IN_BLANK:
         if not prompt:
-            raise BusinessRuleError(
-                "빈칸 채우기 문제는 지문(prompt)이 필요합니다."
-            )
+            raise BusinessRuleError("빈칸 채우기 문제는 지문(prompt)이 필요합니다.")
 
         if blank_count is None or blank_count < 1:
-            raise BusinessRuleError(
-                "빈칸 채우기 문제는 blank_count가 1 이상이어야 합니다."
-            )
+            raise BusinessRuleError("빈칸 채우기 문제는 blank_count가 1 이상이어야 합니다.")
 
     # 단답형 / OX 는 공통 필수만으로 충분
 

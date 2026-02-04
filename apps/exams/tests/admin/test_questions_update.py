@@ -1,15 +1,19 @@
+from datetime import date
 from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from datetime import date
 
-from apps.exams.models import Exam, ExamQuestion
-from apps.courses.models import Subject, Course
+from apps.courses.models import Course, Subject
 from apps.exams.constants import ErrorMessages
-from apps.exams.services.admin.questions_update import update_exam_question, BusinessRuleError
 from apps.exams.exceptions import ErrorDetailException
+from apps.exams.models import Exam, ExamQuestion
+from apps.exams.services.admin.questions_update import (
+    BusinessRuleError,
+    update_exam_question,
+)
 
 User = get_user_model()
 
@@ -65,7 +69,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         )
 
         self.url = reverse(
-            "admin-exam-question-update",
+            "admin-exam-question-detail",
             kwargs={"question_id": self.question.id},
         )
 
@@ -119,10 +123,7 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
     def test_update_question_not_found(self) -> None:
         self.client.force_authenticate(self.admin)
 
-        url = reverse(
-            "admin-exam-question-update",
-            kwargs={"question_id": 999999}
-        )
+        url = reverse("admin-exam-question-detail", kwargs={"question_id": 999999})
 
         response = self.client.put(url, {"point": 5}, format="json")
 
