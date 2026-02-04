@@ -11,10 +11,15 @@ class AdminExamDeploymentUpdateRequestSerializer(serializers.Serializer[Any]):
     duration_time = serializers.IntegerField(min_value=1, required=True)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        if attrs["open_at"] >= attrs["close_at"]:
-            from apps.exams.constants import ErrorMessages
+        from apps.exams.constants import ErrorMessages
 
+        if attrs["open_at"] >= attrs["close_at"]:
             raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value)
+
+        window_minutes = (attrs["close_at"] - attrs["open_at"]).total_seconds() / 60
+        if attrs["duration_time"] > window_minutes:
+            raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value)
+
         return attrs
 
 

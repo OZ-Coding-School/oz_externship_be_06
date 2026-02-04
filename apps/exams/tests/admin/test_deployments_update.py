@@ -117,6 +117,34 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
         self.assertEqual(data["close_at"], "2025-03-02 12:30:00")
         self.assertIn("updated_at", data)
 
+        self.deployment.refresh_from_db()
+        self.assertEqual(self.deployment.duration_time, 50)
+        self.assertEqual(
+            self.deployment.open_at,
+            timezone.make_aware(datetime(2025, 3, 2, 10, 30, 0)),
+        )
+        self.assertEqual(
+            self.deployment.close_at,
+            timezone.make_aware(datetime(2025, 3, 2, 12, 30, 0)),
+        )
+
+    def test_returns_400_when_duration_exceeds_window(self) -> None:
+        """시험 시간이 배포 구간(open_at~close_at)보다 길면 400."""
+        payload = {
+            "open_at": "2025-03-02 10:00:00",
+            "close_at": "2025-03-02 11:00:00",  # 1시간 = 60분
+            "duration_time": 90,  # 90분 > 60분
+        }
+        response = self.client.patch(
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            data=payload,
+            content_type="application/json",
+            headers=self._auth_headers(self.admin_user),
+        )
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value)
+
     def test_returns_400_when_invalid_deployment_id(self) -> None:
         response = self.client.patch(
             "/api/v1/admin/exams/deployments/0/",
