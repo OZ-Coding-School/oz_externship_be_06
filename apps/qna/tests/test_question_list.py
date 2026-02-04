@@ -161,23 +161,27 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"category_id": 9999})
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
-    def test_search_no_results_returns_404(self) -> None:
-        """[404] 검색 결과가 전혀 없을 경우 404 반환 검증"""
+    def test_search_no_results_returns_empty_list(self) -> None:
+        """[200] 검색 결과가 전혀 없을 경우 200 OK와 빈 리스트 반환 검증"""
         response = self.client.get(self.url, {"search_keyword": "절대로없을법한검색어123"})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
+        data = response.json()
 
-    def test_filter_status_no_results_returns_404(self) -> None:
-        """[404] 필터 조건에 부합하는 데이터가 없을 경우 404 반환 검증"""
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data["results"]), 0)
+
+    def test_filter_status_no_results_returns_empty_list(self) -> None:
+        """[200] 필터 조건에 부합하는 데이터가 없을 경우 200 OK와 빈 리스트 반환 검증"""
         # q1에 답변을 달아서 모든 질문을 'answered' 상태로 만듦
         Answer.objects.create(author=self.user, question=self.q1, content="답변 추가")
 
-        # 'waiting' 상태를 조회하면 결과가 0건이므로 404 발생
+        # 'waiting' 상태를 조회하면 결과가 0건이지만 200 반환
         response = self.client.get(self.url, {"answer_status": "waiting"})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_LIST.value)
+        data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data["results"]), 0)
 
     # --- 400 Bad Request ---------------------
 
@@ -201,6 +205,14 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"page": "first_page"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
+
+    def test_page_out_of_range_returns_404(self) -> None:
+        """[404] 존재하지 않는 페이지 번호 요청 시 404 반환 검증"""
+        # 데이터는 2개(setup), size=10 default -> 2페이지는 없음
+        response = self.client.get(self.url, {"page": 999})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        # DRF 기본 404 메시지 확인 (혹은 커스텀)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
     def test_question_list_performance(self) -> None:
         """[성공] 질문 목록 조회 시 발생하는 쿼리 수 검증"""
