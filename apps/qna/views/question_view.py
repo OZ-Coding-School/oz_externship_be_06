@@ -1,8 +1,5 @@
-from types import SimpleNamespace
-from typing import Any, Union, cast
+from typing import Any, cast
 
-from django.conf import settings
-from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,10 +14,6 @@ from apps.qna.docs.api_request_examples import (
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
-)
-from apps.qna.mocks import mock_question
-from apps.qna.models import (
-    Question,
 )
 from apps.qna.serializers.question.request import (
     QuestionCreateSerializer,
@@ -132,13 +125,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        queryset: Union[QuerySet[Question], list[Any]]
-        mock_param = str(request.query_params.get("mock", "")).lower()
-        is_mock_requested = mock_param in ["true"]
-        if settings.USE_QNA_MOCK or is_mock_requested:
-            queryset = mock_question.QuestionMockService.get_mock_question_list()
-        else:
-            queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
+        queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
         # Response 생성
         return QnAPaginator.get_paginated_data_response(
@@ -178,14 +165,10 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         tags=["qna"],
     )
     def get(self, request: Request, question_id: int) -> Response:
-        question: Union[Question, SimpleNamespace]
-        is_mock_requested = request.query_params.get("mock") == "true"
-        if settings.USE_QNA_MOCK or is_mock_requested:
-            question = mock_question.QuestionMockService.get_mock_question_detail(question_id)
-        else:
-            question = QuestionQueryService.get_question_detail(question_id)
+        question = QuestionQueryService.get_question_detail(question_id)
 
         serializer = QuestionDetailSerializer(cast(Any, question))
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -214,12 +197,8 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
         tags=["qna"],
     )
     def get(self, request: Request) -> Response:
-        mock_param = str(request.query_params.get("mock", "")).lower()
-        is_mock_requested = mock_param in ["true"]
-        if settings.USE_QNA_MOCK or is_mock_requested:
-            categories_tree = SuccessResponseExamples.QUESTION_CATEGORY_LIST.value["categories"]
-        else:
-            categories_tree = QuestionQueryService.get_question_category_tree()
+        categories_tree = QuestionQueryService.get_question_category_tree()
+
         response_serializer = QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
 
         return Response(response_serializer.data)
