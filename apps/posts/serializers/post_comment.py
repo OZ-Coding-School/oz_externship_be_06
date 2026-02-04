@@ -8,25 +8,19 @@ from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDeni
 from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
+from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.post_serializers import PostAuthorSerializer
 
 
-class TaggedUserSerializer(serializers.Serializer):  # type: ignore[type-arg]
+class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
     """댓글 태그된 사용자 응답용 시리얼라이저."""
 
     id = serializers.IntegerField(source="tagged_user.id")
     nickname = serializers.CharField(source="tagged_user.nickname")
 
-    author = PostAuthorSerializer(read_only=True)
-    tagged_users = serializers.SerializerMethodField()
-
     class Meta:
-        model = PostComment
-        fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
-
-    def get_tagged_users(self, obj: PostComment) -> List[Dict[str, Any]]:
-        tags = obj.tags.select_related("tagged_user").all()
-        return TaggedUserSerializer(tags, many=True).data  # type: ignore[return-value]
+        model = PostCommentTag
+        fields = ("id", "nickname")
 
 
 class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
