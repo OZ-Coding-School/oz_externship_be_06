@@ -171,7 +171,8 @@ def get_withdrawal_trends(interval: str) -> dict[str, Any]:
         "items": items,
     }
 
-#수강등록 추세 분석 - 수강생 전환 추세
+
+# 수강등록 추세 분석 - 수강생 전환 추세
 def get_student_enrollment_trends(interval: str, year: int | None = None) -> dict[str, Any]:
 
     today = date.today()
@@ -205,7 +206,7 @@ def get_student_enrollment_trends(interval: str, year: int | None = None) -> dic
             period_str = f"{target_year}-{month:02d}"
             items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
 
-    else:  #yearly
+    else:  # yearly
         oldest_date = CohortStudent.objects.aggregate(oldest=Min("created_at"))["oldest"]
 
         if oldest_date:

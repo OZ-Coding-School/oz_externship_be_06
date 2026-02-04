@@ -79,7 +79,7 @@ class AdminSignupTrendsAPIView(APIView):
         response_serializer = SignupTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
 
-
+#회원 탈퇴 추세 분석 api
 class AdminWithdrawalTrendsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminStaff]
 
@@ -146,7 +146,8 @@ class AdminWithdrawalTrendsAPIView(APIView):
         response_serializer = WithdrawalTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
 
-#수강등록 추세 분석 api
+
+# 수강등록 추세 분석 api
 class AdminStudentEnrollmentTrendsAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
