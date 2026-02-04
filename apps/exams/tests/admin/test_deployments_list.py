@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -14,7 +14,6 @@ from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
 
 
-@override_settings(USE_EXAM_MOCK=False)
 class AdminExamDeploymentListAPITest(TestCase):
     def setUp(self) -> None:
         self.course = Course.objects.create(
