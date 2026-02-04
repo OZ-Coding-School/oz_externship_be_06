@@ -6,11 +6,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-try:
-    from drf_yasg import openapi  # type: ignore
-    from drf_yasg.utils import swagger_auto_schema  # type: ignore
-except ImportError:
-    pass
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 
 from apps.users.models.withdrawal import Withdrawal
 from apps.users.serializers.admin.admin_analysis_reason_serializers import (
@@ -22,20 +19,21 @@ from apps.users.services.admin_analysis_reason_service import AdminAnalysisReaso
 class WithdrawalReasonMonthlyStatsView(APIView):
     permission_classes = [IsAdminUser]
 
-    @swagger_auto_schema(  # type: ignore
-        operation_description="월별 탈퇴 사유 통계 데이터를 조회합니다.",
-        manual_parameters=[
-            openapi.Parameter(
-                "reason",
-                openapi.IN_QUERY,
-                description="탈퇴 사유 코드",
-                type=openapi.TYPE_STRING,
+    @extend_schema(
+        tags=["admin_accounts"],
+        summary="월별 탈퇴 사유 통계 조회",
+        description="월별 탈퇴 사유 통계 데이터를 조회합니다.",
+        parameters=[
+            OpenApiParameter(
+                name="reason",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
                 required=True,
+                description="탈퇴 사유 코드",
                 enum=[choice[0] for choice in Withdrawal.Reason.choices],
-            )
+            ),
         ],
         responses={200: WithdrawalReasonStatsResponseSerializer},
-        tags=["Admin Analytics"],
     )
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         reason = request.query_params.get("reason")
