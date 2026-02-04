@@ -5,7 +5,6 @@ from typing import Any, Optional
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.exceptions import (
-    APIException,
     NotAuthenticated,
     PermissionDenied,
     ValidationError,
@@ -14,33 +13,9 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from apps.qna.constants import ErrorMessages
+from apps.qna.exceptions import QnaBaseException
 
 logger = logging.getLogger("apps.qna.exceptions")
-
-
-class QnaBaseException(APIException):
-    """
-    QnA 앱의 최상위 예외 클래스
-    """
-
-    status_code: int = status.HTTP_400_BAD_REQUEST
-    default_detail: str | ErrorMessages = ErrorMessages.DEFAULT_400
-    default_code = "qna_bad_request"
-
-    def __init__(self, detail: Any = None, code: Any = None):
-        if detail is None:
-            detail = self.default_detail
-
-        # Enum 객체 체크 및 값 추출
-        if hasattr(detail, "value"):
-            detail = detail.value
-
-        # 딕셔너리 형태 체크 및 메시지 추출
-        if isinstance(detail, dict):
-            detail = detail.get("error_detail") or detail.get("detail") or str(detail)
-
-        super().__init__(detail, code)
-
 
 # ==============================================================================
 # 에러 메시지 매핑 테이블 (View + Method 조합)
@@ -187,7 +162,7 @@ def _log_exception(status_code: int, view_name: str, method: str, user_info: str
 def _extract_custom_msg(exc: Exception, data: Any, view: Any) -> str:
     """시리얼라이저의 default_error_message 설정을 자동으로 반영"""
     try:
-        # QnaBaseException 하위 클래스는 예외 자체의 메시지를 우선 사용
+        # QnaBaseException은 예외 자체의 메시지를 우선 사용
         if isinstance(exc, QnaBaseException):
             return str(exc.detail)
 
