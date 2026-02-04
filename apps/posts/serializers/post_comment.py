@@ -54,7 +54,7 @@ class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[
         fields = ("content",)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        # 입력 데이터(필드)만 검증
+        # 댓글 내용 등 데이터 유효성만 검증
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> PostComment:
@@ -90,15 +90,7 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
         read_only_fields = ("updated_at",)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        request = self.context.get("request")
-        user = getattr(request, "user", None) if request is not None else None
-        if request is None or not user or not user.is_authenticated:
-            # 테스트 기대 문구로 통일
-            raise NotAuthenticated(detail=PostErrorMessage.UNAUTHORIZED)
-
-        if self.instance is not None and cast(PostComment, self.instance).author != user:
-            raise PermissionDenied(detail=PostErrorMessage.FORBIDDEN)
-
+        # 댓글 내용 등 데이터 유효성만 검증
         return attrs
 
     def update(self, instance: PostComment, validated_data: Dict[str, Any]) -> PostComment:
