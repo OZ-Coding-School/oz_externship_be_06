@@ -46,7 +46,7 @@ class QuestionQueryService:
         if not category_id:
             return queryset
 
-        # [Guard Clause] DB에 존재하지 않는 카테고리일 경우만 404 발생
+        # DB에 존재하지 않는 카테고리일 경우만 404 발생
         if not QuestionCategory.objects.filter(id=category_id).exists():
             raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
 
@@ -62,7 +62,7 @@ class QuestionQueryService:
     def _apply_status_filter(queryset: QuerySet[Question], answer_status: str | None) -> QuerySet[Question]:
         """답변 상태에 따른 필터링 (성능 최적화 적용)"""
         if answer_status == "waiting":
-            # [Optimization] Count를 구하는 것보다 역참조 존재 여부를 체크하는 것이 훨씬 빠름
+            # Count를 구하는 것보다 역참조 존재 여부를 체크하는 것이 훨씬 빠름
             return queryset.filter(answers__isnull=True)
 
         if answer_status == "answered":
@@ -74,7 +74,7 @@ class QuestionQueryService:
     @staticmethod
     def _apply_sorting(queryset: QuerySet[Question], sort: str) -> QuerySet[Question]:
         """정렬 전략 분리"""
-        # 정렬 시 created_at과 id를 같이 사용하여 페이징 시 정렬 보장(Stable Sort)
+        # 정렬 시 created_at과 id를 같이 사용하여 페이징 시 정렬 보장 (Stable Sort)
         sort_map = {
             "latest": ["-created_at", "-id"],
             "oldest": ["created_at", "id"],
