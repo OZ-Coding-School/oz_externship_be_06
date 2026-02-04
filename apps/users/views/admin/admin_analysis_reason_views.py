@@ -1,13 +1,12 @@
 from typing import Any, List
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
 
 from apps.users.models.withdrawal import Withdrawal
 from apps.users.serializers.admin.admin_analysis_reason_serializers import (

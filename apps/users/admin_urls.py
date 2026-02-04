@@ -93,4 +93,10 @@ urlpatterns = [
         AdminWithdrawalReasonCountsAPIView.as_view(),
         name="admin-withdrawal-reason-counts",
     ),
+    path(
+        "analytics/withdrawal-reasons/monthly-stats",
+        WithdrawalReasonMonthlyStatsView.as_view(),
+        name="admin-withdrawal-stats",
+    ),
+    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
 ]
