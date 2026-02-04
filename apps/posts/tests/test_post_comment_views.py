@@ -2,7 +2,12 @@ from typing import Any
 
 from django.db.models import QuerySet
 from django.utils import timezone
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, inline_serializer
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    inline_serializer,
+)
 from rest_framework import generics, parsers, serializers, status
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
