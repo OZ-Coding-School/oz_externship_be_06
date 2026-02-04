@@ -106,7 +106,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
             data=payload,
             content_type="application/json",
-            **{"HTTP_AUTHORIZATION": self._auth_headers(self.admin_user)["Authorization"]},
+            headers=self._auth_headers(self.admin_user),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -122,7 +122,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             "/api/v1/admin/exams/deployments/0/",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
-            **{"HTTP_AUTHORIZATION": self._auth_headers(self.admin_user)["Authorization"]},
+            headers=self._auth_headers(self.admin_user),
         )
 
         self.assertEqual(response.status_code, 400)
@@ -145,7 +145,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
-            **{"HTTP_AUTHORIZATION": self._auth_headers(self.normal_user)["Authorization"]},
+            headers=self._auth_headers(self.normal_user),
         )
 
         self.assertEqual(response.status_code, 403)
@@ -157,7 +157,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             "/api/v1/admin/exams/deployments/9999/",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
-            **{"HTTP_AUTHORIZATION": self._auth_headers(self.admin_user)["Authorization"]},
+            headers=self._auth_headers(self.admin_user),
         )
 
         self.assertEqual(response.status_code, 404)
