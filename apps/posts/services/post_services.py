@@ -62,11 +62,18 @@ class PostService:
         if post.author != user:  # 작성자(post.author) 요청자(user)
             raise PostUnauthorizedException()
 
-        # 데이터 업데이트
+        # 데이터 업데이트 및 변경된 필드 추적
+        updated_fields = []
         for attr, value in data.items():
-            setattr(post, attr, value)
+            if hasattr(post, attr):
+                setattr(post, attr, value)
+                updated_fields.append(attr)
 
         # DB 저장
-        post.save()
+        if updated_fields:
+            if "updated_at" not in updated_fields:
+                updated_fields.append("updated_at")
+
+            post.save(update_fields=updated_fields)
 
         return post

@@ -171,12 +171,6 @@ class PostUpdateSerializer(serializers.ModelSerializer[Post]):
             "category_id",
         )
 
-    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Serializer 전체 데이터에 대한 유효성 검사
-        """
-        return attrs
-
     def validate_title(self, value: str) -> str:
         """
         제목 유효성 검사
