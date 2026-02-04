@@ -86,10 +86,8 @@ class AdminExamRouterAPIView(ExamsExceptionMixin, APIView):
 
     @extend_schema(
         tags=["admin_exams"],
-        summary="관리자 쪽지시험 생성 API",
-        description="""
-            관리자/스태프 권한으로 쪽지시험을 생성합니다.
-            """,
+        summary="어드민 시험 생성",
+        description="관리자/스태프 권한으로 쪽지시험을 생성합니다. 썸네일 이미지는 선택 입력입니다.",
         request=AdminExamCreateRequestSerializer,
         responses={
             201: AdminExamCreateResponseSerializer,

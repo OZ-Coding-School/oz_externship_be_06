@@ -19,7 +19,7 @@ class AdminExamCreateRequestSerializer(serializers.Serializer[Any]):
     )
 
     def validate_thumbnail_img(self, value: Any) -> Any:
-        if value is None:
+        if value in (None, ""):
             return value
         content_type = getattr(value, "content_type", None)
         if content_type not in {"image/jpeg", "image/png", "image/jpg"}:
