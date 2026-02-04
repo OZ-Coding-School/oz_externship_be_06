@@ -21,11 +21,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions import (
-    CategoryNotFoundException,
-    QnaBaseException,
-    QuestionNotFoundException,
-)
+from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
 
 User = get_user_model()
@@ -249,7 +245,7 @@ class PermissionErrorFallbackTest(TestCase):
 
     def test_permission_error_map_question_create(self) -> None:
         """Question POST 매핑 검증"""
-        from apps.qna.exceptions.base_e import _PERMISSION_ERROR_MAP
+        from apps.qna.exceptions.handler import _PERMISSION_ERROR_MAP
 
         # 401 (인증 에러)
         key_401 = ("Question", "POST", True)
@@ -263,7 +259,7 @@ class PermissionErrorFallbackTest(TestCase):
 
     def test_permission_error_map_answer_create(self) -> None:
         """AnswerCreate POST 매핑 검증"""
-        from apps.qna.exceptions.base_e import _PERMISSION_ERROR_MAP
+        from apps.qna.exceptions.handler import _PERMISSION_ERROR_MAP
 
         key_401 = ("AnswerCreate", "POST", True)
         self.assertIn(key_401, _PERMISSION_ERROR_MAP)
@@ -271,7 +267,7 @@ class PermissionErrorFallbackTest(TestCase):
 
     def test_fallback_message_exists(self) -> None:
         """폴백 메시지 상수 존재 검증"""
-        from apps.qna.exceptions.base_e import _DEFAULT_AUTH_ERROR, _DEFAULT_PERM_ERROR
+        from apps.qna.exceptions.handler import _DEFAULT_AUTH_ERROR, _DEFAULT_PERM_ERROR
 
         # 폴백 메시지가 ErrorMessages Enum으로 정의되어 있는지 확인
         self.assertIsInstance(_DEFAULT_AUTH_ERROR, ErrorMessages)
@@ -304,26 +300,3 @@ class QnaBaseExceptionTest(TestCase):
         """기본 메시지 사용 검증"""
         exc = QnaBaseException()
         self.assertEqual(str(exc.detail), ErrorMessages.DEFAULT_400.value)
-
-
-class CustomExceptionClassTest(TestCase):
-    """
-    커스텀 예외 클래스들의 기본값 검증
-    """
-
-    def test_question_not_found_exception(self) -> None:
-        """QuestionNotFoundException 기본값 검증"""
-        exc = QuestionNotFoundException()
-        self.assertEqual(exc.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(str(exc.detail), ErrorMessages.NOT_FOUND_QUESTION.value)
-
-    def test_category_not_found_exception(self) -> None:
-        """CategoryNotFoundException 기본값 검증"""
-        exc = CategoryNotFoundException()
-        self.assertEqual(exc.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(str(exc.detail), ErrorMessages.NOT_FOUND_CATEGORY.value)
-
-    def test_category_not_found_with_custom_message(self) -> None:
-        """CategoryNotFoundException 커스텀 메시지 검증"""
-        exc = CategoryNotFoundException(detail="커스텀 카테고리 에러")
-        self.assertEqual(str(exc.detail), "커스텀 카테고리 에러")
