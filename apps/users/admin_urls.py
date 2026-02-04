@@ -11,8 +11,8 @@ from apps.users.views.admin.admin_account_role_views import (
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
 from apps.users.views.admin.admin_analytics_views import (
     AdminSignupTrendsAPIView,
-    AdminWithdrawalReasonCountsAPIView,
     AdminStudentEnrollmentTrendsAPIView,
+    AdminWithdrawalReasonCountsAPIView,
     AdminWithdrawalTrendsAPIView,
 )
 from apps.users.views.admin.admin_student_enrollment_views import (

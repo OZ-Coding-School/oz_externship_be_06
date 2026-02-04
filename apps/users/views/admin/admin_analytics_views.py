@@ -19,8 +19,8 @@ from apps.users.serializers.admin.admin_analytics_serializers import (
 )
 from apps.users.services.admin_analytics_service import (
     get_signup_trends,
-    get_withdrawal_reason_counts,
     get_student_enrollment_trends,
+    get_withdrawal_reason_counts,
     get_withdrawal_trends,
 )
 
