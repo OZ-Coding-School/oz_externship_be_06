@@ -1,9 +1,9 @@
 from typing import Any
 
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions import CategoryNotFoundException
+from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
 
 
@@ -26,7 +26,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
     def validate_category_id(self, value: int) -> int:
         """카테고리 FK 존재 여부 검증"""
         if not QuestionCategory.objects.filter(id=value).exists():
-            raise CategoryNotFoundException(detail=ErrorMessages.NOT_FOUND_CATEGORY)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_CATEGORY, status_code=status.HTTP_400_BAD_REQUEST)
         return value
 
 

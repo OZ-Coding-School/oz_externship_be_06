@@ -1,17 +1,7 @@
-from apps.qna.exceptions.answer_e import (
-    AnswerNotFoundException,
-)
-from apps.qna.exceptions.base_e import (
-    QnaBaseException,
-    qna_exception_handler,
-)
-from apps.qna.exceptions.question_e import (
-    QuestionNotFoundException,
-)
+from apps.qna.exceptions.base import QnaBaseException
+from apps.qna.exceptions.handler import qna_exception_handler
 
 __all__ = [
     "QnaBaseException",
     "qna_exception_handler",
-    "QuestionNotFoundException",
-    "AnswerNotFoundException",
 ]

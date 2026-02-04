@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.qna.exceptions.base_e import qna_exception_handler
+from apps.qna.exceptions.handler import qna_exception_handler
 
 
 class QnaBaseAPIView(APIView):

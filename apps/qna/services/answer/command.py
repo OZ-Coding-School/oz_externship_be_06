@@ -2,10 +2,10 @@ import logging
 from typing import Any, cast
 
 from django.db import transaction
+from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.exceptions.question_e import QuestionNotFoundException
+from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Answer, AnswerImage, Question
 from apps.qna.utils.model_types import User
 
@@ -36,7 +36,7 @@ class AnswerCommandService:
         try:
             question = Question.objects.select_for_update().get(id=question_id)
         except Question.DoesNotExist:
-            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
 
         # 답변 생성
         content = cast(str, data["content"])
