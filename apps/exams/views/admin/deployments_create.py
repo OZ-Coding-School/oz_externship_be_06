@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.deployments_create import (
     AdminExamDeploymentCreateRequestSerializer,
     AdminExamDeploymentCreateResponseSerializer,
@@ -96,23 +97,20 @@ class AdminExamDeploymentCreateAPIView(ExamsExceptionMixin, APIView):
     def post(self, request: Request) -> Response:
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             deployment_id = create_exam_deployment(serializer.validated_data)
-        except ExamDeploymentNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamDeploymentConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.DUPLICATE_DEPLOYMENT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        except ExamDeploymentNotFoundError as exc:
+            raise ErrorDetailException(
+                ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND.value,
+                status.HTTP_404_NOT_FOUND,
+            ) from exc
+        except ExamDeploymentConflictError as exc:
+            raise ErrorDetailException(ErrorMessages.DUPLICATE_DEPLOYMENT.value, status.HTTP_409_CONFLICT) from exc
 
         response_serializer = AdminExamDeploymentCreateResponseSerializer(data={"pk": deployment_id})
         response_serializer.is_valid(raise_exception=True)

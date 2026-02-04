@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
@@ -40,9 +41,9 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
         serializer = AdminExamCreateRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         data = serializer.validated_data
@@ -53,15 +54,9 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
                 thumbnail_img=data.get("thumbnail_img"),
             )
         except ExamCreateNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.SUBJECT_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            raise ErrorDetailException(ErrorMessages.SUBJECT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
         except ExamCreateConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+            raise ErrorDetailException(ErrorMessages.EXAM_CONFLICT.value, status.HTTP_409_CONFLICT)
 
         response_serializer = AdminExamCreateResponseSerializer(exam)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)

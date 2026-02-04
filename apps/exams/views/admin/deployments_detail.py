@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.deployments_detail import (
     AdminExamDeploymentDetailResponseSerializer,
 )
@@ -97,18 +98,15 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
 
     def get(self, request: Request, deployment_id: int) -> Response:
         if deployment_id <= 0:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             payload = get_exam_deployment_detail(deployment_id)
-        except ExamDeploymentDetailNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        except ExamDeploymentDetailNotFoundError as exc:
+            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
 
         access_url = request.build_absolute_uri(reverse("exams:take-exam", kwargs={"deployment_id": deployment_id}))
         payload["exam_access_url"] = access_url

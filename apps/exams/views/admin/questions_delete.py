@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.questions_delete import (
     AdminExamQuestionDeleteResponseSerializer,
 )
@@ -93,23 +94,20 @@ class AdminExamQuestionDeleteAPIView(ExamsExceptionMixin, APIView):
 
     def delete(self, request: Request, question_id: int) -> Response:
         if question_id <= 0:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_QUESTION_DELETE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_DELETE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             result = delete_exam_question(question_id)
-        except ExamQuestionDeleteNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.QUESTION_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamQuestionDeleteConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.QUESTION_DELETE_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        except ExamQuestionDeleteNotFoundError as exc:
+            raise ErrorDetailException(ErrorMessages.QUESTION_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
+        except ExamQuestionDeleteConflictError as exc:
+            raise ErrorDetailException(
+                ErrorMessages.QUESTION_DELETE_CONFLICT.value,
+                status.HTTP_409_CONFLICT,
+            ) from exc
 
         serializer = self.serializer_class(data=result)
         serializer.is_valid(raise_exception=True)

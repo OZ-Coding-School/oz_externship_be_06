@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
@@ -110,22 +111,22 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
             try:
                 cohort_id_int = int(cohort_id)
                 queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
-            except ValueError:
-                return Response(
-                    {"error_detail": ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            except ValueError as exc:
+                raise ErrorDetailException(
+                    ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
+                    status.HTTP_400_BAD_REQUEST,
+                ) from exc
 
         # 필터링: 시험 ID
         if exam_id:
             try:
                 exam_id_int = int(exam_id)
                 queryset = queryset.filter(deployment__exam_id=exam_id_int)
-            except ValueError:
-                return Response(
-                    {"error_detail": ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            except ValueError as exc:
+                raise ErrorDetailException(
+                    ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
+                    status.HTTP_400_BAD_REQUEST,
+                ) from exc
 
         # 정렬
         valid_sort_fields = ["score", "started_at"]
@@ -141,9 +142,9 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
         # 결과가 비어있을 경우 404 반환
         if not queryset.exists():
-            return Response(
-                {"error_detail": ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
+            raise ErrorDetailException(
+                ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value,
+                status.HTTP_404_NOT_FOUND,
             )
 
         # 페이지네이션

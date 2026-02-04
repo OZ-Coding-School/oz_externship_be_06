@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.submissions_delete import (
     AdminExamSubmissionDeleteResponseSerializer,
 )
@@ -93,23 +94,23 @@ class AdminExamSubmissionDeleteAPIView(ExamsExceptionMixin, APIView):
 
     def delete(self, request: Request, submission_id: int) -> Response:
         if submission_id <= 0:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             result = delete_exam_submission(submission_id)
-        except ExamSubmissionDeleteNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.SUBMISSION_DELETE_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamSubmissionDeleteConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.SUBMISSION_DELETE_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        except ExamSubmissionDeleteNotFoundError as exc:
+            raise ErrorDetailException(
+                ErrorMessages.SUBMISSION_DELETE_NOT_FOUND.value,
+                status.HTTP_404_NOT_FOUND,
+            ) from exc
+        except ExamSubmissionDeleteConflictError as exc:
+            raise ErrorDetailException(
+                ErrorMessages.SUBMISSION_DELETE_CONFLICT.value,
+                status.HTTP_409_CONFLICT,
+            ) from exc
 
         serializer = self.serializer_class(data=result)
         serializer.is_valid(raise_exception=True)

@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
@@ -68,7 +69,7 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
 
         user_id = request.user.id
         if user_id is None:
-            return Response({"error_detail": ErrorMessages.UNAUTHORIZED.value}, status=status.HTTP_401_UNAUTHORIZED)
+            raise ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
 
         auto_submitted = auto_submit_if_overdue(deployment=deployment, user_id=user_id).submitted
         exam_status = ExamStatus.CLOSED if auto_submitted else get_exam_status(deployment)
