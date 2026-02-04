@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from django.db.models import QuerySet
 from django.utils import timezone
@@ -12,18 +12,14 @@ from rest_framework import generics, parsers, serializers, status
 from rest_framework.exceptions import (
     NotAuthenticated,
     NotFound,
-    PermissionDenied,
-    ValidationError,
 )
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 
-from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
-from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
+from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.post_comment import (
