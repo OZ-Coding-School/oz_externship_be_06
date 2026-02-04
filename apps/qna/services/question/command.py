@@ -1,12 +1,9 @@
-import logging
 from typing import Any
 
 from django.db import transaction
 
 from apps.qna.models import Question, QuestionCategory
 from apps.qna.utils.model_types import User
-
-logger = logging.getLogger(__name__)
 
 
 class QuestionCommandService:

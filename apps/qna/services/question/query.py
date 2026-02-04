@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 from django.db import transaction
@@ -8,8 +7,6 @@ from rest_framework import status
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-
-logger = logging.getLogger(__name__)
 
 
 class QuestionQueryService:
