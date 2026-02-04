@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from apps.users.permissions import IsAdminStaff
 from apps.users.serializers.admin.admin_analytics_serializers import (
+    AdminWithdrawalReasonCountsResponseSerializer,
     SignupTrendsRequestSerializer,
     SignupTrendsResponseSerializer,
     StudentEnrollmentTrendsRequestSerializer,
@@ -19,6 +20,7 @@ from apps.users.serializers.admin.admin_analytics_serializers import (
 from apps.users.services.admin_analytics_service import (
     get_signup_trends,
     get_student_enrollment_trends,
+    get_withdrawal_reason_counts,
     get_withdrawal_trends,
 )
 
@@ -223,3 +225,42 @@ class AdminStudentEnrollmentTrendsAPIView(APIView):
 
         response_serializer = StudentEnrollmentTrendsResponseSerializer(result)
         return Response(response_serializer.data, status=200)
+
+
+class AdminWithdrawalReasonCountsAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminStaff]
+
+    def handle_exception(self, exc: Exception) -> Response:
+        response = super().handle_exception(exc)
+
+        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
+            detail = response.data.get("detail")
+
+            if isinstance(detail, dict) and "error_detail" in detail:
+                message = detail["error_detail"]
+            else:
+                default_msg = (
+                    "자격 인증 데이터가 제공되지 않았습니다."
+                    if isinstance(exc, NotAuthenticated)
+                    else "권한이 없습니다."
+                )
+                message = detail if isinstance(detail, str) else default_msg
+
+            response.data = {"error_detail": message}
+
+        return response
+
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
+        if not request.user or not request.user.is_authenticated:
+            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
+        raise PermissionDenied(detail="권한이 없습니다.")
+
+    @extend_schema(
+        tags=["admin_accounts"],
+        summary="어드민 페이지 전체 기간 회원 탈퇴 사유별 갯수 API",
+        responses={200: AdminWithdrawalReasonCountsResponseSerializer},
+    )
+    def get(self, request: Request) -> Response:
+        result = get_withdrawal_reason_counts()
+        serializer = AdminWithdrawalReasonCountsResponseSerializer(result)
+        return Response(serializer.data, status=200)
