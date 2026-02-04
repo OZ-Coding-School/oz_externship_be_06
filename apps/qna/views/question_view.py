@@ -18,9 +18,9 @@ from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
+from apps.qna.mocks import mock_question
 from apps.qna.models import (
     Question,
-    QuestionCategory,
 )
 from apps.qna.serializers.question.request import (
     QuestionCreateSerializer,
@@ -34,7 +34,6 @@ from apps.qna.serializers.question.response import (
 )
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
-from apps.qna.mocks import mock_question
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
 from apps.qna.utils.qna_paginator import QnAPaginator
@@ -209,7 +208,7 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
                 examples=[SuccessResponseExamples.QUESTION_CATEGORY_LIST],
             ),
             400: OpenApiResponse(
-                description="Bad Request", examples=[ErrorResponseExamples.QUESTION_CATEGORY_LIST_400]
+                description="Bad Request", response=dict, examples=[ErrorResponseExamples.QUESTION_CATEGORY_LIST_400]
             ),
         },
         tags=["qna"],
