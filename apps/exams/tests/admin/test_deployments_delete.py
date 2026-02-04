@@ -1,14 +1,15 @@
-from datetime import timedelta, date
-from django.utils import timezone
+from datetime import date, timedelta
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-from django.urls import reverse
-from unittest.mock import patch, MagicMock
 
-from apps.exams.models import ExamDeployment, ExamSubmission, Exam
+from apps.courses.models import Cohort, Course, Subject
+from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
-from apps.courses.models import Course, Cohort, Subject
 
 
 class AdminExamDeploymentDeleteAPITest(TestCase):
@@ -112,9 +113,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_401_when_not_authenticated(self) -> None:
-        url = reverse(
-            "admin-exam-deployment-delete", kwargs={"deployment_id": self.deployment.id}
-        )
+        url = reverse("admin-exam-deployment-delete", kwargs={"deployment_id": self.deployment.id})
 
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

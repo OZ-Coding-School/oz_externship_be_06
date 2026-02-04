@@ -54,5 +54,5 @@ urlpatterns = [
         "exams/deployments/<int:deployment_id>/delete/",
         AdminExamDeploymentDeleteAPIView.as_view(),
         name="admin-exam-deployment-delete",
-    )
+    ),
 ]

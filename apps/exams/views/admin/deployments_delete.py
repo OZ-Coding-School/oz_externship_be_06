@@ -1,5 +1,6 @@
 from typing import NoReturn
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+
+from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.request import Request
@@ -7,16 +8,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
+from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin.deployments_delete import (
     AdminExamDeploymentDeleteResponseSerializer,
 )
-from apps.exams.services.admin.deployments_delete import (
-    delete_exam_deployment,
-    ExamDeploymentDeleteNotFoundError,
-    ExamDeploymentDeleteConflictError,
-)
-from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.services.admin.deployments_delete import (
+    ExamDeploymentDeleteConflictError,
+    ExamDeploymentDeleteNotFoundError,
+    delete_exam_deployment,
+)
 
 
 class AdminExamDeploymentDeleteAPIView(APIView):
@@ -34,9 +35,7 @@ class AdminExamDeploymentDeleteAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "유효하지 않은 배포 삭제 요청",
-                        value={
-                            "error_detail": ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST.value
-                        },
+                        value={"error_detail": ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST.value},
                     ),
                 ],
             ),
@@ -56,9 +55,7 @@ class AdminExamDeploymentDeleteAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "권한 없음",
-                        value={
-                            "error_detail": ErrorMessages.NO_DEPLOYMENT_DELETE_PERMISSION.value
-                        },
+                        value={"error_detail": ErrorMessages.NO_DEPLOYMENT_DELETE_PERMISSION.value},
                     ),
                 ],
             ),
@@ -68,9 +65,7 @@ class AdminExamDeploymentDeleteAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "배포 정보 찾을 수 없음",
-                        value={
-                            "error_detail": ErrorMessages.DEPLOYMENT_DELETE_NOT_FOUND.value
-                        },
+                        value={"error_detail": ErrorMessages.DEPLOYMENT_DELETE_NOT_FOUND.value},
                     ),
                 ],
             ),
@@ -80,15 +75,18 @@ class AdminExamDeploymentDeleteAPIView(APIView):
                 examples=[
                     OpenApiExample(
                         "배포 삭제 충돌",
-                        value={
-                            "error_detail": ErrorMessages.DEPLOYMENT_DELETE_CONFLICT.value
-                        },
+                        value={"error_detail": ErrorMessages.DEPLOYMENT_DELETE_CONFLICT.value},
                     ),
                 ],
             ),
         },
     )
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None,) -> NoReturn:
+    def permission_denied(
+        self,
+        request: Request,
+        message: str | None = None,
+        code: str | None = None,
+    ) -> NoReturn:
         # 401
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated(detail=ErrorMessages.UNAUTHORIZED.value)
