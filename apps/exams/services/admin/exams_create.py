@@ -28,24 +28,28 @@ def _store_thumbnail(thumbnail_img: UploadedFile) -> tuple[str, str]:
     return saved_path, default_storage.url(saved_path)
 
 
-def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile) -> Exam:
+def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile | None) -> Exam:
     with transaction.atomic():
         subject = Subject.objects.filter(id=subject_id).first()
         if not subject:
             raise ExamCreateNotFoundError
 
-        saved_path, thumbnail_img_url = _store_thumbnail(thumbnail_img)
+        saved_path = None
+        thumbnail_img_url = None
+        if thumbnail_img is not None:
+            saved_path, thumbnail_img_url = _store_thumbnail(thumbnail_img)
         try:
             exam, created = Exam.objects.get_or_create(
                 title=title,
                 defaults={
                     "subject": subject,
-                    "thumbnail_img_url": thumbnail_img_url,
+                    **({"thumbnail_img_url": thumbnail_img_url} if thumbnail_img_url else {}),
                 },
             )
             if not created:
                 raise ExamCreateConflictError
             return exam
         except Exception:
-            default_storage.delete(saved_path)
+            if saved_path:
+                default_storage.delete(saved_path)
             raise
