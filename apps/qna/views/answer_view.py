@@ -1,4 +1,4 @@
-from typing import cast
+from typing import cast, Any
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
@@ -87,7 +87,8 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     질문에 대한 AI 답변 생성 및 결과 반환 API
     """
 
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated]
 
     # AI 생성 답변 조회
     # [GET] /api/v1/qna/questions/{question_id}/ai-answer
