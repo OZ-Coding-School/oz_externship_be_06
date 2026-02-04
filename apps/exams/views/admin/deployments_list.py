@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from django.conf import settings
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -94,32 +93,6 @@ class AdminExamDeploymentListAPIView(ExamsExceptionMixin, APIView):
 
     def get(self, request: Request) -> Response:
         qp = request.query_params
-        if settings.USE_EXAM_MOCK:
-            payload = [
-                {
-                    "id": 77,
-                    "submit_count": 58,
-                    "avg_score": 72.3,
-                    "status": "Activated",
-                    "exam": {
-                        "id": 101,
-                        "title": "Python 기본 문법 테스트",
-                        "thumbnail_img_url": "https://img.com/images/sample.png",
-                    },
-                    "subject": {"id": 10, "name": "Python"},
-                    "cohort": {
-                        "id": 21,
-                        "number": 12,
-                        "display": "백엔드 12기",
-                        "course": {"id": 23, "name": "Backend Bootcamp", "tag": "BE"},
-                    },
-                    "created_at": "2025-03-01 14:20:33",
-                }
-            ]
-            paginator = self.pagination_class()
-            paginated_payload: list[dict[str, object]] | None = paginator.paginate_queryset(payload, request)  # type: ignore[arg-type]
-            return paginator.get_paginated_response(paginated_payload)
-
         try:
             params = AdminDeploymentListService.parse_params(
                 search_keyword=qp.get("search_keyword"),
