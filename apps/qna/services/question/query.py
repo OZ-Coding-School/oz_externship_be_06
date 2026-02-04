@@ -29,35 +29,62 @@ class QuestionQueryService:
         - Raises:
             QnaBaseException: 조건에 맞는 질문이 하나도 없을 경우 (404)
         """
-        queryset = Question.objects.select_related("author", "category__parent__parent").annotate(
-            answer_count=Count("answers")
-        )
 
-        search_keyword = filters.get("search_keyword")
-        if search_keyword:
-            queryset = queryset.filter(Q(title__icontains=search_keyword) | Q(content__icontains=search_keyword))
+        # QuerySet 구성
+        queryset = Question.objects.select_related("author", "category__parent__parent")
 
-        category_id = filters.get("category_id")
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
+        # 필터링 및 정렬
+        queryset = QuestionQueryService._apply_category_filter(queryset, filters.get("category_id"))
+        queryset = QuestionQueryService._apply_search_filter(queryset, filters.get("search_keyword"))
+        queryset = QuestionQueryService._apply_status_filter(queryset, filters.get("answer_status"))
+        queryset = QuestionQueryService._apply_sorting(queryset, filters.get("sort", "latest"))
 
-        answer_status = filters.get("answer_status")
-        if answer_status == "waiting":
-            queryset = queryset.filter(answer_count=0)
-        elif answer_status == "answered":
-            queryset = queryset.filter(answer_count__gt=0)
-
-        sort = filters.get("sort")
-        if sort == "latest":
-            queryset = queryset.order_by("-created_at")
-        elif sort == "oldest":
-            queryset = queryset.order_by("created_at")
-        elif sort == "most_views":
-            queryset = queryset.order_by("-view_count")
-
-        if not queryset.exists():
-            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION_LIST, status_code=status.HTTP_404_NOT_FOUND)
         return queryset
+
+    @staticmethod
+    def _apply_category_filter(queryset: QuerySet[Question], category_id: int | None) -> QuerySet[Question]:
+        if not category_id:
+            return queryset
+
+        # [Guard Clause] DB에 존재하지 않는 카테고리일 경우만 404 발생
+        if not QuestionCategory.objects.filter(id=category_id).exists():
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
+
+        return queryset.filter(category_id=category_id)
+
+    @staticmethod
+    def _apply_search_filter(queryset: QuerySet[Question], keyword: str | None) -> QuerySet[Question]:
+        if not keyword:
+            return queryset
+        return queryset.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
+
+    @staticmethod
+    def _apply_status_filter(queryset: QuerySet[Question], answer_status: str | None) -> QuerySet[Question]:
+        """답변 상태에 따른 필터링 (성능 최적화 적용)"""
+        if answer_status == "waiting":
+            # [Optimization] Count를 구하는 것보다 역참조 존재 여부를 체크하는 것이 훨씬 빠름
+            return queryset.filter(answers__isnull=True)
+
+        if answer_status == "answered":
+            # 답변이 하나라도 있는 경우 (Distinct를 통한 중복 방지)
+            return queryset.filter(answers__isnull=False).distinct()
+
+        return queryset
+
+    @staticmethod
+    def _apply_sorting(queryset: QuerySet[Question], sort: str) -> QuerySet[Question]:
+        """정렬 전략 분리"""
+        # 정렬 시 created_at과 id를 같이 사용하여 페이징 시 정렬 보장(Stable Sort)
+        sort_map = {
+            "latest": ["-created_at", "-id"],
+            "oldest": ["created_at", "id"],
+            "most_views": ["-view_count", "-created_at"],
+        }
+
+        order_by = sort_map.get(sort, sort_map["latest"])
+
+        # 목록 조회 시점에 답변 개수가 필요하다면 여기서만 annotate (지연 연산)
+        return queryset.annotate(answer_count=Count("answers")).order_by(*order_by)
 
     @staticmethod
     @transaction.atomic
