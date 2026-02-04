@@ -49,7 +49,7 @@ class RequestBodyExamples:
         value={
             "title": "Django에서 ForeignKey 역참조는 어떻게 하나요?",
             "content": "Django 모델에서 related_name을 지정했을 때 역참조 하는 방법이 궁금합니다.",
-            "category": 32,
+            "category_id": 1,
         },
     )
 
@@ -58,7 +58,7 @@ class RequestBodyExamples:
         value={
             "title": "Django ORM 역참조 사용 방법 정리",
             "content": "ForeignKey의 related_name을 지정하면 역참조가 가능합니다.\n\n예시 코드:\n```python\npost.comment_set.all()\n```",
-            "category": 32,
+            "category_id": 1,
         },
     )
 
