@@ -82,7 +82,7 @@ class ErrorMessages(str, Enum):
 
     # --- 409 Conflict (Business Logic Collision) ---
     DEFAULT_409 = "409 충돌"
-    ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
+    ALREADY_EXISTS_AI_GEN_ANSWER = "이미 AI가 답변을 생성했습니다."
     CONFLICT_ANSWER_ADOPT = "이미 채택된 답변이 존재합니다."
     # 409 - Admin
     ALREADY_EXISTS_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
