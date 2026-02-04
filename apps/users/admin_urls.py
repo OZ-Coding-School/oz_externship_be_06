@@ -9,6 +9,9 @@ from apps.users.views.admin.admin_account_role_views import (
     AdminAccountRoleUpdateAPIView,
 )
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
+from apps.users.views.admin.admin_analysis_reason_views import (
+    WithdrawalReasonMonthlyStatsView,
+)
 from apps.users.views.admin.admin_analytics_views import (
     AdminSignupTrendsAPIView,
     AdminStudentEnrollmentTrendsAPIView,
@@ -26,8 +29,7 @@ from apps.users.views.admin.admin_withdrawal_views import (
     AdminWithdrawalDetailAPIView,
     AdminWithdrawalListAPIView,
 )
-from django.urls import path
-from apps.users.views.admin.admin_analysis_reason_views import WithdrawalReasonMonthlyStatsView
+
 
 # GET, PATCH, DELETE를 같은 URL에서 처리하기 위한 combined view
 class AdminAccountAPIView(AdminAccountDetailAPIView, AdminAccountUpdateAPIView, AdminAccountDeleteAPIView):

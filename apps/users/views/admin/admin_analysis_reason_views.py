@@ -1,42 +1,51 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
-from rest_framework import status
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from typing import Any, List
 
-from apps.users.services.admin_analysis_reason_service import AdminAnalysisReasonService
-from apps.users.serializers.admin.admin_analysis_reason_serializers import WithdrawalReasonStatsResponseSerializer
+from rest_framework import status
+from rest_framework.permissions import IsAdminUser
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+try:
+    from drf_yasg import openapi  # type: ignore
+    from drf_yasg.utils import swagger_auto_schema  # type: ignore
+except ImportError:
+    pass
+
 from apps.users.models.withdrawal import Withdrawal
+from apps.users.serializers.admin.admin_analysis_reason_serializers import (
+    WithdrawalReasonStatsResponseSerializer,
+)
+from apps.users.services.admin_analysis_reason_service import AdminAnalysisReasonService
+
 
 class WithdrawalReasonMonthlyStatsView(APIView):
     permission_classes = [IsAdminUser]
 
-    @swagger_auto_schema(
+    @swagger_auto_schema(  # type: ignore
         operation_description="월별 탈퇴 사유 통계 데이터를 조회합니다.",
         manual_parameters=[
             openapi.Parameter(
-                'reason',
+                "reason",
                 openapi.IN_QUERY,
                 description="탈퇴 사유 코드",
                 type=openapi.TYPE_STRING,
                 required=True,
-                # 모델에 정의된 실제 Choice 값들로 수정
-                enum=[choice[0] for choice in Withdrawal.Reason.choices]
+                enum=[choice[0] for choice in Withdrawal.Reason.choices],
             )
         ],
         responses={200: WithdrawalReasonStatsResponseSerializer},
-        tags=['Admin Analytics']
+        tags=["Admin Analytics"],
     )
-    def get(self, request):
-        reason = request.query_params.get('reason')
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        reason = request.query_params.get("reason")
 
-        # 모델에 정의된 유효한 사유인지 검증
-        valid_reasons = [choice[0] for choice in Withdrawal.Reason.choices]
+        valid_reasons: List[str] = [choice[0] for choice in Withdrawal.Reason.choices]
+
         if not reason or reason not in valid_reasons:
             return Response(
                 {"error_detail": f"유효하지 않은 사유입니다. 다음 중 하나를 선택하세요: {', '.join(valid_reasons)}"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         service = AdminAnalysisReasonService()
