@@ -67,6 +67,7 @@ class ErrorMessages(str, Enum):
     DEPLOYMENT_DELETE_NOT_FOUND = "삭제할 배포 정보를 찾을 수 없습니다."
     SUBMISSION_LIST_NOT_FOUND = "조회된 응시 내역이 없습니다."
     SUBMISSION_DETAIL_NOT_FOUND = "해당 응시 내역을 찾을 수 없습니다."
+    SUBMISSION_DELETE_NOT_FOUND = "삭제할 응시 내역을 찾을 수 없습니다."
     USER_NOT_FOUND = "사용자 정보를 찾을 수 없습니다."
 
     # 409
