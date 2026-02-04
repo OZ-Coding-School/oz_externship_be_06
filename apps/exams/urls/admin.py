@@ -1,5 +1,6 @@
 from django.urls import path
 
+from apps.exams.views.admin.deployments_delete import AdminExamDeploymentDeleteAPIView
 from apps.exams.views.admin.deployments_detail import (
     AdminExamDeploymentDetailAPIView,
 )
@@ -49,4 +50,9 @@ urlpatterns = [
         AdminExamSubmissionDetailAPIView.as_view(),
         name="admin-exam-submission-detail",
     ),
+    path(
+        "exams/deployments/<int:deployment_id>/delete/",
+        AdminExamDeploymentDeleteAPIView.as_view(),
+        name="admin-exam-deployment-delete",
+    )
 ]
