@@ -13,7 +13,7 @@ from apps.posts.serializers.post_serializers import PostAuthorSerializer
 
 
 class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
-    """댓글 태그된 사용자 응답용 시리얼라이저."""
+    """댓글에 태그된 사용자 정보를 반환하는 시리얼라이저입니다."""
 
     id = serializers.IntegerField(source="tagged_user.id")
     nickname = serializers.CharField(source="tagged_user.nickname")
@@ -24,7 +24,7 @@ class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
 
 
 class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
-    """댓글 목록 조회 시리얼라이저"""
+    """댓글 목록을 조회할 때 사용하는 시리얼라이저입니다."""
 
     author = PostAuthorSerializer(read_only=True)
     tagged_users = serializers.SerializerMethodField()
@@ -34,7 +34,8 @@ class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
 
     def get_tagged_users(self, obj: PostComment) -> Any:
-        tags = obj.tags.select_related("tagged_user").all()
+        # 댓글에 태그된 사용자 정보를 반환합니다. (뷰에서 prefetch_related("tags__tagged_user")를 사용함)
+        tags = obj.tags.all()
         return TaggedUserSerializer(tags, many=True).data
 
 
