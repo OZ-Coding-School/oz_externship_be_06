@@ -147,8 +147,10 @@ class AdminStudentEnrollmentAcceptAPIView(APIView):
         summary="어드민 페이지 수강생 등록 요청 승인 API",
         description="""
         스태프(조교, 러닝코치, 운영매니저) 또는 관리자가 수강생 등록 요청을 일괄 승인합니다.
+        넣어야 할 값:
+        - `enrollments`: 승인할 수강생 등록 요청 ID!!
 
-        승인 시:
+        **승인 시:**
         - 등록 요청 상태가 APPROVED로 변경됩니다.
         - 해당 유저의 role이 STUDENT로 변경됩니다.
         - CohortStudent 레코드가 생성됩니다.
@@ -194,7 +196,10 @@ class AdminStudentEnrollmentRejectAPIView(APIView):
         description="""
         스태프(조교, 러닝코치, 운영매니저) 또는 관리자가 수강생 등록 요청을 일괄 거절합니다.
 
-        거절 시:
+        **요청 본문:**
+        - `enrollments`: 거절할 수강생 등록 요청 ID 목록 (StudentEnrollmentRequest의 id)
+
+        **거절 시:**
         - 등록 요청 상태가 REJECTED로 변경됩니다.
         """,
         request=AdminStudentEnrollmentRejectSerializer,
