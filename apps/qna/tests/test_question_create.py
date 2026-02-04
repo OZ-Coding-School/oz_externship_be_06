@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base_e import QnaBaseException
+from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
 
 User = get_user_model()

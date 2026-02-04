@@ -1,15 +1,12 @@
-import logging
 from typing import Any
 
 from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
+from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base_e import QnaBaseException
-from apps.qna.exceptions.question_e import QuestionNotFoundException
+from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-
-logger = logging.getLogger(__name__)
 
 
 class QuestionQueryService:
@@ -30,7 +27,7 @@ class QuestionQueryService:
         - Returns:
             QuerySet[Question]: 필터링된 질문 QuerySet
         - Raises:
-            QuestionNotFoundException: 조건에 맞는 질문이 하나도 없을 경우 (404)
+            QnaBaseException: 조건에 맞는 질문이 하나도 없을 경우 (404)
         """
         queryset = Question.objects.select_related("author", "category__parent__parent").annotate(
             answer_count=Count("answers")
@@ -59,7 +56,7 @@ class QuestionQueryService:
             queryset = queryset.order_by("-view_count")
 
         if not queryset.exists():
-            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION_LIST)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION_LIST, status_code=status.HTTP_404_NOT_FOUND)
         return queryset
 
     @staticmethod
@@ -76,7 +73,7 @@ class QuestionQueryService:
                 Answers,
                 Comments
         - Raises:
-            QuestionNotFoundException: 질문이 존재하지 않을 경우
+            QnaBaseException: 질문이 존재하지 않을 경우 (404)
         """
         try:
             # 조회수 증가
@@ -92,7 +89,7 @@ class QuestionQueryService:
             return question
 
         except Question.DoesNotExist:
-            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
     def get_question_category_tree() -> QuerySet[QuestionCategory]:
