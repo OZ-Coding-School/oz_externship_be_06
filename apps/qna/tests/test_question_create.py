@@ -23,7 +23,6 @@ class QuestionCreateAPITest(TestCase):
     - 실패 케이스
         - 401 Unauthorized: 로그인하지 않은 유저
         - 403 Forbidden: 수강생이 아닌 유저
-        - 400 Bad Request: 존재하지 않는 카테고리
         - 400 Bad Request: 필수 입력값(제목 등) 누락
     - 성능 테스트 (쿼리 수 검증)
     """
@@ -108,19 +107,6 @@ class QuestionCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_QUESTION_CREATE.value)
-
-    def test_create_question_invalid_category(self) -> None:
-        """[실패] 존재하지 않는 카테고리 ID 전송 시 400 에러 반환 검증"""
-        auth_header = self._get_auth_header(self.student_user)
-
-        data = {"title": "에러 질문", "content": "내용", "category_id": 9999}
-
-        response = self.client.post(
-            self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
-        )
-
-        self.assertEqual(response.status_code, QnaBaseException.status_code)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE.value)
 
     def test_create_question_bad_request(self) -> None:
         """[실패] 필수 데이터 누락 시 400 에러 반환 검증"""

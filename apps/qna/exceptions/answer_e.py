@@ -4,19 +4,9 @@ from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base_e import QnaBaseException
 
 
-class AnswerPermissionDeniedException(QnaBaseException):
-    """
-    [403] Forbidden(권한 부족)
-    """
-
-    status_code = status.HTTP_403_FORBIDDEN
-    default_detail = ErrorMessages.FORBIDDEN_ANSWER_UPDATE
-    default_code = "answer_permission_denied"
-
-
 class AnswerNotFoundException(QnaBaseException):
     """
-    [404] Not Found(데이터가 존재하지 않음)
+    [404] Not Found (데이터가 존재하지 않음)
     """
 
     status_code = status.HTTP_404_NOT_FOUND
@@ -26,9 +16,9 @@ class AnswerNotFoundException(QnaBaseException):
 
 class AdoptedAnswerConflictException(QnaBaseException):
     """
-    [409] Conflict(데이터 중복)
+    [409] Conflict (데이터 충돌)
     """
 
     status_code = status.HTTP_409_CONFLICT
-    default_detail = ErrorMessages.ALREADY_EXISTS_ADOPTED_ANSWER
+    default_detail = ErrorMessages.CONFLICT_ANSWER_ADOPT
     default_code = "answer_already_adopted"

@@ -3,15 +3,31 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.models import Question, QuestionCategory
-from apps.qna.serializers.base import QnaValidationMixin
+from apps.qna.models import Question
+
+
+# ==============================================================================
+# [POST] Question Create
+# /api/v1/qna/questions
+# ==============================================================================
+class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
+    """
+    질문 등록 시리얼라이저
+    """
+
+    category_id = serializers.IntegerField(required=True, help_text="카테고리 ID (소분류)")
+    default_error_message = ErrorMessages.INVALID_QUESTION_CREATE
+
+    class Meta:
+        model = Question
+        fields = ["title", "content", "category_id"]
 
 
 # ==============================================================================
 # [GET] Question List
 # /api/v1/qna/questions
 # ==============================================================================
-class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Question]):
+class QuestionQuerySerializer(serializers.Serializer[Any]):
     """
     질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
     """
@@ -24,25 +40,3 @@ class QuestionQuerySerializer(QnaValidationMixin, serializers.Serializer[Questio
     size = serializers.IntegerField(default=10)
 
     default_error_message = ErrorMessages.INVALID_QUESTION_LIST
-
-
-# ==============================================================================
-# [POST] Question Create
-# /api/v1/qna/questions
-# ==============================================================================
-class QuestionCreateSerializer(QnaValidationMixin, serializers.ModelSerializer[Question]):
-    """
-    질문 등록 시리얼라이저
-    """
-
-    category_id = serializers.IntegerField(required=True, help_text="카테고리 ID (소분류)")
-    default_error_message = ErrorMessages.INVALID_QUESTION_CREATE
-
-    def validate_category_id(self, value: int) -> int:
-        if not QuestionCategory.objects.filter(id=value).exists():
-            raise serializers.ValidationError("존재하지 않는 카테고리입니다.")
-        return value
-
-    class Meta:
-        model = Question
-        fields = ["title", "content", "category_id"]

@@ -2,14 +2,13 @@ from rest_framework import serializers
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer
-from apps.qna.serializers.base import QnaValidationMixin
 
 
 # ==============================================================================
 # [POST] Answer Create
 # /api/v1/qna/questions/{question_id}/answers
 # ==============================================================================
-class AnswerCreateSerializer(QnaValidationMixin, serializers.ModelSerializer[Answer]):
+class AnswerCreateSerializer(serializers.ModelSerializer[Answer]):
     """
     답변 등록 시리얼라이저
     """

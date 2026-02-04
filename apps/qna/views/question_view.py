@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -22,13 +22,21 @@ from apps.qna.models import (
     Question,
     QuestionCategory,
 )
-from apps.qna.serializers.question import request as ser_q_req
-from apps.qna.serializers.question import response as ser_q_res
-from apps.qna.services.question import command as svc_q_cmd
-from apps.qna.services.question import query as svc_q_qry
+from apps.qna.serializers.question.request import (
+    QuestionCreateSerializer,
+    QuestionQuerySerializer,
+)
+from apps.qna.serializers.question.response import (
+    QuestionCategoryTreeResponseSerializer,
+    QuestionCreateResponseSerializer,
+    QuestionDetailSerializer,
+    QuestionListSerializer,
+)
+from apps.qna.services.question.command import QuestionCommandService
+from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
-from apps.qna.utils.question_list_pagination import QnAPaginator
+from apps.qna.utils.qna_paginator import QnAPaginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -36,6 +44,11 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     """
     질문 등록 및 목록 조회 API View
     """
+
+    serializer_classes = {
+        "GET": QuestionQuerySerializer,
+        "POST": QuestionCreateSerializer,
+    }
 
     def get_permissions(self) -> list[Any]:
         if self.request.method == "POST":
@@ -47,12 +60,12 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     @extend_schema(
         summary="질문 등록 API",
         description=ApiDescriptions.QUESTION_CREATE,
-        request=ser_q_req.QuestionCreateSerializer,
+        request=QuestionCreateSerializer,
         examples=[RequestBodyExamples.QUESTION_CREATE],
         responses={
             201: OpenApiResponse(
                 description="Created",
-                response=ser_q_res.QuestionCreateResponseSerializer,
+                response=QuestionCreateResponseSerializer,
                 examples=[SuccessResponseExamples.QUESTION_CREATE],
             ),
             400: OpenApiResponse(
@@ -75,16 +88,16 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request) -> Response:
         """질문 생성"""
-        serializer = ser_q_req.QuestionCreateSerializer(data=request.data)
+        serializer = QuestionCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        question = svc_q_cmd.QuestionCommandService.create_question(
+        question = QuestionCommandService.create_question(
             author=cast(User, request.user), data=serializer.validated_data
         )
 
         # 응답 출력
-        response_serializer = ser_q_res.QuestionCreateResponseSerializer(question)
+        response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     # 질문 목록 조회
@@ -92,12 +105,12 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     @extend_schema(
         summary="질문 목록 조회 API",
         description=ApiDescriptions.QUESTION_LIST,
-        parameters=[ser_q_req.QuestionQuerySerializer],
+        parameters=[QuestionQuerySerializer],
         examples=[QueryParameterExamples.QUESTION_LIST],
         responses={
             200: OpenApiResponse(
                 description="OK",
-                response=ser_q_res.QuestionListSerializer(many=True),
+                response=QuestionListSerializer(many=True),
                 examples=[SuccessResponseExamples.QUESTION_LIST],
             ),
             400: OpenApiResponse(
@@ -116,7 +129,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
         # 쿼리 파라미터 검증
-        query_serializer = ser_q_req.QuestionQuerySerializer(data=request.query_params)
+        query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
         # Mock Data 생성
@@ -147,11 +160,11 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
                 setattr(q, "answer_count", i % 3)
                 queryset.append(q)
         else:
-            queryset = svc_q_qry.QuestionQueryService.get_question_list(query_serializer.validated_data)
+            queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
         # Response 생성
         return QnAPaginator.get_paginated_data_response(
-            queryset=queryset, request=request, serializer_class=ser_q_res.QuestionListSerializer, view=self
+            queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
         )
 
 
@@ -170,7 +183,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         responses={
             200: OpenApiResponse(
                 description="OK",
-                response=ser_q_res.QuestionDetailSerializer,
+                response=QuestionDetailSerializer,
                 examples=[SuccessResponseExamples.QUESTION_DETAIL],
             ),
             400: OpenApiResponse(
@@ -246,9 +259,9 @@ class QuestionDetailAPIView(QnaBaseAPIView):
             question.answers = [ans1]
 
         else:
-            question = svc_q_qry.QuestionQueryService.get_question_detail(question_id)
+            question = QuestionQueryService.get_question_detail(question_id)
 
-        serializer = ser_q_res.QuestionDetailSerializer(question)
+        serializer = QuestionDetailSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -267,7 +280,7 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
         responses={
             200: OpenApiResponse(
                 description="OK",
-                response=ser_q_res.QuestionCategoryTreeResponseSerializer,
+                response=QuestionCategoryTreeResponseSerializer,
                 examples=[SuccessResponseExamples.QUESTION_CATEGORY_LIST],
             ),
             400: OpenApiResponse(
@@ -282,7 +295,7 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
         if settings.USE_QNA_MOCK or is_mock_requested:
             categories_tree = SuccessResponseExamples.QUESTION_CATEGORY_LIST.value["categories"]
         else:
-            categories_tree = svc_q_qry.QuestionQueryService.get_question_category_tree()
-        response_serializer = ser_q_res.QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
+            categories_tree = QuestionQueryService.get_question_category_tree()
+        response_serializer = QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
 
         return Response(response_serializer.data)

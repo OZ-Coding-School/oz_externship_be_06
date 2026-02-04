@@ -23,38 +23,28 @@ class AnswerCommandService:
         """
         특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
 
-        Args:
+        - Args:
             question_id (int): 답변을 달 질문의 ID (PK)
             author (User): 답변 작성자 객체 (User Instance)
             data (dict): content(str) 및 image_urls(list)를 포함한 검증된 데이터
-
-        Returns:
+        - Returns:
             Answer: 생성된 답변 객체
-
-        Raises:
+        - Raises:
             QuestionNotFoundException: 질문이 존재하지 않을 경우
-            QuestionBaseException: 기타 등록 처리 오류 시
         """
+        # 질문 조회
         try:
-            # 질문 조회
-            try:
-                question = Question.objects.select_for_update().get(id=question_id)
-            except Question.DoesNotExist:
-                raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
+            question = Question.objects.select_for_update().get(id=question_id)
+        except Question.DoesNotExist:
+            raise QuestionNotFoundException(detail=ErrorMessages.NOT_FOUND_QUESTION)
 
-            # 답변 생성
-            content = cast(str, data["content"])
-            answer = Answer.objects.create(question=question, author=author, content=content)
+        # 답변 생성
+        content = cast(str, data["content"])
+        answer = Answer.objects.create(question=question, author=author, content=content)
 
-            # 이미지 Bulk Create
-            image_urls = data.get("image_urls", [])
-            if image_urls:
-                AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
+        # 이미지 Bulk Create
+        image_urls = data.get("image_urls", [])
+        if image_urls:
+            AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
 
-            return answer
-
-        except QuestionNotFoundException:
-            raise
-        except Exception as e:
-            logger.error(f"{ErrorMessages.INVALID_ANSWER_CREATE} ID: {question_id}\nMessage: {str(e)}", exc_info=True)
-            raise QnaBaseException(detail=ErrorMessages.INVALID_ANSWER_CREATE)
+        return answer

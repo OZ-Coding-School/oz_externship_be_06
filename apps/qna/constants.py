@@ -7,7 +7,7 @@ class ErrorMessages(str, Enum):
     """
 
     # --- 400 Bad Request (Invalid Inputs) ---
-    INVALID_REQUEST = "유효하지 않은 요청입니다."
+    DEFAULT_400 = "400 유효하지 않은 요청"
     INVALID_QUESTION_CREATE = "유효하지 않은 질문 등록 요청입니다."
     INVALID_QUESTION_LIST = "유효하지 않은 질문 목록 조회 요청입니다."
     INVALID_QUESTION_CATEGORY_LIST = "유효하지 않은 카테고리 목록 조회 요청입니다."
@@ -32,6 +32,7 @@ class ErrorMessages(str, Enum):
     INVALID_UPLOAD_DOMAIN = "유효하지 않은 업로드 도메인입니다."
 
     # --- 401 Unauthorized (Authentication Required) ---
+    DEFAULT_401 = "401 로그인이 필요함"
     UNAUTHORIZED_QUESTION_CREATE = "로그인한 수강생만 질문을 등록할 수 있습니다."
     UNAUTHORIZED_QUESTION_UPDATE = "로그인한 사용자만 질문을 수정할 수 있습니다."
     UNAUTHORIZED_ANSWER_CREATE = "로그인한 사용자만 답변을 작성할 수 있습니다."
@@ -49,6 +50,7 @@ class ErrorMessages(str, Enum):
     UNAUTHORIZED_ADMIN_ANSWER_DELETE = "로그인이 필요합니다."
 
     # --- 403 Forbidden (Permission Denied) ---
+    DEFAULT_403 = "403 권한이 없음"
     FORBIDDEN_QUESTION_CREATE = "질문 등록 권한이 없습니다."
     FORBIDDEN_QUESTION_UPDATE = "본인이 작성한 질문만 수정할 수 있습니다."
     FORBIDDEN_ANSWER_CREATE = "답변 작성 권한이 없습니다."
@@ -66,6 +68,8 @@ class ErrorMessages(str, Enum):
     FORBIDDEN_ADMIN_ANSWER_DELETE = "답변 삭제 권한이 없습니다."
 
     # --- 404 Not Found (Resource Missing) ---
+    DEFAULT_404 = "404 찾을 수 없음"
+    NOT_FOUND_CATEGORY = "해당 카테고리를 찾을 수 없습니다."
     NOT_FOUND_QUESTION = "해당 질문을 찾을 수 없습니다."
     NOT_FOUND_QUESTION_LIST = "조회 가능한 질문이 존재하지 않습니다."
     NOT_FOUND_ANSWER = "해당 답변을 찾을 수 없습니다."
@@ -78,12 +82,14 @@ class ErrorMessages(str, Enum):
     NOT_FOUND_ADMIN_ANSWER = "삭제할 답변을 찾을 수 없습니다."
 
     # --- 409 Conflict (Business Logic Collision) ---
+    DEFAULT_409 = "409 충돌"
     ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
-    ALREADY_EXISTS_ADOPTED_ANSWER = "이미 채택된 답변이 존재합니다."
+    CONFLICT_ANSWER_ADOPT = "이미 채택된 답변이 존재합니다."
     # 409 - Admin
     ALREADY_EXISTS_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
     CONFLICT_ADMIN_DEFAULT_CATEGORY_DELETE = "기본 카테고리는 삭제할 수 없습니다."
 
     # --- 500 Internal Server Error & Unexpected (System) ---
+    DEFAULT_500 = "500 Internal Server Error"
     SYSTEM_ERROR = "데이터 처리 중 오류가 발생했습니다."
     DATABASE_ERROR = "데이터베이스 연결 중 오류가 발생했습니다."
