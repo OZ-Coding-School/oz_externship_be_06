@@ -47,6 +47,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
         return ret
 
 
+
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):
     question_id = serializers.IntegerField(source="id")
     options = serializers.SerializerMethodField()
