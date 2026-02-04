@@ -29,14 +29,11 @@ class ContentParser:
         return None
 
     @classmethod
-    def extract_preview_and_thumbnail(cls, content: Optional[str]) -> Tuple[str, Optional[str]]:
+    def extract_content_preview(cls, content: Optional[str], limit: int) -> Optional[str]:
         """목록 조회를 위해 이미지 태그 제거 텍스트, 썸네일 URL 반환"""
         # 입력값 검증
         if not content or not isinstance(content, str):
-            return "", None
-
-        # 2. 썸네일 추출
-        thumbnail = cls.extract_thumbnail_img_url(content)
+            return ""
 
         # 이미지 태그 제거 (마크다운 & HTML)
         clean_text = re.sub(r"!\[.*?\]\(.*?\)", "", content)
@@ -45,4 +42,10 @@ class ContentParser:
         # 불필요한 공백 및 줄바꿈 정리
         clean_text = re.sub(r"\s+", " ", clean_text).strip()
 
-        return clean_text, thumbnail
+        # 텍스트가 없을 경우 처리
+        if not clean_text:
+            clean_text = ""
+
+        preview = clean_text[:limit] + "..." if len(clean_text) > limit else clean_text
+
+        return preview

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from django.db import models
 
 from apps.core.models import TimeStampModel
 from apps.qna.models.question_category import QuestionCategory
+from apps.qna.utils.content_parser import ContentParser
 from apps.users.models import User
 
 
@@ -26,3 +29,14 @@ class Question(TimeStampModel):
 
     def __str__(self) -> str:
         return f"[{self.pk}] {self.title}"
+
+    @property
+    def content_preview(self) -> str:
+        """본문의 마크다운/HTML 태그를 제거한 미리보기 텍스트 반환"""
+        limit = 10
+        return ContentParser.extract_content_preview(self.content, limit) or ""
+
+    @property
+    def thumbnail_img_url(self) -> Optional[str]:
+        """본문 내 첫 번째 이미지 URL 반환"""
+        return ContentParser.extract_thumbnail_img_url(self.content)
