@@ -21,7 +21,14 @@ class PostCommentAPITestCase(APITestCase):
     COMMENT_NOT_FOUND_MSG = PostErrorMessage.COMMENT_NOT_FOUND
 
     def setUp(self) -> None:
+        # DB를 비워서 id=1로 생성되도록 함
+        User.objects.all().delete()
+        PostCategory.objects.all().delete()
+        Post.objects.all().delete()
+        PostComment.objects.all().delete()
+
         self.user = User.objects.create_user(
+            id=1,
             email="testuser@example.com",
             password="testpass",
             nickname="testuser",
@@ -29,9 +36,9 @@ class PostCommentAPITestCase(APITestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
-        self.category = PostCategory.objects.create(name="test category")
+        self.category = PostCategory.objects.create(id=1, name="test category")
         self.post = Post.objects.create(
-            author=self.user, title="test post", content="test content", category=self.category
+            id=1, author=self.user, title="test post", content="test content", category=self.category
         )
         self.client.force_authenticate(user=self.user)
 
