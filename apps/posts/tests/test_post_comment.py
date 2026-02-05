@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
-from apps.posts.constants.post_const import PostErrorMessage
+from apps.posts.constants.comment_const import CommentErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
@@ -189,7 +189,7 @@ class CommentServiceTests(TestCase):
 
 
 class PostCommentDetailAPITestCase(APITestCase):
-    COMMENT_NOT_FOUND_MSG = PostErrorMessage.COMMENT_NOT_FOUND
+    COMMENT_NOT_FOUND_MSG = CommentErrorMessage.COMMENT_NOT_FOUND
 
     def setUp(self) -> None:
         User = get_user_model()

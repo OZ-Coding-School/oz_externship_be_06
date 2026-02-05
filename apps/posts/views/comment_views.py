@@ -1,7 +1,6 @@
 from typing import Any
 
 from django.db.models import QuerySet
-from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -9,33 +8,27 @@ from drf_spectacular.utils import (
     inline_serializer,
 )
 from rest_framework import generics, parsers, serializers, status
-from rest_framework.exceptions import (
-    NotAuthenticated,
-    NotFound,
-    PermissionDenied,
-)
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.posts.constants.post_const import PostErrorMessage
+from apps.posts.constants.comment_const import CommentErrorMessage
+from apps.posts.exceptions.comment_exceptions import (
+    CommentForbiddenException,
+    CommentNotFoundException,
+    CommentUnauthorizedException,
+)
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
+from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
+from apps.posts.selectors.comment_selectors import CommentSelector
 from apps.posts.serializers.comment_serializers import (
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
 )
-
-
-# 댓글 페이지네이션 클래스
-class PostCommentPagination(PageNumberPagination):
-    page_query_param = "page"
-    page_size_query_param = "page_size"
-    page_size = 10
-    max_page_size = 100
+from apps.posts.utils.pagination import PostPagination
 
 
 # 닉네임 자동완성/추천 API (실제 구현 필요)
@@ -49,7 +42,7 @@ class PostNicknameAutocompleteAPIView(APIView):
         responses={200: OpenApiResponse(description="닉네임 추천 결과 목록")},
     )
     def get(self, request: Request) -> Response:
-        # TODO: 실제 닉네임 자동완성 로직 구현 필요
+        # 실제 닉네임 자동완성 로직 구현 필요
         # 현재는 빈 리스트 반환
         return Response({"results": []})
 
@@ -62,7 +55,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
     - POST: 로그인 회원만 가능, 댓글 최대 500자, 태그 가능
     """
 
-    pagination_class = PostCommentPagination
+    pagination_class = PostPagination
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def get_permissions(self) -> list[BasePermission]:
@@ -77,17 +70,12 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist:
-            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
+            raise CommentNotFoundException()
 
     def get_queryset(self) -> QuerySet[PostComment]:
-        # 해당 게시글의 댓글 목록 쿼리셋 반환
-        post = self._get_post()
-        return (
-            PostComment.objects.filter(post=post)
-            .select_related("author")
-            .prefetch_related("tags__tagged_user")
-            .order_by("created_at")
-        )
+        # CommentSelector를 사용해 댓글 목록 쿼리셋 반환
+        post_id = self.kwargs.get("post_id")
+        return CommentSelector.get_comments_for_post(post_id)
 
     def get_serializer_class(self) -> Any:
         # GET/POST에 따라 시리얼라이저 분기
@@ -123,7 +111,7 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         # 댓글 목록 조회 (페이지네이션)
         try:
             return super().get(request, *args, **kwargs)
-        except NotFound as e:
+        except CommentNotFoundException as e:
             return Response({"error_detail": str(e.detail)}, status=404)
 
     @extend_schema(
@@ -145,10 +133,10 @@ class PostCommentListCreateAPIView(generics.ListCreateAPIView):  # type: ignore[
         - 게시글 없으면 404 반환
         """
         if not request.user or not request.user.is_authenticated:
-            return Response({"error_detail": PostErrorMessage.UNAUTHORIZED}, status=401)
+            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=401)
         try:
             post = self._get_post()
-        except NotFound as e:
+        except CommentNotFoundException as e:
             return Response({"error_detail": str(e.detail)}, status=404)
         serializer = PostCommentCreateSerializer(
             data=request.data,
@@ -169,13 +157,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
     """
 
     serializer_class = PostCommentUpdateSerializer
-    permission_classes = []  # get_permissions에서 동적으로 처리
-
-    def get_permissions(self) -> list[BasePermission]:
-        # 모든 요청에 대해 인증 필요
-        if not self.request.user or not self.request.user.is_authenticated:
-            raise NotAuthenticated(PostErrorMessage.UNAUTHORIZED)
-        return [IsAuthenticated()]
+    permission_classes = [IsAuthenticated, IsCommentAuthorOrReadOnly]
 
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
@@ -198,26 +180,26 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         try:
             return Post.objects.get(pk=post_id)
         except Post.DoesNotExist:
-            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
+            raise CommentNotFoundException()
 
     def _get_comment_id(self) -> int:
         # 댓글 ID 유효성 검사
         comment_id = int(self.kwargs["comment_id"])
         if comment_id <= 0:
-            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
+            raise CommentNotFoundException()
         # mock: 999999 등 임의의 id는 없는 댓글로 간주
         if comment_id == 999999:
-            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
+            raise CommentNotFoundException()
         return comment_id
 
     @extend_schema(tags=["Comments"], summary="댓글 상세 조회 API")
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # 댓글 상세 조회 (실제 DB)
+        # CommentSelector를 사용해 댓글 상세 조회
         try:
             comment_id = self._get_comment_id()
-            comment = PostComment.objects.get(pk=comment_id)
+            comment = CommentSelector.get_comment_by_id(comment_id)
         except PostComment.DoesNotExist:
-            return Response({"error_detail": PostErrorMessage.COMMENT_NOT_FOUND}, status=404)
+            return Response({"error_detail": CommentErrorMessage.COMMENT_NOT_FOUND}, status=404)
         return Response({"id": comment.id, "content": comment.content}, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -245,9 +227,9 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
             from apps.posts.services.comment_services import PostCommentService
 
             comment = PostCommentService.get_comment_for_update(request.user, comment_id)
-        except NotFound as e:
+        except CommentNotFoundException as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        except PermissionDenied as e:
+        except CommentForbiddenException as e:
             return Response({"error_detail": str(e.detail)}, status=403)
         serializer = self.serializer_class(instance=comment, data=request.data, context={"request": request})
         if not serializer.is_valid():
@@ -276,8 +258,8 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
 
             comment = PostCommentService.get_comment_for_update(request.user, comment_id)
             PostCommentService.delete_comment(request.user, comment)
-        except NotFound as e:
+        except CommentNotFoundException as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        except PermissionDenied as e:
+        except CommentForbiddenException as e:
             return Response({"error_detail": str(e.detail)}, status=403)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)

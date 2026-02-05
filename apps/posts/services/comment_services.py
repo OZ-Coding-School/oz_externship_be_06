@@ -1,9 +1,12 @@
 from typing import Any
 
 from django.db import transaction
-from rest_framework.exceptions import NotFound, PermissionDenied
 
-from apps.posts.constants.post_const import PostErrorMessage
+from apps.posts.constants.comment_const import CommentErrorMessage
+from apps.posts.exceptions.comment_exceptions import (
+    CommentForbiddenException,
+    CommentNotFoundException,
+)
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 
@@ -29,9 +32,9 @@ class PostCommentService:
         try:
             comment = PostComment.objects.get(pk=comment_id)
         except PostComment.DoesNotExist:
-            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
+            raise CommentNotFoundException()
         if comment.author != user:
-            raise PermissionDenied(PostErrorMessage.FORBIDDEN)
+            raise CommentForbiddenException()
         return comment
 
     @staticmethod

@@ -1,9 +1,12 @@
 from typing import Any, Dict
 
 from rest_framework import serializers
-from rest_framework.exceptions import NotAuthenticated, NotFound
 
-from apps.posts.constants.post_const import PostErrorMessage
+from apps.posts.constants.comment_const import CommentErrorMessage
+from apps.posts.exceptions.comment_exceptions import (
+    CommentNotFoundException,
+    CommentUnauthorizedException,
+)
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.models.post_comment_tags import PostCommentTag
@@ -61,11 +64,11 @@ class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or not user.is_authenticated:
-            raise NotAuthenticated(detail=PostErrorMessage.UNAUTHORIZED)
+            raise CommentUnauthorizedException()
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
-            raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
+            raise CommentNotFoundException()
 
         return PostCommentService.create_comment(author=user, post=context_post, content=validated_data["content"])
 
