@@ -11,6 +11,7 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
 
     TYPE_MAP = {
         "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
+        "single_choice": ExamQuestion.TypeChoices.SINGLE_CHOICE,
         "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
         "ordering": ExamQuestion.TypeChoices.ORDERING,
         "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
@@ -40,13 +41,20 @@ class AdminExamQuestionCreateRequestSerializer(serializers.Serializer[Any]):
         correct_answer = attrs.get("correct_answer")
         prompt = attrs.get("prompt")
 
-        if exam_type in {"multiple_choice", "ordering"}:
+        if exam_type in {"multiple_choice", "ordering", "single_choice"}:
             if not options or len(options) < 2:
                 raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
-            if not isinstance(correct_answer, list) or not correct_answer:
-                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
-            if exam_type == "ordering" and len(correct_answer) != len(options):
-                raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
+            if exam_type == "ordering":
+                if not isinstance(correct_answer, list) or not correct_answer:
+                    raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
+                if len(correct_answer) != len(options):
+                    raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
+            elif exam_type == "multiple_choice":
+                if not isinstance(correct_answer, list) or not correct_answer:
+                    raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
+            else:
+                if not isinstance(correct_answer, str) or not correct_answer:
+                    raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
         elif exam_type == "fill_blank":
             if not prompt:
                 raise serializers.ValidationError(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)

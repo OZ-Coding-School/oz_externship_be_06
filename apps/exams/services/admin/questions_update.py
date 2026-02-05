@@ -73,6 +73,7 @@ def update_exam_question(
     # 3. 유형별 정책
     # 다지선다 / 순서정렬
     if q_type in [
+        ExamQuestion.TypeChoices.SINGLE_CHOICE,
         ExamQuestion.TypeChoices.MULTI_SELECT,
         ExamQuestion.TypeChoices.ORDERING,
     ]:

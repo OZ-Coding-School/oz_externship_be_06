@@ -140,6 +140,20 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error_detail", response.data)
 
+    def test_update_question_single_choice_requires_options(self) -> None:
+        self.client.force_authenticate(self.admin)
+
+        payload = {
+            "type": ExamQuestion.TypeChoices.SINGLE_CHOICE,
+            "options": [],
+            "correct_answer": "A",
+        }
+
+        response = self.client.put(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", response.data)
+
     # 6. 총점 초과 (409)
     def test_update_question_conflict_total_score(self) -> None:
         self.client.force_authenticate(self.admin)
