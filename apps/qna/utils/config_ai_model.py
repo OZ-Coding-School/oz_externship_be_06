@@ -1,3 +1,10 @@
+import logging
+import os
+import google.generativeai as genai
+
+logger = logging.getLogger("django")
+
+
 class AIModelConfig:
     """
     AI 모델 설정 및 매핑 상수
@@ -17,6 +24,22 @@ class AIModelConfig:
     # API 요청 타임아웃 (초)
     REQUEST_TIMEOUT = 30
 
+    _is_gemini_configured = False
+
+    @classmethod
+    def ensure_gemini_configured(cls) -> None:
+        """Gemini API 설정 초기화"""
+        if cls._is_gemini_configured:
+            return
+
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+            raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
+
+        genai.configure(api_key=api_key)
+        cls._is_gemini_configured = True
+
     @classmethod
     def get_model_name(cls, model_type: str) -> str:
         """
@@ -26,7 +49,7 @@ class AIModelConfig:
             model_type: 모델 타입 (Gemini 또는 GPT)
 
         Returns:
-            str: 세부 모델명 (gemini-2.5-pro 또는 gpt-4o)
+            str: 세부 모델명 (gemini-2.0-flash 또는 gpt-4o)
 
         Raises:
             ValueError: 지원하지 않는 모델 타입인 경우

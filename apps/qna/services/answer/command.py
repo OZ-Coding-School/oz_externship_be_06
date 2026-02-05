@@ -62,6 +62,7 @@ class AIAnswerCommandService:
     """
 
     @classmethod
+    @transaction.atomic
     def generate_ai_answer(cls, question_id: int, using_model: str) -> QuestionAIAnswer:
         """
         특정 질문에 대한 AI 답변을 생성하고 저장함.
@@ -159,12 +160,7 @@ class AIAnswerCommandService:
         """
         Google Gemini API를 호출합니다.
         """
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
-            raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
-
-        genai.configure(api_key=api_key)  # type: ignore[attr-defined]
+        AIModelConfig.ensure_gemini_configured()
 
         model = genai.GenerativeModel(  # type: ignore[attr-defined]
             model_name=model_name,
@@ -193,7 +189,6 @@ class AIAnswerCommandService:
         """
         OpenAI API를 호출합니다.
         """
-        # TODO: OpenAI API 연동 구현
         # 현재는 Gemini만 지원하므로 예외 발생
         raise NotImplementedError("OpenAI API 연동은 아직 구현되지 않았습니다.")
 
