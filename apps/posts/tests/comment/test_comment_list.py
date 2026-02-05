@@ -59,7 +59,7 @@ class CommentListSerializerTests(TestCase):
             email="tagged@example.com",
             password="testpass",
             name="태그유저",
-            nickname="taggeduser",
+            nickname="taggedusr",
             phone_number="010-0000-0000",
             gender="MALE",
             birthday="2000-01-02",
@@ -139,7 +139,7 @@ class PostCommentListAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             email="apilistuser@example.com",
             password="testpass",
-            nickname="apilistuser",
+            nickname="apilistusr",
             phone_number="010-9999-8888",
             gender="MALE",
             birthday="1995-05-05",
@@ -190,7 +190,7 @@ class PostCommentListAPITestCase(APITestCase):
         tagged_user = get_user_model().objects.create_user(
             email="tagged_api@example.com",
             password="testpass",
-            nickname="tagged_api",
+            nickname="taggedapi",
             phone_number="010-0000-0000",
             gender="MALE",
             birthday="1999-01-01",
@@ -231,7 +231,7 @@ class PostCommentDetailAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             email="detailuser@example.com",
             password="testpass",
-            nickname="detailuser",
+            nickname="detailusr",
             phone_number="010-1234-5678",
             gender="MALE",
             birthday="2000-01-01",

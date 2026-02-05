@@ -36,15 +36,15 @@ class PostCommentCreateSerializerTests(TestCase):
         self.other_user = User.objects.create_user(
             email="createuser@example.com",
             password="testpass",
-            nickname="createuser",
+            nickname="cruser",  # 10자 이하로 수정
             phone_number="010-5555-6666",
             gender="MALE",
             birthday="1985-02-02",
         )
-        self.other_user = User.objects.create_user(
+        self.other_user_2 = User.objects.create_user(
             email="other@example.com",
             password="testpass",
-            nickname="other",
+            nickname="other",  # 10자 이하로 유지
             phone_number="010-1111-2222",
             gender="FEMALE",
             birthday="1988-03-03",
@@ -152,7 +152,14 @@ class PostCommentCreateServiceTests(TestCase):
 
     def setUp(self) -> None:
         User = get_user_model()
-        self.user = User.objects.create_user(email="test@example.com", password="testpass", nickname="user")
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass",
+            nickname="user",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
         self.category = PostCategory.objects.create(name="cat")
         self.post = Post.objects.create(author=self.user, title="t", content="c", category=self.category)
 
@@ -183,7 +190,7 @@ class PostCommentCreateAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             email="createuser@example.com",
             password="testpass",
-            nickname="createuser",
+            nickname="cruser",  # 10자 이하로 수정
             phone_number="010-5555-6666",
             gender="MALE",
             birthday="1985-02-02",

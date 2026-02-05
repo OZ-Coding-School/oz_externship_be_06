@@ -33,7 +33,7 @@ class PostCommentUpdateSerializerTests(TestCase):
         self.other_user = User.objects.create_user(
             email="otheruser@example.com",
             password="testpass",
-            nickname="otheruser",
+            nickname="othruser",
             phone_number="010-3333-4444",
             gender="FEMALE",
             birthday="1995-05-05",
@@ -184,7 +184,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
         self.user = User.objects.create_user(
             email="updateuser@example.com",
             password="testpass",
-            nickname="updateuser",
+            nickname="upduser",
             phone_number="010-1111-2222",
             gender="MALE",
             birthday="1990-01-01",
@@ -192,7 +192,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
         self.other_user = User.objects.create_user(
             email="otheruser@example.com",
             password="testpass",
-            nickname="otheruser",
+            nickname="othruser",
             phone_number="010-3333-4444",
             gender="FEMALE",
             birthday="1995-05-05",
