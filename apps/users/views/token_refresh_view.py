@@ -57,7 +57,7 @@ class TokenRefreshAPIView(APIView):
             domain=cookie_domain,
             httponly=False,
             secure=not settings.DEBUG,
-            samesite="Lax",
+            samesite="None" if not settings.DEBUG else "Lax",  # cross-origin 지원
         )
 
         return response
