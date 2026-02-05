@@ -141,7 +141,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.AI_GEN_ANSWER_409],
             ),
         },
-        tags=["qna-ai"],
+        tags=["qna"],
     )
     def get(self, request: Request, question_id: int) -> Response:
         """질문 ID를 받아 AI 답변을 생성하고 저장된 결과를 반환함"""

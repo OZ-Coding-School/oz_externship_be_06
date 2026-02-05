@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from rest_framework import serializers
+
 from apps.qna.models import Answer, AnswerComment
 from apps.qna.serializers.answer.common import AnswerAuthorSerializer
 

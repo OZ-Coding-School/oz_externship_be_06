@@ -7,7 +7,7 @@ class AIModelConfig:
 
     # 모델 타입 → 세부 모델명 매핑
     MODEL_NAME_MAP: dict[str, str] = {
-        "Gemini": "gemini-2.5-pro",
+        "Gemini": "gemini-2.0-flash",
         "GPT": "gpt-4o",
     }
 

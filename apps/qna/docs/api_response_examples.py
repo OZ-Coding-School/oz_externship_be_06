@@ -496,7 +496,7 @@ class ErrorResponseExamples:
     )
     ADMIN_CATEGORY_CREATE_409 = OpenApiExample(
         name="어드민 카테고리 등록 실패 response body 예시 - 이름 중복",
-        value={"error_detail": ErrorMessages.ALREADY_EXISTS_ADMIN_CATEGORY_NAME.value},
+        value={"error_detail": ErrorMessages.CONFLICT_ADMIN_CATEGORY_NAME.value},
         response_only=True,
     )
 
