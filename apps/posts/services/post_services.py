@@ -95,7 +95,7 @@ class PostService:
             raise PostNotFoundException()
 
         # 권한 검증
-        if post.author_id != user.id and user.role not in ["admin", "staff"]:
+        if post.author_id != user.id and user.role not in ["ADMIN", "USER"]:
             raise PostPermissionDeniedException()
 
         # 게시글 삭제

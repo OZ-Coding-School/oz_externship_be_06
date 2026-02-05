@@ -104,7 +104,7 @@ class PostDetailView(APIView):
     """
 
     def get_permissions(self) -> list[Any]:
-        if self.request.method == "PATCH":
+        if self.request.method in ["PATCH", "DELETE"]:
             return [IsAuthenticated()]
         return [AllowAny()]
 
