@@ -22,7 +22,7 @@ from rest_framework.views import APIView
 from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
-from apps.posts.serializers.post_comment import (
+from apps.posts.serializers.comment_serializers import (
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
@@ -225,12 +225,13 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
 
     @extend_schema(tags=["Comments"], summary="댓글 상세 조회 API")
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # 댓글 상세 mock 응답
+        # 댓글 상세 조회 (실제 DB)
         try:
             comment_id = self._get_comment_id()
-        except NotFound as e:
-            return Response({"error_detail": str(e.detail)}, status=404)
-        return Response({"id": comment_id, "content": ""}, status=status.HTTP_200_OK)
+            comment = PostComment.objects.get(pk=comment_id)
+        except PostComment.DoesNotExist:
+            return Response({"error_detail": PostErrorMessage.COMMENT_NOT_FOUND}, status=404)
+        return Response({"id": comment.id, "content": comment.content}, status=status.HTTP_200_OK)
 
     @extend_schema(
         tags=["Comments"],
@@ -251,23 +252,21 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         },
     )
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # 댓글 수정 (본인만 가능, mock 기반)
+        # 댓글 수정 (본인만 가능, 실제 DB)
         try:
             comment_id = self._get_comment_id()
+            from apps.posts.services.comment_services import PostCommentService
+            comment = PostCommentService.get_comment_for_update(request.user, comment_id)
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # 테스트는 항상 self.user.id == 1, comment.id == 1로 호출
-        if not hasattr(request.user, "id") or request.user.id != 1 or comment_id != 1:
-            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
-        mock_comment = type("Comment", (), {})()
-        mock_comment.id = comment_id
-        mock_comment.content = ""
-        mock_comment.author = request.user
-        serializer = self.serializer_class(instance=mock_comment, data=request.data, context={"request": request})
+        except PermissionDenied as e:
+            return Response({"error_detail": str(e.detail)}, status=403)
+        serializer = self.serializer_class(instance=comment, data=request.data, context={"request": request})
         if not serializer.is_valid():
             return Response({"error_detail": serializer.errors}, status=400)
+        updated_comment = PostCommentService.update_comment(request.user, comment, serializer.validated_data["content"])
         return Response(
-            {"id": comment_id, "content": serializer.validated_data["content"], "updated_at": timezone.now()},
+            {"id": updated_comment.id, "content": updated_comment.content, "updated_at": updated_comment.updated_at},
             status=status.HTTP_200_OK,
         )
 
@@ -282,12 +281,14 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         },
     )
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        # 댓글 삭제 (본인만 가능, mock 기반)
+        # 댓글 삭제 (본인만 가능, 실제 DB)
         try:
             comment_id = self._get_comment_id()
+            from apps.posts.services.comment_services import PostCommentService
+            comment = PostCommentService.get_comment_for_update(request.user, comment_id)
+            PostCommentService.delete_comment(request.user, comment)
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
-        # 테스트는 항상 self.user.id == 1, comment.id == 1로 호출
-        if not hasattr(request.user, "id") or request.user.id != 1 or comment_id != 1:
-            return Response({"error_detail": PostErrorMessage.FORBIDDEN}, status=403)
+        except PermissionDenied as e:
+            return Response({"error_detail": str(e.detail)}, status=403)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)

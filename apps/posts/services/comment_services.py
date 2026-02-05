@@ -1,7 +1,7 @@
 from typing import Any
 
 from django.db import transaction
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 
 from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
@@ -22,13 +22,25 @@ class PostCommentService:
         return PostComment.objects.create(author=author, post=post, content=content)
 
     @staticmethod
+    def get_comment_for_update(user: Any, comment_id: int) -> PostComment:
+        """
+        댓글 수정/삭제 전용: 댓글 조회 및 권한 체크
+        """
+        try:
+            comment = PostComment.objects.get(pk=comment_id)
+        except PostComment.DoesNotExist:
+            raise NotFound(detail=PostErrorMessage.COMMENT_NOT_FOUND)
+        if comment.author != user:
+            raise PermissionDenied(PostErrorMessage.FORBIDDEN)
+        return comment
+
+    @staticmethod
     @transaction.atomic
     def update_comment(user: Any, comment: PostComment, content: str) -> PostComment:
         """
         댓글 수정 (작성자만 가능)
         """
-        if comment.author != user:
-            raise PermissionDenied(PostErrorMessage.FORBIDDEN)
+        # 권한 체크는 get_comment_for_update에서 이미 수행됨
         comment.content = content
         comment.save(update_fields=["content", "updated_at"])
         return comment
@@ -39,6 +51,5 @@ class PostCommentService:
         """
         댓글 삭제 (작성자만 가능)
         """
-        if comment.author != user:
-            raise PermissionDenied(PostErrorMessage.FORBIDDEN)
+        # 권한 체크는 get_comment_for_update에서 이미 수행됨
         comment.delete()

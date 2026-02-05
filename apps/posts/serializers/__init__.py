@@ -1,5 +1,5 @@
 from .category_serializers import CategoryListSerializer
-from .post_comment import (
+from .comment_serializers import (
     PostCommentCreateSerializer,
     PostCommentDeleteResponseSerializer,
     PostCommentListSerializer,
