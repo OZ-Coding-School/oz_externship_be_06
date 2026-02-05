@@ -8,6 +8,7 @@ from apps.courses.views.admin.cohort_avg_scores_view import AdminCohortAvgScores
 from apps.courses.views.admin.cohort_create_view import AdminCohortCreateView
 from apps.courses.views.admin.cohort_students_view import AdminCohortStudentsView
 from apps.courses.views.admin.cohort_update_view import AdminCohortUpdateView
+from apps.courses.views.admin.subject_create_view import AdminSubjectCreateView
 from apps.courses.views.admin.subject_list_view import AdminSubjectListView
 from apps.courses.views.admin.subject_scatter_view import AdminSubjectScatterView
 
@@ -21,6 +22,8 @@ urlpatterns = [
         "courses/<int:course_id>/cohorts/avg-scores", AdminCohortAvgScoresView.as_view(), name="admin-cohort-avg-scores"
     ),
     path("cohorts/<int:cohort_id>/students", AdminCohortStudentsView.as_view(), name="admin-cohort-students"),
+    # 과목 API
+    path("subjects", AdminSubjectCreateView.as_view(), name="admin-subject-create"),
     path("courses/<int:course_id>/subjects", AdminSubjectListView.as_view(), name="admin-subject-list"),
     path("subjects/<int:subject_id>/scatter", AdminSubjectScatterView.as_view(), name="admin-subject-scatter"),
 ]
