@@ -64,3 +64,13 @@ class PostSelector:
             return queryset.get(id=post_id)
         except Post.DoesNotExist:
             raise PostNotFoundException()
+
+    @staticmethod
+    def get_post_by_id(post_id: int) -> Post | None:
+        """
+        ID를 통해 특정 게시글을 조회
+        """
+        try:
+            return Post.objects.select_related("author", "category").get(id=post_id)
+        except Post.DoesNotExist:
+            return None
