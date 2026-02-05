@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 
 class ContentParser:
@@ -49,3 +49,19 @@ class ContentParser:
         preview = clean_text[:limit] + "..." if len(clean_text) > limit else clean_text
 
         return preview
+
+    @classmethod
+    def extract_all_image_urls(cls, content: str) -> List[str]:
+        """본문 텍스트 내의 모든 이미지 URL(Markdown, HTML)을 추출하여 리스트로 반환"""
+        urls: List[str] = []
+
+        # 1. 마크다운 이미지 패턴 추출 (![alt](url))
+        markdown_image_pattern = r"!\[.*?\]\((.*?)\)"
+        urls.extend(re.findall(markdown_image_pattern, content))
+
+        # 2. HTML 이미지 태그 패턴 추출 (<img src="url">)
+        html_image_pattern = r'<img [^>]*src="([^"]+)"'
+        urls.extend(re.findall(html_image_pattern, content))
+
+        # 3. 중복 제거 (순서 유지)
+        return list(dict.fromkeys(urls))

@@ -43,6 +43,14 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
             "thumbnail_img_url",
         ]
 
+    def get_content_preview(self, obj: Question) -> str:
+        """본문 프리뷰 생성"""
+        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
+
+    def get_thumbnail_img_url(self, obj: Question) -> Any:
+        """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
+        return ContentParser.extract_thumbnail_img_url(obj.content)
+
 
 # ==============================================================================
 # [GET] Question Detail
