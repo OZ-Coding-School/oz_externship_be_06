@@ -180,7 +180,7 @@ class TokenRefreshAPITest(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("access_token", response.json())
+        self.assertIn("access_token", response.cookies)
 
     def test_token_refresh_invalid_token(self) -> None:
         response = self.client.post(

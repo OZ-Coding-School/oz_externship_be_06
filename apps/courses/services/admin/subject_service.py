@@ -1,13 +1,22 @@
 from typing import Any
 
+from django.db import transaction
 from django.db.models import QuerySet
 
-from apps.courses.models import Subject
+from apps.courses.models import Course, Subject
 from apps.courses.utils.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
 
 
 class SubjectNotFoundError(Exception):
+    pass
+
+
+class CourseNotFoundError(Exception):
+    pass
+
+
+class SubjectAlreadyExistsError(Exception):
     pass
 
 
@@ -39,3 +48,21 @@ class AdminSubjectService:
             result.append({"time": elapsed_hours, "score": submission.score})
 
         return result
+
+    @staticmethod
+    @transaction.atomic
+    def create_subject(data: dict[str, Any]) -> Subject:
+        course_id = data.pop("course_id")
+
+        # 과정 존재 여부 확인
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            raise CourseNotFoundError(ErrorMessages.COURSE_NOT_FOUND.value)
+
+        # 동일 과정 내 중복 과목명 체크
+        if Subject.objects.filter(course=course, title=data["title"]).exists():
+            raise SubjectAlreadyExistsError(ErrorMessages.SUBJECT_ALREADY_EXISTS.value)
+
+        subject = Subject.objects.create(course=course, **data)
+        return subject

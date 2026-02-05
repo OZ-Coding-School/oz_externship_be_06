@@ -36,7 +36,6 @@ class TokenRefreshAPIView(APIView):
     def post(self, request: Request) -> Response:
         # 쿠키에서 refresh_token 먼저 확인, 없으면 body에서 확인
         refresh_token = request.COOKIES.get("refresh_token")
-        from_cookie = bool(refresh_token)
 
         if not refresh_token:
             serializer = TokenRefreshRequestSerializer(data=request.data)
@@ -58,22 +57,18 @@ class TokenRefreshAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        response = Response(
-            {"access_token": access_token},
-            status=status.HTTP_200_OK,
-        )
+        response = Response(status=status.HTTP_200_OK)
 
-        # 소셜 로그인 사용자용: 쿠키로 refresh_token을 받은 경우 access_token도 쿠키로 갱신
-        if from_cookie:
-            cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
-            response.set_cookie(
-                key="access_token",
-                value=access_token,
-                max_age=60 * 60,  # 60분
-                domain=cookie_domain,
-                httponly=False,
-                secure=not settings.DEBUG,
-                samesite="Lax",
-            )
+        # access_token을 쿠키에 저장
+        cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            max_age=60 * 60,  # 60분
+            domain=cookie_domain,
+            httponly=False,
+            secure=not settings.DEBUG,
+            samesite="Lax",
+        )
 
         return response

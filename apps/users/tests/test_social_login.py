@@ -378,10 +378,10 @@ class NaverOAuthServiceTests(TestCase):
 
 @override_settings(
     KAKAO_CLIENT_ID="test_kakao_client_id",
-    KAKAO_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/login/kakao/callback/",
+    KAKAO_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/social-login/kakao/callback/",
     NAVER_CLIENT_ID="test_naver_client_id",
     NAVER_CLIENT_SECRET="test_naver_secret",
-    NAVER_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/login/naver/callback/",
+    NAVER_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/social-login/naver/callback/",
     FRONTEND_SOCIAL_REDIRECT_URL="http://localhost:3000/auth/callback",
 )
 class KakaoLoginViewTests(TestCase):
@@ -391,7 +391,7 @@ class KakaoLoginViewTests(TestCase):
         self.client = APIClient()
 
     def test_kakao_login_start_redirect(self) -> None:
-        res = self.client.get("/api/v1/accounts/login/kakao/")
+        res = self.client.get("/api/v1/accounts/social-login/kakao/")
 
         self.assertEqual(res.status_code, status.HTTP_302_FOUND)
         self.assertIn("kauth.kakao.com", res["Location"])
@@ -414,7 +414,7 @@ class KakaoLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/kakao/callback/",
+            "/api/v1/accounts/social-login/kakao/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
@@ -424,7 +424,7 @@ class KakaoLoginViewTests(TestCase):
 
     def test_kakao_callback_missing_code(self) -> None:
         res = self.client.get(
-            "/api/v1/accounts/login/kakao/callback/",
+            "/api/v1/accounts/social-login/kakao/callback/",
             {"state": "some_state"},
         )
 
@@ -437,7 +437,7 @@ class KakaoLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/kakao/callback/",
+            "/api/v1/accounts/social-login/kakao/callback/",
             {"code": "test_code", "state": "invalid_state"},
         )
 
@@ -478,7 +478,7 @@ class KakaoLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/kakao/callback/",
+            "/api/v1/accounts/social-login/kakao/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
@@ -519,7 +519,7 @@ class KakaoLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/kakao/callback/",
+            "/api/v1/accounts/social-login/kakao/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
@@ -529,10 +529,10 @@ class KakaoLoginViewTests(TestCase):
 
 @override_settings(
     KAKAO_CLIENT_ID="test_kakao_client_id",
-    KAKAO_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/login/kakao/callback/",
+    KAKAO_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/social-login/kakao/callback/",
     NAVER_CLIENT_ID="test_naver_client_id",
     NAVER_CLIENT_SECRET="test_naver_secret",
-    NAVER_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/login/naver/callback/",
+    NAVER_REDIRECT_URI="http://127.0.0.1:8000/api/v1/accounts/social-login/naver/callback/",
     FRONTEND_SOCIAL_REDIRECT_URL="http://localhost:3000/auth/callback",
 )
 class NaverLoginViewTests(TestCase):
@@ -542,7 +542,7 @@ class NaverLoginViewTests(TestCase):
         self.client = APIClient()
 
     def test_naver_login_start_redirect(self) -> None:
-        res = self.client.get("/api/v1/accounts/login/naver/")
+        res = self.client.get("/api/v1/accounts/social-login/naver/")
 
         self.assertEqual(res.status_code, status.HTTP_302_FOUND)
         self.assertIn("nid.naver.com", res["Location"])
@@ -564,7 +564,7 @@ class NaverLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/naver/callback/",
+            "/api/v1/accounts/social-login/naver/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
@@ -574,7 +574,7 @@ class NaverLoginViewTests(TestCase):
 
     def test_naver_callback_missing_code(self) -> None:
         res = self.client.get(
-            "/api/v1/accounts/login/naver/callback/",
+            "/api/v1/accounts/social-login/naver/callback/",
             {"state": "some_state"},
         )
 
@@ -587,7 +587,7 @@ class NaverLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/naver/callback/",
+            "/api/v1/accounts/social-login/naver/callback/",
             {"code": "test_code", "state": "invalid_state"},
         )
 
@@ -626,7 +626,7 @@ class NaverLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/naver/callback/",
+            "/api/v1/accounts/social-login/naver/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
@@ -665,7 +665,7 @@ class NaverLoginViewTests(TestCase):
         session.save()
 
         res = self.client.get(
-            "/api/v1/accounts/login/naver/callback/",
+            "/api/v1/accounts/social-login/naver/callback/",
             {"code": "test_code", "state": "valid_state"},
         )
 
