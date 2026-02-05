@@ -17,9 +17,10 @@ from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
 from apps.posts.selectors.comment_selectors import CommentSelector
 from apps.posts.serializers.comment_serializers import PostCommentUpdateSerializer
 from apps.posts.services.comment.comment_update_services import update_comment
+from apps.posts.views.comment.comment_base_view import CommentBaseView
 
 
-class PostCommentUpdateAPIView(APIView):
+class PostCommentUpdateAPIView(CommentBaseView, APIView):
     serializer_class = PostCommentUpdateSerializer
     permission_classes = [IsAuthenticated, IsCommentAuthorOrReadOnly]
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]

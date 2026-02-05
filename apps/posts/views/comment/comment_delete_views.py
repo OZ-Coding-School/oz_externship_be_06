@@ -15,9 +15,10 @@ from apps.posts.exceptions.comment_exceptions import (
 from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
 from apps.posts.selectors.comment_selectors import CommentSelector
 from apps.posts.services.comment.comment_delete_services import delete_comment
+from apps.posts.views.comment.comment_base_view import CommentBaseView
 
 
-class PostCommentDeleteAPIView(APIView):
+class PostCommentDeleteAPIView(CommentBaseView, APIView):
     permission_classes = [IsAuthenticated, IsCommentAuthorOrReadOnly]
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 

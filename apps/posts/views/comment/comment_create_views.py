@@ -11,9 +11,10 @@ from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.comment_serializers import PostCommentCreateSerializer
+from apps.posts.views.comment.comment_base_view import CommentBaseView
 
 
-class PostCommentCreateAPIView(generics.CreateAPIView[PostComment]):
+class PostCommentCreateAPIView(CommentBaseView, generics.CreateAPIView[PostComment]):
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     permission_classes = [IsAuthenticated]
 

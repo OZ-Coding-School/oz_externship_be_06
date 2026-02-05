@@ -17,9 +17,10 @@ from apps.posts.models.post_comment import PostComment
 from apps.posts.selectors.comment_selectors import CommentSelector
 from apps.posts.serializers.comment_serializers import PostCommentListSerializer
 from apps.posts.utils.pagination import PostPagination
+from apps.posts.views.comment.comment_base_view import CommentBaseView
 
 
-class PostCommentListAPIView(generics.ListAPIView[PostComment]):
+class PostCommentListAPIView(CommentBaseView, generics.ListAPIView[PostComment]):
     # 댓글 단일 상세 조회(GET)도 AllowAny가 아니라면, 인증 체크 및 커스텀 예외 적용 필요
     pagination_class = PostPagination
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
