@@ -12,6 +12,7 @@ from rest_framework import generics, parsers, serializers, status
 from rest_framework.exceptions import (
     NotAuthenticated,
     NotFound,
+    PermissionDenied,
 )
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
@@ -28,15 +29,6 @@ from apps.posts.serializers.comment_serializers import (
     PostCommentUpdateSerializer,
 )
 
-# 닉네임 자동완성 mock 데이터
-MOCK_NICKNAMES = [
-    {"id": 1, "nickname": "ozstudent"},
-    {"id": 2, "nickname": "ozadmin"},
-    {"id": 3, "nickname": "ozmaster"},
-    {"id": 4, "nickname": "ozdev"},
-    {"id": 5, "nickname": "ozuser"},
-]
-
 
 # 댓글 페이지네이션 클래스
 class PostCommentPagination(PageNumberPagination):
@@ -46,25 +38,20 @@ class PostCommentPagination(PageNumberPagination):
     max_page_size = 100
 
 
-# 닉네임 자동완성/추천 API (mock)
+# 닉네임 자동완성/추천 API (실제 구현 필요)
 class PostNicknameAutocompleteAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
         tags=["Posts"],
-        summary="닉네임 자동완성/추천 API (mock)",
+        summary="닉네임 자동완성/추천 API",
         parameters=[OpenApiParameter(name="q", type=str, required=False, description="검색할 닉네임의 일부 문자열")],
-        responses={200: OpenApiResponse(description="닉네임 추천 결과 목록 (mock)")},
+        responses={200: OpenApiResponse(description="닉네임 추천 결과 목록")},
     )
     def get(self, request: Request) -> Response:
-        # 쿼리 파라미터로 닉네임 일부를 받아 mock 데이터에서 필터링
-        q_raw = request.query_params.get("q", "")
-        q = str(q_raw).lower() if q_raw is not None else ""
-        if q:
-            results = [n for n in MOCK_NICKNAMES if q in str(n["nickname"]).lower()]
-        else:
-            results = MOCK_NICKNAMES[:3]  # 기본 3개만 반환
-        return Response({"results": results})
+        # TODO: 실제 닉네임 자동완성 로직 구현 필요
+        # 현재는 빈 리스트 반환
+        return Response({"results": []})
 
 
 # 댓글 목록/생성 API
@@ -256,6 +243,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         try:
             comment_id = self._get_comment_id()
             from apps.posts.services.comment_services import PostCommentService
+
             comment = PostCommentService.get_comment_for_update(request.user, comment_id)
         except NotFound as e:
             return Response({"error_detail": str(e.detail)}, status=404)
@@ -285,6 +273,7 @@ class PostCommentRetrieveUpdateDestroyAPIView(APIView):
         try:
             comment_id = self._get_comment_id()
             from apps.posts.services.comment_services import PostCommentService
+
             comment = PostCommentService.get_comment_for_update(request.user, comment_id)
             PostCommentService.delete_comment(request.user, comment)
         except NotFound as e:

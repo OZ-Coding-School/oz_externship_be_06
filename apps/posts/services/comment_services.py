@@ -1,7 +1,7 @@
 from typing import Any
 
 from django.db import transaction
-from rest_framework.exceptions import PermissionDenied, NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
