@@ -86,6 +86,7 @@ access token: 60분
             httponly=True,
             secure=not settings.DEBUG,
             samesite="None" if not settings.DEBUG else "Lax",  # cross-origin 지원
+            path="/",
         )
 
         return response
