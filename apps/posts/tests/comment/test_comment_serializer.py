@@ -15,6 +15,7 @@ User = get_user_model()
 
 class PostCommentSerializerTests(TestCase):
     def setUp(self) -> None:
+        # 테스트용 유저, 카테고리, 게시글, 댓글을 생성합니다.
         self.user = User.objects.create_user(
             email="testuser@example.com",
             password="testpass",
@@ -30,12 +31,60 @@ class PostCommentSerializerTests(TestCase):
         )
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
 
+    def test_create_serializer_empty_content(self) -> None:
+        # 댓글 내용이 비어있을 때 ValidationError가 발생하는지 테스트
+        serializer = PostCommentCreateSerializer(
+            data={"content": "   "},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})(), "post": self.post},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("content", serializer.errors)
+
+    def test_create_serializer_too_long_content(self) -> None:
+        # 댓글 내용이 최대 길이를 초과할 때 ValidationError가 발생하는지 테스트
+        long_content = "a" * 501
+        serializer = PostCommentCreateSerializer(
+            data={"content": long_content},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})(), "post": self.post},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("content", serializer.errors)
+
+    def test_update_serializer_empty_content(self) -> None:
+        # 댓글 수정 시 내용이 비어있을 때 ValidationError가 발생하는지 테스트
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "   "},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})()},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("content", serializer.errors)
+
+    def test_update_serializer_too_long_content(self) -> None:
+        # 댓글 수정 시 내용이 최대 길이를 초과할 때 ValidationError가 발생하는지 테스트
+        long_content = "a" * 501
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": long_content},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})()},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("content", serializer.errors)
+
+    def test_list_serializer_tagged_users_field(self) -> None:
+        # 댓글 목록 시리얼라이저에서 tagged_users 필드가 항상 포함되는지 테스트
+        data = PostCommentListSerializer(self.comment).data
+        self.assertIn("tagged_users", data)
+        self.assertIsInstance(data["tagged_users"], list)
+
     def test_post_comment_list_serializer_fields(self) -> None:
+        # 댓글 목록 시리얼라이저 필드와 값 검증
         data = PostCommentListSerializer(self.comment).data
         self.assertEqual(set(data.keys()), {"id", "author", "tagged_users", "content", "created_at", "updated_at"})
         self.assertEqual(data["content"], self.comment.content)
 
     def test_post_comment_create_serializer(self) -> None:
+        # 댓글 생성 시리얼라이저 정상 동작 검증
         serializer = PostCommentCreateSerializer(
             data={"content": "new comment"},
             context={
@@ -50,6 +99,7 @@ class PostCommentSerializerTests(TestCase):
         self.assertEqual(comment.post, self.post)
 
     def test_post_comment_update_serializer(self) -> None:
+        # 댓글 수정 시리얼라이저 정상 동작 검증
         serializer = PostCommentUpdateSerializer(
             self.comment,
             data={"content": "updated content"},
@@ -60,6 +110,7 @@ class PostCommentSerializerTests(TestCase):
         self.assertEqual(updated.content, "updated content")
 
     def test_post_comment_create_serializer_unauthenticated(self) -> None:
+        # 인증되지 않은 유저가 댓글 생성 시 예외 발생 검증
         from rest_framework.exceptions import NotAuthenticated
 
         serializer = PostCommentCreateSerializer(
@@ -74,6 +125,7 @@ class PostCommentSerializerTests(TestCase):
             serializer.save()
 
     def test_post_comment_create_serializer_no_post(self) -> None:
+        # post가 없는 경우 예외 발생 검증
         from rest_framework.exceptions import NotFound
 
         serializer = PostCommentCreateSerializer(
@@ -88,6 +140,7 @@ class PostCommentSerializerTests(TestCase):
             serializer.save()
 
     def test_post_comment_update_serializer_authenticated_author(self) -> None:
+        # 댓글 작성자가 인증된 경우 정상적으로 수정되는지 검증
         serializer = PostCommentUpdateSerializer(
             self.comment,
             data={"content": "updated"},
@@ -98,6 +151,7 @@ class PostCommentSerializerTests(TestCase):
         self.assertEqual(updated.content, "updated")
 
     def test_post_comment_update_serializer_unauthenticated(self) -> None:
+        # 인증되지 않은 유저가 댓글 수정 시 예외 발생 검증
         from rest_framework.exceptions import NotAuthenticated
 
         serializer = PostCommentUpdateSerializer(
@@ -110,6 +164,7 @@ class PostCommentSerializerTests(TestCase):
             serializer.save()
 
     def test_post_comment_update_serializer_not_author(self) -> None:
+        # 댓글 작성자가 아닌 경우 수정 시 PermissionDenied가 발생하는지 테스트합니다.
         from rest_framework.exceptions import PermissionDenied
 
         serializer = PostCommentUpdateSerializer(
@@ -118,5 +173,3 @@ class PostCommentSerializerTests(TestCase):
             context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})()},
         )
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        # 실제로는 self.other_user로 해야 하지만, self.other_user는 CommentServiceTests에 정의되어 있음
-        # 이 테스트는 실제로는 CommentServiceTests로 옮기는 것이 더 적합함
