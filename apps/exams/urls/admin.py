@@ -12,7 +12,6 @@ from apps.exams.views.admin.deployments_status import (
 from apps.exams.views.admin.exams_detail import AdminExamDetailAPIView
 from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
-from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
 from apps.exams.views.admin.submissions_delete import AdminExamSubmissionDeleteAPIView
 from apps.exams.views.admin.questions_detail import AdminExamQuestionDetailAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView
