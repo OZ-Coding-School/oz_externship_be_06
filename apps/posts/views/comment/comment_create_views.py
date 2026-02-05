@@ -22,6 +22,7 @@ class PostCommentCreateAPIView(CommentBaseView, generics.CreateAPIView[PostComme
     - 정상: 201 + detail 메시지
     - 실패: 400/401/404 + error_detail
     """
+
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     permission_classes = [IsAuthenticated]
 
