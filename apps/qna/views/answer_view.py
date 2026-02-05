@@ -126,6 +126,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
                 response=dict,
                 examples=[ErrorResponseExamples.AI_GEN_ANSWER_401],
             ),
+            # 현재는 401 로그인 권한까지만 검증하도록 구현되어 403에러는 발생하지 않음
             403: OpenApiResponse(
                 description="Forbidden",
                 response=dict,
