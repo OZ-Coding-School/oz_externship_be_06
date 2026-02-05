@@ -23,9 +23,7 @@ class PostCommentDeleteAPIView(APIView):
 
     def _get_comment_id(self) -> int:
         comment_id = int(self.kwargs["comment_id"])
-        if comment_id <= 0:
-            raise CommentNotFoundException()
-        if comment_id == 999999:
+        if comment_id <= 0 or comment_id == 999999:
             raise CommentNotFoundException()
         return comment_id
 
@@ -40,9 +38,14 @@ class PostCommentDeleteAPIView(APIView):
         },
     )
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        from apps.posts.exceptions.comment_exceptions import (
+            CommentForbiddenException,
+            CommentUnauthorizedException,
+        )
+
         # 인증 체크: 비인증이면 커스텀 예외
         if not request.user or not request.user.is_authenticated:
-            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+            raise CommentUnauthorizedException()
         try:
             comment_id = self._get_comment_id()
             comment = CommentSelector.get_comment_by_id(comment_id)
@@ -58,14 +61,8 @@ class PostCommentDeleteAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         # 권한 체크: 작성자가 아니면 커스텀 예외
-        from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
-
         permission = IsCommentAuthorOrReadOnly()
         if not permission.has_object_permission(request, self, comment):
-            from apps.posts.exceptions.comment_exceptions import (
-                CommentForbiddenException,
-            )
-
             raise CommentForbiddenException()
         delete_comment(request.user, comment)
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)

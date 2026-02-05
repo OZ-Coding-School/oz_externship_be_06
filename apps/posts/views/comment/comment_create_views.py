@@ -44,8 +44,12 @@ class PostCommentCreateAPIView(generics.CreateAPIView[PostComment]):
         },
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        from apps.posts.exceptions.comment_exceptions import (
+            CommentUnauthorizedException,
+        )
+
         if not request.user or not request.user.is_authenticated:
-            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+            raise CommentUnauthorizedException()
         try:
             post = self._get_post()
         except CommentNotFoundException as e:

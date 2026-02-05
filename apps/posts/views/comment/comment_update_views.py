@@ -51,9 +51,14 @@ class PostCommentUpdateAPIView(APIView):
         },
     )
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        from apps.posts.exceptions.comment_exceptions import (
+            CommentForbiddenException,
+            CommentUnauthorizedException,
+        )
+
         # 인증 체크: 비인증이면 커스텀 예외
         if not request.user or not request.user.is_authenticated:
-            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
+            raise CommentUnauthorizedException()
         try:
             comment_id = self._get_comment_id()
             comment = CommentSelector.get_comment_by_id(comment_id)
@@ -68,26 +73,9 @@ class PostCommentUpdateAPIView(APIView):
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-        except CommentForbiddenException as e:
-            return Response(
-                {
-                    "error_detail": (
-                        e.detail["error_detail"]
-                        if isinstance(e.detail, dict) and "error_detail" in e.detail
-                        else e.detail
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
         # 권한 체크: 작성자가 아니면 커스텀 예외
-        from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
-
         permission = IsCommentAuthorOrReadOnly()
         if not permission.has_object_permission(request, self, comment):
-            from apps.posts.exceptions.comment_exceptions import (
-                CommentForbiddenException,
-            )
-
             raise CommentForbiddenException()
         serializer = self.serializer_class(instance=comment, data=request.data, context={"request": request})
         if not serializer.is_valid():
