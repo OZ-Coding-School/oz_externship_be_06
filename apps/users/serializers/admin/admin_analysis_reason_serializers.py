@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from apps.users.models.withdrawal import Withdrawal
 
+
 class WithdrawalReasonStatsRequestSerializer(serializers.Serializer[Dict[str, Any]]):
     """탈퇴 사유 통계 조회 요청 검증 시리얼라이저"""
 
@@ -12,6 +13,7 @@ class WithdrawalReasonStatsRequestSerializer(serializers.Serializer[Dict[str, An
         required=True,
         help_text="탈퇴 사유 코드",
     )
+
 
 class WithdrawalMonthItemSerializer(serializers.Serializer[Dict[str, Any]]):
     period = serializers.CharField(help_text="YYYY-MM")
