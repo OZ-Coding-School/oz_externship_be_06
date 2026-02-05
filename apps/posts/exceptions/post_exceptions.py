@@ -49,5 +49,4 @@ class PostPermissionDeniedException(APIException):
     def __init__(self, detail: Any = None, code: Any = None) -> None:
         if detail is None:
             detail = self.default_detail
-        # 공통 에러 응답 규격인 error_detail 포맷을 유지합니다.
         self.detail = {"error_detail": detail}

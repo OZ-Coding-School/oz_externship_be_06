@@ -98,9 +98,13 @@ class PostListCreateView(APIView):
 
 
 class PostDetailView(APIView):
+    """
+    GET: 게시글 상세 조회 및 조회수 증가 (AllowAny)
+    POST: 게시글 삭제 (IsAuthenticated)
+    """
 
     def get_permissions(self) -> list[Any]:
-        if self.request.method == "PATCH":
+        if self.request.method in ["PATCH", "DELETE"]:
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -110,6 +114,10 @@ class PostDetailView(APIView):
         tags=["posts"],
     )
     def get(self, request: Request, post_id: int) -> Response:
+        """
+        게시글 상세 조회
+        """
+
         # Selector
         post = PostSelector.get_post_detail(post_id=post_id)
 
@@ -147,3 +155,17 @@ class PostDetailView(APIView):
             return Response(
                 {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    @extend_schema(
+        summary="게시글 삭제",
+        tags=["posts"],
+    )
+    def delete(self, request: Request, post_id: int) -> Response:
+        """
+        게시글 삭제
+        """
+        user = cast(User, request.user)
+
+        PostService.delete_post(post_id=post_id, user=user)
+
+        return Response({"detail": PostSuccessMessage.POST_DELETE_SUCCESS}, status=status.HTTP_200_OK)

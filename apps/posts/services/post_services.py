@@ -3,7 +3,10 @@ from typing import Any, List, Optional
 from django.db import transaction
 from django.db.models import F, Q, QuerySet
 
-from apps.posts.exceptions.post_exceptions import PostPermissionDeniedException
+from apps.posts.exceptions.post_exceptions import (
+    PostNotFoundException,
+    PostPermissionDeniedException,
+)
 from apps.posts.models import Post, PostAttachment, PostImage
 from apps.users.models import User
 
@@ -77,3 +80,24 @@ class PostService:
             post.save(update_fields=updated_fields)
 
         return post
+
+    @staticmethod
+    @transaction.atomic
+    def delete_post(post_id: int, user: User) -> None:
+        """
+        게시글을 삭제
+        작성자 본인 혹은 관리자에게 권한 있음
+        """
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            raise PostNotFoundException()
+
+        # 권한 검증
+        if post.author_id != user.id:
+            raise PostPermissionDeniedException()
+
+        # 게시글 삭제
+        # 연관 데이터 자동 삭제 또는 수정 처리
+        post.delete()
