@@ -7,7 +7,6 @@ from apps.posts.services.comment.comment_nickname_services import (
 )
 
 
-
 class PostCommentNicknameServiceTests(TestCase):
     """댓글 닉네임 생성 서비스 테스트"""
 

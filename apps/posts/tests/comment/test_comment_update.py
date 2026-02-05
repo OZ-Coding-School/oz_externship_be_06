@@ -18,7 +18,6 @@ from apps.posts.serializers.comment_serializers import PostCommentUpdateSerializ
 from apps.posts.services.comment.comment_update_services import update_comment
 
 
-
 class PostCommentUpdateSerializerTests(TestCase):
     """댓글 수정 시리얼라이저 테스트"""
 
@@ -165,7 +164,6 @@ class PostCommentUpdateSerializerTests(TestCase):
         # user=None이면 보통 권한/인증 예외가 발생
         with self.assertRaises(Exception):
             serializer.save()
-
 
 
 class PostCommentUpdateServiceTests(TestCase):

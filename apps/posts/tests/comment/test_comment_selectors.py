@@ -1,3 +1,5 @@
+from typing import cast
+
 from django.test import TestCase
 
 from apps.posts.models.post import Post
@@ -27,14 +29,19 @@ class CommentSelectorTests(TestCase):
         with self.assertRaises(Post.DoesNotExist):
             CommentSelector.get_comments_for_post(99999999)
 
-    def test_get_comment_by_id_success(self):
+    def test_get_comment_by_id_success(self) -> None:
         """존재하는 댓글 PK로 정상 조회"""
         comment = CommentSelector.get_comment_by_id(self.comment.pk)
         self.assertEqual(comment.pk, self.comment.pk)
         self.assertEqual(comment.content, self.comment.content)
 
-    def test_get_comments_for_post_success(self):
+    def test_get_comments_for_post_success(self) -> None:
         """존재하는 게시글 PK로 댓글 목록 정상 조회"""
         comments = CommentSelector.get_comments_for_post(self.post.pk)
         self.assertEqual(comments.count(), 1)
-        self.assertEqual(comments.first().pk, self.comment.pk)
+        from typing import cast
+
+        first_comment = comments.first()
+        self.assertIsNotNone(first_comment)
+        first_comment = cast(PostComment, first_comment)
+        self.assertEqual(first_comment.pk, self.comment.pk)

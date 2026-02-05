@@ -16,7 +16,6 @@ from apps.posts.serializers.comment_serializers import PostCommentCreateSerializ
 from apps.posts.services.comment.comment_create_services import create_comment
 
 
-
 class PostCommentCreateSerializerTests(TestCase):
     """댓글 생성 시리얼라이저 테스트"""
 
@@ -174,7 +173,7 @@ class PostCommentCreateServiceTests(TestCase):
     def test_create_comment_with_none_post_raises(self) -> None:
         """post가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            create_comment(author=self.user, post=None, content="댓글")
+            create_comment(author=self.user, post=None, content="댓글")  # type: ignore[arg-type]
 
     def test_create_comment_with_none_author_raises(self) -> None:
         """author가 None이면 예외 발생"""

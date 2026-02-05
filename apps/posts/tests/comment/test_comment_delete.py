@@ -11,14 +11,13 @@ from apps.posts.models.post_comment import PostComment
 from apps.posts.services.comment.comment_delete_services import delete_comment
 
 
-
 class PostCommentDeleteServiceTests(TestCase):
     """댓글 삭제 서비스 테스트"""
 
     def test_delete_comment_with_invalid_user(self) -> None:
         """user가 None이거나 잘못된 경우 예외 발생"""
         with self.assertRaises(Exception):
-            delete_comment(None, self.comment)  # type: ignore[arg-type]
+            delete_comment(None, self.comment)
 
     def test_delete_comment_with_none_comment(self) -> None:
         """comment가 None이면 예외 발생"""
@@ -37,11 +36,6 @@ class PostCommentDeleteServiceTests(TestCase):
         """작성자가 아닌 사용자가 삭제 시도 시 예외 발생"""
         with self.assertRaises(CommentForbiddenException):
             delete_comment(self.other_user, self.comment)
-
-    def test_delete_comment_with_none_comment(self) -> None:
-        """None을 삭제 시도 시 예외 발생"""
-        with self.assertRaises(Exception):
-            delete_comment(self.user, None)  # type: ignore[arg-type]
 
     def test_delete_comment_success(self) -> None:
         """정상적으로 댓글 삭제 성공"""
