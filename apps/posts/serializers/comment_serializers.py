@@ -11,7 +11,10 @@ from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.post_serializers import PostAuthorSerializer
-from apps.posts.services.comment_services import PostCommentService
+from apps.posts.services.comment.comment_create_services import create_comment
+from apps.posts.services.comment.comment_delete_services import delete_comment
+from apps.posts.services.comment.comment_list_services import list_comments
+from apps.posts.services.comment.comment_update_services import update_comment
 
 
 class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
@@ -70,7 +73,7 @@ class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
         if context_post is None or not isinstance(context_post, Post):
             raise CommentNotFoundException()
 
-        return PostCommentService.create_comment(author=user, post=context_post, content=validated_data["content"])
+        return create_comment(author=user, post=context_post, content=validated_data["content"])
 
 
 class PostCommentUpdateSerializer(serializers.Serializer[PostComment]):
@@ -91,7 +94,7 @@ class PostCommentUpdateSerializer(serializers.Serializer[PostComment]):
     def update(self, instance: PostComment, validated_data: Dict[str, Any]) -> PostComment:
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
-        return PostCommentService.update_comment(user=user, comment=instance, content=validated_data["content"])
+        return update_comment(user=user, comment=instance, content=validated_data["content"])
 
 
 class PostCommentDeleteResponseSerializer(serializers.Serializer[Any]):

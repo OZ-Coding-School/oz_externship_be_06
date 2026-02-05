@@ -2,7 +2,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.posts.services.comment_nickname_service import generate_comment_nickname
+from apps.posts.services.comment.comment_nickname_services import (
+    generate_comment_nickname,
+)
 
 
 class CommentRandomNicknameAPIView(APIView):
