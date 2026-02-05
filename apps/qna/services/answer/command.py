@@ -164,11 +164,11 @@ class AIAnswerCommandService:
             logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
             raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
 
-        genai.configure(api_key=api_key) # type: ignore[attr-defined]
+        genai.configure(api_key=api_key)  # type: ignore[attr-defined]
 
-        model = genai.GenerativeModel(# type: ignore[attr-defined]
+        model = genai.GenerativeModel(  # type: ignore[attr-defined]
             model_name=model_name,
-            generation_config=genai.GenerationConfig(# type: ignore[attr-defined]
+            generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
                 temperature=0.7,
                 top_p=0.9,
                 max_output_tokens=1024,
