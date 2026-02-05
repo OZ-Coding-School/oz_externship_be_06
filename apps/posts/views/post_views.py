@@ -98,9 +98,6 @@ class PostListCreateView(APIView):
 
 
 class PostDetailView(APIView):
-    """
-    GET: 게시글 상세 조회 및 조회수 증가
-    """
 
     def get_permissions(self) -> list[Any]:
         if self.request.method == "PATCH":
@@ -131,9 +128,7 @@ class PostDetailView(APIView):
         user: User = cast(User, request.user)
 
         # post 객체 확보
-        post: Post | None = PostSelector.get_post_detail(post_id=post_id)
-        if not post:
-            return Response({"error_detail": PostErrorMessage.POST_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+        post = PostSelector.get_post_detail(post_id=post_id)
 
         # Serializer 검증
         serializer: PostUpdateSerializer = PostUpdateSerializer(data=request.data, partial=True)  # 부분 수정

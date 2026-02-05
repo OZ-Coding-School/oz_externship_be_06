@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from django.db import transaction
 from django.db.models import F, Q, QuerySet
 
-from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
+from apps.posts.exceptions.post_exceptions import PostPermissionDeniedException
 from apps.posts.models import Post, PostAttachment, PostImage
 from apps.users.models import User
 
@@ -60,7 +60,7 @@ class PostService:
 
         # 권한 검증 : 작성자 본인이 아니면 예외 발생
         if post.author != user:  # 작성자(post.author) 요청자(user)
-            raise PostUnauthorizedException()
+            raise PostPermissionDeniedException()
 
         # 데이터 업데이트 및 변경된 필드 추적
         updated_fields = []
