@@ -66,7 +66,7 @@ class PostCommentSerializerTests(TestCase):
         self.assertEqual(updated.content, "updated content")
 
         # 인증되지 않은 사용자가 댓글 생성 시 예외 발생 검증
-        def test_post_comment_create_serializer_unauthenticated(self):
+        def test_post_comment_create_serializer_unauthenticated(self: "PostCommentSerializerTests") -> None:
             serializer = PostCommentCreateSerializer(
                 data={"content": "new comment"},
                 context={
@@ -76,11 +76,12 @@ class PostCommentSerializerTests(TestCase):
             )
             self.assertTrue(serializer.is_valid(), serializer.errors)
             from rest_framework.exceptions import NotAuthenticated
+
             with self.assertRaises(NotAuthenticated):
                 serializer.save()
 
         # post 객체 없이 댓글 생성 시 예외 발생 검증
-        def test_post_comment_create_serializer_no_post(self):
+        def test_post_comment_create_serializer_no_post(self: "PostCommentSerializerTests") -> None:
             serializer = PostCommentCreateSerializer(
                 data={"content": "new comment"},
                 context={
@@ -90,6 +91,7 @@ class PostCommentSerializerTests(TestCase):
             )
             self.assertTrue(serializer.is_valid(), serializer.errors)
             from rest_framework.exceptions import NotFound
+
             with self.assertRaises(NotFound):
                 serializer.save()
 
