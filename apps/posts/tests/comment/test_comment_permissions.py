@@ -23,6 +23,7 @@ class CommentPermissionTests(TestCase):
 
         class DummyRequest:
             method = "GET"
+            user = self.user
 
         class DummyObj:
             author = self.user
@@ -37,6 +38,7 @@ class CommentPermissionTests(TestCase):
 
         class DummyRequest:
             method = "PUT"
+            user = self.user
 
         class DummyObj:
             author = None
@@ -51,6 +53,7 @@ class CommentPermissionTests(TestCase):
 
         class DummyRequest:
             method = "DELETE"
+            user = self.user
 
         class DummyObj:
             author = self.user

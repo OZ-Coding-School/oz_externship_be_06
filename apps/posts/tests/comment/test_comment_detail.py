@@ -36,7 +36,7 @@ class PostCommentDetailAPITestCase(APITestCase):
 
     def test_comment_detail_safe_methods_permission(self) -> None:
         """작성자/비작성자/비로그인 모두 GET 가능"""
-        url = reverse("posts:post-comment-update", args=[self.post.id, self.comment.id])
+        url = reverse("posts:post-comment-detail", args=[self.post.id, self.comment.id])
 
         # 작성자
         self.client.force_authenticate(user=self.user)
@@ -63,7 +63,7 @@ class PostCommentDetailAPITestCase(APITestCase):
 
     def test_comment_detail_success(self) -> None:
         """댓글 상세 조회 성공"""
-        url = reverse("posts:post-comment-update", args=[self.post.id, self.comment.id])
+        url = reverse("posts:post-comment-detail", args=[self.post.id, self.comment.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn("id", response.data)
@@ -72,7 +72,7 @@ class PostCommentDetailAPITestCase(APITestCase):
 
     def test_comment_detail_not_found(self) -> None:
         """존재하지 않는 댓글 조회 시 404 반환"""
-        url = reverse("posts:post-comment-update", args=[self.post.id, 999999])
+        url = reverse("posts:post-comment-detail", args=[self.post.id, 999999])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
