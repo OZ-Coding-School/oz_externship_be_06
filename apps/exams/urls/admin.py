@@ -11,6 +11,7 @@ from apps.exams.views.admin.deployments_status import (
 )
 from apps.exams.views.admin.exams_detail import AdminExamDetailAPIView
 from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
+from apps.exams.views.admin.presigned_url_view import ExamPresignedUrlAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
 from apps.exams.views.admin.questions_detail import AdminExamQuestionDetailAPIView
 from apps.exams.views.admin.submissions_delete import AdminExamSubmissionDeleteAPIView
@@ -21,6 +22,11 @@ urlpatterns = [
     # put + delete
     path("exams/<int:exam_id>/", AdminExamDetailAPIView.as_view(), name="admin-exam-detail"),
     path("exams", AdminExamRouterAPIView.as_view(), name="admin-exams"),
+    path(
+        "exams/presigned-url/thumbnail/",
+        ExamPresignedUrlAPIView.as_view(),
+        name="exam-presigned-url",
+    ),
     path("submissions/", AdminExamSubmissionListAPIView.as_view(), name="admin-exam-submission-list"),
     # put + delete
     path(
