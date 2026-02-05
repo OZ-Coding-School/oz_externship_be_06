@@ -173,31 +173,22 @@ class TokenRefreshAPITest(TestCase):
     def test_token_refresh_success(self) -> None:
         refresh = RefreshToken.for_user(self.user)
 
-        response = self.client.post(
-            "/api/v1/accounts/me/refresh/",
-            data={"refresh_token": str(refresh)},
-            content_type="application/json",
-        )
+        self.client.cookies["refresh_token"] = str(refresh)
+        response = self.client.post("/api/v1/accounts/me/refresh/")
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("access_token", response.json())
         self.assertIn("access_token", response.cookies)
 
     def test_token_refresh_invalid_token(self) -> None:
-        response = self.client.post(
-            "/api/v1/accounts/me/refresh/",
-            data={"refresh_token": "invalid_token"},
-            content_type="application/json",
-        )
+        self.client.cookies["refresh_token"] = "invalid_token"
+        response = self.client.post("/api/v1/accounts/me/refresh/")
 
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(response.json()["error_detail"]["detail"], "로그인 세션이 만료되었습니다.")
+        self.assertEqual(response.json()["error_detail"], "로그인 세션이 만료되었습니다.")
 
-    def test_token_refresh_missing_token(self) -> None:
-        response = self.client.post(
-            "/api/v1/accounts/me/refresh/",
-            data={},
-            content_type="application/json",
-        )
+    def test_token_refresh_missing_cookie(self) -> None:
+        response = self.client.post("/api/v1/accounts/me/refresh/")
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("refresh_token", response.json()["error_detail"])
+        self.assertEqual(response.json()["error_detail"], "refresh_token 쿠키가 없습니다.")
