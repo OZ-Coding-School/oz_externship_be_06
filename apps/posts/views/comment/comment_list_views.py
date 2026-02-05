@@ -5,7 +5,7 @@ from drf_spectacular.utils import (
     extend_schema,
     inline_serializer,
 )
-from rest_framework import generics, parsers, serializers
+from rest_framework import generics, parsers, serializers, status
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -21,7 +21,6 @@ from apps.posts.utils.pagination import PostPagination
 
 class PostCommentListAPIView(generics.ListAPIView[PostComment]):
     # 댓글 단일 상세 조회(GET)도 AllowAny가 아니라면, 인증 체크 및 커스텀 예외 적용 필요
-    # 만약 상세 조회 API가 별도라면, 해당 view에도 동일하게 적용해야 함
     pagination_class = PostPagination
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     permission_classes = [AllowAny]
@@ -61,4 +60,13 @@ class PostCommentListAPIView(generics.ListAPIView[PostComment]):
         try:
             return super().get(request, *args, **kwargs)
         except CommentNotFoundException as e:
-            return Response({"error_detail": str(e.detail)}, status=404)
+            return Response(
+                {
+                    "error_detail": (
+                        e.detail["error_detail"]
+                        if isinstance(e.detail, dict) and "error_detail" in e.detail
+                        else e.detail
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )

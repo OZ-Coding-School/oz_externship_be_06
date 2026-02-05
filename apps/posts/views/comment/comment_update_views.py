@@ -53,18 +53,32 @@ class PostCommentUpdateAPIView(APIView):
     def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 인증 체크: 비인증이면 커스텀 예외
         if not request.user or not request.user.is_authenticated:
-            from apps.posts.exceptions.comment_exceptions import (
-                CommentUnauthorizedException,
-            )
-
-            raise CommentUnauthorizedException()
+            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             comment_id = self._get_comment_id()
             comment = CommentSelector.get_comment_by_id(comment_id)
         except CommentNotFoundException as e:
-            return Response({"error_detail": str(e.detail)}, status=404)
+            return Response(
+                {
+                    "error_detail": (
+                        e.detail["error_detail"]
+                        if isinstance(e.detail, dict) and "error_detail" in e.detail
+                        else e.detail
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
         except CommentForbiddenException as e:
-            return Response({"error_detail": str(e.detail)}, status=403)
+            return Response(
+                {
+                    "error_detail": (
+                        e.detail["error_detail"]
+                        if isinstance(e.detail, dict) and "error_detail" in e.detail
+                        else e.detail
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
         # 권한 체크: 작성자가 아니면 커스텀 예외
         from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
 
@@ -77,7 +91,7 @@ class PostCommentUpdateAPIView(APIView):
             raise CommentForbiddenException()
         serializer = self.serializer_class(instance=comment, data=request.data, context={"request": request})
         if not serializer.is_valid():
-            return Response({"error_detail": serializer.errors}, status=400)
+            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         updated_comment = update_comment(request.user, comment, serializer.validated_data["content"])
         return Response(
             {"id": updated_comment.id, "content": updated_comment.content, "updated_at": updated_comment.updated_at},

@@ -45,15 +45,24 @@ class PostCommentCreateAPIView(generics.CreateAPIView[PostComment]):
     )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         if not request.user or not request.user.is_authenticated:
-            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=401)
+            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             post = self._get_post()
         except CommentNotFoundException as e:
-            return Response({"error_detail": str(e.detail)}, status=404)
+            return Response(
+                {
+                    "error_detail": (
+                        e.detail["error_detail"]
+                        if isinstance(e.detail, dict) and "error_detail" in e.detail
+                        else e.detail
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
         serializer = PostCommentCreateSerializer(
             data=request.data,
             context={**self.get_serializer_context(), "request": request, "post": post},
         )
         if not serializer.is_valid():
-            return Response({"error_detail": serializer.errors}, status=400)
+            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"detail": "댓글이 등록되었습니다."}, status=status.HTTP_201_CREATED)

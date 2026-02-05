@@ -42,16 +42,21 @@ class PostCommentDeleteAPIView(APIView):
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # 인증 체크: 비인증이면 커스텀 예외
         if not request.user or not request.user.is_authenticated:
-            from apps.posts.exceptions.comment_exceptions import (
-                CommentUnauthorizedException,
-            )
-
-            raise CommentUnauthorizedException()
+            return Response({"error_detail": CommentErrorMessage.UNAUTHORIZED}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             comment_id = self._get_comment_id()
             comment = CommentSelector.get_comment_by_id(comment_id)
         except CommentNotFoundException as e:
-            return Response({"error_detail": str(e.detail)}, status=404)
+            return Response(
+                {
+                    "error_detail": (
+                        e.detail["error_detail"]
+                        if isinstance(e.detail, dict) and "error_detail" in e.detail
+                        else e.detail
+                    )
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
         # 권한 체크: 작성자가 아니면 커스텀 예외
         from apps.posts.permissions.comment_permissions import IsCommentAuthorOrReadOnly
 
