@@ -8,14 +8,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.exams.constants import ErrorMessages
-from apps.exams.views.mixins import ExamsExceptionMixin
 from apps.core.serializers.presigned_url import (
     PresignedUrlRequestSerializer,
     PresignedUrlResponseSerializer,
 )
 from apps.core.utils.permissions import IsStaffRole
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
+from apps.exams.constants import ErrorMessages
+from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 class StorageTarget(Enum):
@@ -63,9 +63,7 @@ class ExamPresignedUrlAPIView(ExamsExceptionMixin, BasePresignedUrlAPIView):
     def put(self, request: Request) -> Response:
         return super().put(request)
 
-    def permission_denied(
-        self, request: Request, message: str | None = None, code: str | None = None
-    ) -> NoReturn:
+    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated()
         raise PermissionDenied(detail=ErrorMessages.FORBIDDEN.value)
