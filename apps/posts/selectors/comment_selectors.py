@@ -7,12 +7,22 @@ from apps.posts.models.post_comment import PostComment
 
 
 class CommentSelector:
-    # 댓글 조회 및 데이터 추출을 담당하는 셀렉터 클래스입니다.
+    """
+    댓글 조회 및 데이터 추출을 담당하는 셀렉터 클래스입니다.
+    """
 
     @staticmethod
     def get_comments_for_post(post_id: int) -> QuerySet[PostComment]:
-        # 특정 게시글의 댓글 목록을 조회합니다.
-        # author, tags__tagged_user 프리패치 포함, 생성일 기준 오름차순 정렬
+        """
+        특정 게시글의 댓글 목록을 조회합니다.
+        author, tags__tagged_user 프리패치 포함, 생성일 기준 오름차순 정렬
+        Args:
+            post_id (int): 게시글 PK
+        Returns:
+            QuerySet[PostComment]: 해당 게시글의 댓글 목록 쿼리셋
+        Raises:
+            Post.DoesNotExist: 게시글이 존재하지 않을 때
+        """
         post = Post.objects.get(pk=post_id)
         return (
             PostComment.objects.filter(post=post)
@@ -23,5 +33,13 @@ class CommentSelector:
 
     @staticmethod
     def get_comment_by_id(comment_id: int) -> PostComment:
-        # PK로 단일 댓글을 조회합니다. 존재하지 않으면 예외 발생.
+        """
+        pk로 단일 댓글 조회
+        Args:
+            comment_id (int): 댓글 PK
+        Returns:
+            PostComment: 해당 댓글 객체
+        Raises:
+            PostComment.DoesNotExist: 댓글이 존재하지 않을 때
+        """
         return PostComment.objects.get(pk=comment_id)

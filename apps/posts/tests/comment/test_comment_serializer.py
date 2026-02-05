@@ -139,6 +139,30 @@ class PostCommentSerializerTests(TestCase):
         with self.assertRaises(NotFound):
             serializer.save()
 
+    def test_post_comment_create_serializer_no_request(self) -> None:
+        # context에 request가 없는 경우 예외 발생 검증
+        from rest_framework.exceptions import NotAuthenticated
+
+        serializer = PostCommentCreateSerializer(
+            data={"content": "new comment"},
+            context={"post": self.post},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        with self.assertRaises(NotAuthenticated):
+            serializer.save()
+
+    def test_post_comment_create_serializer_wrong_post_type(self) -> None:
+        # context의 post가 Post 타입이 아닌 경우 예외 발생 검증
+        from rest_framework.exceptions import NotFound
+
+        serializer = PostCommentCreateSerializer(
+            data={"content": "new comment"},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})(), "post": "not_a_post"},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        with self.assertRaises(NotFound):
+            serializer.save()
+
     def test_post_comment_update_serializer_authenticated_author(self) -> None:
         # 댓글 작성자가 인증된 경우 정상적으로 수정되는지 검증
         serializer = PostCommentUpdateSerializer(

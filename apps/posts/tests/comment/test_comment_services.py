@@ -32,15 +32,35 @@ class CommentServiceTests(TestCase):
         self.assertEqual(comment.author, self.user)
         self.assertEqual(comment.post, self.post)
 
+    def test_create_comment_with_none_post(self) -> None:
+        # post가 None일 때 예외 발생 (TypeError 등)
+        with self.assertRaises(Exception):
+            create_comment(self.user, None, "내용")  # type: ignore[arg-type]
+
+    def test_create_comment_with_none_author(self) -> None:
+        # author가 None일 때 예외 발생 (TypeError 등)
+        with self.assertRaises(Exception):
+            create_comment(None, self.post, "내용")
+
     def test_update_comment_not_author(self) -> None:
         # 댓글 수정 서비스에서 작성자가 아닌 경우 예외 발생
         with self.assertRaises(CommentForbiddenException):
             update_comment(self.other_user, self.comment, "수정")
 
+    def test_update_comment_with_none_comment(self) -> None:
+        # comment가 None일 때 예외 발생 (AttributeError 등)
+        with self.assertRaises(Exception):
+            update_comment(self.user, None, "수정")  # type: ignore[arg-type]
+
     def test_delete_comment_not_author(self) -> None:
         # 댓글 삭제 서비스에서 작성자가 아닌 경우 예외 발생
         with self.assertRaises(CommentForbiddenException):
             delete_comment(self.other_user, self.comment)
+
+    def test_delete_comment_with_none_comment(self) -> None:
+        # comment가 None일 때 예외 발생 (AttributeError 등)
+        with self.assertRaises(Exception):
+            delete_comment(self.user, None)  # type: ignore[arg-type]
 
     def test_nickname_randomness(self) -> None:
         # 닉네임 생성 서비스가 다양한 결과를 반환하는지 테스트

@@ -7,7 +7,9 @@ from apps.posts.models.post_comment import PostComment
 
 
 def update_comment(user: Any, comment: PostComment, content: str) -> PostComment:
-    # 댓글을 수정하는 함수입니다. 작성자만 수정할 수 있습니다.
+    """
+    댓글 수정 (작성자만 가능)
+    """
     if comment.author != user:
         raise CommentForbiddenException()
     comment.content = content
