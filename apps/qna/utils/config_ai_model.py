@@ -1,5 +1,6 @@
 import logging
 import os
+
 import google.generativeai as genai
 
 logger = logging.getLogger("django")
@@ -37,7 +38,7 @@ class AIModelConfig:
             logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
             raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
 
-        genai.configure(api_key=api_key)
+        genai.configure(api_key=api_key) # type: ignore[attr-defined]
         cls._is_gemini_configured = True
 
     @classmethod
