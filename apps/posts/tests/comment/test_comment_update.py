@@ -18,8 +18,48 @@ from apps.posts.serializers.comment_serializers import PostCommentUpdateSerializ
 from apps.posts.services.comment.comment_update_services import update_comment
 
 
+
 class PostCommentUpdateSerializerTests(TestCase):
     """댓글 수정 시리얼라이저 테스트"""
+
+    def test_update_serializer_validate_method(self) -> None:
+        """validate 메서드가 정상적으로 호출되는지 확인"""
+        factory = APIRequestFactory()
+        request = factory.post("/dummy-url/")
+        request.user = self.user
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "valid content"},
+            context={"request": request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_update_serializer_update_content_blank(self) -> None:
+        """update에서 content가 공백일 때 ValidationError 발생"""
+        factory = APIRequestFactory()
+        request = factory.post("/dummy-url/")
+        request.user = self.user
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "   "},
+            context={"request": request},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("content", serializer.errors)
+
+    def test_update_serializer_update_called(self) -> None:
+        """update 메서드가 정상적으로 호출되는지 확인"""
+        factory = APIRequestFactory()
+        request = factory.post("/dummy-url/")
+        request.user = self.user
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "update test"},
+            context={"request": request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated = serializer.save()
+        self.assertEqual(updated.content, "update test")
 
     def setUp(self) -> None:
         """테스트용 유저, 카테고리, 게시글, 댓글 생성"""
@@ -127,8 +167,14 @@ class PostCommentUpdateSerializerTests(TestCase):
             serializer.save()
 
 
+
 class PostCommentUpdateServiceTests(TestCase):
     """댓글 수정 서비스 테스트"""
+
+    def test_update_comment_with_none_user_raises(self) -> None:
+        """user가 None이면 예외 발생"""
+        with self.assertRaises(Exception):
+            update_comment(None, self.comment, "수정")
 
     def setUp(self) -> None:
         """테스트용 유저, 카테고리, 게시글, 댓글 생성"""

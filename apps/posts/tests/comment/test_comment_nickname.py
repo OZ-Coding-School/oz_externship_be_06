@@ -7,8 +7,17 @@ from apps.posts.services.comment.comment_nickname_services import (
 )
 
 
+
 class PostCommentNicknameServiceTests(TestCase):
     """댓글 닉네임 생성 서비스 테스트"""
+
+    def test_nickname_format(self) -> None:
+        """생성된 닉네임이 형식에 맞는지 확인 (형용사+동물)"""
+        nickname = generate_comment_nickname()
+        self.assertIn(" ", nickname)
+        adj, animal = nickname.split()
+        self.assertTrue(adj)
+        self.assertTrue(animal)
 
     def test_nickname_randomness(self) -> None:
         """여러 번 생성 시 닉네임 다양성 확인"""

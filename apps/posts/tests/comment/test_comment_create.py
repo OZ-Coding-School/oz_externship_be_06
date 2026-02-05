@@ -16,8 +16,22 @@ from apps.posts.serializers.comment_serializers import PostCommentCreateSerializ
 from apps.posts.services.comment.comment_create_services import create_comment
 
 
+
 class PostCommentCreateSerializerTests(TestCase):
     """댓글 생성 시리얼라이저 테스트"""
+
+    def test_create_serializer_validate_method(self) -> None:
+        """validate 메서드가 정상적으로 호출되는지 확인"""
+        serializer = self._make_serializer(content="valid content", request_user=self.user, post=self.post)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        # validate 메서드는 기본적으로 attrs를 그대로 반환하므로, 별도 assert는 필요 없음
+
+    def test_create_serializer_create_called(self) -> None:
+        """create 메서드가 정상적으로 호출되는지 확인"""
+        serializer = self._make_serializer(content="create test", request_user=self.user, post=self.post)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        comment = serializer.save()
+        self.assertEqual(comment.content, "create test")
 
     def setUp(self) -> None:
         """테스트용 유저, 카테고리, 게시글 생성"""
@@ -160,12 +174,12 @@ class PostCommentCreateServiceTests(TestCase):
     def test_create_comment_with_none_post_raises(self) -> None:
         """post가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            pass
+            create_comment(author=self.user, post=None, content="댓글")
 
     def test_create_comment_with_none_author_raises(self) -> None:
         """author가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            pass
+            create_comment(author=None, post=self.post, content="댓글")
 
 
 class PostCommentCreateAPITestCase(APITestCase):
