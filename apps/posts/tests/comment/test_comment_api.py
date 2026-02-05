@@ -318,6 +318,21 @@ class PostCommentDeleteAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         for invalid_id in [None, 0, -1]:
             url = reverse("posts:post-comment-delete", args=[invalid_id if invalid_id is not None else 0])
+
             response = self.client.delete(url)
             self.assertEqual(response.status_code, 404)
             self.assertIn("error_detail", response.data)
+
+
+# === 댓글 목록/랜덤 닉네임 API 테스트 추가 ===
+
+# === 랜덤 닉네임 API 테스트만 남김 ===
+class PostCommentRandomNicknameAPITestCase(APITestCase):
+    def setUp(self) -> None:
+        self.nickname_url = reverse("posts:comment-random-nickname")
+
+    def test_random_nickname_api(self):
+        """랜덤 닉네임 API 200, 응답 키 확인"""
+        response = self.client.get(self.nickname_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("nickname", response.data)

@@ -52,6 +52,15 @@ class CommentServiceTests(TestCase):
         with self.assertRaises(Exception):
             update_comment(self.user, None, "수정")  # type: ignore[arg-type]
 
+    def test_update_comment_success(self) -> None:
+        # 작성자가 본인 댓글을 정상적으로 수정할 수 있는지 테스트
+        comment = PostComment.objects.create(post=self.post, author=self.user, content="수정 전")
+        updated = update_comment(self.user, comment, "수정 후")
+        self.assertEqual(updated.content, "수정 후")
+        # DB 반영 확인
+        comment.refresh_from_db()
+        self.assertEqual(comment.content, "수정 후")
+
     def test_delete_comment_not_author(self) -> None:
         # 댓글 삭제 서비스에서 작성자가 아닌 경우 예외 발생
         with self.assertRaises(CommentForbiddenException):
@@ -61,6 +70,14 @@ class CommentServiceTests(TestCase):
         # comment가 None일 때 예외 발생 (AttributeError 등)
         with self.assertRaises(Exception):
             delete_comment(self.user, None)  # type: ignore[arg-type]
+
+    def test_delete_comment_success(self) -> None:
+        # 작성자가 본인 댓글을 정상적으로 삭제할 수 있는지 테스트
+        comment = PostComment.objects.create(post=self.post, author=self.user, content="삭제 테스트")
+        delete_comment(self.user, comment)
+        # 실제로 DB에서 삭제되었는지 확인
+        with self.assertRaises(PostComment.DoesNotExist):
+            PostComment.objects.get(id=comment.id)
 
     def test_nickname_randomness(self) -> None:
         # 닉네임 생성 서비스가 다양한 결과를 반환하는지 테스트
