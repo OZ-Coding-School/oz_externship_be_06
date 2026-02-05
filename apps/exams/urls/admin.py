@@ -12,7 +12,7 @@ from apps.exams.views.admin.deployments_status import (
 from apps.exams.views.admin.exams_detail import AdminExamDetailAPIView
 from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
-from apps.exams.views.admin.questions_delete import AdminExamQuestionDeleteAPIView
+from apps.exams.views.admin.questions_detail import AdminExamQuestionDetailAPIView
 from apps.exams.views.admin.submissions_delete import AdminExamSubmissionDeleteAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView
 
@@ -22,10 +22,11 @@ urlpatterns = [
     path("exams/<int:exam_id>/", AdminExamDetailAPIView.as_view(), name="admin-exam-detail"),
     path("exams", AdminExamRouterAPIView.as_view(), name="admin-exams"),
     path("submissions/", AdminExamSubmissionListAPIView.as_view(), name="admin-exam-submission-list"),
+    # put + delete
     path(
         "exams/questions/<int:question_id>/",
-        AdminExamQuestionDeleteAPIView.as_view(),
-        name="admin-exam-question-delete",
+        AdminExamQuestionDetailAPIView.as_view(),
+        name="admin-exam-question-detail",
     ),
     path("exams/deployments/", AdminExamDeploymentRouterAPIView.as_view(), name="admin-exam-deployments"),
     path(
