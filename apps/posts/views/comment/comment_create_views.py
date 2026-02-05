@@ -70,4 +70,6 @@ class PostCommentCreateAPIView(CommentBaseView, generics.CreateAPIView[PostComme
         )
         if not serializer.is_valid():
             return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # 실제 DB에 댓글 저장
+        serializer.save(author=request.user, post=post)
         return Response({"detail": "댓글이 등록되었습니다."}, status=status.HTTP_201_CREATED)
