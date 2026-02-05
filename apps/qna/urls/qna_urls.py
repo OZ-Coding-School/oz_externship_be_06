@@ -1,17 +1,18 @@
 from django.urls import path
 
-from apps.qna.views import presigned_url_view
-from apps.qna.views.answer_view import (
-    AIAnswerGenerateAPIView,
-    AnswerAdoptAPIView,
-    AnswerCommentCreateAPIView,
-    AnswerCreateAPIView,
-)
-from apps.qna.views.question_view import (
+from apps.qna.views import presigned_url_views
+from apps.qna.views.question_views import (
     QuestionCategoryTreeAPIView,
     QuestionCreateListAPIView,
     QuestionDetailAPIView,
 )
+from apps.qna.views.answer_views import (
+    AIAnswerGenerateAPIView,
+    AnswerCreateAPIView,
+    AnswerAdoptAPIView,
+    AnswerCommentCreateAPIView,
+)
+
 
 urlpatterns = [
     # --- QnA URL Endpoints ---
@@ -25,6 +26,6 @@ urlpatterns = [
     path("answers/<int:answer_id>/accept", AnswerAdoptAPIView.as_view(), name="answer-adopt"),
     path("answers/<int:answer_id>/comments", AnswerCommentCreateAPIView.as_view(), name="answer-comment-create"),  # fmt: skip
     # --- Presigned URL Endpoints ---
-    path("questions/presigned-url", presigned_url_view.QuestionPresignedUrlAPIView.as_view(), name="question-presigned-url"),
-    path("answers/presigned-url", presigned_url_view.AnswerPresignedUrlAPIView.as_view(), name="answer-presigned-url"),
+    path("questions/presigned-url", presigned_url_views.QuestionPresignedUrlAPIView.as_view(), name="question-presigned-url"),
+    path("answers/presigned-url", presigned_url_views.AnswerPresignedUrlAPIView.as_view(), name="answer-presigned-url"),
 ]   # fmt: skip

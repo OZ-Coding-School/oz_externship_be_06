@@ -9,7 +9,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.utils.model_types import User
-from apps.qna.views.presigned_url_view import StorageTarget
+from apps.qna.views.presigned_url_views import StorageTarget
 
 UserModel = get_user_model()
 
