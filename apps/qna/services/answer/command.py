@@ -5,14 +5,14 @@ import os
 from typing import Any, cast
 
 import google.generativeai as genai
+from google.generativeai.types import RequestOptions
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.utils.config_ai_model import AIModelConfig
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Answer, AnswerImage, Question, QuestionAIAnswer
+from apps.qna.utils.config_ai_model import AIModelConfig
 from apps.qna.utils.model_types import User
 
 logger = logging.getLogger("django")
@@ -93,7 +93,7 @@ class AIAnswerCommandService:
         # 모델 타입에서 세부 모델명 조회
         try:
             model_name = AIModelConfig.get_model_name(using_model)
-        except ValueError as e:
+        except ValueError:
             logger.error(f"Invalid model type: {using_model}")
             raise QnaBaseException(
                 detail=ErrorMessages.INVALID_AI_REQUEST,
@@ -152,7 +152,7 @@ class AIAnswerCommandService:
         if model_name.startswith("gpt"):
             return cls._call_openai_api(title, content, model_name)
 
-        raise ValueError(f"지원하지 않는 모델입니다: {model_name}")
+        raise ValueError(f"지원하지 않는 세부 모델입니다: {model_name}")
 
     @classmethod
     def _call_gemini_api(cls, title: str, content: str, model_name: str) -> str:
@@ -179,7 +179,7 @@ class AIAnswerCommandService:
 
         response = model.generate_content(
             prompt,
-            request_options={"timeout": AIModelConfig.REQUEST_TIMEOUT},
+            request_options=RequestOptions(timeout=AIModelConfig.REQUEST_TIMEOUT),
         )
 
         if not response.text:
