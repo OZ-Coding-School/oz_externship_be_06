@@ -9,7 +9,10 @@ from django.urls import reverse
 from rest_framework.test import APIRequestFactory, APITestCase
 
 from apps.posts.constants.comment_const import CommentErrorMessage
-from apps.posts.exceptions.comment_exceptions import CommentNotFoundException, CommentUnauthorizedException
+from apps.posts.exceptions.comment_exceptions import (
+    CommentNotFoundException,
+    CommentUnauthorizedException,
+)
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
@@ -111,7 +114,9 @@ class PostCommentCreateSerializerTests(TestCase):
 
     def test_create_serializer_no_request_in_context_raises(self) -> None:
         """request가 context에 없으면 예외 발생"""
-        serializer = self._make_serializer(content="new comment", request_user=self.user, post=self.post, include_request=False)
+        serializer = self._make_serializer(
+            content="new comment", request_user=self.user, post=self.post, include_request=False
+        )
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
         with self.assertRaises(CommentUnauthorizedException):
@@ -159,7 +164,7 @@ class PostCommentCreateServiceTests(TestCase):
     def test_create_comment_with_none_author_raises(self) -> None:
         """author가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            create_comment(author=None, post=self.post, content="댓글")  # type: ignore[arg-type]
+            create_comment(author=None, post=self.post, content="댓글")
 
 
 class PostCommentCreateAPITestCase(APITestCase):
@@ -192,9 +197,7 @@ class PostCommentCreateAPITestCase(APITestCase):
         self.assertIn("detail", response.data)
 
         """실제로 DB row가 생겼는지 검증"""
-        self.assertTrue(
-            PostComment.objects.filter(post=self.post, author=self.user, content="new comment").exists()
-        )
+        self.assertTrue(PostComment.objects.filter(post=self.post, author=self.user, content="new comment").exists())
 
     def test_comment_create_success_multipart(self) -> None:
         """multipart로도 정상 생성되는지 (parser 분기 커버용)"""

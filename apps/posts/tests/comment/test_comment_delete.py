@@ -25,7 +25,7 @@ class PostCommentDeleteServiceTests(TestCase):
     def test_delete_comment_with_invalid_user(self) -> None:
         """user가 None이거나 잘못된 경우 예외 발생"""
         with self.assertRaises(Exception):
-            delete_comment(None, self.comment)  # type: ignore[arg-type]
+            delete_comment(None, self.comment)
 
     def test_delete_comment_with_none_comment(self) -> None:
         """comment가 None이면 예외 발생"""
@@ -88,37 +88,37 @@ class PostCommentDeleteAPITests(TestCase):
     def test_delete_401_when_unauthenticated(self) -> None:
         res = self.client.delete(self._url(self.comment.id))
         self.assertEqual(res.status_code, 401)
-        self.assertIn("error_detail", res.data)
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+        self.assertEqual(res.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)  # type: ignore[attr-defined]
 
     def test_delete_403_when_not_author(self) -> None:
-        self.client.force_authenticate(user=self.other)
+        self.client.force_authenticate(user=self.other)  # type: ignore[attr-defined]
         res = self.client.delete(self._url(self.comment.id))
         self.assertEqual(res.status_code, 403)
-        self.assertIn("error_detail", res.data)
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.FORBIDDEN)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+        self.assertEqual(res.data["error_detail"], CommentErrorMessage.FORBIDDEN)  # type: ignore[attr-defined]
 
         """삭제 안 됐는지 확인"""
         self.assertTrue(PostComment.objects.filter(id=self.comment.id).exists())
 
     def test_delete_404_when_comment_id_non_positive(self) -> None:
-        self.client.force_authenticate(user=self.author)
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
         res = self.client.delete(self._url(0))
         self.assertEqual(res.status_code, 404)
-        self.assertIn("error_detail", res.data)
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+        self.assertEqual(res.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)  # type: ignore[attr-defined]
 
     def test_delete_404_when_comment_id_magic_999999(self) -> None:
-        self.client.force_authenticate(user=self.author)
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
         res = self.client.delete(self._url(999999))
         self.assertEqual(res.status_code, 404)
-        self.assertIn("error_detail", res.data)
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+        self.assertEqual(res.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)  # type: ignore[attr-defined]
 
     def test_delete_200_success_and_db_deleted(self) -> None:
-        self.client.force_authenticate(user=self.author)
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
         res = self.client.delete(self._url(self.comment.id))
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data["detail"], "댓글이 삭제되었습니다.")
+        self.assertEqual(res.data["detail"], "댓글이 삭제되었습니다.")  # type: ignore[attr-defined]
         self.assertFalse(PostComment.objects.filter(id=self.comment.id).exists())

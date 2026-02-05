@@ -54,7 +54,7 @@ class PostCommentUpdateSerializerTests(TestCase):
 
         self.factory = APIRequestFactory()
 
-    def _make_request(self, user):
+    def _make_request(self, user: Any) -> Any:
         request = self.factory.patch("/dummy-url/")
         request.user = user
         return request
@@ -141,7 +141,7 @@ class PostCommentUpdateServiceTests(TestCase):
     def test_update_comment_with_none_user_raises(self) -> None:
         """user가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            update_comment(None, self.comment, "수정")  # type: ignore[arg-type]
+            update_comment(None, self.comment, "수정")
 
     def test_update_comment_not_author_raises(self) -> None:
         """작성자가 아닌 사용자가 수정 시도 시 예외 발생"""

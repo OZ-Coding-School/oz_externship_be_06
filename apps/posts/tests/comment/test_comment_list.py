@@ -207,7 +207,7 @@ class PostCommentListAPITestCase(APITestCase):
                 target = row
                 break
         self.assertIsNotNone(target)
-
+        assert target is not None  # for mypy
         self.assertIn("tagged_users", target)
         self.assertEqual(target["tagged_users"][0]["id"], tagged_user.id)
         self.assertEqual(target["tagged_users"][0]["nickname"], tagged_user.nickname)
