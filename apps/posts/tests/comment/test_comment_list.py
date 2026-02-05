@@ -7,6 +7,7 @@ from apps.posts.constants.comment_const import CommentErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
+from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.comment_serializers import PostCommentListSerializer
 from apps.posts.services.comment.comment_list_services import list_comments
 
@@ -15,7 +16,6 @@ class CommentListSerializerTests(TestCase):
     """댓글 리스트 시리얼라이저 테스트"""
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글, 댓글 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(
             email="testuser@example.com",
@@ -26,23 +26,55 @@ class CommentListSerializerTests(TestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
+
         self.category = PostCategory.objects.create(name="test category")
         self.post = Post.objects.create(
-            author=self.user, title="test post", content="test content", category=self.category
+            author=self.user,
+            title="test post",
+            content="test content",
+            category=self.category,
         )
-        self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
 
-    def test_list_serializer_tagged_users_field(self) -> None:
-        """tagged_users 필드가 리스트로 포함되는지 확인"""
-        data = PostCommentListSerializer(self.comment).data
-        self.assertIn("tagged_users", data)
-        self.assertIsInstance(data["tagged_users"], list)
+        self.comment = PostComment.objects.create(
+            post=self.post,
+            author=self.user,
+            content="comment content",
+        )
 
     def test_post_comment_list_serializer_fields(self) -> None:
-        """필드 값이 정상적으로 매핑되는지 확인"""
+        """기본 필드 매핑 검증 (태그 없는 케이스)"""
         data = PostCommentListSerializer(self.comment).data
-        self.assertEqual(set(data.keys()), {"id", "author", "tagged_users", "content", "created_at", "updated_at"})
+
+        self.assertEqual(
+            set(data.keys()),
+            {"id", "author", "tagged_users", "content", "created_at", "updated_at"},
+        )
         self.assertEqual(data["content"], self.comment.content)
+        self.assertIsInstance(data["tagged_users"], list)
+        self.assertEqual(len(data["tagged_users"]), 0)
+
+    def test_list_serializer_with_one_tagged_user(self) -> None:
+        """태그된 유저가 있을 때 id/nickname이 정상 직렬화되는지 검증"""
+        TaggedUser = get_user_model().objects.create_user(
+            email="tagged@example.com",
+            password="testpass",
+            name="태그유저",
+            nickname="taggeduser",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="2000-01-02",
+        )
+
+        PostCommentTag.objects.create(
+            comment=self.comment,
+            tagged_user=TaggedUser,
+        )
+
+        data = PostCommentListSerializer(self.comment).data
+
+        self.assertEqual(len(data["tagged_users"]), 1)
+        self.assertEqual(data["tagged_users"][0]["id"], TaggedUser.id)
+        self.assertEqual(data["tagged_users"][0]["nickname"], TaggedUser.nickname)
 
 
 class CommentListServiceTests(TestCase):

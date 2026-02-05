@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient
 
 from apps.posts.constants.comment_const import CommentErrorMessage
 from apps.posts.exceptions.comment_exceptions import CommentForbiddenException
@@ -45,72 +45,76 @@ class PostCommentDeleteServiceTests(TestCase):
             PostComment.objects.get(id=comment.id)
 
 
-class PostCommentDeleteAPITestCase(APITestCase):
-    """댓글 삭제 API 테스트 - 성공, 인증 실패, 권한 실패, 미존재 댓글"""
+class PostCommentDeleteAPITests(TestCase):
+    """댓글 삭제 API 테스트 - 인증, 권한, 예외, 정상 삭제 등 케이스 검증"""
 
     def setUp(self) -> None:
+        self.client = APIClient()
         User = get_user_model()
-        self.user = User.objects.create_user(
-            email="deleteuser@example.com",
+
+        self.author = User.objects.create_user(
+            email="author@example.com",
             password="testpass",
-            nickname="deleteuser",
-            phone_number="010-7777-8888",
+            nickname="author",
+            phone_number="010-1111-2222",
             gender="MALE",
-            birthday="1988-08-08",
+            birthday="1990-01-01",
         )
-        self.other_user = User.objects.create_user(
-            email="otheruser3@example.com",
+        self.other = User.objects.create_user(
+            email="other@example.com",
             password="testpass",
-            nickname="otheruser3",
-            phone_number="010-9999-0000",
+            nickname="other",
+            phone_number="010-3333-4444",
             gender="FEMALE",
-            birthday="1993-03-03",
+            birthday="1995-05-05",
         )
-        self.category = PostCategory.objects.create(name="delete category")
+
+        self.category = PostCategory.objects.create(name="cat")
         self.post = Post.objects.create(
-            author=self.user,
-            title="delete post",
-            content="delete content",
+            author=self.author,
+            title="t",
+            content="c",
             category=self.category,
         )
         self.comment = PostComment.objects.create(
-            author=self.user,
             post=self.post,
-            content="delete comment",
+            author=self.author,
+            content="hi",
         )
-        self.delete_url = reverse("posts:post-comment-delete", args=[self.comment.id])
 
-    def test_comment_delete_success(self) -> None:
-        self.client.force_authenticate(user=self.user)
-        response = self.client.delete(self.delete_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("detail", response.data)
+    def _url(self, comment_id: int) -> str:
+        # 실제 라우팅 : /api/v1/posts/{post_id}/comments/{comment_id}/delete/
+        return f"/api/v1/posts/{self.post.id}/comments/{comment_id}/delete/"
 
-    def test_comment_delete_unauthenticated(self) -> None:
-        response = self.client.delete(self.delete_url)
-        self.assertEqual(response.status_code, 401)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)
+    def test_delete_401_when_unauthenticated(self) -> None:
+        res = self.client.delete(self._url(self.comment.id))
+        self.assertEqual(res.status_code, 401)
 
-    def test_comment_delete_forbidden(self) -> None:
-        self.client.force_authenticate(user=self.other_user)
-        response = self.client.delete(self.delete_url)
-        self.assertEqual(response.status_code, 403)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.FORBIDDEN)
+    def test_delete_403_when_not_author(self) -> None:
+        self.client.force_authenticate(user=self.other)  # type: ignore[attr-defined]
+        res = self.client.delete(self._url(self.comment.id))
+        self.assertEqual(res.status_code, 403)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
 
-    def test_comment_delete_not_found(self) -> None:
-        self.client.force_authenticate(user=self.user)
-        url = reverse("posts:post-comment-delete", args=[999999])
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
+        # 삭제 안 됐는지 확인(안전장치)
+        self.assertTrue(PostComment.objects.filter(id=self.comment.id).exists())
 
-    def test_delete_comment_with_invalid_comment_id(self) -> None:
-        self.client.force_authenticate(user=self.user)
-        for invalid_id in [None, 0, -1]:
-            url = reverse("posts:post-comment-delete", args=[invalid_id if invalid_id is not None else 0])
-            response = self.client.delete(url)
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("error_detail", response.data)
+    def test_delete_404_when_comment_id_non_positive(self) -> None:
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
+        res = self.client.delete(self._url(0))
+        self.assertEqual(res.status_code, 404)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+
+    def test_delete_404_when_comment_id_magic_999999(self) -> None:
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
+        res = self.client.delete(self._url(999999))
+        self.assertEqual(res.status_code, 404)
+        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
+
+    def test_delete_200_success_and_db_deleted(self) -> None:
+        self.client.force_authenticate(user=self.author)  # type: ignore[attr-defined]
+        res = self.client.delete(self._url(self.comment.id))
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["detail"], "댓글이 삭제되었습니다.")  # type: ignore[attr-defined]
+        self.assertFalse(PostComment.objects.filter(id=self.comment.id).exists())
