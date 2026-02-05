@@ -26,6 +26,7 @@ class QuestionCategory(TimeStampModel):
 
     @property
     def depth(self) -> int:
+        # - 0: 대분류, 1: 중분류, 2: 소분류
         d = 0
         curr = self.parent
         while curr:

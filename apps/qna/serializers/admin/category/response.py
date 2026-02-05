@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.qna.models import QuestionCategory
-from apps.qna.services.admin.category.command import DEPTH_TO_CATEGORY_TYPE
+from apps.qna.constants import CATEGORY_LABELS
 
 
 # ==============================================================================
@@ -25,4 +25,4 @@ class AdminCategoryCreateResponseSerializer(serializers.ModelSerializer[Question
 
     def get_category_type(self, obj: QuestionCategory) -> str:
         """depth 프로퍼티를 기반으로 category_type 문자열 반환"""
-        return DEPTH_TO_CATEGORY_TYPE.get(obj.depth, "unknown")
+        return CATEGORY_LABELS[obj.depth]

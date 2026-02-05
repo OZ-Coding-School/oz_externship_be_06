@@ -6,15 +6,7 @@ from rest_framework import status
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import QuestionCategory
-
-# depth → category_type 변환 매핑
-DEPTH_TO_CATEGORY_TYPE: dict[int, str] = {
-    0: "large",
-    1: "medium",
-    2: "small",
-}
-
-MAX_DEPTH = 2  # 소분류까지 (0: 대, 1: 중, 2: 소)
+from apps.qna.constants import CATEGORY_LABELS
 
 
 class AdminCategoryCommandService:
@@ -28,7 +20,7 @@ class AdminCategoryCommandService:
         """
         새로운 카테고리 생성
         - Args:
-            data (dict): depth(int), name(str), parent_id(int|None)를 포함한 검증된 데이터
+            data (dict): category_type(str), name(str), parent_id(int|None)를 포함한 검증된 데이터
         - Returns:
             QuestionCategory: 생성된 카테고리 객체
         - Raises:
@@ -38,22 +30,24 @@ class AdminCategoryCommandService:
                 409 - 동일한 이름의 카테고리 존재
         """
 
-        depth: int = data["depth"]
+        # 입력받은 category_type을 비즈니스 로직용 depth로 변환
+        category_type = data.get("category_type", "대분류")
+
         name: str = data["name"]
         parent_id: int | None = data.get("parent_id")
 
         # depth별 parent_id 유효성 검증
-        parent = AdminCategoryCommandService._validate_parent(depth, parent_id)
+        parent = AdminCategoryCommandService._validate_parent(category_type, parent_id)
 
         # 동일 이름 중복 검사 (같은 부모 하위에서)
-        AdminCategoryCommandService._check_duplicate_name(name, parent)
+        AdminCategoryCommandService._validate_unique_subcategory_in_parent(name, parent)
 
         # 카테고리 생성
         category = QuestionCategory.objects.create(name=name, parent=parent)
         return category
 
     @staticmethod
-    def _validate_parent(depth: int, parent_id: int | None) -> QuestionCategory | None:
+    def _validate_parent(category_type: str, parent_id: int | None) -> QuestionCategory | None:
         """
         부모 카테고리의 존재 여부 및 계층 정합성 검증
 
@@ -61,6 +55,7 @@ class AdminCategoryCommandService:
         - 중분류(depth=1): 부모는 대분류(depth=0)여야 함
         - 소분류(depth=2): 부모는 중분류(depth=1)여야 함
         """
+        depth = CATEGORY_LABELS.index(category_type)
 
         if depth == 0:
             return None
@@ -84,9 +79,8 @@ class AdminCategoryCommandService:
         return parent
 
     @staticmethod
-    def _check_duplicate_name(name: str, parent: QuestionCategory | None) -> None:
-        """같은 부모 하위에서 동일한 이름의 카테고리가 있는지 검사"""
-
+    def _validate_unique_subcategory_in_parent(name: str, parent: QuestionCategory | None) -> None:
+        """같은 부모 카테고리 하위에서 동일한 이름의 카테고리가 있는지 검사"""
         if QuestionCategory.objects.filter(name=name, parent=parent).exists():
             raise QnaBaseException(
                 detail=ErrorMessages.ALREADY_EXISTS_ADMIN_CATEGORY_NAME,

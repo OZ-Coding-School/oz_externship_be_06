@@ -3,7 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.qna.constants import ErrorMessages
-
+from apps.qna.constants import CATEGORY_LABELS
 
 # ==============================================================================
 # [POST] Admin Category Create
@@ -13,15 +13,15 @@ class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
     """
     어드민 카테고리 등록 요청 시리얼라이저
 
-    - depth: 카테고리 계층 (0: 대분류, 1: 중분류, 2: 소분류)
+    - category_type: 카테고리 계층 (대분류, 중분류, 소분류)
     - name: 카테고리 이름
     - parent_id: 부모 카테고리 ID (중분류, 소분류의 경우 필수)
     """
 
-    depth = serializers.ChoiceField(
-        choices=[0, 1, 2],
+    category_type = serializers.ChoiceField(
+        choices=CATEGORY_LABELS,
         required=True,
-        help_text="카테고리 계층 (0: 대분류, 1: 중분류, 2: 소분류)",
+        help_text="카테고리 타입 (대분류, 중분류, 소분류)",
     )
     name = serializers.CharField(
         max_length=15,
@@ -39,13 +39,13 @@ class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """depth와 parent_id 조합의 입력 형태 검증"""
-        depth = attrs["depth"]
+        category_type = attrs["category_type"]
         parent_id = attrs.get("parent_id")
 
-        if depth == 0 and parent_id is not None:
-            raise serializers.ValidationError("대분류 카테고리는 부모 카테고리를 지정할 수 없습니다.")
+        if category_type == CATEGORY_LABELS[0] and parent_id is not None:
+            raise serializers.ValidationError(f"{CATEGORY_LABELS[0]} 카테고리는 부모 카테고리를 지정할 수 없습니다.")
 
-        if depth != 0 and parent_id is None:
-            raise serializers.ValidationError("중분류/소분류 카테고리는 부모 카테고리가 필수입니다.")
+        if category_type != CATEGORY_LABELS[0] and parent_id is None:
+            raise serializers.ValidationError(f"{CATEGORY_LABELS[1]}/{CATEGORY_LABELS[2]} 카테고리는 부모 카테고리가 필수입니다.")
 
         return attrs

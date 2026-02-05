@@ -1,5 +1,6 @@
 from enum import Enum
 
+CATEGORY_LABELS = ("대분류", "중분류", "소분류")
 
 class ErrorMessages(str, Enum):
     """
