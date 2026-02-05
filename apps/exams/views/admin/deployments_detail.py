@@ -20,12 +20,8 @@ from apps.exams.serializers.admin.deployments_update import (
     AdminExamDeploymentUpdateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-<<<<<<< HEAD
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
-from apps.exams.services.admin.deployments_update import (
-    ExamDeploymentUpdateNotFoundError,
-    update_exam_deployment,
-)
+from apps.exams.services.admin.deployments_update import update_exam_deployment
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -174,13 +170,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deployment = update_exam_deployment(deployment_id, serializer.validated_data)
-        except ExamDeploymentUpdateNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_UPDATE_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        deployment = update_exam_deployment(deployment_id, serializer.validated_data)
 
         response_serializer = AdminExamDeploymentUpdateResponseSerializer(
             {
