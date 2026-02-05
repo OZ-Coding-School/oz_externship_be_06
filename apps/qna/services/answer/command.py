@@ -1,16 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, cast
 import logging
+import os
+from typing import Any, cast
 
+import google.generativeai as genai
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
+from apps.qna.utils.config_ai_model import AIModelConfig
 from apps.qna.exceptions.base import QnaBaseException
-from apps.qna.models import Answer, AnswerImage, Question,  QuestionAIAnswer
+from apps.qna.models import Answer, AnswerImage, Question, QuestionAIAnswer
 from apps.qna.utils.model_types import User
+
+logger = logging.getLogger("django")
 
 
 class AnswerCommandService:
@@ -51,60 +56,165 @@ class AnswerCommandService:
         return answer
 
 
-logger = logging.getLogger("django")
-
-
 class AIAnswerCommandService:
     """
     AI 답변 생성 및 비즈니스 로직 담당 서비스
     """
 
     @classmethod
-    def generate_ai_answer(cls, question_id: int) -> QuestionAIAnswer:
+    def generate_ai_answer(cls, question_id: int, using_model: str) -> QuestionAIAnswer:
         """
         특정 질문에 대한 AI 답변을 생성하고 저장함.
         이미 답변이 존재하는 경우 409 Conflict를 발생시킴.
+
+        Args:
+            question_id: 질문 ID
+            using_model: 사용할 AI 모델 타입 (Gemini 또는 GPT)
+
+        Returns:
+            QuestionAIAnswer: 생성된 AI 답변 객체
         """
-        # 1. 질문 존재 확인 (404)
+        # 질문 존재 확인 (404)
         question = get_object_or_404(Question, id=question_id)
 
-        # 2. 중복 답변 체크 (409)
+        # 중복 답변 체크 (409)
         if QuestionAIAnswer.objects.filter(question=question).exists():
             raise QnaBaseException(
-                detail=ErrorMessages.ALREADY_EXISTS_AI_GEN_ANSWER,
-                status_code=status.HTTP_409_CONFLICT
+                detail=ErrorMessages.CONFLICT_AI_GEN_ANSWER,
+                status_code=status.HTTP_409_CONFLICT,
             )
 
-        # 3. AI 모델 호출 및 답변 생성 (Gemini API 호출부 가정)
-        # 실제 환경에서는 별도의 AI 유틸리티나 태스크 큐(Celery)를 활용할 수 있습니다.
+        # 모델 타입에서 세부 모델명 조회
         try:
-            generated_text = cls._call_ai_model(question.title, question.content)
-            model_name = "gemini-2.5-pro"
+            model_name = AIModelConfig.get_model_name(using_model)
+        except ValueError as e:
+            logger.error(f"Invalid model type: {using_model}")
+            raise QnaBaseException(
+                detail=ErrorMessages.INVALID_AI_REQUEST,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # AI 모델 호출 및 답변 생성
+        try:
+            generated_text = cls._call_ai_model(
+                title=question.title,
+                content=question.content,
+                model_name=model_name,
+            )
         except Exception as e:
             logger.error(f"AI Generation Failed: {str(e)}")
             raise QnaBaseException(
-                detail="AI 답변 생성 중 일시적인 오류가 발생했습니다.",
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+                detail=ErrorMessages.FAILED_AI_GEN_ANSWER,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        # 4. 답변 저장
+        # 답변 저장 (DB에는 모델 타입 저장: Gemini, GPT)
         ai_answer = QuestionAIAnswer.objects.create(
             question=question,
             output=generated_text,
-            using_model=model_name
+            using_model=using_model,
         )
 
-        # 5. 질문 상태 업데이트 (필요 시)
+        # 질문 상태 업데이트
         question.is_ai_answered = True
         question.save(update_fields=["is_ai_answered"])
 
         return ai_answer
 
     @classmethod
-    def _call_ai_model(cls, title: str, content: str) -> str:
+    def _call_ai_model(cls, title: str, content: str, model_name: str) -> str:
         """
-        실제 AI 모델(Gemini 등)에게 답변을 요청하는 내부 메서드
-        (현재는 요구사항 예시 데이터를 반환하도록 구현)
+        AI 모델 API를 호출하여 질문에 대한 답변을 생성합니다.
+
+        Args:
+            title: 질문 제목
+            content: 질문 본문 내용
+            model_name: 사용할 세부 모델명 (gemini-2.5-pro, gpt-4o 등)
+
+        Returns:
+            str: AI가 생성한 답변 텍스트
+
+        Raises:
+            ValueError: API 키가 설정되지 않은 경우
+            Exception: API 호출 실패 시
         """
-        # TODO: 실제 Google Gemini API 연동 로직 구현
-        return "리스트는 수정 가능한 자료구조이며, 튜플은 수정이 불가능한 자료구조입니다. 리스트는 [], 튜플은 () 를 사용합니다."
+        # Gemini 모델인 경우
+        if model_name.startswith("gemini"):
+            return cls._call_gemini_api(title, content, model_name)
+
+        # GPT 모델인 경우
+        if model_name.startswith("gpt"):
+            return cls._call_openai_api(title, content, model_name)
+
+        raise ValueError(f"지원하지 않는 모델입니다: {model_name}")
+
+    @classmethod
+    def _call_gemini_api(cls, title: str, content: str, model_name: str) -> str:
+        """
+        Google Gemini API를 호출합니다.
+        """
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+            raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
+
+        genai.configure(api_key=api_key)
+
+        model = genai.GenerativeModel(
+            model_name=model_name,
+            generation_config=genai.GenerationConfig(
+                temperature=0.7,
+                top_p=0.9,
+                max_output_tokens=1024,
+            ),
+        )
+
+        prompt = cls._build_prompt(title, content)
+
+        response = model.generate_content(
+            prompt,
+            request_options={"timeout": AIModelConfig.REQUEST_TIMEOUT},
+        )
+
+        if not response.text:
+            logger.warning("Gemini API가 빈 응답을 반환했습니다.")
+            raise ValueError("AI 응답이 비어있습니다.")
+
+        return response.text.strip()
+
+    @classmethod
+    def _call_openai_api(cls, title: str, content: str, model_name: str) -> str:
+        """
+        OpenAI API를 호출합니다.
+        """
+        # TODO: OpenAI API 연동 구현
+        # 현재는 Gemini만 지원하므로 예외 발생
+        raise NotImplementedError("OpenAI API 연동은 아직 구현되지 않았습니다.")
+
+    @staticmethod
+    def _build_prompt(title: str, content: str) -> str:
+        """
+        AI 모델에 전달할 프롬프트를 구성합니다.
+
+        Args:
+            title: 질문 제목
+            content: 질문 본문
+
+        Returns:
+            str: 구성된 프롬프트 문자열
+        """
+        return f"""당신은 오즈코딩스쿨의 학습 도우미 AI입니다.
+수강생의 프로그래밍 관련 질문에 친절하고 정확하게 답변해주세요.
+
+[답변 가이드라인]
+- 명확하고 이해하기 쉬운 설명을 제공하세요
+- 필요한 경우 간단한 코드 예시를 포함하세요
+- 답변은 한국어로 작성하세요
+
+[질문 제목]
+{title}
+
+[질문 내용]
+{content}
+
+[답변]"""

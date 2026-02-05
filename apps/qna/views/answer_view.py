@@ -1,4 +1,4 @@
-from typing import cast, Any
+from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
@@ -15,10 +15,16 @@ from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
-from apps.qna.services.answer.command import AnswerCommandService, AIAnswerCommandService
-from apps.qna.serializers.answer.response import AIAnswerResponseSerializer, AnswerCreateResponseSerializer
+from apps.qna.models import QuestionAIAnswer
 from apps.qna.serializers.answer.request import AnswerCreateSerializer
-from apps.qna.services.answer.command import AnswerCommandService
+from apps.qna.serializers.answer.response import (
+    AIAnswerResponseSerializer,
+    AnswerCreateResponseSerializer,
+)
+from apps.qna.services.answer.command import (
+    AIAnswerCommandService,
+    AnswerCommandService,
+)
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import CanWriteAnswer
 from apps.qna.views.base_view import QnaBaseAPIView
@@ -87,8 +93,16 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     질문에 대한 AI 답변 생성 및 결과 반환 API
     """
 
+    # 사용할 AI 모델 설정 (Gemini 또는 GPT)
+    """
+    사용할 AI 모델을 설정합니다.
+    - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
+    - QuestionAIAnswer.AIModel.GPT: gpt-4o 모델 사용
+    """
+    using_model: str = QuestionAIAnswer.AIModel.GEMINI
+
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated]
+        return [IsAuthenticated()]
 
     # AI 생성 답변 조회
     # [GET] /api/v1/qna/questions/{question_id}/ai-answer
@@ -132,7 +146,10 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     def get(self, request: Request, question_id: int) -> Response:
         """질문 ID를 받아 AI 답변을 생성하고 저장된 결과를 반환함"""
         # 서비스 레이어 호출 (비즈니스 로직 및 예외 처리 집중)
-        ai_answer = AIAnswerCommandService.generate_ai_answer(question_id=question_id)
+        ai_answer = AIAnswerCommandService.generate_ai_answer(
+            question_id=question_id,
+            using_model=self.using_model,
+        )
 
         # 응답 변환
         serializer = AIAnswerResponseSerializer(ai_answer)
