@@ -77,10 +77,10 @@ def _is_support_session(*, session: ChatbotSession) -> bool:
     """
     support 세션 여부 판단
 
-    - POST /chatbot/support 로 생성
-    - GEMINI 모델 사용 세션을 support 로 간주
+    - 질문(question)과 연결되지 않은 세션
+    - 고객지원 목적의 임시 세션
     """
-    return session.using_model == ChatbotSession.AIModel.GEMINI
+    return session.question_id is None
 
 
 def _validate_support_session_alive(*, session: ChatbotSession) -> None:
