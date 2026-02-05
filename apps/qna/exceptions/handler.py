@@ -162,25 +162,31 @@ def _log_exception(status_code: int, view_name: str, method: str, user_info: str
 
 
 def _extract_custom_msg(exc: Exception, data: Any, view: Any) -> str:
-    """시리얼라이저의 default_error_message 설정을 자동으로 반영"""
+    """
+    ValidationError, ObjectDoesNotExist에 메세지가 있다면 추출
+    그 외에는 시리얼라이저의 default_error_message 값을 추출
+    """
     try:
         # QnaBaseException은 예외 자체의 메시지를 우선 사용
         if isinstance(exc, QnaBaseException):
             return str(exc.detail)
 
-        status_code = getattr(exc, "status_code", None)
-        is_not_found_input = isinstance(exc, ObjectDoesNotExist)
+        first_msg = _get_first_message(data)
 
-        # ValidationError 또는 Django ORM DoesNotExist는 Serializer의 default_error_message 사용
-        if status_code == 400 or isinstance(exc, ValidationError) or is_not_found_input:
+        status_code = getattr(exc, "status_code", None)
+        if status_code == 400 or isinstance(exc, (ValidationError, ObjectDoesNotExist)):
             serializer_class = _get_serializer_class(view)
 
             if serializer_class:
                 custom_msg = getattr(serializer_class, "default_error_message", None)
-                if custom_msg:
-                    return str(custom_msg.value) if isinstance(custom_msg, Enum) else str(custom_msg)
 
-        return _get_first_message(data)
+                if isinstance(data, dict) and "non_field_errors" in data:
+                    return first_msg
+
+                if custom_msg:
+                    return str(custom_msg.value) if hasattr(custom_msg, "value") else str(custom_msg)
+
+        return first_msg
 
     except Exception as e:
         # 메시지 추출 실패 시 안전하게 폴백
