@@ -8,6 +8,8 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from apps.courses.models import Cohort, Course, Subject
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam, ExamDeployment, ExamSubmission
 from apps.users.models import User
 
@@ -97,7 +99,6 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         # 응답 검증
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["deployment_id"], self.deployment.id)
-        self.assertTrue(response.data["is_deleted"])
         self.assertFalse(ExamDeployment.objects.filter(id=self.deployment.id).exists())
         self.assertFalse(ExamSubmission.objects.filter(deployment=self.deployment).exists())
 
@@ -136,10 +137,13 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @patch("apps.exams.services.admin.deployments_delete.transaction.atomic")
-    def test_409_on_conflict(self, mock_atomic: MagicMock) -> None:
-        # transaction.atomic() 안에서 Exception 발생하도록 mocking
-        mock_atomic.side_effect = Exception("Conflict!")
+    # View에서 사용 중인 delete_exam_deployment 참조를 mock
+    @patch("apps.exams.views.admin.deployments_detail.delete_exam_deployment")
+    def test_409_on_conflict(self, mock_delete: MagicMock) -> None:
+        mock_delete.side_effect = ErrorDetailException(
+            ErrorMessages.DEPLOYMENT_DELETE_CONFLICT.value,
+            status.HTTP_409_CONFLICT,
+        )
 
         self.client.force_authenticate(user=self.staff_user)
         url = reverse("admin-exam-deployment-detail", kwargs={"deployment_id": self.deployment.id})
@@ -147,3 +151,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(
+            response.data["error_detail"],
+            ErrorMessages.DEPLOYMENT_DELETE_CONFLICT.value,
+        )

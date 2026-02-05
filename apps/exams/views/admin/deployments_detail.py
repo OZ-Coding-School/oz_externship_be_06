@@ -23,17 +23,9 @@ from apps.exams.serializers.admin.deployments_update import (
     AdminExamDeploymentUpdateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.services.admin.deployments_delete import delete_exam_deployment
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import update_exam_deployment
-from apps.exams.services.admin.deployments_delete import (
-    ExamDeploymentDeleteConflictError,
-    ExamDeploymentDeleteNotFoundError,
-    delete_exam_deployment,
-)
-from apps.exams.services.admin.deployments_detail import (
-    ExamDeploymentDetailNotFoundError,
-    get_exam_deployment_detail,
-)
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -95,11 +87,14 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated()
-        detail_message = (
-            ErrorMessages.NO_DEPLOYMENT_UPDATE_PERMISSION.value
-            if request.method == "PATCH"
-            else ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value
-        )
+
+        if request.method == "PATCH":
+            detail_message = ErrorMessages.NO_DEPLOYMENT_UPDATE_PERMISSION.value
+        elif request.method == "DELETE":
+            detail_message = ErrorMessages.NO_DEPLOYMENT_DELETE_PERMISSION.value
+        else:
+            detail_message = ErrorMessages.NO_DEPLOYMENT_DETAIL_PERMISSION.value
+
         raise PermissionDenied(detail=detail_message)
 
     def get(self, request: Request, deployment_id: int) -> Response:
@@ -194,3 +189,76 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
             }
         )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=["admin_exams"],
+        summary="쪽지시험 배포 삭제 API",
+        description="관리자/스태프가 쪽지시험 배포 내역을 삭제합니다.",
+        responses={
+            200: AdminExamDeploymentDeleteResponseSerializer,
+            400: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Bad Request",
+                examples=[
+                    OpenApiExample(
+                        "유효하지 않은 배포 삭제 요청",
+                        value={"error_detail": ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST.value},
+                    ),
+                ],
+            ),
+            401: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Unauthorized",
+                examples=[
+                    OpenApiExample(
+                        "인증 실패",
+                        value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Forbidden",
+                examples=[
+                    OpenApiExample(
+                        "권한 없음",
+                        value={"error_detail": ErrorMessages.NO_DEPLOYMENT_DELETE_PERMISSION.value},
+                    ),
+                ],
+            ),
+            404: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Not Found",
+                examples=[
+                    OpenApiExample(
+                        "배포 정보 찾을 수 없음",
+                        value={"error_detail": ErrorMessages.DEPLOYMENT_DELETE_NOT_FOUND.value},
+                    ),
+                ],
+            ),
+            409: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                description="Conflict",
+                examples=[
+                    OpenApiExample(
+                        "배포 삭제 충돌",
+                        value={"error_detail": ErrorMessages.DEPLOYMENT_DELETE_CONFLICT.value},
+                    ),
+                ],
+            ),
+        },
+    )
+    def delete(self, _request: Request, deployment_id: int) -> Response:
+        # 400
+        if deployment_id <= 0:
+
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+        # service에서 404 / 409 처리
+        result = delete_exam_deployment(deployment_id=deployment_id)
+
+        serializer = AdminExamDeploymentDeleteResponseSerializer(result)
+        return Response(serializer.data, status=status.HTTP_200_OK)
