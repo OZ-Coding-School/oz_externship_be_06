@@ -41,6 +41,10 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
     ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
+    # ---------- Admin Category -----------
+    # [POST] - Create
+    ("AdminCategoryCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE,
+    ("AdminCategoryCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE,
     # ---------- Admin Question -----------
     # [GET] - Detail
     ("AdminQuestionDetailAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DETAIL,
