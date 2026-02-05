@@ -6,7 +6,7 @@ import google.generativeai as genai
 logger = logging.getLogger("django")
 
 
-class AIModelConfig:
+class AIConfig:
     """
     AI 모델 설정 및 매핑 상수
     - using_model: DB에 저장되는 모델 타입 (Gemini, GPT)
@@ -25,6 +25,7 @@ class AIModelConfig:
     # API 요청 타임아웃 (초)
     REQUEST_TIMEOUT = 30
 
+    # API 설정 초기화 체크
     _is_gemini_configured = False
 
     @classmethod

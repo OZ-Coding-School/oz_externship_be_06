@@ -12,7 +12,7 @@ from rest_framework import status
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Answer, AnswerImage, Question, QuestionAIAnswer
-from apps.qna.utils.config_ai_model import AIModelConfig
+from apps.qna.utils.config_ai import AIConfig
 from apps.qna.utils.model_types import User
 
 logger = logging.getLogger("django")
@@ -93,7 +93,7 @@ class AIAnswerCommandService:
 
         # 모델 타입에서 세부 모델명 조회
         try:
-            model_name = AIModelConfig.get_model_name(using_model)
+            model_name = AIConfig.get_model_name(using_model)
         except ValueError:
             logger.error(f"Invalid model type: {using_model}")
             raise QnaBaseException(
@@ -160,7 +160,7 @@ class AIAnswerCommandService:
         """
         Google Gemini API를 호출합니다.
         """
-        AIModelConfig.ensure_gemini_configured()
+        AIConfig.ensure_gemini_configured()
 
         model = genai.GenerativeModel(  # type: ignore[attr-defined]
             model_name=model_name,
@@ -175,7 +175,7 @@ class AIAnswerCommandService:
 
         response = model.generate_content(
             prompt,
-            request_options=RequestOptions(timeout=AIModelConfig.REQUEST_TIMEOUT),
+            request_options=RequestOptions(timeout=AIConfig.REQUEST_TIMEOUT),
         )
 
         if not response.text:
