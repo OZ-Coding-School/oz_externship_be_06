@@ -11,11 +11,17 @@ class AdminAnalysisReasonService:
     @staticmethod
     def get_monthly_withdrawal_stats(reason: str) -> Dict[str, Any]:
         now = timezone.now()
-        from_date = now.replace(month=1, day=1).strftime("%Y-%m-%d")
+        from_datetime = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        from_date = from_datetime.strftime("%Y-%m-%d")
         to_date = now.strftime("%Y-%m-%d")
 
         stats_query = (
-            Withdrawal.objects.filter(reason=reason)
+            Withdrawal.objects.filter(
+                reason=reason,
+                created_at__gte=from_datetime,
+                created_at__lte=now,
+            )
             .annotate(period=TruncMonth("created_at"))
             .values("period")
             .annotate(count=Count("id"))
