@@ -9,7 +9,14 @@ User = get_user_model()
 class CommentPermissionTests(TestCase):
     def setUp(self) -> None:
         """테스트용 유저 생성"""
-        self.user = User.objects.create_user(email="test@example.com", password="testpass", nickname="user")
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass",
+            nickname="user",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
 
     def test_safe_methods(self) -> None:
         """SAFE_METHODS(GET 등)에서는 항상 True 반환"""

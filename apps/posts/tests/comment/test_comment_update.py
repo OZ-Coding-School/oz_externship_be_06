@@ -25,7 +25,7 @@ class PostCommentUpdateSerializerTests(TestCase):
         self.user = User.objects.create_user(
             email="updateuser@example.com",
             password="testpass",
-            nickname="updateuser",
+            nickname="upduser",
             phone_number="010-1111-2222",
             gender="MALE",
             birthday="1990-01-01",
@@ -132,8 +132,22 @@ class PostCommentUpdateServiceTests(TestCase):
 
     def setUp(self) -> None:
         User = get_user_model()
-        self.user = User.objects.create_user(email="test@example.com", password="testpass", nickname="user")
-        self.other_user = User.objects.create_user(email="other@example.com", password="testpass", nickname="other")
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass",
+            nickname="user",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
+        self.other_user = User.objects.create_user(
+            email="other@example.com",
+            password="testpass",
+            nickname="other",
+            phone_number="010-1111-2222",
+            gender="FEMALE",
+            birthday="1991-02-02",
+        )
         self.category = PostCategory.objects.create(name="cat")
         self.post = Post.objects.create(author=self.user, title="t", content="c", category=self.category)
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="cc")
@@ -195,7 +209,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
             post=self.post,
             content="original comment",
         )
-        self.url = reverse("posts:post-comment-update", args=[self.comment.id])
+        self.url = reverse("posts:post-comment-update", args=[self.post.id, self.comment.id])
 
     def test_update_comment_success(self) -> None:
         """정상적으로 댓글 수정 API 성공"""
@@ -227,7 +241,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
     def test_update_comment_not_found(self) -> None:
         """존재하지 않는 댓글 수정 시 404 반환"""
         self.client.force_authenticate(user=self.user)
-        url = reverse("posts:post-comment-update", args=[999999])
+        url = reverse("posts:post-comment-update", args=[self.post.id, 999999])
         response = self.client.put(url, {"content": "updated comment"}, format="json")
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
@@ -254,7 +268,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         for invalid_id in [0, -1]:
-            url = reverse("posts:post-comment-update", args=[invalid_id])
+            url = reverse("posts:post-comment-update", args=[self.post.id, invalid_id])
             response = self.client.put(url, {"content": "updated comment"}, format="json")
             self.assertEqual(response.status_code, 404)
             self.assertIn("error_detail", response.data)

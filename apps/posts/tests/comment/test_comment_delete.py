@@ -16,8 +16,22 @@ class PostCommentDeleteServiceTests(TestCase):
 
     def setUp(self) -> None:
         User = get_user_model()
-        self.user = User.objects.create_user(email="test@example.com", password="testpass", nickname="user")
-        self.other_user = User.objects.create_user(email="other@example.com", password="testpass", nickname="other")
+        self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass",
+            nickname="user",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
+        self.other_user = User.objects.create_user(
+            email="other@example.com",
+            password="testpass",
+            nickname="other",
+            phone_number="010-1111-2222",
+            gender="FEMALE",
+            birthday="1991-02-02",
+        )
         self.category = PostCategory.objects.create(name="cat")
         self.post = Post.objects.create(author=self.user, title="t", content="c", category=self.category)
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="cc")

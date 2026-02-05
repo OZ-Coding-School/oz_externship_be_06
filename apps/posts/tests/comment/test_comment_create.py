@@ -26,6 +26,14 @@ class PostCommentCreateSerializerTests(TestCase):
     def setUp(self) -> None:
         User = get_user_model()
         self.user = User.objects.create_user(
+            email="test@example.com",
+            password="testpass",
+            nickname="user",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1990-01-01",
+        )
+        self.other_user = User.objects.create_user(
             email="createuser@example.com",
             password="testpass",
             nickname="createuser",
@@ -38,8 +46,8 @@ class PostCommentCreateSerializerTests(TestCase):
             password="testpass",
             nickname="other",
             phone_number="010-1111-2222",
-            gender="MALE",
-            birthday="1990-01-01",
+            gender="FEMALE",
+            birthday="1988-03-03",
         )
         self.category = PostCategory.objects.create(name="create category")
         self.post = Post.objects.create(
