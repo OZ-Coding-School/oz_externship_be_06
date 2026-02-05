@@ -204,7 +204,9 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
             data=request.data,
             partial=True,
         )
-        serializer.is_valid(raise_exception=True)
+
+        if not serializer.is_valid():
+            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         update_data = serializer.validated_data
 

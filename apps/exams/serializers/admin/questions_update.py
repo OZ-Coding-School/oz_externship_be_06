@@ -44,13 +44,7 @@ class AdminExamQuestionUpdateRequestSerializer(serializers.ModelSerializer[ExamQ
         if "options_json" in ret and isinstance(ret["options_json"], list):
             ret["options_json"] = json.dumps(ret["options_json"])
 
-        if "correct_answer" in ret:
-            ret["answer"] = ret.pop("correct_answer")
         return ret
-
-    # 최소 한 필드 이상은 들어왔는지 확인
-    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        return data
 
 
 class AdminExamQuestionUpdateResponseSerializer(serializers.ModelSerializer[ExamQuestion]):

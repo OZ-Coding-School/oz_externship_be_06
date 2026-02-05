@@ -48,10 +48,10 @@ def update_exam_question(
     prompt = update_data.get("prompt", instance.prompt)
 
     options_json = update_data.get("options_json")
-    # options_json이 None이면 기존 값을 사용
-    options = json.loads(options_json) if options_json is not None else json.loads(instance.options_json or "[]")
-    # options_json = update_data.get("options")
-    # options = (options_json if options_json is not None else json.loads(instance.options_json or "[]"))
+    if options_json is not None:
+        options = json.loads(options_json)
+    else:
+        options = json.loads(instance.options_json) if instance.options_json else []
 
     blank_count = update_data.get("blank_count", instance.blank_count)
     answer = update_data.get("answer", instance.answer)
@@ -91,8 +91,6 @@ def update_exam_question(
         if blank_count is None or blank_count < 1:
             raise BusinessRuleError("빈칸 채우기 문제는 blank_count가 1 이상이어야 합니다.")
 
-    # 단답형 / OX 는 공통 필수만으로 충분
-
     # 4. 총점 100점 제한 정책
     exam = instance.exam
     questions = ExamQuestion.objects.filter(exam=exam)
@@ -102,11 +100,6 @@ def update_exam_question(
     if current_total > 100:
         raise ConflictRuleError(ErrorMessages.QUESTION_UPDATE_CONFLICT.value)
 
-    # 5. 실제 업데이트 반영
-    # for field, value in update_data.items():
-    #     # 모델에 없는 필드 무시
-    #     if hasattr(instance, field):
-    #         setattr(instance, field, value)
     instance.type = q_type
     instance.question = question
     instance.prompt = prompt
@@ -114,9 +107,7 @@ def update_exam_question(
     instance.answer = answer
     instance.point = point
     instance.explanation = update_data.get("explanation", instance.explanation)
-
-    if options is not None:
-        instance.options_json = json.dumps(options)
+    instance.options_json = json.dumps(options)
 
     instance.save()
 

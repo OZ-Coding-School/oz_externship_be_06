@@ -20,7 +20,7 @@ User = get_user_model()
 
 class AdminExamQuestionUpdateAPITests(APITestCase):
     def setUp(self) -> None:
-        # 관리자 유저
+
         self.admin = User.objects.create_user(
             email="admin@test.com",
             password="password",
@@ -28,7 +28,6 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
             role=User.Role.ADMIN,
         )
 
-        # 일반 유저
         self.user = User.objects.create_user(
             email="user@test.com",
             password="password",
@@ -36,14 +35,12 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
             is_staff=False,
         )
 
-        # 수강
         self.course = Course.objects.create(
             name="테스트 강좌",
             tag="T01",
             description="테스트 강좌 설명",
         )
 
-        # 과목
         self.subject = Subject.objects.create(
             course=self.course,
             title="테스트 과목",
@@ -52,10 +49,8 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
             status=True,
         )
 
-        # 시험
         self.exam = Exam.objects.create(title="테스트 시험", subject=self.subject)
 
-        # 기존 문제
         self.question = ExamQuestion.objects.create(
             exam=self.exam,
             type=ExamQuestion.TypeChoices.ORDERING,
