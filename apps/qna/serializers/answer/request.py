@@ -13,7 +13,7 @@ class AnswerCreateSerializer(serializers.ModelSerializer[Answer]):
     답변 등록 시리얼라이저
     """
 
-    content = serializers.CharField(required=True, help_text="답변 내용 (마크다운)")
+    content = serializers.CharField(required=True, help_text="답변 내용")
     image_urls = serializers.ListField(
         child=serializers.URLField(), required=False, allow_empty=True, default=list, help_text="첨부 이미지 URL 목록"
     )

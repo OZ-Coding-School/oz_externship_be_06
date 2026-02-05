@@ -10,9 +10,7 @@ QnA 예외처리 시나리오별 테스트
 """
 
 import json
-import logging
 from typing import Any
-from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -67,7 +65,7 @@ class CategoryNotFoundExceptionTest(TestCase):
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json", **auth_header)
         res_data = response.json()
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("error_detail", res_data)
         self.assertEqual(res_data["error_detail"], ErrorMessages.NOT_FOUND_CATEGORY.value)
 

@@ -16,18 +16,14 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
     질문 등록 시리얼라이저
     """
 
+    title = serializers.CharField(required=True, help_text="질문 제목")
+    content = serializers.CharField(required=True, help_text="질문 내용")
     category_id = serializers.IntegerField(required=True, help_text="카테고리 ID (소분류)")
     default_error_message = ErrorMessages.INVALID_QUESTION_CREATE
 
     class Meta:
         model = Question
         fields = ["title", "content", "category_id"]
-
-    def validate_category_id(self, value: int) -> int:
-        """카테고리 FK 존재 여부 검증"""
-        if not QuestionCategory.objects.filter(id=value).exists():
-            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_CATEGORY, status_code=status.HTTP_400_BAD_REQUEST)
-        return value
 
 
 # ==============================================================================

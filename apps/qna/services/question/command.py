@@ -1,7 +1,10 @@
 from typing import Any
 
 from django.db import transaction
+from rest_framework import status
 
+from apps.qna.constants import ErrorMessages
+from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
 from apps.qna.utils.model_types import User
 
@@ -25,7 +28,13 @@ class QuestionCommandService:
             Question: 생성된 질문 객체
 
         """
+
         category_id = data.pop("category_id")
-        category = QuestionCategory.objects.get(id=category_id)
+
+        try:
+            category = QuestionCategory.objects.get(id=category_id)
+        except QuestionCategory.DoesNotExist:
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_CATEGORY, status_code=status.HTTP_404_NOT_FOUND)
+
         question = Question.objects.create(author=author, category=category, **data)
         return question
