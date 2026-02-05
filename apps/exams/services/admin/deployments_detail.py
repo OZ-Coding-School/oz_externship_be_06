@@ -1,11 +1,11 @@
 from typing import Any
 
+from rest_framework import status
+
 from apps.courses.models.cohort_students import CohortStudent
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamDeployment
-
-
-class ExamDeploymentDetailNotFoundError(Exception):
-    """배포 상세 조회 대상이 없을 때 발생."""
 
 
 def get_exam_deployment_detail(deployment_id: int) -> dict[str, Any]:
@@ -13,7 +13,7 @@ def get_exam_deployment_detail(deployment_id: int) -> dict[str, Any]:
         ExamDeployment.objects.select_related("exam__subject", "cohort__course").filter(id=deployment_id).first()
     )
     if not deployment:
-        raise ExamDeploymentDetailNotFoundError
+        raise ErrorDetailException(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
     submitted_count = deployment.submissions.values("submitter_id").distinct().count()
     total_students = CohortStudent.objects.filter(cohort_id=deployment.cohort_id).count()

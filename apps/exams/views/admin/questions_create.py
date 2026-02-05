@@ -10,16 +10,13 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.questions_create import (
     AdminExamQuestionCreateRequestSerializer,
     AdminExamQuestionCreateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.questions_create import (
-    ExamNotFoundError,
-    ExamQuestionLimitError,
-    create_exam_question,
-)
+from apps.exams.services.admin.questions_create import create_exam_question
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -96,22 +93,11 @@ class AdminExamQuestionCreateAPIView(ExamsExceptionMixin, APIView):
     def post(self, request: Request, exam_id: int) -> Response:
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            result = create_exam_question(exam_id, serializer.validated_data)
-        except ExamNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_ADMIN_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamQuestionLimitError:
-            return Response(
-                {"error_detail": ErrorMessages.QUESTION_CREATE_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        result = create_exam_question(exam_id, serializer.validated_data)
 
         return Response(AdminExamQuestionCreateResponseSerializer(result).data, status=status.HTTP_201_CREATED)

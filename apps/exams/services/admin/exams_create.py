@@ -6,17 +6,12 @@ from uuid import uuid4
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from rest_framework import status
 
 from apps.courses.models.subjects import Subject
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models.exams import Exam
-
-
-class ExamCreateConflictError(Exception):
-    """동일한 시험명이 이미 존재할 때 발생."""
-
-
-class ExamCreateNotFoundError(Exception):
-    """과목 정보가 없을 때 발생."""
 
 
 def _store_thumbnail(thumbnail_img: UploadedFile) -> tuple[str, str]:
@@ -32,7 +27,7 @@ def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile | None)
     with transaction.atomic():
         subject = Subject.objects.filter(id=subject_id).first()
         if not subject:
-            raise ExamCreateNotFoundError
+            raise ErrorDetailException(ErrorMessages.SUBJECT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
         saved_path = None
         thumbnail_img_url = None
@@ -47,7 +42,7 @@ def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile | None)
                 },
             )
             if not created:
-                raise ExamCreateConflictError
+                raise ErrorDetailException(ErrorMessages.EXAM_CONFLICT.value, status.HTTP_409_CONFLICT)
             return exam
         except Exception:
             if saved_path:

@@ -3,16 +3,11 @@ from typing import Any
 
 from django.db import transaction
 from django.db.models import Count, Sum
+from rest_framework import status
 
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam, ExamQuestion
-
-
-class ExamNotFoundError(Exception):
-    """쪽지시험 정보가 없을 때 발생."""
-
-
-class ExamQuestionLimitError(Exception):
-    """문항 수/총점 제한을 초과했을 때 발생."""
 
 
 def create_exam_question(exam_id: int, payload: dict[str, Any]) -> dict[str, Any]:
@@ -20,16 +15,16 @@ def create_exam_question(exam_id: int, payload: dict[str, Any]) -> dict[str, Any
         try:
             exam = Exam.objects.select_for_update().get(id=exam_id)
         except Exam.DoesNotExist as exc:
-            raise ExamNotFoundError from exc
+            raise ErrorDetailException(ErrorMessages.EXAM_ADMIN_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
 
         stats = exam.questions.aggregate(count=Count("id"), total=Sum("point"))
         question_count = stats["count"] or 0
         total_points = stats["total"] or 0
         if question_count >= 20:
-            raise ExamQuestionLimitError
+            raise ErrorDetailException(ErrorMessages.QUESTION_CREATE_CONFLICT.value, status.HTTP_409_CONFLICT)
         point = payload["point"]
         if total_points + point > 100:
-            raise ExamQuestionLimitError
+            raise ErrorDetailException(ErrorMessages.QUESTION_CREATE_CONFLICT.value, status.HTTP_409_CONFLICT)
 
         options = payload.get("options")
         blank_count = payload.get("blank_count")

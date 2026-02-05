@@ -12,15 +12,12 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.services.admin.exams_create import (
-    ExamCreateConflictError,
-    ExamCreateNotFoundError,
-    create_exam,
-)
+from apps.exams.services.admin.exams_create import create_exam
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -40,28 +37,17 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
         serializer = AdminExamCreateRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
         data = serializer.validated_data
-        try:
-            exam = create_exam(
-                title=data["title"],
-                subject_id=data["subject_id"],
-                thumbnail_img=data.get("thumbnail_img"),
-            )
-        except ExamCreateNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.SUBJECT_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamCreateConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.EXAM_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        exam = create_exam(
+            title=data["title"],
+            subject_id=data["subject_id"],
+            thumbnail_img=data.get("thumbnail_img"),
+        )
 
         response_serializer = AdminExamCreateResponseSerializer(exam)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)

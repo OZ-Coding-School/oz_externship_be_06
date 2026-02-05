@@ -10,16 +10,13 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusRequestSerializer,
     AdminExamDeploymentStatusResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.deployments_status import (
-    ExamDeploymentStatusConflictError,
-    ExamDeploymentStatusNotFoundError,
-    update_deployment_status,
-)
+from apps.exams.services.admin.deployments_status import update_deployment_status
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -96,23 +93,12 @@ class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
     def patch(self, request: Request, deployment_id: int) -> Response:
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
-        except ExamDeploymentStatusNotFoundError:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except ExamDeploymentStatusConflictError:
-            return Response(
-                {"error_detail": ErrorMessages.DEPLOYMENT_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
+        deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
 
         response_serializer = AdminExamDeploymentStatusResponseSerializer(
             {

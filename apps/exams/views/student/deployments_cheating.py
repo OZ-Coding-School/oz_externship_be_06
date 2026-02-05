@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
@@ -91,7 +92,7 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
         request_serializer.is_valid(raise_exception=True)
         user_id = user.id
         if user_id is None:
-            return Response({"error_detail": ErrorMessages.UNAUTHORIZED.value}, status=status.HTTP_401_UNAUTHORIZED)
+            raise ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
 
         result = update_cheating_count(
             deployment=deployment,
