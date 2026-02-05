@@ -43,6 +43,13 @@ def _judge_multi_select(question: ExamQuestion, user_answer: Any) -> int:
     return int(point * matched / total)
 
 
+def _judge_single_choice(question: ExamQuestion, user_answer: Any) -> int:
+    correct_answer = question.answer
+    point = question.point
+
+    return point if str(user_answer).strip() == str(correct_answer).strip() else 0
+
+
 def _judge_ordering(question: ExamQuestion, user_answer: Any) -> int:
     correct_answer = question.answer
     point = question.point
@@ -95,6 +102,7 @@ _JUDGERS: dict[str, Callable[[ExamQuestion, Any], int]] = {
     ExamQuestion.TypeChoices.OX: _judge_ox,
     ExamQuestion.TypeChoices.SHORT_ANSWER: _judge_short_answer,
     ExamQuestion.TypeChoices.MULTI_SELECT: _judge_multi_select,
+    ExamQuestion.TypeChoices.SINGLE_CHOICE: _judge_single_choice,
     ExamQuestion.TypeChoices.ORDERING: _judge_ordering,
     ExamQuestion.TypeChoices.FILL_IN_BLANK: _judge_fill_in_blank,
 }

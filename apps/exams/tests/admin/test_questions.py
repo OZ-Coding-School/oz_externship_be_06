@@ -118,6 +118,31 @@ class AdminExamQuestionCreateAPITest(TestCase):
         self.assertEqual(data["type"], "multiple_choice")
         self.assertEqual(data["point"], 10)
 
+    def test_admin_can_create_single_choice_question(self) -> None:
+        payload = {
+            "type": "single_choice",
+            "question": "단일선다 문제",
+            "prompt": "",
+            "options": ["A", "B", "C"],
+            "blank_count": 0,
+            "correct_answer": "A",
+            "point": 5,
+            "explanation": "설명",
+        }
+
+        response = self.client.post(
+            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            data=json.dumps(payload),
+            content_type="application/json",
+            headers=self._auth_headers(self.admin_user),
+        )
+
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertEqual(data["exam_id"], self.exam.id)
+        self.assertEqual(data["type"], "single_choice")
+        self.assertEqual(data["point"], 5)
+
     def test_returns_401_when_unauthenticated(self) -> None:
         payload = {
             "type": "ox",
@@ -271,6 +296,26 @@ class AdminExamQuestionCreateAPITest(TestCase):
         payload = {
             "type": "multiple_choice",
             "question": "보기 없음",
+            "correct_answer": ["A"],
+            "point": 5,
+        }
+
+        response = self.client.post(
+            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            data=json.dumps(payload),
+            content_type="application/json",
+            headers=self._auth_headers(self.admin_user),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertEqual(data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE_REQUEST.value)
+
+    def test_returns_400_for_single_choice_invalid_answer_type(self) -> None:
+        payload = {
+            "type": "single_choice",
+            "question": "단일선다 오류",
+            "options": ["A", "B"],
             "correct_answer": ["A"],
             "point": 5,
         }

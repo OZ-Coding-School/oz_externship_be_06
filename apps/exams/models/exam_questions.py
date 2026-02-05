@@ -5,6 +5,7 @@ from apps.core.models import TimeStampModel
 
 class ExamQuestion(TimeStampModel):
     class TypeChoices(models.TextChoices):
+        SINGLE_CHOICE = "SINGLE_CHOICE", "단일선다"
         FILL_IN_BLANK = "FILL_IN_BLANK", "빈칸 채우기"
         ORDERING = "ORDERING", "순서 정렬"
         MULTI_SELECT = "MULTI_SELECT", "다지선다"
