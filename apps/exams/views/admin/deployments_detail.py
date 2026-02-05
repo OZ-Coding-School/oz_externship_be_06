@@ -20,10 +20,8 @@ from apps.exams.serializers.admin.deployments_update import (
     AdminExamDeploymentUpdateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.deployments_detail import (
-    ExamDeploymentDetailNotFoundError,
-    get_exam_deployment_detail,
-)
+<<<<<<< HEAD
+from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import (
     ExamDeploymentUpdateNotFoundError,
     update_exam_deployment,
@@ -103,10 +101,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            payload = get_exam_deployment_detail(deployment_id)
-        except ExamDeploymentDetailNotFoundError as exc:
-            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
+        payload = get_exam_deployment_detail(deployment_id)
 
         access_url = request.build_absolute_uri(reverse("exams:take-exam", kwargs={"deployment_id": deployment_id}))
         payload["exam_access_url"] = access_url

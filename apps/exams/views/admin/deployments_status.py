@@ -16,11 +16,7 @@ from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.deployments_status import (
-    ExamDeploymentStatusConflictError,
-    ExamDeploymentStatusNotFoundError,
-    update_deployment_status,
-)
+from apps.exams.services.admin.deployments_status import update_deployment_status
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -102,12 +98,7 @@ class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
-        except ExamDeploymentStatusNotFoundError as exc:
-            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
-        except ExamDeploymentStatusConflictError as exc:
-            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_CONFLICT.value, status.HTTP_409_CONFLICT) from exc
+        deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
 
         response_serializer = AdminExamDeploymentStatusResponseSerializer(
             {

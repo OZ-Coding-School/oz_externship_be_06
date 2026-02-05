@@ -17,11 +17,7 @@ from apps.exams.serializers.admin.exams_update import (
     AdminExamUpdateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.exams_delete import (
-    ExamDeleteConflictError,
-    ExamDeleteNotFoundError,
-    delete_exam,
-)
+from apps.exams.services.admin.exams_delete import delete_exam
 from apps.exams.services.admin.exams_update import update_exam
 from apps.exams.views.mixins import ExamsExceptionMixin
 
@@ -181,12 +177,7 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deleted_id = delete_exam(exam_id)
-        except ExamDeleteNotFoundError as exc:
-            raise ErrorDetailException(ErrorMessages.EXAM_DELETE_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
-        except ExamDeleteConflictError as exc:
-            raise ErrorDetailException(ErrorMessages.EXAM_DELETE_CONFLICT.value, status.HTTP_409_CONFLICT) from exc
+        deleted_id = delete_exam(exam_id)
 
         serializer = AdminExamDeleteResponseSerializer({"id": deleted_id})
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -16,11 +16,7 @@ from apps.exams.serializers.admin.questions_create import (
     AdminExamQuestionCreateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.questions_create import (
-    ExamNotFoundError,
-    ExamQuestionLimitError,
-    create_exam_question,
-)
+from apps.exams.services.admin.questions_create import create_exam_question
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -102,14 +98,6 @@ class AdminExamQuestionCreateAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            result = create_exam_question(exam_id, serializer.validated_data)
-        except ExamNotFoundError as exc:
-            raise ErrorDetailException(ErrorMessages.EXAM_ADMIN_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
-        except ExamQuestionLimitError as exc:
-            raise ErrorDetailException(
-                ErrorMessages.QUESTION_CREATE_CONFLICT.value,
-                status.HTTP_409_CONFLICT,
-            ) from exc
+        result = create_exam_question(exam_id, serializer.validated_data)
 
         return Response(AdminExamQuestionCreateResponseSerializer(result).data, status=status.HTTP_201_CREATED)

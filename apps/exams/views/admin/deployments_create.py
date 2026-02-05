@@ -16,11 +16,7 @@ from apps.exams.serializers.admin.deployments_create import (
     AdminExamDeploymentCreateResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.deployments_create import (
-    ExamDeploymentConflictError,
-    ExamDeploymentNotFoundError,
-    create_exam_deployment,
-)
+from apps.exams.services.admin.deployments_create import create_exam_deployment
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -102,15 +98,7 @@ class AdminExamDeploymentCreateAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            deployment_id = create_exam_deployment(serializer.validated_data)
-        except ExamDeploymentNotFoundError as exc:
-            raise ErrorDetailException(
-                ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND.value,
-                status.HTTP_404_NOT_FOUND,
-            ) from exc
-        except ExamDeploymentConflictError as exc:
-            raise ErrorDetailException(ErrorMessages.DUPLICATE_DEPLOYMENT.value, status.HTTP_409_CONFLICT) from exc
+        deployment_id = create_exam_deployment(serializer.validated_data)
 
         response_serializer = AdminExamDeploymentCreateResponseSerializer(data={"pk": deployment_id})
         response_serializer.is_valid(raise_exception=True)

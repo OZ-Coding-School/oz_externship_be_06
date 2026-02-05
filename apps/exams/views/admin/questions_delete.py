@@ -15,11 +15,7 @@ from apps.exams.serializers.admin.questions_delete import (
     AdminExamQuestionDeleteResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.questions_delete import (
-    ExamQuestionDeleteConflictError,
-    ExamQuestionDeleteNotFoundError,
-    delete_exam_question,
-)
+from apps.exams.services.admin.questions_delete import delete_exam_question
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -99,15 +95,7 @@ class AdminExamQuestionDeleteAPIView(ExamsExceptionMixin, APIView):
                 status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            result = delete_exam_question(question_id)
-        except ExamQuestionDeleteNotFoundError as exc:
-            raise ErrorDetailException(ErrorMessages.QUESTION_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
-        except ExamQuestionDeleteConflictError as exc:
-            raise ErrorDetailException(
-                ErrorMessages.QUESTION_DELETE_CONFLICT.value,
-                status.HTTP_409_CONFLICT,
-            ) from exc
+        result = delete_exam_question(question_id)
 
         serializer = self.serializer_class(data=result)
         serializer.is_valid(raise_exception=True)

@@ -3,18 +3,13 @@ from typing import Any
 from uuid import uuid4
 
 from django.db import transaction
+from rest_framework import status
 
 from apps.core.utils.base62 import Base62
 from apps.courses.models.cohorts import Cohort
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion
-
-
-class ExamDeploymentNotFoundError(Exception):
-    """배포 대상 정보를 찾지 못했을 때 발생."""
-
-
-class ExamDeploymentConflictError(Exception):
-    """배포 생성 중 중복/충돌 발생 시."""
 
 
 def _generate_access_code() -> str:
@@ -61,7 +56,7 @@ def create_exam_deployment(payload: dict[str, Any]) -> int:
     exam = Exam.objects.filter(id=exam_id).first()
     cohort = Cohort.objects.filter(id=cohort_id).first()
     if not exam or not cohort:
-        raise ExamDeploymentNotFoundError
+        raise ErrorDetailException(ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
     with transaction.atomic():
         if ExamDeployment.objects.filter(
@@ -70,7 +65,7 @@ def create_exam_deployment(payload: dict[str, Any]) -> int:
             open_at=open_at,
             close_at=close_at,
         ).exists():
-            raise ExamDeploymentConflictError
+            raise ErrorDetailException(ErrorMessages.DUPLICATE_DEPLOYMENT.value, status.HTTP_409_CONFLICT)
 
         snapshot = _build_question_snapshot(exam)
         access_code = _generate_access_code()

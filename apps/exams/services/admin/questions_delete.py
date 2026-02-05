@@ -1,25 +1,20 @@
 from django.db import transaction
+from rest_framework import status
 
+from apps.exams.constants import ErrorMessages
+from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import ExamQuestion
-
-
-class ExamQuestionDeleteNotFoundError(Exception):
-    """삭제 대상 문제를 찾지 못했을 때 발생."""
-
-
-class ExamQuestionDeleteConflictError(Exception):
-    """문제 삭제 중 충돌 발생 시."""
 
 
 def delete_exam_question(question_id: int) -> dict[str, int]:
     question = ExamQuestion.objects.filter(id=question_id).first()
     if not question:
-        raise ExamQuestionDeleteNotFoundError
+        raise ErrorDetailException(ErrorMessages.QUESTION_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
 
     try:
         with transaction.atomic():
             question.delete()
     except Exception as exc:
-        raise ExamQuestionDeleteConflictError from exc
+        raise ErrorDetailException(ErrorMessages.QUESTION_DELETE_CONFLICT.value, status.HTTP_409_CONFLICT) from exc
 
     return {"exam_id": question.exam_id, "question_id": question_id}

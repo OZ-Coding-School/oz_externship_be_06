@@ -17,11 +17,7 @@ from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.services.admin.exams_create import (
-    ExamCreateConflictError,
-    ExamCreateNotFoundError,
-    create_exam,
-)
+from apps.exams.services.admin.exams_create import create_exam
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -47,16 +43,11 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
             )
 
         data = serializer.validated_data
-        try:
-            exam = create_exam(
-                title=data["title"],
-                subject_id=data["subject_id"],
-                thumbnail_img=data.get("thumbnail_img"),
-            )
-        except ExamCreateNotFoundError:
-            raise ErrorDetailException(ErrorMessages.SUBJECT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
-        except ExamCreateConflictError:
-            raise ErrorDetailException(ErrorMessages.EXAM_CONFLICT.value, status.HTTP_409_CONFLICT)
+        exam = create_exam(
+            title=data["title"],
+            subject_id=data["subject_id"],
+            thumbnail_img=data.get("thumbnail_img"),
+        )
 
         response_serializer = AdminExamCreateResponseSerializer(exam)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
