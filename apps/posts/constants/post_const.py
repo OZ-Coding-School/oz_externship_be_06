@@ -31,3 +31,12 @@ class PostSuccessMessage:
     POST_CREATE_SUCCESS = "게시글이 성공적으로 등록되었습니다."
     POST_UPDATE_SUCCESS = "게시글이 성공적으로 수정되었습니다."
     POST_DELETE_SUCCESS = "게시글이 삭제되었습니다."
+
+
+class PostLikeMessage:
+    """
+    게시글 좋아요 관련 성공 및 에러 메시지 상수
+    """
+
+    LIKE_REGISTER = "좋아요가 등록되었습니다."
+    LIKE_CANCEL = "좋아요가 취소되었습니다."
