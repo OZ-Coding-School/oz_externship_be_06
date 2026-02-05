@@ -1,19 +1,20 @@
-from __future__ import annotations
-
-from typing import Any, Dict, List, cast
+from typing import Any, Dict
 
 from rest_framework import serializers
-from rest_framework.exceptions import NotAuthenticated, NotFound, PermissionDenied
+from rest_framework.exceptions import NotAuthenticated, NotFound
 
 from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.post_serializers import PostAuthorSerializer
+from apps.posts.services.comment_services import PostCommentService
 
 
 class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
-    """댓글에 태그된 사용자 정보를 반환하는 시리얼라이저입니다."""
+    """
+    댓글에 태그된 사용자 정보를 반환하는 시리얼라이저입니다.
+    """
 
     id = serializers.IntegerField(source="tagged_user.id")
     nickname = serializers.CharField(source="tagged_user.nickname")
@@ -24,7 +25,9 @@ class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
 
 
 class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
-    """댓글 목록을 조회할 때 사용하는 시리얼라이저입니다."""
+    """
+    댓글 목록을 조회할 때 사용하는 시리얼라이저입니다.
+    """
 
     author = PostAuthorSerializer(read_only=True)
     tagged_users = serializers.SerializerMethodField()
@@ -34,44 +37,42 @@ class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
 
     def get_tagged_users(self, obj: PostComment) -> Any:
-        # 댓글에 태그된 사용자 정보를 반환합니다. (뷰에서 prefetch_related("tags__tagged_user")를 사용함)
         tags = obj.tags.all()
         return TaggedUserSerializer(tags, many=True).data
 
 
-class PostCommentCreateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
-    """댓글 생성 시리얼라이저 (요청 바디: content)"""
+class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
+    """
+    댓글 생성 시리얼라이저 (요청 바디: content)
+    """
 
     content = serializers.CharField(max_length=500, required=True)
 
-    class Meta:
-        model = PostComment
-        fields = ("content",)
+    def validate_content(self, value: str) -> str:
+        if not value.strip():
+            raise serializers.ValidationError("댓글 내용은 비어 있을 수 없습니다.")
+        return value
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        # 댓글 내용 등 데이터 유효성만 검증
+        # 추가적인 전체 유효성 검증이 필요하면 여기에 작성
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> PostComment:
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
         if request is None or not user or not user.is_authenticated:
-            # 테스트 기대 문구로 통일
             raise NotAuthenticated(detail=PostErrorMessage.UNAUTHORIZED)
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
             raise NotFound(detail=PostErrorMessage.POST_NOT_FOUND_WITH_TARGET)
 
-        # perform_create/save(author=..., post=...)로 들어오는 케이스 방어
-        author = validated_data.pop("author", user)
-        post = validated_data.pop("post", context_post)
-
-        return PostComment.objects.create(author=author, post=post, **validated_data)
+        return PostCommentService.create_comment(author=user, post=context_post, content=validated_data["content"])
 
 
-class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
-    """댓글 수정 시리얼라이저
+class PostCommentUpdateSerializer(serializers.Serializer[PostComment]):
+    """
+    댓글 수정 시리얼라이저
     - content만 수정 가능
     - 작성자만 수정 가능
     """
@@ -79,22 +80,20 @@ class PostCommentUpdateSerializer(serializers.ModelSerializer):  # type: ignore[
     id = serializers.IntegerField(read_only=True)
     content = serializers.CharField(max_length=500, required=True)
 
-    class Meta:
-        model = PostComment
-        fields = ("id", "content", "updated_at")
-        read_only_fields = ("updated_at",)
-
-    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        # 댓글 내용 등 데이터 유효성만 검증
-        return attrs
+    def validate_content(self, value: str) -> str:
+        if not value.strip():
+            raise serializers.ValidationError("댓글 내용은 비어 있을 수 없습니다.")
+        return value
 
     def update(self, instance: PostComment, validated_data: Dict[str, Any]) -> PostComment:
-        instance.content = validated_data.get("content", instance.content)
-        instance.save()
-        return instance
+        request = self.context.get("request")
+        user = getattr(request, "user", None) if request is not None else None
+        return PostCommentService.update_comment(user=user, comment=instance, content=validated_data["content"])
 
 
-class PostCommentDeleteResponseSerializer(serializers.Serializer):  # type: ignore[type-arg]
-    """댓글 삭제 응답 스펙용 시리얼라이저"""
+class PostCommentDeleteResponseSerializer(serializers.Serializer[Any]):
+    """
+    댓글 삭제 응답 스펙용 시리얼라이저
+    """
 
     detail = serializers.CharField()

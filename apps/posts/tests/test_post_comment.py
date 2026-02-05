@@ -120,67 +120,72 @@ class CommentServiceTests(TestCase):
         )
         self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
 
-    # 인증된 사용자가 정상적으로 댓글 생성 검증
-    def test_validate_comment_create_authenticated(self) -> None:
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": self.user, "is_authenticated": True})(), "post": self.post}
-        attrs = {"content": "test"}
-        result = comment_services.validate_comment_create(attrs, context)
-        self.assertEqual(result, attrs)
-
     # 인증되지 않은 사용자가 댓글 생성 시 예외 발생 검증
-    def test_validate_comment_create_unauthenticated(self) -> None:
+    def test_post_comment_create_serializer_unauthenticated(self) -> None:
         from rest_framework.exceptions import NotAuthenticated
 
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": None, "is_authenticated": False})(), "post": self.post}
-        attrs = {"content": "test"}
+        serializer = PostCommentCreateSerializer(
+            data={"content": "new comment"},
+            context={
+                "request": type("obj", (), {"user": None, "is_authenticated": False})(),
+                "post": self.post,
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         with self.assertRaises(NotAuthenticated):
-            comment_services.validate_comment_create(attrs, context)
+            serializer.save()
 
     # post 객체 없이 댓글 생성 시 예외 발생 검증
-    def test_validate_comment_create_no_post(self) -> None:
+    def test_post_comment_create_serializer_no_post(self) -> None:
         from rest_framework.exceptions import NotFound
 
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": self.user, "is_authenticated": True})()}
-        attrs = {"content": "test"}
+        serializer = PostCommentCreateSerializer(
+            data={"content": "new comment"},
+            context={
+                "request": type("obj", (), {"user": self.user, "is_authenticated": True})(),
+                # "post" 미포함
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         with self.assertRaises(NotFound):
-            comment_services.validate_comment_create(attrs, context)
+            serializer.save()
 
     # 인증된 작성자가 본인 댓글 수정 가능 검증
-    def test_validate_comment_update_authenticated_author(self) -> None:
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": self.user, "is_authenticated": True})()}
-        attrs = {"content": "updated"}
-        result = comment_services.validate_comment_update(attrs, context, self.comment)
-        self.assertEqual(result, attrs)
+    def test_post_comment_update_serializer_authenticated_author(self) -> None:
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "updated"},
+            context={"request": type("obj", (), {"user": self.user, "is_authenticated": True})()},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        updated = serializer.save()
+        self.assertEqual(updated.content, "updated")
 
     # 인증되지 않은 사용자가 댓글 수정 시 예외 발생 검증
-    def test_validate_comment_update_unauthenticated(self) -> None:
+    def test_post_comment_update_serializer_unauthenticated(self) -> None:
         from rest_framework.exceptions import NotAuthenticated
 
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": None, "is_authenticated": False})()}
-        attrs = {"content": "updated"}
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "updated"},
+            context={"request": type("obj", (), {"user": None, "is_authenticated": False})()},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         with self.assertRaises(NotAuthenticated):
-            comment_services.validate_comment_update(attrs, context, self.comment)
+            serializer.save()
 
     # 작성자가 아닌 사용자가 댓글 수정 시 예외 발생 검증
-    def test_validate_comment_update_not_author(self) -> None:
+    def test_post_comment_update_serializer_not_author(self) -> None:
         from rest_framework.exceptions import PermissionDenied
 
-        from apps.posts.services import comment_services
-
-        context = {"request": type("obj", (), {"user": self.other_user, "is_authenticated": True})()}
-        attrs = {"content": "updated"}
+        serializer = PostCommentUpdateSerializer(
+            self.comment,
+            data={"content": "updated"},
+            context={"request": type("obj", (), {"user": self.other_user, "is_authenticated": True})()},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         with self.assertRaises(PermissionDenied):
-            comment_services.validate_comment_update(attrs, context, self.comment)
+            serializer.save()
 
 
 class PostCommentDetailAPITestCase(APITestCase):
