@@ -19,6 +19,15 @@ from apps.posts.views.comment.comment_base_view import CommentBaseView
 
 
 class PostCommentDeleteAPIView(CommentBaseView, APIView):
+    """
+    댓글 삭제 API
+    - DELETE /api/posts/<post_id>/comments/<comment_id>/
+    - 인증 + 작성자 권한 필요
+    - 정상: 200 + detail 메시지
+    - 실패: 401/403/404 + error_detail
+    - 문서화: drf-spectacular @extend_schema 사용
+    """
+
     permission_classes = [IsAuthenticated, IsCommentAuthorOrReadOnly]
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
@@ -39,6 +48,13 @@ class PostCommentDeleteAPIView(CommentBaseView, APIView):
         },
     )
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        댓글 삭제 (DELETE)
+        - 인증 필요, 미인증 시 401
+        - 작성자만 삭제 가능, 아니면 403
+        - 존재하지 않는 댓글이면 404
+        - 정상 삭제 시 200
+        """
         from apps.posts.exceptions.comment_exceptions import (
             CommentForbiddenException,
             CommentUnauthorizedException,
@@ -48,9 +64,11 @@ class PostCommentDeleteAPIView(CommentBaseView, APIView):
         if not request.user or not request.user.is_authenticated:
             raise CommentUnauthorizedException()
         try:
+            # comment_id로 댓글 객체 조회 (없으면 예외)
             comment_id = self._get_comment_id()
             comment = CommentSelector.get_comment_by_id(comment_id)
         except CommentNotFoundException as e:
+            # 댓글이 없을 때 404 반환
             return Response(
                 {
                     "error_detail": (
@@ -66,4 +84,5 @@ class PostCommentDeleteAPIView(CommentBaseView, APIView):
         if not permission.has_object_permission(request, self, comment):
             raise CommentForbiddenException()
         delete_comment(request.user, comment)
+        # 정상: 삭제 완료 메시지 반환
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
