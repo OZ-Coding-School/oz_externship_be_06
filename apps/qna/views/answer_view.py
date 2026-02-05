@@ -36,6 +36,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
+    serializer_class = AnswerCreateSerializer
 
     # 답변 등록
     # [POST] /api/v1/qna/questions/{question_id}/answers
