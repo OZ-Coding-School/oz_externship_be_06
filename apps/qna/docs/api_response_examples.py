@@ -440,7 +440,7 @@ class ErrorResponseExamples:
     )
     AI_GEN_ANSWER_409 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 이미 생성됨",
-        value={"error_detail": ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value},
+        value={"error_detail": ErrorMessages.CONFLICT_AI_GEN_ANSWER.value},
         response_only=True,
     )
 

@@ -5,8 +5,8 @@ import os
 from typing import Any, cast
 
 import google.generativeai as genai
-from google.generativeai.types import RequestOptions
 from django.db import transaction
+from google.generativeai.types import RequestOptions
 from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
@@ -164,11 +164,11 @@ class AIAnswerCommandService:
             logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
             raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
 
-        genai.configure(api_key=api_key)
+        genai.configure(api_key=api_key) # type: ignore[attr-defined]
 
-        model = genai.GenerativeModel(
+        model = genai.GenerativeModel(# type: ignore[attr-defined]
             model_name=model_name,
-            generation_config=genai.GenerationConfig(
+            generation_config=genai.GenerationConfig(# type: ignore[attr-defined]
                 temperature=0.7,
                 top_p=0.9,
                 max_output_tokens=1024,
@@ -186,7 +186,7 @@ class AIAnswerCommandService:
             logger.warning("Gemini API가 빈 응답을 반환했습니다.")
             raise ValueError("AI 응답이 비어있습니다.")
 
-        return response.text.strip()
+        return cast(str, response.text)
 
     @classmethod
     def _call_openai_api(cls, title: str, content: str, model_name: str) -> str:
