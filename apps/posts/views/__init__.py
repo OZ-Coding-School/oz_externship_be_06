@@ -1,4 +1,4 @@
-from .post_comment_views import (
+from .comment_views import (
     PostCommentListCreateAPIView,
     PostCommentRetrieveUpdateDestroyAPIView,
 )

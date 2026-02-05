@@ -2,6 +2,7 @@ from django.urls import path
 
 from apps.posts.views.category_views import CategoryListView
 from apps.posts.views.post_like_views import PostLikeAPIView
+from apps.posts.views.comment_nickname_views import CommentRandomNicknameAPIView
 from apps.posts.views.post_views import PostDetailView, PostListCreateView
 
 from .views import (
@@ -22,6 +23,8 @@ urlpatterns = [
         PostCommentListCreateAPIView.as_view(),
         name="post-comment-list-create",
     ),
+    # 댓글 랜덤 닉네임 생성
+    path("comments/random-nickname/", CommentRandomNicknameAPIView.as_view(), name="comment-random-nickname"),
     # 댓글 상세 / 수정 / 삭제
     path(
         "<int:post_id>/comments/<int:comment_id>/",

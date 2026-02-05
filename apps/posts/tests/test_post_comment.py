@@ -7,7 +7,7 @@ from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
-from apps.posts.serializers.post_comment import (
+from apps.posts.serializers.comment_serializers import (
     PostCommentCreateSerializer,
     PostCommentListSerializer,
     PostCommentUpdateSerializer,
