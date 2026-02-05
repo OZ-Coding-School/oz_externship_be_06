@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Optional, Type
+from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
@@ -10,8 +9,10 @@ from django.urls import reverse
 from rest_framework.test import APIRequestFactory, APITestCase
 
 from apps.posts.constants.comment_const import CommentErrorMessage
+from apps.posts.exceptions.comment_exceptions import CommentNotFoundException, CommentUnauthorizedException
 from apps.posts.models.post import Post
 from apps.posts.models.post_category import PostCategory
+from apps.posts.models.post_comment import PostComment
 from apps.posts.serializers.comment_serializers import PostCommentCreateSerializer
 from apps.posts.services.comment.comment_create_services import create_comment
 
@@ -19,21 +20,7 @@ from apps.posts.services.comment.comment_create_services import create_comment
 class PostCommentCreateSerializerTests(TestCase):
     """댓글 생성 시리얼라이저 테스트"""
 
-    def test_create_serializer_validate_method(self) -> None:
-        """validate 메서드가 정상적으로 호출되는지 확인"""
-        serializer = self._make_serializer(content="valid content", request_user=self.user, post=self.post)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-        # validate 메서드는 기본적으로 attrs를 그대로 반환하므로, 별도 assert는 필요 없음
-
-    def test_create_serializer_create_called(self) -> None:
-        """create 메서드가 정상적으로 호출되는지 확인"""
-        serializer = self._make_serializer(content="create test", request_user=self.user, post=self.post)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-        comment = serializer.save()
-        self.assertEqual(comment.content, "create test")
-
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(
             email="createuser@example.com",
@@ -72,11 +59,7 @@ class PostCommentCreateSerializerTests(TestCase):
         if include_request:
             factory = APIRequestFactory()
             request = factory.post("/dummy-url/")
-            if request_user is not None:
-                request.user = request_user
-            else:
-                # 비인증 유저 시나리오
-                request.user = AnonymousUser()
+            request.user = request_user if request_user is not None else AnonymousUser()
             context["request"] = request
         if post is not None:
             context["post"] = post
@@ -85,6 +68,12 @@ class PostCommentCreateSerializerTests(TestCase):
             data={"content": content},
             context=context,
         )
+
+    def test_create_serializer_validate_method(self) -> None:
+        """validate 메서드 경유 확인 (validated_data까지 확인해서 라인 커버 확실히)"""
+        serializer = self._make_serializer(content="valid content", request_user=self.user, post=self.post)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data["content"], "valid content")
 
     def test_create_serializer_rejects_blank_content(self) -> None:
         """빈 문자열 content 거부"""
@@ -107,29 +96,23 @@ class PostCommentCreateSerializerTests(TestCase):
         self.assertEqual(comment.author, self.user)
         self.assertEqual(comment.post, self.post)
 
+        """DB 반영도 확인 (안정성 + 커버리지에 유리)"""
+        self.assertTrue(
+            PostComment.objects.filter(id=comment.id, post=self.post, author=self.user, content="new comment").exists()
+        )
+
     def test_create_serializer_unauthenticated_user_raises(self) -> None:
         """비인증 유저는 예외 발생"""
         serializer = self._make_serializer(content="new comment", request_user=None, post=self.post)
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        from apps.posts.exceptions.comment_exceptions import (
-            CommentUnauthorizedException,
-        )
 
         with self.assertRaises(CommentUnauthorizedException):
             serializer.save()
 
     def test_create_serializer_no_request_in_context_raises(self) -> None:
         """request가 context에 없으면 예외 발생"""
-        serializer = self._make_serializer(
-            content="new comment",
-            request_user=self.user,
-            post=self.post,
-            include_request=False,
-        )
+        serializer = self._make_serializer(content="new comment", request_user=self.user, post=self.post, include_request=False)
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        from apps.posts.exceptions.comment_exceptions import (
-            CommentUnauthorizedException,
-        )
 
         with self.assertRaises(CommentUnauthorizedException):
             serializer.save()
@@ -138,7 +121,6 @@ class PostCommentCreateSerializerTests(TestCase):
         """post가 context에 없으면 예외 발생"""
         serializer = self._make_serializer(content="new comment", request_user=self.user, post=None)
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 
         with self.assertRaises(CommentNotFoundException):
             serializer.save()
@@ -147,7 +129,6 @@ class PostCommentCreateSerializerTests(TestCase):
         """post 타입이 잘못된 경우 예외 발생"""
         serializer = self._make_serializer(content="new comment", request_user=self.user, post="not_a_post")
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 
         with self.assertRaises(CommentNotFoundException):
             serializer.save()
@@ -157,7 +138,6 @@ class PostCommentCreateServiceTests(TestCase):
     """댓글 생성 서비스 테스트"""
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(email="test@example.com", password="testpass", nickname="user")
         self.category = PostCategory.objects.create(name="cat")
@@ -169,6 +149,7 @@ class PostCommentCreateServiceTests(TestCase):
         self.assertEqual(comment.content, "서비스 댓글")
         self.assertEqual(comment.author, self.user)
         self.assertEqual(comment.post, self.post)
+        self.assertTrue(PostComment.objects.filter(id=comment.id).exists())
 
     def test_create_comment_with_none_post_raises(self) -> None:
         """post가 None이면 예외 발생"""
@@ -178,14 +159,13 @@ class PostCommentCreateServiceTests(TestCase):
     def test_create_comment_with_none_author_raises(self) -> None:
         """author가 None이면 예외 발생"""
         with self.assertRaises(Exception):
-            create_comment(author=None, post=self.post, content="댓글")
+            create_comment(author=None, post=self.post, content="댓글")  # type: ignore[arg-type]
 
 
 class PostCommentCreateAPITestCase(APITestCase):
     """댓글 생성 API 테스트 - 성공, 인증 실패, validation 실패, 미존재 게시글"""
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글, URL 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(
             email="createuser@example.com",
@@ -210,6 +190,20 @@ class PostCommentCreateAPITestCase(APITestCase):
         response = self.client.post(self.create_url, {"content": "new comment"}, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertIn("detail", response.data)
+
+        """실제로 DB row가 생겼는지 검증"""
+        self.assertTrue(
+            PostComment.objects.filter(post=self.post, author=self.user, content="new comment").exists()
+        )
+
+    def test_comment_create_success_multipart(self) -> None:
+        """multipart로도 정상 생성되는지 (parser 분기 커버용)"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(self.create_url, {"content": "multipart comment"}, format="multipart")
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(
+            PostComment.objects.filter(post=self.post, author=self.user, content="multipart comment").exists()
+        )
 
     def test_comment_create_unauthenticated(self) -> None:
         """비인증 유저는 401 반환"""
@@ -236,10 +230,11 @@ class PostCommentCreateAPITestCase(APITestCase):
         self.assertEqual(response.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
 
     def test_comment_create_with_invalid_post_id(self) -> None:
-        """잘못된 post id로 요청 시 404 반환"""
+        """잘못된 post id로 요청 시 404 반환 (0, -1)"""
         self.client.force_authenticate(user=self.user)
-        for invalid_id in [None, 0, -1]:
-            url = reverse("posts:post-comment-create", args=[invalid_id if invalid_id is not None else 0])
+
+        for invalid_id in [0, -1]:
+            url = reverse("posts:post-comment-create", args=[invalid_id])
             response = self.client.post(url, {"content": "new comment"}, format="json")
             self.assertEqual(response.status_code, 404)
             self.assertIn("error_detail", response.data)

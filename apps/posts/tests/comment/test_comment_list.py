@@ -81,7 +81,6 @@ class CommentListServiceTests(TestCase):
     """댓글 리스트 서비스 함수 테스트"""
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글, 댓글 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(
             email="testuser@example.com",
@@ -94,9 +93,16 @@ class CommentListServiceTests(TestCase):
         )
         self.category = PostCategory.objects.create(name="test category")
         self.post = Post.objects.create(
-            author=self.user, title="test post", content="test content", category=self.category
+            author=self.user,
+            title="test post",
+            content="test content",
+            category=self.category,
         )
-        self.comment = PostComment.objects.create(post=self.post, author=self.user, content="comment content")
+        self.comment = PostComment.objects.create(
+            post=self.post,
+            author=self.user,
+            content="comment content",
+        )
 
     def test_list_comments_with_invalid_post_id(self) -> None:
         """존재하지 않는 post_id로 조회 시 빈 리스트 반환"""
@@ -105,11 +111,10 @@ class CommentListServiceTests(TestCase):
 
     def test_list_comments_returns_comments_for_post(self) -> None:
         """게시글 id로 댓글 리스트 반환"""
-        comment2 = PostComment.objects.create(post=self.post, author=self.user, content="comment 2")
+        PostComment.objects.create(post=self.post, author=self.user, content="comment 2")
         comments = list(list_comments(self.post.id))
         self.assertEqual(len(comments), 2)
-        self.assertEqual(comments[0].post, self.post)
-        self.assertEqual(comments[1].post, self.post)
+        self.assertTrue(all(c.post == self.post for c in comments))
         contents = [c.content for c in comments]
         self.assertIn("comment content", contents)
         self.assertIn("comment 2", contents)
@@ -130,7 +135,6 @@ class PostCommentListAPITestCase(APITestCase):
     """댓글 목록 조회 API 테스트"""
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글, URL 생성"""
         User = get_user_model()
         self.user = User.objects.create_user(
             email="apilistuser@example.com",
@@ -153,12 +157,60 @@ class PostCommentListAPITestCase(APITestCase):
         """정상적으로 댓글 목록 조회 성공 (200)"""
         PostComment.objects.create(post=self.post, author=self.user, content="comment1")
         PostComment.objects.create(post=self.post, author=self.user, content="comment2")
+
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, 200)
         self.assertIn("results", response.data)
+
         contents = [c["content"] for c in response.data["results"]]
         self.assertIn("comment1", contents)
         self.assertIn("comment2", contents)
+
+    def test_comment_list_success_with_pagination_params(self) -> None:
+        """
+        page/page_size 파라미터를 넣어서 list view 내부 분기(페이지네이션 경로)를 더 태움
+        """
+        PostComment.objects.create(post=self.post, author=self.user, content="p1")
+        PostComment.objects.create(post=self.post, author=self.user, content="p2")
+        PostComment.objects.create(post=self.post, author=self.user, content="p3")
+
+        response = self.client.get(self.list_url, {"page": 1, "page_size": 2})
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn("results", response.data)
+        self.assertLessEqual(len(response.data["results"]), 2)
+
+    def test_comment_list_includes_tagged_users(self) -> None:
+        """
+        tagged_users가 API 응답에도 실제로 포함되는지
+        (serializer TaggedUser 경로 + view/list 경로 같이 커버)
+        """
+        comment = PostComment.objects.create(post=self.post, author=self.user, content="tagged-target")
+
+        tagged_user = get_user_model().objects.create_user(
+            email="tagged_api@example.com",
+            password="testpass",
+            nickname="tagged_api",
+            phone_number="010-0000-0000",
+            gender="MALE",
+            birthday="1999-01-01",
+        )
+        PostCommentTag.objects.create(comment=comment, tagged_user=tagged_user)
+
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, 200)
+
+        """해당 댓글을 찾아서 tagged_users 확인"""
+        target = None
+        for row in response.data["results"]:
+            if row["content"] == "tagged-target":
+                target = row
+                break
+        self.assertIsNotNone(target)
+
+        self.assertIn("tagged_users", target)
+        self.assertEqual(target["tagged_users"][0]["id"], tagged_user.id)
+        self.assertEqual(target["tagged_users"][0]["nickname"], tagged_user.nickname)
 
     def test_comment_list_post_not_found(self) -> None:
         """존재하지 않는 게시글 id로 조회 시 404 반환"""
@@ -175,40 +227,40 @@ class PostCommentDetailAPITestCase(APITestCase):
     COMMENT_NOT_FOUND_MSG = CommentErrorMessage.COMMENT_NOT_FOUND
 
     def setUp(self) -> None:
-        """테스트용 유저, 카테고리, 게시글, 인증 설정"""
         User = get_user_model()
         self.user = User.objects.create_user(
-            email="testuser@example.com",
+            email="detailuser@example.com",
             password="testpass",
-            nickname="testuser",
+            nickname="detailuser",
             phone_number="010-1234-5678",
             gender="MALE",
             birthday="2000-01-01",
         )
-        self.category = PostCategory.objects.create(name="test category")
+        self.category = PostCategory.objects.create(name="detail category")
         self.post = Post.objects.create(
             author=self.user,
-            title="test post",
-            content="test content",
+            title="detail post",
+            content="detail content",
             category=self.category,
         )
-        self.client.force_authenticate(user=self.user)
-
-    def test_comment_detail_safe_methods_permission(self) -> None:
-        """작성자/비작성자/비로그인 모두 GET 가능"""
-        # 작성자
-        comment = PostComment.objects.create(
+        """상세 성공 테스트에서 쓸 댓글을 실제로 만들어 둠 (id=1 의존 제거)"""
+        self.comment = PostComment.objects.create(
             author=self.user,
             post=self.post,
             content="작성자 댓글",
         )
-        url = reverse("posts:post-comment-rud", args=[self.post.id, comment.id])
+
+    def test_comment_detail_safe_methods_permission(self) -> None:
+        """작성자/비작성자/비로그인 모두 GET 가능"""
+        url = reverse("posts:post-comment-rud", args=[self.post.id, self.comment.id])
+
+        # 작성자
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
         # 비작성자
-        User = get_user_model()
-        other_user = User.objects.create_user(
+        other_user = get_user_model().objects.create_user(
             email="otheruser@example.com",
             password="testpass",
             nickname="otheruser",
@@ -219,6 +271,7 @@ class PostCommentDetailAPITestCase(APITestCase):
         self.client.force_authenticate(user=other_user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
         # 비로그인
         self.client.force_authenticate(user=None)
         response = self.client.get(url)
@@ -226,12 +279,12 @@ class PostCommentDetailAPITestCase(APITestCase):
 
     def test_comment_detail_success(self) -> None:
         """댓글 상세 조회 성공"""
-        url = reverse("posts:post-comment-rud", args=[self.post.id, 1])
+        url = reverse("posts:post-comment-rud", args=[self.post.id, self.comment.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn("id", response.data)
         self.assertIn("content", response.data)
-        self.assertEqual(response.data["id"], 1)
+        self.assertEqual(response.data["id"], self.comment.id)
 
     def test_comment_detail_not_found(self) -> None:
         """존재하지 않는 댓글 조회 시 404 반환"""
