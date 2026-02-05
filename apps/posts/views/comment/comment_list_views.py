@@ -20,6 +20,8 @@ from apps.posts.utils.pagination import PostPagination
 
 
 class PostCommentListAPIView(generics.ListAPIView[PostComment]):
+    # 댓글 단일 상세 조회(GET)도 AllowAny가 아니라면, 인증 체크 및 커스텀 예외 적용 필요
+    # 만약 상세 조회 API가 별도라면, 해당 view에도 동일하게 적용해야 함
     pagination_class = PostPagination
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     permission_classes = [AllowAny]
