@@ -70,7 +70,7 @@ class AdminCategoryCreateAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_409],
             ),
         },
-        tags=["admin-qna"],
+        tags=["admin_qna"],
     )
     def post(self, request: Request) -> Response:
         """카테고리 생성"""
