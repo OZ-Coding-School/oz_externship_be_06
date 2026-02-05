@@ -75,7 +75,13 @@ class AIAnswerCommandService:
             QuestionAIAnswer: 생성된 AI 답변 객체
         """
         # 질문 존재 확인 (404)
-        question = get_object_or_404(Question, id=question_id)
+        try:
+            question = Question.objects.get(id=question_id)
+        except Question.DoesNotExist:
+            raise QnaBaseException(
+                detail=ErrorMessages.NOT_FOUND_AI_QUESTION,
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
 
         # 중복 답변 체크 (409)
         if QuestionAIAnswer.objects.filter(question=question).exists():
