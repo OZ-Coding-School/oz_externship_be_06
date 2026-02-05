@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from django.db import transaction
 from django.db.models import F, Q, QuerySet
@@ -95,7 +95,7 @@ class PostService:
             raise PostNotFoundException()
 
         # 권한 검증
-        if post.author_id != user.id and user.role not in ["ADMIN", "USER"]:
+        if post.author_id != user.id and user.role != "USER":
             raise PostPermissionDeniedException()
 
         # 게시글 삭제
