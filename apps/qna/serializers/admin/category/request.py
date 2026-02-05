@@ -2,8 +2,8 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.qna.constants import ErrorMessages
-from apps.qna.constants import CATEGORY_LABELS
+from apps.qna.constants import CATEGORY_LABELS, ErrorMessages
+
 
 # ==============================================================================
 # [POST] Admin Category Create
@@ -46,6 +46,8 @@ class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
             raise serializers.ValidationError(f"{CATEGORY_LABELS[0]} 카테고리는 부모 카테고리를 지정할 수 없습니다.")
 
         if category_type != CATEGORY_LABELS[0] and parent_id is None:
-            raise serializers.ValidationError(f"{CATEGORY_LABELS[1]}/{CATEGORY_LABELS[2]} 카테고리는 부모 카테고리가 필수입니다.")
+            raise serializers.ValidationError(
+                f"{CATEGORY_LABELS[1]}/{CATEGORY_LABELS[2]} 카테고리는 부모 카테고리가 필수입니다."
+            )
 
         return attrs

@@ -101,9 +101,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "name": "프론트엔드", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -119,9 +117,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.ta_user)
         data = {"category_type": "중분류", "name": "프로그래밍 언어", "parent_id": self.cat_large.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -134,9 +130,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "소분류", "name": "FastAPI", "parent_id": self.cat_medium.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -149,9 +143,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "name": "데브옵스"}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.json()["parent_id"])
@@ -178,9 +170,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.student_user)
         data = {"category_type": "대분류", "name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE.value)
@@ -190,9 +180,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.general_user)
         data = {"category_type": "대분류", "name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE.value)
@@ -206,9 +194,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_ADMIN_CATEGORY_CREATE.value)
@@ -218,9 +204,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_ADMIN_CATEGORY_CREATE.value)
@@ -230,9 +214,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "초대분류", "name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -245,9 +227,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "name": "테스트", "parent_id": self.cat_large.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # self.assertIn("대분류 카테고리는 부모 카테고리를 지정할 수 없습니다", str(response.json()))
@@ -257,9 +237,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "중분류", "name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -268,9 +246,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "소분류", "name": "테스트", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -284,9 +260,7 @@ class AdminCategoryCreateAPITest(TestCase):
         # self.cat_medium은 depth=1
         data = {"category_type": "중분류", "name": "테스트", "parent_id": self.cat_medium.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         # self.assertEqual(response.json()["error_detail"], "중분류 카테고리의 부모는 대분류여야 합니다.")
@@ -297,9 +271,7 @@ class AdminCategoryCreateAPITest(TestCase):
         # self.cat_large는 depth=0
         data = {"category_type": "소분류", "name": "테스트", "parent_id": self.cat_large.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -312,9 +284,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "중분류", "name": "테스트", "parent_id": 99999}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_ADMIN_CATEGORY_PARENT.value)
@@ -329,9 +299,7 @@ class AdminCategoryCreateAPITest(TestCase):
         # self.cat_large 하위에 "웹프레임워크"가 이미 있음 (setUp)
         data = {"category_type": "중분류", "name": "웹프레임워크", "parent_id": self.cat_large.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.ALREADY_EXISTS_ADMIN_CATEGORY_NAME.value)
@@ -344,9 +312,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "중분류", "name": "웹프레임워크", "parent_id": new_large.id}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json()["name"], "웹프레임워크")
@@ -357,9 +323,7 @@ class AdminCategoryCreateAPITest(TestCase):
         # "백엔드"가 이미 있음 (setUp)
         data = {"category_type": "대분류", "name": "백엔드", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
@@ -372,9 +336,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "name": "데이터사이언스", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
         res_data = response.json()
 
         expected_fields = {"category_id", "name", "category_type", "parent_id", "created_at"}
@@ -385,9 +347,7 @@ class AdminCategoryCreateAPITest(TestCase):
         auth_header = self._get_auth_header(self.admin_user)
         data = {"category_type": "대분류", "name": "디자인", "parent_id": None}
 
-        response = self.client.post(
-            self.url, data=data, content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
         res_data = response.json()
 
         # 'YYYY-MM-DD HH:MM:SS' 형식 검증 (19자)
@@ -414,8 +374,6 @@ class AdminCategoryCreateAPITest(TestCase):
         # 7. SAVEPOINT / RELEASE (atomic)
 
         with CaptureQueriesContext(connection) as context:
-            self.client.post(
-                self.url, data=data, content_type="application/json", secure=False, **auth_header
-            )
+            self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
 
         self.assertLessEqual(len(context), 8, f"Expected 8 or fewer queries, but got {len(context)}")

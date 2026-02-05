@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.qna.models import QuestionCategory
 from apps.qna.constants import CATEGORY_LABELS
+from apps.qna.models import QuestionCategory
 
 
 # ==============================================================================

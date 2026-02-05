@@ -2,6 +2,7 @@ from enum import Enum
 
 CATEGORY_LABELS = ("대분류", "중분류", "소분류")
 
+
 class ErrorMessages(str, Enum):
     """
     QnA 서비스 전역에서 사용되는 에러 메시지 상수

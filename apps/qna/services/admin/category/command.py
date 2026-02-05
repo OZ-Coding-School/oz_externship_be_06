@@ -3,10 +3,9 @@ from typing import Any, cast
 from django.db import transaction
 from rest_framework import status
 
-from apps.qna.constants import ErrorMessages
+from apps.qna.constants import CATEGORY_LABELS, ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import QuestionCategory
-from apps.qna.constants import CATEGORY_LABELS
 
 
 class AdminCategoryCommandService:
