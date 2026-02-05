@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.db.models import QuerySet
 
+from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 from apps.posts.models.post import Post
 from apps.posts.models.post_comment import PostComment
 
@@ -21,9 +22,12 @@ class CommentSelector:
         Returns:
             QuerySet[PostComment]: 해당 게시글의 댓글 목록 쿼리셋
         Raises:
-            Post.DoesNotExist: 게시글이 존재하지 않을 때
+            CommentNotFoundException: 게시글이 존재하지 않을 때
         """
-        post = Post.objects.get(pk=post_id)
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            raise CommentNotFoundException()
         return (
             PostComment.objects.filter(post=post)
             .select_related("author")
@@ -40,6 +44,9 @@ class CommentSelector:
         Returns:
             PostComment: 해당 댓글 객체
         Raises:
-            PostComment.DoesNotExist: 댓글이 존재하지 않을 때
+            CommentNotFoundException: 댓글이 존재하지 않을 때
         """
-        return PostComment.objects.get(pk=comment_id)
+        try:
+            return PostComment.objects.get(pk=comment_id)
+        except PostComment.DoesNotExist:
+            raise CommentNotFoundException()

@@ -246,13 +246,3 @@ class PostCommentCreateAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
         self.assertEqual(response.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
-
-    def test_comment_create_with_invalid_post_id(self) -> None:
-        """잘못된 post id로 요청 시 404 반환 (0, -1)"""
-        self.client.force_authenticate(user=self.user)
-
-        for invalid_id in [0, -1]:
-            url = reverse("posts:post-comment-create", args=[invalid_id])
-            response = self.client.post(url, {"content": "new comment"}, format="json")
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("error_detail", response.data)

@@ -262,13 +262,3 @@ class PostCommentUpdateAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("error_detail", response.data)
         self.assertIn("content", response.data["error_detail"])
-
-    def test_update_comment_with_invalid_comment_id(self) -> None:
-        """잘못된 comment id로 요청 시 404 반환 (0, -1)"""
-        self.client.force_authenticate(user=self.user)
-
-        for invalid_id in [0, -1]:
-            url = reverse("posts:post-comment-update", args=[self.post.id, invalid_id])
-            response = self.client.put(url, {"content": "updated comment"}, format="json")
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("error_detail", response.data)

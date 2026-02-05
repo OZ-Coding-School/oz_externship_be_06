@@ -28,16 +28,16 @@ class CommentSelectorTests(TestCase):
 
     def test_get_comment_by_id_not_found(self) -> None:
         """없는 댓글 PK로 조회 시 예외 발생"""
-        from apps.posts.models.post_comment import PostComment
+        from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 
-        with self.assertRaises(PostComment.DoesNotExist):
+        with self.assertRaises(CommentNotFoundException):
             CommentSelector.get_comment_by_id(99999999)
 
     def test_get_comments_for_post_not_found(self) -> None:
         """없는 게시글 PK로 댓글 목록 조회 시 예외 발생"""
-        from apps.posts.models.post import Post
+        from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
 
-        with self.assertRaises(Post.DoesNotExist):
+        with self.assertRaises(CommentNotFoundException):
             CommentSelector.get_comments_for_post(99999999)
 
     def test_get_comment_by_id_success(self) -> None:
