@@ -7,7 +7,7 @@ from apps.chatbot.models.chatbot_session import ChatbotSession
 
 class ChatbotSupportSessionCreateSerializer(serializers.Serializer[Any]):
     title = serializers.CharField(
-        max_length=100,
+        max_length=30,
         allow_blank=False,
     )
     using_model = serializers.ChoiceField(
