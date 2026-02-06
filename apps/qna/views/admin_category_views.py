@@ -34,6 +34,7 @@ class AdminCategoryCreateAPIView(QnaBaseAPIView):
     # 카테고리 등록
     # [POST] /api/v1/admin/qna/categories
     @extend_schema(
+        tags=["admin_qna"],
         summary="어드민 카테고리 등록 API",
         description=ApiDescriptions.ADMIN_CATEGORY_CREATE,
         request=AdminCategoryCreateSerializer,
@@ -70,7 +71,6 @@ class AdminCategoryCreateAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_409],
             ),
         },
-        tags=["admin_qna"],
     )
     def post(self, request: Request) -> Response:
         """카테고리 생성"""
