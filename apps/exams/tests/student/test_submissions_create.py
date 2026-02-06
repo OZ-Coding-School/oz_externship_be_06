@@ -206,3 +206,32 @@ class ExamSubmissionTest(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn(ErrorMessages.INVALID_EXAM_SESSION.value, str(response.data))
+
+    # 시험 시간이 지나면 남은 문제 제외하고 자동 제출
+    def test_submission_exam_time_over_auto_submit(self) -> None:
+        self.deployment.close_at = timezone.now() - timedelta(minutes=1)
+        self.deployment.save()
+
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [
+                {
+                    "question_id": self.question.id,
+                    "type": self.question.type,
+                    "submitted_answer": "O",
+                }
+            ],
+        }
+
+        response = self.client.post(
+            "/api/v1/exams/submissions",
+            data,
+            format="json",
+        )
+
+        # 자동 제출이므로 201 반환
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["score"], 5)
+        self.assertEqual(response.data["correct_answer_count"], 1)

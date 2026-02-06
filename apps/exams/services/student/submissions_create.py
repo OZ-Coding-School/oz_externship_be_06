@@ -2,29 +2,13 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from django.db import transaction
-from rest_framework import status
-from rest_framework.exceptions import APIException
 
 from apps.exams.constants import ErrorMessages
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamSubmission
-from apps.exams.serializers import ErrorResponseSerializer
 from apps.exams.services.answers_json import normalize_answers_json
 from apps.exams.services.student.deployments_status import is_deployment_time_closed
 from apps.users.models import User
-
-
-class InvalidSubmissionError(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-
-    def __init__(self, message: str = ErrorMessages.INVALID_EXAM_SESSION.value) -> None:
-        self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
-
-
-class AlreadySubmittedError(APIException):
-    status_code = status.HTTP_409_CONFLICT
-
-    def __init__(self, message: str = ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value) -> None:
-        self.detail: Dict[str, Any] = ErrorResponseSerializer({"error_detail": message}).data
 
 
 @transaction.atomic
@@ -48,15 +32,21 @@ def submit_exam(
             deployment_id=deployment_id,
         )
     except ExamSubmission.DoesNotExist:
-        raise InvalidSubmissionError()
-
-    # 시험 마감 후 제출
-    if is_deployment_time_closed(submission.deployment):
-        raise InvalidSubmissionError()
+        raise_error(ErrorMessages.INVALID_EXAM_SESSION)
 
     # 이미 제출됨
     if submission.answers_json:
-        raise AlreadySubmittedError()
+        raise_error(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED)
+
+    # 응시 중에 시험 시간이 끝나면 푼 답안까지만 저장 (자동제출)
+    if is_deployment_time_closed(submission.deployment):
+        # 남은 문제 제외하고 제출된 것만 저장
+        # answers에는 실제 제출한 문제만 담겨 있으므로 그대로 사용
+        submission.answers_json = normalize_answers_json(answers)
+        submission.started_at = started_at
+        submission.cheating_count = cheating_count
+        submission.save(update_fields=["answers_json", "started_at", "cheating_count", "updated_at"])
+        return submission
 
     # 답안 저장
     submission.answers_json = normalize_answers_json(answers)
