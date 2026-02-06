@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.courses.models import Cohort, Course, Subject
+from apps.exams.constants import ErrorMessages
 from apps.exams.models import (
     Exam,
     ExamDeployment,
@@ -109,7 +110,7 @@ class ExamSubmissionTest(APITestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/exams/submissions",
+            "/api/v1/exams/submissions",
             data,
             format="json",
         )
@@ -117,3 +118,91 @@ class ExamSubmissionTest(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["score"], 5)
         self.assertEqual(response.data["correct_answer_count"], 1)
+
+    # 잘못된 type으로 제출 시 400 에러
+    def test_submission_exam_invalid_type(self) -> None:
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [
+                {
+                    "question_id": self.question.id,
+                    "type": "invalid_type",
+                    "submitted_answer": "O",
+                }
+            ],
+        }
+        response = self.client.post(
+            "/api/v1/exams/submissions",
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ErrorMessages.INVALID_EXAM_SESSION.value, str(response.data))
+
+    # SHORT_ANSWER인데 문자열이 아닌 경우
+    def test_submission_exam_short_answer_invalid_type(self) -> None:
+        self.question.type = ExamQuestion.TypeChoices.SHORT_ANSWER
+        self.question.save()
+
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [
+                {
+                    "question_id": self.question.id,
+                    "type": "short_answer",
+                    "submitted_answer": 123,  # 숫자라서 실패
+                }
+            ],
+        }
+        response = self.client.post(
+            "/api/v1/exams/submissions",
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ErrorMessages.INVALID_SHORT_ANSWER_TYPE.value, str(response.data))
+
+    # SHORT_ANSWER인데 길이 초과
+    def test_submission_exam_short_answer_too_long(self) -> None:
+        self.question.type = ExamQuestion.TypeChoices.SHORT_ANSWER
+        self.question.save()
+
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [
+                {
+                    "question_id": self.question.id,
+                    "type": "short_answer",
+                    "submitted_answer": "a" * 25,  # 20자 초과
+                }
+            ],
+        }
+        response = self.client.post(
+            "/api/v1/exams/submissions",
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ErrorMessages.INVALID_SHORT_ANSWER_LENGTH.value, str(response.data))
+
+    # answers=[] 제출 시 400 에러
+    def test_submission_exam_empty_answers(self) -> None:
+        data = {
+            "deployment_id": self.deployment.id,
+            "started_at": timezone.now().isoformat(),
+            "cheating_count": 0,
+            "answers": [],
+        }
+        response = self.client.post(
+            "/api/v1/exams/submissions",
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(ErrorMessages.INVALID_EXAM_SESSION.value, str(response.data))
