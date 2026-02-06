@@ -34,8 +34,8 @@ def frontend_redirect(*, provider: str, is_success: bool = True) -> HttpResponse
 
 
 def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -> None:
-    secure = not settings.DEBUG
-    samesite: Literal["Lax", "Strict", "None", False] = "None" if not settings.DEBUG else "Lax"
+    secure = settings.COOKIE_SECURE
+    samesite: Literal["Lax", "Strict", "None", False] = "None" if settings.COOKIE_SECURE else "Lax"
     cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
 
     resp.set_cookie(

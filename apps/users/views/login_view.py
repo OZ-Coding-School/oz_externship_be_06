@@ -84,8 +84,8 @@ access token: 60분
             max_age=7 * 24 * 60 * 60,  # 7일
             domain=cookie_domain,
             httponly=True,
-            secure=not settings.DEBUG,
-            samesite="None" if not settings.DEBUG else "Lax",  # cross-origin 지원
+            secure=settings.COOKIE_SECURE,
+            samesite="None" if settings.COOKIE_SECURE else "Lax",
             path="/",
         )
 
