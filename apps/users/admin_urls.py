@@ -9,6 +9,9 @@ from apps.users.views.admin.admin_account_role_views import (
     AdminAccountRoleUpdateAPIView,
 )
 from apps.users.views.admin.admin_account_views import AdminAccountUpdateAPIView
+from apps.users.views.admin.admin_analysis_reason_views import (
+    WithdrawalReasonMonthlyStatsView,
+)
 from apps.users.views.admin.admin_analytics_views import (
     AdminSignupTrendsAPIView,
     AdminStudentEnrollmentTrendsAPIView,
@@ -59,7 +62,6 @@ urlpatterns = [
     ),
     # Students
     path("students/", AdminStudentListAPIView.as_view(), name="admin-student-list"),
-    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
     path("student-enrollments/", AdminStudentEnrollmentListAPIView.as_view(), name="admin-student-enrollment-list"),
     path(
         "student-enrollments/accept",
@@ -91,4 +93,10 @@ urlpatterns = [
         AdminWithdrawalReasonCountsAPIView.as_view(),
         name="admin-withdrawal-reason-counts",
     ),
+    path(
+        "analytics/withdrawal-reasons/monthly-stats",
+        WithdrawalReasonMonthlyStatsView.as_view(),
+        name="admin-withdrawal-stats",
+    ),
+    path("students/<int:student_id>/scores", AdminStudentScoreAPIView.as_view(), name="admin-student-scores"),
 ]
