@@ -2,9 +2,8 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from django.db import transaction
-from django.utils import timezone
 from rest_framework import status
-from rest_framework.exceptions import APIException, ErrorDetail
+from rest_framework.exceptions import APIException
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
