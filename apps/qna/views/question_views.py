@@ -121,15 +121,15 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     )
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
-        # Request serializer
+        # 쿼리 파라미터 검증
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        question_list = QuestionQueryService.get_question_list(query_serializer.validated_data)
+        queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
         # Response 생성
         return Paginator.get_paginated_data_response(
-            queryset=question_list, request=request, serializer_class=QuestionListSerializer, view=self
+            queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
         )
 
 

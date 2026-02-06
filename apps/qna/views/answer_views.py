@@ -116,7 +116,6 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
-
     serializer_class = AnswerCreateSerializer
 
     # 답변 등록
