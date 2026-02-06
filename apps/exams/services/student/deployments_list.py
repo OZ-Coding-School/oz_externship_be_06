@@ -19,6 +19,7 @@ from django.db.models import (
 )
 from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.db.models.functions import Cast, Coalesce, JSONObject
+
 from apps.courses.models import CohortStudent
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
