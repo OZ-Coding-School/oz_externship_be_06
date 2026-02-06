@@ -8,17 +8,6 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.models import ExamQuestion
 
-
-class BusinessRuleError(Exception):
-    # 일반 비즈니스 규칙 위반 -> 400
-    pass
-
-
-class ConflictRuleError(Exception):
-    # 리소스 충돌 / 상태 충돌 → 409
-    pass
-
-
 @transaction.atomic
 def update_exam_question(
     *,
@@ -59,13 +48,22 @@ def update_exam_question(
     # 2. 타입 변경 시 공통 필수 필드 재입력 강제
     if is_type_changed:
         if "question" not in update_data or not update_data.get("question"):
-            raise BusinessRuleError("문제(question)는 필수입니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_REQUIRED.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         if "point" not in update_data or update_data.get("point") is None:
-            raise BusinessRuleError("배점(point)은 필수입니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_POINT_REQUIRED.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         if "answer" not in update_data or update_data.get("answer") is None:
-            raise BusinessRuleError("정답(answer)은 필수입니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_ANSWER_REQUIRED.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
     # 3. 유형별 정책
     # 다지선다 / 순서정렬
@@ -75,19 +73,31 @@ def update_exam_question(
         ExamQuestion.TypeChoices.ORDERING,
     ]:
         if not options:
-            raise BusinessRuleError("객관식/순서정렬 문제는 options가 필요합니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_OPTIONS_REQUIRED.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         # 순서정렬: 보기 최소 2개
         if q_type == ExamQuestion.TypeChoices.ORDERING and len(options) < 2:
-            raise BusinessRuleError("순서 정렬 문제는 보기 2개 이상이 필요합니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_ORDERING_MIN_OPTIONS.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
     # 빈칸 채우기
     if q_type == ExamQuestion.TypeChoices.FILL_IN_BLANK:
         if not prompt:
-            raise BusinessRuleError("빈칸 채우기 문제는 지문(prompt)이 필요합니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_PROMPT_REQUIRED.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         if blank_count is None or blank_count < 1:
-            raise BusinessRuleError("빈칸 채우기 문제는 blank_count가 1 이상이어야 합니다.")
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_BLANK_COUNT_MIN.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
     # 4. 총점 100점 제한 정책
     exam = instance.exam
@@ -96,7 +106,10 @@ def update_exam_question(
     current_total = sum(q.point for q in questions) - instance.point + point
 
     if current_total > 100:
-        raise ConflictRuleError(ErrorMessages.QUESTION_UPDATE_CONFLICT.value)
+        raise ErrorDetailException(
+            ErrorMessages.QUESTION_UPDATE_CONFLICT.value,
+            status.HTTP_409_CONFLICT,
+        )
 
     instance.type = q_type
     instance.question = question

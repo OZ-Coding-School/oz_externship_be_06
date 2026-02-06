@@ -23,11 +23,7 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.questions_delete import (
     delete_exam_question,
 )
-from apps.exams.services.admin.questions_update import (
-    BusinessRuleError,
-    ConflictRuleError,
-    update_exam_question,
-)
+from apps.exams.services.admin.questions_update import update_exam_question
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -179,9 +175,9 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         try:
             question = ExamQuestion.objects.get(id=question_id)
         except ExamQuestion.DoesNotExist:
-            return Response(
-                {"error_detail": ErrorMessages.QUESTION_UPDATE_NOT_FOUND.value},
-                status=status.HTTP_404_NOT_FOUND,
+            raise ErrorDetailException(
+                ErrorMessages.QUESTION_UPDATE_NOT_FOUND.value,
+                status.HTTP_404_NOT_FOUND,
             )
 
         # 2.Serializer 검증
@@ -192,28 +188,18 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         )
 
         if not serializer.is_valid():
-            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            raise ErrorDetailException(
+                ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value,
+                status.HTTP_400_BAD_REQUEST,
+            )
 
         update_data = serializer.validated_data
 
         # 3.Service 호출
-        try:
-            updated_question = update_exam_question(
-                instance=question,
-                update_data=update_data,
-            )
-        # 409
-        except ConflictRuleError:
-            return Response(
-                {"error_detail": ErrorMessages.QUESTION_UPDATE_CONFLICT.value},
-                status=status.HTTP_409_CONFLICT,
-            )
-        # BusinessRuleError를 다 400으로 반환
-        except BusinessRuleError:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        updated_question = update_exam_question(
+            instance=question,
+            update_data=update_data,
+        )
 
         # 4.응답
         response_serializer = AdminExamQuestionUpdateResponseSerializer(updated_question)
