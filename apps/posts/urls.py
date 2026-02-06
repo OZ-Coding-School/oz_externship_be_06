@@ -8,14 +8,7 @@ from apps.posts.views.comment.comment_list_views import PostCommentListAPIView
 from apps.posts.views.comment.comment_nickname_views import CommentRandomNicknameAPIView
 from apps.posts.views.comment.comment_update_views import PostCommentUpdateAPIView
 from apps.posts.views.post_like_views import PostLikeAPIView
-from apps.posts.views.comment_nickname_views import CommentRandomNicknameAPIView
 from apps.posts.views.post_views import PostDetailView, PostListCreateView
-
-from .views import (
-    PostCategoryListAPIView,
-    PostCommentListCreateAPIView,
-    PostCommentRetrieveUpdateDestroyAPIView,
-)
 
 app_name = "posts"
 
@@ -58,6 +51,5 @@ urlpatterns = [
         name="post-comment-delete",
     ),
     path("categories/", CategoryListView.as_view(), name="post-category-list"),
-    path("categories/", PostCategoryListAPIView.as_view(), name="post-category-list"),
     path("<int:post_id>/like/", PostLikeAPIView.as_view(), name="post-like"),
 ]

@@ -52,7 +52,7 @@ class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
     댓글 생성 시리얼라이저 (요청 바디: content)
     """
 
-    content = serializers.CharField(max_length=500, required=True)  # 댓글 내용
+    content = serializers.CharField(max_length=300, required=True)  # 댓글 내용
 
     def validate_content(self, value: str) -> str:
         # 댓글 내용이 비어있는지 검증합니다.
@@ -84,7 +84,7 @@ class PostCommentUpdateSerializer(serializers.Serializer[PostComment]):
     """
 
     id = serializers.IntegerField(read_only=True)  # 댓글 PK
-    content = serializers.CharField(max_length=500, required=True)  # 수정할 댓글 내용
+    content = serializers.CharField(max_length=300, required=True)  # 수정할 댓글 내용
 
     def validate_content(self, value: str) -> str:
         # 댓글 내용이 비어있는지 검증합니다.
