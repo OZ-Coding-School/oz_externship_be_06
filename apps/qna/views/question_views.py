@@ -29,7 +29,7 @@ from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
-from apps.qna.utils.qna_paginator import QnaPaginator
+from apps.qna.utils.qna_paginator import QuestionListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -132,7 +132,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         question_list = QuestionQueryService.get_question_list(validated_data)
 
         # Response serializer & Paginated response
-        return QnaPaginator.get_paginated_data_response(
+        return Paginator.get_paginated_data_response(
             queryset=question_list, request=request, serializer_class=QuestionListSerializer, view=self
         )
 
