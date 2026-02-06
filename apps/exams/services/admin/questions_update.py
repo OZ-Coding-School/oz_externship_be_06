@@ -48,22 +48,13 @@ def update_exam_question(
     # 2. 타입 변경 시 공통 필수 필드 재입력 강제
     if is_type_changed:
         if "question" not in update_data or not update_data.get("question"):
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_REQUIRED.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_REQUIRED)
 
         if "point" not in update_data or update_data.get("point") is None:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_POINT_REQUIRED.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_POINT_REQUIRED)
 
         if "answer" not in update_data or update_data.get("answer") is None:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_ANSWER_REQUIRED.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_ANSWER_REQUIRED)
 
     # 3. 유형별 정책
     # 다지선다 / 순서정렬
@@ -73,31 +64,19 @@ def update_exam_question(
         ExamQuestion.TypeChoices.ORDERING,
     ]:
         if not options:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_OPTIONS_REQUIRED.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_OPTIONS_REQUIRED)
 
         # 순서정렬: 보기 최소 2개
         if q_type == ExamQuestion.TypeChoices.ORDERING and len(options) < 2:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_ORDERING_MIN_OPTIONS.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_ORDERING_MIN_OPTIONS)
 
     # 빈칸 채우기
     if q_type == ExamQuestion.TypeChoices.FILL_IN_BLANK:
         if not prompt:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_PROMPT_REQUIRED.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_PROMPT_REQUIRED)
 
         if blank_count is None or blank_count < 1:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_BLANK_COUNT_MIN.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_BLANK_COUNT_MIN)
 
     # 4. 총점 100점 제한 정책
     exam = instance.exam
@@ -106,10 +85,7 @@ def update_exam_question(
     current_total = sum(q.point for q in questions) - instance.point + point
 
     if current_total > 100:
-        raise ErrorDetailException(
-            ErrorMessages.QUESTION_UPDATE_CONFLICT.value,
-            status.HTTP_409_CONFLICT,
-        )
+        raise_error(ErrorMessages.QUESTION_UPDATE_CONFLICT)
 
     instance.type = q_type
     instance.question = question

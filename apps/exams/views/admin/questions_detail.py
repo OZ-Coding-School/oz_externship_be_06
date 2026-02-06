@@ -175,10 +175,7 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         try:
             question = ExamQuestion.objects.get(id=question_id)
         except ExamQuestion.DoesNotExist:
-            raise ErrorDetailException(
-                ErrorMessages.QUESTION_UPDATE_NOT_FOUND.value,
-                status.HTTP_404_NOT_FOUND,
-            )
+            raise_error(ErrorMessages.QUESTION_UPDATE_NOT_FOUND)
 
         # 2.Serializer 검증
         serializer = AdminExamQuestionUpdateRequestSerializer(
@@ -188,10 +185,7 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         )
 
         if not serializer.is_valid():
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST)
 
         update_data = serializer.validated_data
 
