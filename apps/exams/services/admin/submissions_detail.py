@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from rest_framework import status
-
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamSubmission
 from apps.exams.services.answers_json import normalize_answers_json
 
@@ -21,7 +19,7 @@ def get_admin_submission_detail(submission_id: int) -> dict[str, Any]:
         .first()
     )
     if submission is None:
-        raise ErrorDetailException(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
+        raise_error(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND)
 
     deployment = submission.deployment
     exam = deployment.exam
