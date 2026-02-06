@@ -7,7 +7,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.services.student.deployments_status import (
     is_deployment_activated,
@@ -25,21 +25,21 @@ class TakeExamResult:
 
 def take_exam(*, user: User, deployment_id: int) -> TakeExamResult:
     if user.role != User.Role.STUDENT:
-        raise ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
+        raise_error(ErrorMessages.FORBIDDEN)
 
     try:
         deployment = ExamDeployment.objects.select_related("exam", "exam__subject").get(id=deployment_id)
     except ExamDeployment.DoesNotExist as exc:
-        raise ErrorDetailException(ErrorMessages.EXAM_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
+        raise_error(ErrorMessages.EXAM_NOT_FOUND)
 
     if not is_deployment_activated(deployment):
-        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
+        raise_error(ErrorMessages.EXAM_NOT_AVAILABLE, status_override=status.HTTP_400_BAD_REQUEST)
 
     now = timezone.now()
     if not is_deployment_opened(deployment, now=now):
-        raise ErrorDetailException(ErrorMessages.EXAM_NOT_AVAILABLE.value, status.HTTP_400_BAD_REQUEST)
+        raise_error(ErrorMessages.EXAM_NOT_AVAILABLE, status_override=status.HTTP_400_BAD_REQUEST)
     if is_deployment_time_closed(deployment, now=now):
-        raise ErrorDetailException(ErrorMessages.EXAM_CLOSED.value, status.HTTP_410_GONE)
+        raise_error(ErrorMessages.EXAM_CLOSED)
 
     submission, _created = ExamSubmission.objects.get_or_create(
         submitter=user,

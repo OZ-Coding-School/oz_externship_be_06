@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers import CheckCodeRequestSerializer
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.student.deployments_status import (
@@ -100,18 +100,12 @@ class CheckCodeAPIView(ExamsExceptionMixin, APIView):
 
         # 참가 코드 검증
         if deployment.access_code != serializer.validated_data["code"]:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_CHECK_CODE_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_CHECK_CODE_REQUEST)
 
         # 권한 확인 (수강생만)
         user = cast(User, request.user)
         if user.role != User.Role.STUDENT:
-            raise ErrorDetailException(
-                ErrorMessages.NO_EXAM_TAKE_PERMISSION.value,
-                status.HTTP_403_FORBIDDEN,
-            )
+            raise_error(ErrorMessages.NO_EXAM_TAKE_PERMISSION)
 
         validate_deployment_active(deployment, now=timezone.now())
 

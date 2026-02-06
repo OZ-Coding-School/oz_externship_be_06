@@ -19,11 +19,9 @@ from django.db.models import (
 )
 from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.db.models.functions import Cast, Coalesce, JSONObject
-from rest_framework import status
-
 from apps.courses.models import CohortStudent
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
 from apps.exams.serializers.student.deployments_list import ExamListQuerySerializer
@@ -118,11 +116,11 @@ class ExamDeploymentListService:
             .first()
         )
         if cohort_id is None:
-            raise ErrorDetailException(ErrorMessages.USER_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
+            raise_error(ErrorMessages.USER_NOT_FOUND)
 
         query_serializer = ExamListQuerySerializer(data=params)
         if not query_serializer.is_valid():
-            raise ErrorDetailException(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value, status.HTTP_404_NOT_FOUND)
+            raise_error(ErrorMessages.INVALID_EXAM_LIST_REQUEST, status_override=404)
 
         return ExamListParams(
             user_id=user_id,

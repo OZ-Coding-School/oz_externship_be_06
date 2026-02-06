@@ -11,29 +11,27 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
-from apps.exams.serializers.admin.deployments_status import (
-    AdminExamDeploymentStatusRequestSerializer,
-    AdminExamDeploymentStatusResponseSerializer,
+from apps.exams.serializers.admin.submissions_delete import (
+    AdminExamSubmissionDeleteResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.services.admin.deployments_status import update_deployment_status
+from apps.exams.services.admin.submissions_delete import delete_exam_submission
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
 @extend_schema(
     tags=["admin_exams"],
-    summary="어드민 배포 상태 변경",
-    description="쪽지시험 배포 상태를 변경합니다.",
-    request=AdminExamDeploymentStatusRequestSerializer,
+    summary="어드민 응시 내역 삭제",
+    description="쪽지시험 응시 내역을 삭제합니다.",
     responses={
-        200: AdminExamDeploymentStatusResponseSerializer,
+        200: AdminExamSubmissionDeleteResponseSerializer,
         400: OpenApiResponse(
             response=ErrorResponseSerializer,
             description="Bad Request",
             examples=[
                 OpenApiExample(
-                    "유효하지 않은 배포 상태 요청",
-                    value={"error_detail": ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value},
+                    "유효하지 않은 응시 내역 삭제 요청",
+                    value={"error_detail": ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST.value},
                 ),
             ],
         ),
@@ -53,7 +51,7 @@ from apps.exams.views.mixins import ExamsExceptionMixin
             examples=[
                 OpenApiExample(
                     "권한 없음",
-                    value={"error_detail": ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value},
+                    value={"error_detail": ErrorMessages.NO_SUBMISSION_DELETE_PERMISSION.value},
                 ),
             ],
         ),
@@ -62,8 +60,8 @@ from apps.exams.views.mixins import ExamsExceptionMixin
             description="Not Found",
             examples=[
                 OpenApiExample(
-                    "배포 정보 없음",
-                    value={"error_detail": ErrorMessages.DEPLOYMENT_NOT_FOUND.value},
+                    "응시 내역 없음",
+                    value={"error_detail": ErrorMessages.SUBMISSION_DELETE_NOT_FOUND.value},
                 ),
             ],
         ),
@@ -72,35 +70,30 @@ from apps.exams.views.mixins import ExamsExceptionMixin
             description="Conflict",
             examples=[
                 OpenApiExample(
-                    "상태 변경 충돌",
-                    value={"error_detail": ErrorMessages.DEPLOYMENT_CONFLICT.value},
+                    "응시 내역 삭제 충돌",
+                    value={"error_detail": ErrorMessages.SUBMISSION_DELETE_CONFLICT.value},
                 ),
             ],
         ),
     },
 )
-class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
-    """어드민 쪽지시험 배포 상태 변경 API."""
+class AdminExamSubmissionDeleteAPIView(ExamsExceptionMixin, APIView):
+    """어드민 쪽지시험 응시 내역 삭제 API."""
 
     permission_classes = [IsAuthenticated, IsStaffRole]
-    serializer_class = AdminExamDeploymentStatusRequestSerializer
+    serializer_class = AdminExamSubmissionDeleteResponseSerializer
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
         if not request.user or not request.user.is_authenticated:
             raise NotAuthenticated()
-        raise PermissionDenied(detail=ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value)
+        raise PermissionDenied(detail=ErrorMessages.NO_SUBMISSION_DELETE_PERMISSION.value)
 
-    def patch(self, request: Request, deployment_id: int) -> Response:
-        serializer = self.serializer_class(data=request.data)
-        if not serializer.is_valid():
-            raise_error(ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST)
+    def delete(self, request: Request, submission_id: int) -> Response:
+        if submission_id <= 0:
+            raise_error(ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST)
 
-        deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
+        result = delete_exam_submission(submission_id)
 
-        response_serializer = AdminExamDeploymentStatusResponseSerializer(
-            {
-                "deployment_id": deployment.id,
-                "status": serializer.validated_data["status"],
-            }
-        )
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
+        serializer = self.serializer_class(data=result)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

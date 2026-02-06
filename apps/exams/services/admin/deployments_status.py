@@ -1,8 +1,7 @@
 from django.db import transaction
-from rest_framework import status
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamDeployment
 
 
@@ -11,7 +10,7 @@ def update_deployment_status(deployment_id: int, status_value: str) -> ExamDeplo
         try:
             deployment = ExamDeployment.objects.select_for_update().get(id=deployment_id)
         except ExamDeployment.DoesNotExist as exc:
-            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND) from exc
+            raise_error(ErrorMessages.DEPLOYMENT_NOT_FOUND)
 
         new_status = (
             ExamDeployment.StatusChoices.ACTIVATED
@@ -22,6 +21,6 @@ def update_deployment_status(deployment_id: int, status_value: str) -> ExamDeplo
         try:
             deployment.save(update_fields=["status"])
         except Exception as exc:
-            raise ErrorDetailException(ErrorMessages.DEPLOYMENT_CONFLICT.value, status.HTTP_409_CONFLICT) from exc
+            raise_error(ErrorMessages.DEPLOYMENT_CONFLICT)
 
     return deployment

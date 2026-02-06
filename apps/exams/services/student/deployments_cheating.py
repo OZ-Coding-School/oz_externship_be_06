@@ -8,7 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.exams.constants import ErrorMessages, ExamStatus
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.services.answers_json import normalize_answers_json
 from apps.exams.services.grading import grade_submission
@@ -34,7 +34,7 @@ def update_cheating_count(
     submit_lock_key = f"exam:submit-lock:{deployment.id}:{user_id}"
 
     if ExamSubmission.objects.filter(submitter_id=user_id, deployment=deployment).exists():
-        raise ErrorDetailException(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED.value, 409)
+        raise_error(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED)
 
     current_count = cache.get(cheating_key)
     ttl_seconds = max(1, deployment.duration_time * 60)

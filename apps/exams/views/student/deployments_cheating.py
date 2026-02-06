@@ -1,5 +1,4 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -7,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
@@ -92,7 +91,7 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
         request_serializer.is_valid(raise_exception=True)
         user_id = user.id
         if user_id is None:
-            raise ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
+            raise_error(ErrorMessages.UNAUTHORIZED)
 
         result = update_cheating_count(
             deployment=deployment,
