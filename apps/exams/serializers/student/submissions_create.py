@@ -9,7 +9,7 @@ from apps.exams.models import ExamQuestion
 class ExamAnswerSerializer(serializers.Serializer[Any]):
     # 개별 문제 답안 구조를 정의, 검증
     question_id = serializers.IntegerField()
-    type = serializers.ChoiceField(choices=ExamQuestion.TypeChoices.choices)
+    type = serializers.CharField()
     submitted_answer = serializers.JSONField()  # 답의 자료형이 제각각이라 JSONField
 
     def validate_type(self, value: str) -> str:
@@ -22,7 +22,16 @@ class ExamAnswerSerializer(serializers.Serializer[Any]):
             "ox": ExamQuestion.TypeChoices.OX,
         }
 
-        return type_map.get(value, value)
+        mapped = type_map.get(value)
+
+        # 모델에 있는 값인지 검증
+        valid_internal_types = {
+            choice for choice, _ in ExamQuestion.TypeChoices.choices
+        }
+        if mapped not in valid_internal_types:
+            raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_SESSION.value)
+
+        return mapped
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if attrs["type"] == ExamQuestion.TypeChoices.SHORT_ANSWER:
