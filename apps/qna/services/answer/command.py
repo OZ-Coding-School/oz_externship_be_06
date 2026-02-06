@@ -160,7 +160,7 @@ class AIAnswerCommandService:
         # 중복 답변 체크 (409)
         if QuestionAIAnswer.objects.filter(question=question).exists():
             raise QnaBaseException(
-                detail=ErrorMessages.CONFLICT_AI_GEN_ANSWER,
+                detail=ErrorMessages.ALREADY_EXISTS_AI_ANSWER,
                 status_code=status.HTTP_409_CONFLICT,
             )
 

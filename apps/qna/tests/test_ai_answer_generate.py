@@ -113,7 +113,7 @@ class AIAnswerGenerateAPITest(TestCase):
         response = self.client.get(self.url, **auth_header)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.CONFLICT_AI_GEN_ANSWER.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value)
 
         # AI API가 호출되지 않았는지 검증
         mock_call_ai.assert_not_called()
