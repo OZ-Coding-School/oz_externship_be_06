@@ -15,6 +15,7 @@ if not SECRET_KEY:
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+
 # Application definition
 DJANGO_APPS = [
     "django.contrib.auth",
@@ -33,6 +34,7 @@ THIRD_PARTY_APPS = [
     "django_filters",
 ]
 
+# 추가한 도메인별 앱을 줄바꿈, 쉼표를 사용하여 나열.
 CUSTOM_APPS: list[str] = [
     "apps.core",
     "apps.courses",
@@ -79,6 +81,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+# Database
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -95,16 +98,16 @@ for key, value in DATABASES.items():
         if not value:
             raise ValueError(f"Database {key} is empty")
 
+# Redis Settings
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 
 if not REDIS_HOST or not REDIS_PORT:
     raise ValueError("REDIS_HOST and REDIS_PORT must be set")
-
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",  # Redis 서버 주소
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -117,9 +120,10 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
-    }
+    },
 }
 
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -135,6 +139,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# djangorestframework-simplejwt 관련 설정
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -145,13 +150,16 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
+# Internationalization
 LANGUAGE_CODE = "ko-KR"
 TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 USE_TZ = True
 
+# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# CORS Settings
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = [
@@ -164,6 +172,7 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+# DRF 관련 설정
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
@@ -173,6 +182,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
+# drf-spectacular 관련 설정
 SPECTACULAR_SETTINGS = {
     "TITLE": "오즈 코딩 스쿨 Backend API",
     "DESCRIPTION": "오즈 코딩 스쿨의 웹 사이트 개발을 위한 API입니다.",
@@ -182,10 +192,10 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_SETTINGS": {
         "dom_id": "#swagger-ui",
         "layout": "BaseLayout",
-        "deepLinking": True,
-        "persistAuthorization": True,
-        "displayOperationId": True,
-        "filter": True,
+        "deepLinking": True,  # API를 클릭할때 마다 SwaggerUI의 url이 변경됩니다. (특정 API url 공유시 유용하기때문에 True설정을 사용합니다)
+        "persistAuthorization": True,  # True 이면 SwaggerUI상 Authorize에 입력된 정보가 새로고침을 하더라도 초기화되지 않습니다.
+        "displayOperationId": True,  # True이면 API의 urlId 값을 노출합니다. 대체로 DRF api name둘과 일치하기때문에 api를 찾을때 유용합니다.
+        "filter": True,  # True 이면 Swagger UI에서 'Filter by Tag' 검색이 가능합니다
     },
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "SECURITY": [
@@ -199,6 +209,7 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
+# SMTP Settings
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
@@ -207,25 +218,31 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+# Twilio SMS Verify Settings
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 TWILIO_VERIFY_SERVICE_SID = os.environ.get("TWILIO_VERIFY_SERVICE_SID")
 
+# Kakao OAuth Settings
 KAKAO_CLIENT_ID = os.getenv("KAKAO_CLIENT_ID")
 KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
+# NAVER OAuth Settings
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET")
 NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
 
+# Social Login Settings
 FRONTEND_SOCIAL_REDIRECT_URL = os.getenv("FRONTEND_SOCIAL_REDIRECT_URL", "http://localhost:3000/auth/callback")
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", None)
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
+# AWS S3 settings
 AWS_S3_REGION = os.getenv("AWS_S3_REGION", "")
 AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID", "")
 AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY", "")
 AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME", "")
 
+# Data Using Settings
 USE_EXAM_MOCK = os.getenv("USE_EXAM_MOCK", "false").lower() == "true"
 USE_QNA_MOCK = os.getenv("USE_QNA_MOCK", "false").lower() == "true"
