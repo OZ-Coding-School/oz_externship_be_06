@@ -77,6 +77,7 @@ class ErrorMessages(str, Enum):
     NOT_FOUND_ANSWER = "해당 답변을 찾을 수 없습니다."
     NOT_FOUND_QUESTION_OR_ANSWER = "해당 질문 또는 답변을 찾을 수 없습니다."
     NOT_FOUND_AI_QUESTION = "질문 데이터를 찾을 수 없습니다."
+    NOT_FOUND_PAGE = "해당 페이지를 찾을 수 없습니다."
     # 404 - Admin
     NOT_FOUND_ADMIN_CATEGORY = "해당 카테고리를 찾을 수 없습니다."
     NOT_FOUND_ADMIN_CATEGORY_PARENT = "부모 카테고리를 찾을 수 없습니다."

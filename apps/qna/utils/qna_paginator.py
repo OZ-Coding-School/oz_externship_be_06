@@ -10,9 +10,9 @@ from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 
 
-class QnAPaginator:
+class QnaPaginator:
     """
-    QnA 전용 페이지네이션 응답 빌더
+    QnA, QnA-Admin 페이지네이션 응답 빌더
     """
 
     @classmethod
@@ -34,7 +34,7 @@ class QnAPaginator:
 
             # 페이지네이션이 적용되지 않는 경우 (전체 반환)
             serializer = serializer_class(queryset, many=True)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except NotFound:
-            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_PAGE, status_code=status.HTTP_404_NOT_FOUND)
