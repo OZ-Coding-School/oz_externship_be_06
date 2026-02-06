@@ -11,8 +11,10 @@ def create_user_completion(
 ) -> ChatbotCompletions:
     """
     USER 메시지 저장 로직
-    - ChatbotCompletions 모델 기준
-    - validation / 질문 제한 정책은 상위 레이어에서 처리
+
+    - 일반 사용자 입력을 ChatbotCompletions로 저장한다.
+    - support 세션의 SYSTEM 프롬프트는 이 로직을 타지 않는다.
+    - 입력 validation 및 질문 제한 정책은 상위 레이어에서 처리한다.
     """
 
     if session is None:
@@ -21,5 +23,5 @@ def create_user_completion(
     return ChatbotCompletions.objects.create(
         session=session,
         content=content,
-        role=ChatbotCompletions.Role.USER,  # "User"
+        role=ChatbotCompletions.Role.USER,
     )
