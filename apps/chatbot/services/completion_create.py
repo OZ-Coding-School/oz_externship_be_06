@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.chatbot.services.session_expire import expire_if_needed
 
 
 def create_user_completion(
@@ -19,6 +20,9 @@ def create_user_completion(
 
     if session is None:
         raise ValidationError("챗봇 세션이 존재하지 않습니다.")
+
+    # 만료 세션 정리
+    expire_if_needed(user=session.user, session=session)
 
     return ChatbotCompletions.objects.create(
         session=session,

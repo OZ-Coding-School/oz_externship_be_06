@@ -13,9 +13,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY environment variable not set")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-
 # Application definition
 DJANGO_APPS = [
     "django.contrib.auth",
@@ -261,3 +258,8 @@ AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME", "")
 # Data Using Settings
 USE_EXAM_MOCK = os.getenv("USE_EXAM_MOCK", "false").lower() == "true"
 USE_QNA_MOCK = os.getenv("USE_QNA_MOCK", "false").lower() == "true"
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Chatbot 세션 만료 기준 시간 (hours)
+CHATBOT_SESSION_EXPIRE_HOURS = 3

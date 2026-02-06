@@ -2,6 +2,7 @@ from django.urls import path
 
 from apps.chatbot.views.completion import ChatbotCompletionCreateAPIView
 from apps.chatbot.views.session import ChatbotSessionAPIView
+from apps.chatbot.views.session_close import ChatbotSessionCloseAPIView
 from apps.chatbot.views.session_delete import ChatbotSessionDeleteAPIView
 from apps.chatbot.views.support import ChatbotSupportSessionCreateAPIView
 
@@ -12,11 +13,17 @@ urlpatterns = [
         ChatbotSessionAPIView.as_view(),
         name="chatbot-session",
     ),
-    # 세션 삭제
+    # 세션 삭제 (명시적 삭제)
     path(
         "sessions/<int:session_id>/",
         ChatbotSessionDeleteAPIView.as_view(),
         name="chatbot-session-delete",
+    ),
+    # 세션 닫기
+    path(
+        "sessions/<int:session_id>/close/",
+        ChatbotSessionCloseAPIView.as_view(),
+        name="chatbot-session-close",
     ),
     # 챗봇 응답 생성 (SSE)
     path(
