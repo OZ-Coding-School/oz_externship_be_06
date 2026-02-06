@@ -104,7 +104,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_admin_can_list_submissions(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -116,7 +116,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_staff_can_list_submissions(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             headers=self._auth_headers(self.staff_user),
         )
 
@@ -125,7 +125,7 @@ class AdminExamSubmissionListAPITest(TestCase):
         self.assertIn("results", data)
 
     def test_returns_401_when_unauthenticated(self) -> None:
-        response = self.client.get("/api/v1/admin/submissions/")
+        response = self.client.get("/api/v1/admin/submissions")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -133,7 +133,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             headers=self._auth_headers(self.student),
         )
 
@@ -145,7 +145,7 @@ class AdminExamSubmissionListAPITest(TestCase):
         ExamSubmission.objects.all().delete()
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -155,7 +155,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_search_keyword_nickname(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"search_keyword": "학생"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -167,7 +167,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_search_keyword_name(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"search_keyword": "학생"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -178,7 +178,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_cohort_id(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"cohort_id": self.cohort.id},
             headers=self._auth_headers(self.admin_user),
         )
@@ -189,7 +189,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_exam_id(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"exam_id": self.exam.id},
             headers=self._auth_headers(self.admin_user),
         )
@@ -200,7 +200,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_invalid_cohort_id(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"cohort_id": "invalid"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -211,7 +211,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_filter_by_invalid_exam_id(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"exam_id": "invalid"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -232,7 +232,7 @@ class AdminExamSubmissionListAPITest(TestCase):
         )
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"sort": "score", "order": "desc"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -254,7 +254,7 @@ class AdminExamSubmissionListAPITest(TestCase):
         )
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"sort": "score", "order": "asc"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -276,7 +276,7 @@ class AdminExamSubmissionListAPITest(TestCase):
         )
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"sort": "started_at", "order": "desc"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -298,7 +298,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             )
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"page": 1, "size": 10},
             headers=self._auth_headers(self.admin_user),
         )
@@ -322,7 +322,7 @@ class AdminExamSubmissionListAPITest(TestCase):
             )
 
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"page": 1, "size": 3},
             headers=self._auth_headers(self.admin_user),
         )
@@ -333,7 +333,7 @@ class AdminExamSubmissionListAPITest(TestCase):
 
     def test_invalid_sort_field_defaults_to_started_at(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/submissions/",
+            "/api/v1/admin/submissions",
             {"sort": "invalid_field"},
             headers=self._auth_headers(self.admin_user),
         )

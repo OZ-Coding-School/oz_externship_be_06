@@ -103,7 +103,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             "duration_time": 50,
         }
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             data=payload,
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -136,7 +136,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
             "duration_time": 90,  # 90분 > 60분
         }
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             data=payload,
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -147,7 +147,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
 
     def test_returns_400_when_invalid_deployment_id(self) -> None:
         response = self.client.patch(
-            "/api/v1/admin/exams/deployments/0/",
+            "/api/v1/admin/exams/deployments/0",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -159,7 +159,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
 
     def test_returns_401_when_unauthenticated(self) -> None:
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
         )
@@ -170,7 +170,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
             headers=self._auth_headers(self.normal_user),
@@ -182,7 +182,7 @@ class AdminExamDeploymentUpdateAPITest(TestCase):
 
     def test_returns_404_when_deployment_missing(self) -> None:
         response = self.client.patch(
-            "/api/v1/admin/exams/deployments/9999/",
+            "/api/v1/admin/exams/deployments/9999",
             data={"open_at": "2025-03-02 10:00:00", "close_at": "2025-03-02 12:00:00", "duration_time": 45},
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),

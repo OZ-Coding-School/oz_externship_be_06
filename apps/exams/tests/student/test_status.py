@@ -81,7 +81,7 @@ class ExamStatusCheckAPITest(TestCase):
 
     def test_status_returns_activated(self) -> None:
         response = self.client.get(
-            f"/api/v1/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/status",
             headers=self._auth_headers(self.student),
         )
 
@@ -95,7 +95,7 @@ class ExamStatusCheckAPITest(TestCase):
         self.deployment.save(update_fields=["status"])
 
         response = self.client.get(
-            f"/api/v1/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/status",
             headers=self._auth_headers(self.student),
         )
 
@@ -106,7 +106,7 @@ class ExamStatusCheckAPITest(TestCase):
 
     def test_status_returns_403_for_non_student(self) -> None:
         response = self.client.get(
-            f"/api/v1/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/status",
             headers=self._auth_headers(self.other_user),
         )
 
@@ -115,7 +115,7 @@ class ExamStatusCheckAPITest(TestCase):
         self.assertEqual(data["error_detail"], ErrorMessages.FORBIDDEN.value)
 
     def test_status_requires_authentication(self) -> None:
-        response = self.client.get(f"/api/v1/exams/deployments/{self.deployment.id}/status/")
+        response = self.client.get(f"/api/v1/exams/deployments/{self.deployment.id}/status")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -123,7 +123,7 @@ class ExamStatusCheckAPITest(TestCase):
 
     def test_status_returns_404_when_deployment_missing(self) -> None:
         response = self.client.get(
-            "/api/v1/exams/deployments/9999/status/",
+            "/api/v1/exams/deployments/9999/status",
             headers=self._auth_headers(self.student),
         )
 
@@ -154,7 +154,7 @@ class ExamStatusCheckAPITest(TestCase):
         )
 
         response = self.client.get(
-            f"/api/v1/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/status",
             headers=self._auth_headers(self.student),
         )
         self.assertEqual(response.status_code, 200)

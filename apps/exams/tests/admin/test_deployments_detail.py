@@ -143,7 +143,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
     def test_admin_can_get_deployment_detail(self) -> None:
         response = self.client.get(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -162,7 +162,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
     def test_returns_400_when_invalid_deployment_id(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/0/",
+            "/api/v1/admin/exams/deployments/0",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -171,7 +171,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
         self.assertEqual(data["error_detail"], ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value)
 
     def test_returns_401_when_unauthenticated(self) -> None:
-        response = self.client.get(f"/api/v1/admin/exams/deployments/{self.deployment.id}/")
+        response = self.client.get(f"/api/v1/admin/exams/deployments/{self.deployment.id}")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -179,7 +179,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.get(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}",
             headers=self._auth_headers(self.normal_user),
         )
 
@@ -189,7 +189,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
 
     def test_returns_404_when_deployment_missing(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/9999/",
+            "/api/v1/admin/exams/deployments/9999",
             headers=self._auth_headers(self.admin_user),
         )
 

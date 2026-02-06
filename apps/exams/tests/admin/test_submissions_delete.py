@@ -93,7 +93,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_admin_can_delete_submission(self) -> None:
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/exams/submissions/{self.submission.id}",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -104,7 +104,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_returns_401_when_unauthenticated(self) -> None:
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/exams/submissions/{self.submission.id}",
         )
 
         self.assertEqual(response.status_code, 401)
@@ -113,7 +113,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.delete(
-            f"/api/v1/admin/exams/submissions/{self.submission.id}/",
+            f"/api/v1/admin/exams/submissions/{self.submission.id}",
             headers=self._auth_headers(self.normal_user),
         )
 
@@ -123,7 +123,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_returns_404_when_submission_missing(self) -> None:
         response = self.client.delete(
-            "/api/v1/admin/exams/submissions/9999/",
+            "/api/v1/admin/exams/submissions/9999",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -133,7 +133,7 @@ class AdminExamSubmissionDeleteAPITest(TestCase):
 
     def test_returns_400_when_invalid_ids(self) -> None:
         response = self.client.delete(
-            "/api/v1/admin/exams/submissions/0/",
+            "/api/v1/admin/exams/submissions/0",
             headers=self._auth_headers(self.admin_user),
         )
 

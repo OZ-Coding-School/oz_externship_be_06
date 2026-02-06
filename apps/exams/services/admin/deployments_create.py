@@ -3,12 +3,11 @@ from typing import Any
 from uuid import uuid4
 
 from django.db import transaction
-from rest_framework import status
 
 from apps.core.utils.base62 import Base62
 from apps.courses.models.cohorts import Cohort
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import Exam, ExamDeployment, ExamQuestion
 
 
@@ -56,7 +55,7 @@ def create_exam_deployment(payload: dict[str, Any]) -> int:
     exam = Exam.objects.filter(id=exam_id).first()
     cohort = Cohort.objects.filter(id=cohort_id).first()
     if not exam or not cohort:
-        raise ErrorDetailException(ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
+        raise_error(ErrorMessages.DEPLOYMENT_TARGET_NOT_FOUND)
 
     with transaction.atomic():
         if ExamDeployment.objects.filter(
@@ -65,7 +64,7 @@ def create_exam_deployment(payload: dict[str, Any]) -> int:
             open_at=open_at,
             close_at=close_at,
         ).exists():
-            raise ErrorDetailException(ErrorMessages.DUPLICATE_DEPLOYMENT.value, status.HTTP_409_CONFLICT)
+            raise_error(ErrorMessages.DUPLICATE_DEPLOYMENT)
 
         snapshot = _build_question_snapshot(exam)
         access_code = _generate_access_code()

@@ -78,7 +78,7 @@ class AdminExamQuestionDeleteAPITest(TestCase):
 
     def test_admin_can_delete_question(self) -> None:
         response = self.client.delete(
-            f"/api/v1/admin/exams/questions/{self.question.id}/",
+            f"/api/v1/admin/exams/questions/{self.question.id}",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -89,7 +89,7 @@ class AdminExamQuestionDeleteAPITest(TestCase):
         self.assertFalse(ExamQuestion.objects.filter(id=self.question.id).exists())
 
     def test_returns_401_when_unauthenticated(self) -> None:
-        response = self.client.delete(f"/api/v1/admin/exams/questions/{self.question.id}/")
+        response = self.client.delete(f"/api/v1/admin/exams/questions/{self.question.id}")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -97,7 +97,7 @@ class AdminExamQuestionDeleteAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.delete(
-            f"/api/v1/admin/exams/questions/{self.question.id}/",
+            f"/api/v1/admin/exams/questions/{self.question.id}",
             headers=self._auth_headers(self.normal_user),
         )
 
@@ -107,7 +107,7 @@ class AdminExamQuestionDeleteAPITest(TestCase):
 
     def test_returns_404_when_question_missing(self) -> None:
         response = self.client.delete(
-            "/api/v1/admin/exams/questions/9999/",
+            "/api/v1/admin/exams/questions/9999",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -117,7 +117,7 @@ class AdminExamQuestionDeleteAPITest(TestCase):
 
     def test_returns_400_when_invalid_ids(self) -> None:
         response = self.client.delete(
-            "/api/v1/admin/exams/questions/0/",
+            "/api/v1/admin/exams/questions/0",
             headers=self._auth_headers(self.admin_user),
         )
 

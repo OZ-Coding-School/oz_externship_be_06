@@ -89,7 +89,7 @@ class ExamCheatingUpdateAPITest(TestCase):
     def test_cheating_increments_count(self) -> None:
         self._clear_cache()
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             headers=self._auth_headers(self.student),
         )
 
@@ -103,12 +103,12 @@ class ExamCheatingUpdateAPITest(TestCase):
         self._clear_cache()
         for _ in range(2):
             self.client.post(
-                f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+                f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
                 headers=self._auth_headers(self.student),
             )
 
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             headers=self._auth_headers(self.student),
         )
 
@@ -121,7 +121,7 @@ class ExamCheatingUpdateAPITest(TestCase):
         cache.set(self._cache_key(), 3, timeout=60)
 
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             data={"answers_json": []},
             content_type="application/json",
             headers=self._auth_headers(self.student),
@@ -142,7 +142,7 @@ class ExamCheatingUpdateAPITest(TestCase):
         )
 
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             headers=self._auth_headers(self.student),
         )
 
@@ -153,7 +153,7 @@ class ExamCheatingUpdateAPITest(TestCase):
     def test_cheating_returns_403_for_non_student(self) -> None:
         self._clear_cache()
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             headers=self._auth_headers(self.other_user),
         )
 
@@ -163,7 +163,7 @@ class ExamCheatingUpdateAPITest(TestCase):
 
     def test_cheating_requires_authentication(self) -> None:
         self._clear_cache()
-        response = self.client.post(f"/api/v1/exams/deployments/{self.deployment.id}/cheating/")
+        response = self.client.post(f"/api/v1/exams/deployments/{self.deployment.id}/cheating")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -172,7 +172,7 @@ class ExamCheatingUpdateAPITest(TestCase):
     def test_cheating_returns_404_when_deployment_missing(self) -> None:
         self._clear_cache()
         response = self.client.post(
-            "/api/v1/exams/deployments/9999/cheating/",
+            "/api/v1/exams/deployments/9999/cheating",
             headers=self._auth_headers(self.student),
         )
 
@@ -186,7 +186,7 @@ class ExamCheatingUpdateAPITest(TestCase):
         self.deployment.save(update_fields=["status"])
 
         response = self.client.post(
-            f"/api/v1/exams/deployments/{self.deployment.id}/cheating/",
+            f"/api/v1/exams/deployments/{self.deployment.id}/cheating",
             headers=self._auth_headers(self.student),
         )
 

@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.submissions_delete import (
     AdminExamSubmissionDeleteResponseSerializer,
 )
@@ -89,10 +89,7 @@ class AdminExamSubmissionDetailAPIView(ExamsExceptionMixin, APIView):
     )
     def get(self, request: Request, submission_id: int) -> Response:
         if submission_id <= 0:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_SUBMISSION_DETAIL_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_SUBMISSION_DETAIL_REQUEST)
 
         payload = get_admin_submission_detail(submission_id)
         serializer = self.serializer_class(data=payload)
@@ -159,10 +156,7 @@ class AdminExamSubmissionDetailAPIView(ExamsExceptionMixin, APIView):
     )
     def delete(self, request: Request, submission_id: int) -> Response:
         if submission_id <= 0:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST)
 
         result = delete_exam_submission(submission_id)
         serializer = AdminExamSubmissionDeleteResponseSerializer(data=result)

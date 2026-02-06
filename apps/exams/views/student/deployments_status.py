@@ -1,5 +1,4 @@
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -7,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
@@ -69,7 +68,7 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
 
         user_id = request.user.id
         if user_id is None:
-            raise ErrorDetailException(ErrorMessages.UNAUTHORIZED.value, status.HTTP_401_UNAUTHORIZED)
+            raise_error(ErrorMessages.UNAUTHORIZED)
 
         auto_submitted = auto_submit_if_overdue(deployment=deployment, user_id=user_id).submitted
         exam_status = ExamStatus.CLOSED if auto_submitted else get_exam_status(deployment)

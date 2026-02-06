@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.deployments_delete import (
     AdminExamDeploymentDeleteResponseSerializer,
 )
@@ -99,10 +99,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
 
     def get(self, request: Request, deployment_id: int) -> Response:
         if deployment_id <= 0:
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST)
 
         payload = get_exam_deployment_detail(deployment_id)
 
@@ -165,17 +162,11 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
     def patch(self, request: Request, deployment_id: int) -> Response:
         """배포 정보 수정 (open_at, close_at, duration_time)."""
         if deployment_id <= 0:
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST)
 
         serializer = AdminExamDeploymentUpdateRequestSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(
-                {"error_detail": ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST)
 
         deployment = update_exam_deployment(deployment_id, serializer.validated_data)
 
@@ -249,13 +240,8 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def delete(self, _request: Request, deployment_id: int) -> Response:
-        # 400
         if deployment_id <= 0:
-
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST)
 
         # service에서 404 / 409 처리
         result = delete_exam_deployment(deployment_id=deployment_id)

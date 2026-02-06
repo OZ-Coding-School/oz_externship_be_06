@@ -5,7 +5,7 @@ from django.db import transaction
 from rest_framework import status
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamQuestion
 
 
@@ -37,10 +37,7 @@ def update_exam_question(
 
     # 빈 payload 체크
     if not update_data:
-        raise ErrorDetailException(
-            detail=ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST.value,
-            http_status=status.HTTP_400_BAD_REQUEST,
-        )
+        raise_error(ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST)
 
     # 1. 최종 상태 계산 (요청 + 기존값)
     q_type = update_data.get("type", instance.type)

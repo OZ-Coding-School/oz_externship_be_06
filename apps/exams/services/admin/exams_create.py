@@ -6,11 +6,10 @@ from uuid import uuid4
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
-from rest_framework import status
 
 from apps.courses.models.subjects import Subject
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models.exams import Exam
 
 
@@ -27,7 +26,7 @@ def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile | None)
     with transaction.atomic():
         subject = Subject.objects.filter(id=subject_id).first()
         if not subject:
-            raise ErrorDetailException(ErrorMessages.SUBJECT_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
+            raise_error(ErrorMessages.SUBJECT_NOT_FOUND)
 
         saved_path = None
         thumbnail_img_url = None
@@ -42,7 +41,7 @@ def create_exam(title: str, subject_id: int, thumbnail_img: UploadedFile | None)
                 },
             )
             if not created:
-                raise ErrorDetailException(ErrorMessages.EXAM_CONFLICT.value, status.HTTP_409_CONFLICT)
+                raise_error(ErrorMessages.EXAM_CONFLICT)
             return exam
         except Exception:
             if saved_path:

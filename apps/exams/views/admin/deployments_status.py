@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusRequestSerializer,
     AdminExamDeploymentStatusResponseSerializer,
@@ -93,10 +93,7 @@ class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
     def patch(self, request: Request, deployment_id: int) -> Response:
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST)
 
         deployment = update_deployment_status(deployment_id, serializer.validated_data["status"])
 

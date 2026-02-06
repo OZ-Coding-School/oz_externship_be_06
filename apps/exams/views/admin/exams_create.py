@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
@@ -37,10 +37,7 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
         serializer = AdminExamCreateRequestSerializer(data=request.data)
 
         if not serializer.is_valid():
-            raise ErrorDetailException(
-                ErrorMessages.INVALID_EXAM_CREATE_REQUEST.value,
-                status.HTTP_400_BAD_REQUEST,
-            )
+            raise_error(ErrorMessages.INVALID_EXAM_CREATE_REQUEST)
 
         data = serializer.validated_data
         exam = create_exam(

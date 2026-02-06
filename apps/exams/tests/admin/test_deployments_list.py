@@ -100,7 +100,7 @@ class AdminExamDeploymentListAPITest(TestCase):
 
     def test_admin_can_list_deployments(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             headers=self._auth_headers(self.admin_user),
         )
 
@@ -112,14 +112,14 @@ class AdminExamDeploymentListAPITest(TestCase):
 
     def test_staff_can_list_deployments(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             headers=self._auth_headers(self.staff_user),
         )
 
         self.assertEqual(response.status_code, 200)
 
     def test_returns_401_when_unauthenticated(self) -> None:
-        response = self.client.get("/api/v1/admin/exams/deployments/")
+        response = self.client.get("/api/v1/admin/exams/deployments")
 
         self.assertEqual(response.status_code, 401)
         data = response.json()
@@ -127,7 +127,7 @@ class AdminExamDeploymentListAPITest(TestCase):
 
     def test_returns_403_for_non_staff(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             headers=self._auth_headers(self.student),
         )
 
@@ -137,7 +137,7 @@ class AdminExamDeploymentListAPITest(TestCase):
 
     def test_filter_by_search_keyword(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             {"search_keyword": "Python"},
             headers=self._auth_headers(self.admin_user),
         )
@@ -168,7 +168,7 @@ class AdminExamDeploymentListAPITest(TestCase):
         )
 
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             {"subject_id": self.subject.id},
             headers=self._auth_headers(self.admin_user),
         )
@@ -197,7 +197,7 @@ class AdminExamDeploymentListAPITest(TestCase):
         )
 
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             {"cohort_id": self.cohort.id},
             headers=self._auth_headers(self.admin_user),
         )
@@ -208,7 +208,7 @@ class AdminExamDeploymentListAPITest(TestCase):
 
     def test_returns_400_for_invalid_sort(self) -> None:
         response = self.client.get(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             {"sort": "invalid"},
             headers=self._auth_headers(self.admin_user),
         )

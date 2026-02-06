@@ -88,7 +88,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -113,7 +113,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
         )
@@ -132,7 +132,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.normal_user),
@@ -152,7 +152,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -172,7 +172,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -203,7 +203,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -223,7 +223,7 @@ class AdminExamDeploymentCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/deployments/",
+            "/api/v1/admin/exams/deployments",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),

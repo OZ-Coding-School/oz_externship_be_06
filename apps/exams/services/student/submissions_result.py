@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from rest_framework import status
-
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamSubmission
 
 
@@ -15,15 +13,12 @@ def get_exam_submission_detail(*, submission_id: int, user_id: int) -> ExamSubmi
         .first()
     )
     if submission is None:
-        raise ErrorDetailException(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value, status.HTTP_404_NOT_FOUND)
+        raise_error(ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND)
 
     if submission.submitter_id != user_id:
-        raise ErrorDetailException(ErrorMessages.FORBIDDEN.value, status.HTTP_403_FORBIDDEN)
+        raise_error(ErrorMessages.FORBIDDEN)
 
     if submission.answers_json == {}:
-        raise ErrorDetailException(
-            ErrorMessages.INVALID_EXAM_SESSION.value,
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise_error(ErrorMessages.INVALID_EXAM_SESSION)
 
     return submission

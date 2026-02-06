@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamSubmission
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
@@ -112,10 +112,7 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
                 cohort_id_int = int(cohort_id)
                 queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
             except ValueError as exc:
-                raise ErrorDetailException(
-                    ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
-                    status.HTTP_400_BAD_REQUEST,
-                ) from exc
+                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
 
         # 필터링: 시험 ID
         if exam_id:
@@ -123,10 +120,7 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
                 exam_id_int = int(exam_id)
                 queryset = queryset.filter(deployment__exam_id=exam_id_int)
             except ValueError as exc:
-                raise ErrorDetailException(
-                    ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value,
-                    status.HTTP_400_BAD_REQUEST,
-                ) from exc
+                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
 
         # 정렬
         valid_sort_fields = ["score", "started_at"]
@@ -142,10 +136,7 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
         # 결과가 비어있을 경우 404 반환
         if not queryset.exists():
-            raise ErrorDetailException(
-                ErrorMessages.SUBMISSION_LIST_NOT_FOUND.value,
-                status.HTTP_404_NOT_FOUND,
-            )
+            raise_error(ErrorMessages.SUBMISSION_LIST_NOT_FOUND)
 
         # 페이지네이션
         paginator = self.pagination_class()
