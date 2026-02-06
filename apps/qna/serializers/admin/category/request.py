@@ -6,7 +6,7 @@ from apps.qna.constants import CATEGORY_LABELS, ErrorMessages
 
 
 # ==============================================================================
-# [POST] Admin Category Create
+# [POST] Admin Category - Create
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
@@ -51,3 +51,21 @@ class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
             )
 
         return attrs
+
+
+# ==============================================================================
+# [GET] Admin Category List - Read
+# /api/v1/admin/qna/categories
+# ==============================================================================
+class AdminCategoryListQuerySerializer(serializers.Serializer[Any]):
+    """
+    어드민 카테고리 목록 조회 쿼리 파라미터 검증 시리얼라이저
+    """
+
+    page = serializers.IntegerField(required=False, default=1, min_value=1)
+    size = serializers.IntegerField(required=False, default=20, min_value=1)
+    search_keyword = serializers.CharField(required=False, allow_blank=True)
+    category_type = serializers.ChoiceField(choices=CATEGORY_LABELS, required=False)
+
+    default_error_message = ErrorMessages.INVALID_ADMIN_CATEGORY_LIST
+
