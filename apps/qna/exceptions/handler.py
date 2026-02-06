@@ -22,31 +22,34 @@ logger = logging.getLogger(__name__)
 # ==============================================================================
 _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # ---------- Question -----------
-    # [POST] - Create
+    # [POST] - 질문 등록
     ("QuestionCreateListAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
     ("QuestionCreateListAPIView", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
     # ---------- Answer -----------
-    # [POST] - Create
+    # [POST] - 답변 등록
     ("AnswerCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
     ("AnswerCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
-    # [POST] Adopt
-    ("AnswerAdoptAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
-    ("AnswerAdoptAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
-    # [PUT] Update - TODO: View 구현 시 클래스명 업데이트 필요
+    # [PUT] 답변 수정
     ("AnswerUpdateAPIView", "PUT", True): ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE,
     ("AnswerUpdateAPIView", "PUT", False): ErrorMessages.FORBIDDEN_ANSWER_UPDATE,
-    # [POST] Create - TODO: View 구현 시 클래스명 업데이트 필요
+    # [POST] 답변 채택
+    ("AnswerAdoptAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
+    ("AnswerAdoptAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
+    # [POST] 답변 댓글 작성
     ("AnswerCommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
     ("AnswerCommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
-    # [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
+    # [GET] AI 답변 생성 및 생성 답변 조회
     ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
     # ---------- Admin Category -----------
-    # [POST] - Create
+    # [POST] - 어드민 카테고리 등록
     ("AdminCategoryCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE,
     ("AdminCategoryCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE,
-    # ---------- Admin Question -----------
-    # [GET] - Detail
+    # [GET] - 어드민 카테고리 목록 조회
+    ("AdminCategoryListAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_LIST,
+    ("AdminCategoryListAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_LIST,
+    # ---------- Admin Question & Answer -----------
+    # [GET] - 어드민 답변 상세 조회
     ("AdminQuestionDetailAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DETAIL,
     ("AdminQuestionDetailAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DETAIL,
 }
