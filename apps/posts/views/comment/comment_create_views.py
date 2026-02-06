@@ -60,13 +60,6 @@ class PostCommentCreateAPIView(CommentBaseView, generics.CreateAPIView[PostComme
         - 유효성 오류 시 400
         - 정상 등록 시 201
         """
-        from apps.posts.exceptions.comment_exceptions import (
-            CommentUnauthorizedException,
-        )
-
-        # 인증 체크: 비인증이면 커스텀 예외
-        if not request.user or not request.user.is_authenticated:
-            raise CommentUnauthorizedException()
         try:
             # post_id로 게시글 객체 조회 (없으면 예외)
             post = self._get_post()
