@@ -69,6 +69,10 @@ class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
 
+        # user가 None이거나 인증되지 않은 경우 예외 발생
+        if user is None or not user.is_authenticated:
+            raise CommentUnauthorizedException()
+
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
             raise CommentNotFoundException()
