@@ -1,6 +1,8 @@
+from typing import Optional
+
 from rest_framework import serializers
 
-from apps.qna.models import Question
+from apps.qna.models import Question, QuestionCategory
 
 
 class AdminQuestionListResponseSerializer(serializers.ModelSerializer[Question]):
@@ -33,7 +35,7 @@ class AdminQuestionListResponseSerializer(serializers.ModelSerializer[Question])
     def get_category_path(self, obj: Question) -> str:
         """대분류 > 중분류 > 소분류 형태의 카테고리 경로 반환"""
         names: list[str] = []
-        category = obj.category
+        category: Optional[QuestionCategory] = obj.category
         while category:
             names.append(category.name)
             category = category.parent

@@ -34,9 +34,7 @@ class AdminQuestionQueryService:
         # 카테고리 필터
         queryset = AdminQuestionQueryService._apply_category_filter(queryset, filters.get("category_id"))
         queryset = AdminQuestionQueryService._apply_search_filter(queryset, filters.get("search_keyword"))
-        queryset = AdminQuestionQueryService._apply_status_filter(
-            queryset, filters.get("answer_status", ANSWER_STATUS_CHOICES[0])
-        )
+        queryset = AdminQuestionQueryService._apply_status_filter(queryset, filters.get("answer_status"))
         queryset = AdminQuestionQueryService._apply_sorting(queryset, filters.get("sort", SORT_CHOICES[0]))
 
         return queryset
@@ -59,7 +57,7 @@ class AdminQuestionQueryService:
         return queryset.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
 
     @staticmethod
-    def _apply_status_filter(queryset: QuerySet[Question], answer_status: str) -> QuerySet[Question]:
+    def _apply_status_filter(queryset: QuerySet[Question], answer_status: str | None) -> QuerySet[Question]:
         """답변 상태에 따른 필터링 (성능 최적화 적용)"""
         # waiting
         if answer_status == ANSWER_STATUS_CHOICES[0]:
@@ -84,4 +82,4 @@ class AdminQuestionQueryService:
         order_by = sort_map.get(sort, sort_map[SORT_CHOICES[0]])
 
         # 목록 조회 시점에 답변 개수가 필요하다면 여기서만 annotate (지연 연산)
-        return queryset.order_by(*order_by)
+        return queryset.annotate(answer_count=Count("answers")).order_by(*order_by)
