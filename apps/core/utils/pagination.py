@@ -42,6 +42,30 @@ class QnaPagination(PageNumberPagination):
         )
 
 
+class AdminQuestionPagination(PageNumberPagination):
+    """
+    어드민 질의응답 목록 조회를 위한 페이지네이션
+    """
+
+    page_query_param = "page"
+    page_size_query_param = "size"
+    page_size = 20
+    max_page_size = 100
+
+    def get_paginated_response(self, data: List[Any]) -> Response:
+        if self.page is None or self.request is None:
+            return Response(data)
+
+        return Response(
+            {
+                "page": self.page.number,
+                "size": self.get_page_size(self.request),
+                "total_count": self.page.paginator.count,
+                "questions": data,
+            }
+        )
+
+
 class AdminExamPagination(PageNumberPagination):
     page_query_param = "page"
     page_size_query_param = "size"

@@ -18,6 +18,25 @@ class IsStudent(BasePermission):
         return True  # user_role이 STUDENT일때 True
 
 
+class IsAdminOrStaff(BasePermission):
+    """
+    관리자 및 스태프 권한 검증
+    - 허용 role: TA, LC, OM, ADMIN
+    """
+
+    ALLOWED_ROLES = {"TA", "LC", "OM", "ADMIN"}
+
+    def has_permission(self, request: Request, view: Any) -> bool:
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        user_role = getattr(request.user, "role", None)
+        if not user_role or str(user_role).upper() not in self.ALLOWED_ROLES:
+            return False
+
+        return True
+
+
 class CanWriteAnswer(BasePermission):
     """
     답변 작성 권한 검증
