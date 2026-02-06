@@ -39,8 +39,8 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     ("CommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
     ("CommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
     # [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
-    ("AnswerAIRequestAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
-    ("AnswerAIRequestAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
+    ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
+    ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
 }
 
 # 기본 폴백 메시지

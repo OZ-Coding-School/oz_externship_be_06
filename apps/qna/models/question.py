@@ -33,7 +33,7 @@ class Question(TimeStampModel):
     @property
     def content_preview(self) -> str:
         """본문의 마크다운/HTML 태그를 제거한 미리보기 텍스트 반환"""
-        limit = 10
+        limit = 50
         return ContentParser.extract_content_preview(self.content, limit) or ""
 
     @property

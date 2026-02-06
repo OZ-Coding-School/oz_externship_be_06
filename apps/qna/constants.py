@@ -82,10 +82,10 @@ class ErrorMessages(str, Enum):
 
     # --- 409 Conflict (Business Logic Collision) ---
     DEFAULT_409 = "409 충돌"
-    ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
+    CONFLICT_AI_GEN_ANSWER = "이미 AI가 답변을 생성했습니다."
     CONFLICT_ANSWER_ADOPT = "이미 채택된 답변이 존재합니다."
     # 409 - Admin
-    ALREADY_EXISTS_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
+    CONFLICT_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
     CONFLICT_ADMIN_DEFAULT_CATEGORY_DELETE = "기본 카테고리는 삭제할 수 없습니다."
 
     # --- 500 Internal Server Error & Unexpected (System) ---
@@ -94,3 +94,4 @@ class ErrorMessages(str, Enum):
     S3_CONNECTION_ERROR = "이미지 서버 연결에 실패했습니다."
     SYSTEM_ERROR = "데이터 처리 중 오류가 발생했습니다."
     DATABASE_ERROR = "데이터베이스 연결 중 오류가 발생했습니다."
+    FAILED_AI_GEN_ANSWER = "AI 답변 생성 중 일시적인 오류가 발생했습니다."
