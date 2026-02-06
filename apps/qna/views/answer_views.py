@@ -115,7 +115,8 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     질문에 대한 답변 등록 API View
     """
 
-    permission_classes = [IsAuthenticated, CanWriteComment]
+    permission_classes = [IsAuthenticated, CanWriteAnswer]
+
     serializer_class = AnswerCreateSerializer
 
     # 답변 등록
@@ -156,17 +157,15 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request, question_id: int) -> Response:
         """답변 생성"""
-        # Request serializer
-        request_serializer = AnswerCreateSerializer(data=request.data)
-        request_serializer.is_valid(raise_exception=True)
-        validated_data = request_serializer.validated_data
+        serializer = AnswerCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        # Service (command)
+        # 서비스 호출
         answer = AnswerCommandService.create_answer(
-            question_id=question_id, author=cast(User, request.user), data=validated_data
+            question_id=question_id, author=cast(User, request.user), data=serializer.validated_data
         )
 
-        # Response serializer & Response
+        # 응답 출력
         response_serializer = AnswerCreateResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -290,5 +289,3 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
 
         response_serializer = AnswerCommentCreateResponseSerializer(comment)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
-
