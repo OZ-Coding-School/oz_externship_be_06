@@ -34,7 +34,7 @@ class AdminExamPresignedUrlAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.url = "/api/v1/admin/exams/presigned-url/thumbnail/"
+        self.url = "/api/v1/admin/exams/presigned-url/thumbnail"
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)

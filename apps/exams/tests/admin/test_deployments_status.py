@@ -84,7 +84,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
         payload = {"status": "deactivated"}
 
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -101,7 +101,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
         payload = {"status": "deactivated"}
 
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status",
             data=json.dumps(payload),
             content_type="application/json",
         )
@@ -114,7 +114,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
         payload = {"status": "deactivated"}
 
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.normal_user),
@@ -128,7 +128,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
         payload = {"status": "deactivated"}
 
         response = self.client.patch(
-            "/api/v1/admin/exams/deployments/9999/status/",
+            "/api/v1/admin/exams/deployments/9999/status",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -142,7 +142,7 @@ class AdminExamDeploymentStatusAPITest(TestCase):
         payload = {"status": "invalid"}
 
         response = self.client.patch(
-            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status/",
+            f"/api/v1/admin/exams/deployments/{self.deployment.id}/status",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),

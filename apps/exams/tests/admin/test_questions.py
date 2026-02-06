@@ -106,7 +106,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -131,7 +131,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -153,7 +153,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
         )
@@ -172,7 +172,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.student),
@@ -192,7 +192,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            "/api/v1/admin/exams/9999/questions/",
+            "/api/v1/admin/exams/9999/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -215,7 +215,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -241,7 +241,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -263,7 +263,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -282,7 +282,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -301,7 +301,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -321,7 +321,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -341,7 +341,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -361,7 +361,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -382,7 +382,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -401,7 +401,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
@@ -420,7 +420,7 @@ class AdminExamQuestionCreateAPITest(TestCase):
         }
 
         response = self.client.post(
-            f"/api/v1/admin/exams/{self.exam.id}/questions/",
+            f"/api/v1/admin/exams/{self.exam.id}/questions",
             data=json.dumps(payload),
             content_type="application/json",
             headers=self._auth_headers(self.admin_user),
