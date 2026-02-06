@@ -12,6 +12,18 @@ class ExamAnswerSerializer(serializers.Serializer[Any]):
     type = serializers.ChoiceField(choices=ExamQuestion.TypeChoices.choices)
     submitted_answer = serializers.JSONField()  # 답의 자료형이 제각각이라 JSONField
 
+    def validate_type(self, value: str) -> str:
+        type_map = {
+            "multiple_choice": ExamQuestion.TypeChoices.MULTI_SELECT,
+            "single_choice": ExamQuestion.TypeChoices.SINGLE_CHOICE,
+            "fill_blank": ExamQuestion.TypeChoices.FILL_IN_BLANK,
+            "ordering": ExamQuestion.TypeChoices.ORDERING,
+            "short_answer": ExamQuestion.TypeChoices.SHORT_ANSWER,
+            "ox": ExamQuestion.TypeChoices.OX,
+        }
+
+        return type_map.get(value, value)
+
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         if attrs["type"] == ExamQuestion.TypeChoices.SHORT_ANSWER:
             submitted_answer = attrs.get("submitted_answer")
