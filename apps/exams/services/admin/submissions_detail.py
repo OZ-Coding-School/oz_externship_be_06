@@ -28,7 +28,9 @@ def get_admin_submission_detail(submission_id: int) -> dict[str, Any]:
     cohort = deployment.cohort
     course = cohort.course
 
-    questions_snapshot = deployment.questions_snapshot_json or []
+    questions_snapshot = deployment.questions_snapshot_json
+    if not isinstance(questions_snapshot, list):
+        questions_snapshot = []
     submitted_map = _build_submitted_map(submission.answers_json)
 
     questions: list[dict[str, Any]] = []
@@ -77,7 +79,7 @@ def get_admin_submission_detail(submission_id: int) -> dict[str, Any]:
         "result": {
             "score": submission.score,
             "correct_answer_count": submission.correct_answer_count,
-            "total_question_count": len(questions_snapshot),
+            "total_question_count": len(questions),
             "cheating_count": submission.cheating_count,
             "elapsed_time": elapsed_time,
         },
