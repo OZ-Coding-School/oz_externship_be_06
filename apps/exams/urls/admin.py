@@ -14,7 +14,7 @@ from apps.exams.views.admin.exams_router import AdminExamRouterAPIView
 from apps.exams.views.admin.presigned_url_view import ExamPresignedUrlAPIView
 from apps.exams.views.admin.questions_create import AdminExamQuestionCreateAPIView
 from apps.exams.views.admin.questions_detail import AdminExamQuestionDetailAPIView
-from apps.exams.views.admin.submissions_delete import AdminExamSubmissionDeleteAPIView
+from apps.exams.views.admin.submissions_detail import AdminExamSubmissionDetailAPIView
 from apps.exams.views.admin.submissions_list import AdminExamSubmissionListAPIView
 
 urlpatterns = [
@@ -28,7 +28,6 @@ urlpatterns = [
         name="exam-presigned-url",
     ),
     path("submissions/", AdminExamSubmissionListAPIView.as_view(), name="admin-exam-submission-list"),
-    # put + delete
     path(
         "exams/questions/<int:question_id>/",
         AdminExamQuestionDetailAPIView.as_view(),
@@ -47,7 +46,7 @@ urlpatterns = [
     ),
     path(
         "exams/submissions/<int:submission_id>/",
-        AdminExamSubmissionDeleteAPIView.as_view(),
-        name="admin-exam-submission-delete",
+        AdminExamSubmissionDetailAPIView.as_view(),
+        name="admin-exam-submission-detail",
     ),
 ]
