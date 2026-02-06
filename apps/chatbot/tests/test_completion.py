@@ -13,8 +13,8 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.services.completion_create import create_user_completion
+from apps.chatbot.services.support_completion_policy import validate_user_prompt_policy
 from apps.qna.models import Question, QuestionCategory
-from apps.chatbot.services.completion_policy import validate_user_prompt_policy
 
 User = get_user_model()
 
@@ -79,7 +79,10 @@ class ChatbotCompletionTest(TestCase):
 
     def test_validate_user_prompt_policy(self) -> None:
         # 예외가 발생하지 않으면 성공
-        validate_user_prompt_policy(session=self.session)
+        validate_user_prompt_policy(
+            session=self.session,
+            content="hi",
+        )
 
     def test_completion_view_unauthenticated(self) -> None:
         from apps.chatbot.views.completion import ChatbotCompletionCreateAPIView
@@ -188,12 +191,9 @@ class ChatbotCompletionTest(TestCase):
         self.assertEqual(
             ChatbotCompletions.objects.filter(session=self.session).count(),
             2,
-            question=self.question,
-            title="테스트 세션",
-            using_model="GEMINI",
         )
 
-    def test_create_user_completion_success(self) -> None:
+    def test_create_user_completion_success_korean_message(self) -> None:
         completion = create_user_completion(
             session=self.session,
             content="테스트 메시지",
