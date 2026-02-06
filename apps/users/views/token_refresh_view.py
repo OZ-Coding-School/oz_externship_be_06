@@ -56,8 +56,8 @@ class TokenRefreshAPIView(APIView):
             max_age=60 * 60,  # 60분
             domain=cookie_domain,
             httponly=False,
-            secure=not settings.DEBUG,
-            samesite="None" if not settings.DEBUG else "Lax",  # cross-origin 지원
+            secure=settings.COOKIE_SECURE,
+            samesite="None" if settings.COOKIE_SECURE else "Lax",
         )
 
         return response

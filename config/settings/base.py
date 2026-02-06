@@ -233,6 +233,7 @@ NAVER_REDIRECT_URI = os.getenv("NAVER_REDIRECT_URI")
 # Social Login Settings
 FRONTEND_SOCIAL_REDIRECT_URL = os.getenv("FRONTEND_SOCIAL_REDIRECT_URL", "http://localhost:3000/auth/callback")
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", None)
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 
 # AWS S3 settings
 AWS_S3_REGION = os.getenv("AWS_S3_REGION", "")
