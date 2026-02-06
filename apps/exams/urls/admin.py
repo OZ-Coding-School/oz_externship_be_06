@@ -34,6 +34,7 @@ urlpatterns = [
         name="admin-exam-question-detail",
     ),
     path("exams/deployments/", AdminExamDeploymentRouterAPIView.as_view(), name="admin-exam-deployments"),
+    # detail + delete
     path(
         "exams/deployments/<int:deployment_id>/",
         AdminExamDeploymentDetailAPIView.as_view(),
