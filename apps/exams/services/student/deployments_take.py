@@ -100,7 +100,7 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
                 "blank_count": question_data.get("blank_count") if question_type == "fill_blank" else None,
                 "options": (
                     question_data.get("options")
-                    if question_type in ["multiple_choice", "ordering", "single_choice"]
+                    if question_type in ["multiple_choice", "ordering", "single_choice", "ox"]
                     else None
                 ),
                 "answer_input": None,
