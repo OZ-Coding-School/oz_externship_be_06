@@ -9,7 +9,6 @@ from apps.posts.models.post_category import PostCategory
 from apps.posts.models.post_comment import PostComment
 from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.comment_serializers import PostCommentListSerializer
-from apps.posts.services.comment.comment_list_services import list_comments
 
 
 class CommentListSerializerTests(TestCase):
@@ -75,60 +74,6 @@ class CommentListSerializerTests(TestCase):
         self.assertEqual(len(data["tagged_users"]), 1)
         self.assertEqual(data["tagged_users"][0]["id"], TaggedUser.id)
         self.assertEqual(data["tagged_users"][0]["nickname"], TaggedUser.nickname)
-
-
-class CommentListServiceTests(TestCase):
-    """댓글 리스트 서비스 함수 테스트"""
-
-    def setUp(self) -> None:
-        User = get_user_model()
-        self.user = User.objects.create_user(
-            email="testuser@example.com",
-            password="testpass",
-            name="테스트유저",
-            nickname="testuser",
-            phone_number="010-1234-5678",
-            gender="MALE",
-            birthday="2000-01-01",
-        )
-        self.category = PostCategory.objects.create(name="test category")
-        self.post = Post.objects.create(
-            author=self.user,
-            title="test post",
-            content="test content",
-            category=self.category,
-        )
-        self.comment = PostComment.objects.create(
-            post=self.post,
-            author=self.user,
-            content="comment content",
-        )
-
-    def test_list_comments_with_invalid_post_id(self) -> None:
-        """존재하지 않는 post_id로 조회 시 빈 리스트 반환"""
-        comments = list_comments(99999999)
-        self.assertEqual(list(comments), [])
-
-    def test_list_comments_returns_comments_for_post(self) -> None:
-        """게시글 id로 댓글 리스트 반환"""
-        PostComment.objects.create(post=self.post, author=self.user, content="comment 2")
-        comments = list(list_comments(self.post.id))
-        self.assertEqual(len(comments), 2)
-        self.assertTrue(all(c.post == self.post for c in comments))
-        contents = [c.content for c in comments]
-        self.assertIn("comment content", contents)
-        self.assertIn("comment 2", contents)
-
-    def test_list_comments_empty_for_no_comments(self) -> None:
-        """댓글이 없는 게시글 id로 빈 리스트 반환"""
-        new_post = Post.objects.create(
-            author=self.user,
-            title="no comment post",
-            content="no comment content",
-            category=self.category,
-        )
-        comments = list(list_comments(new_post.id))
-        self.assertEqual(comments, [])
 
 
 class PostCommentListAPITestCase(APITestCase):

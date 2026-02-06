@@ -35,9 +35,9 @@ class CommentSelectorTests(TestCase):
 
     def test_get_comments_for_post_not_found(self) -> None:
         """없는 게시글 PK로 댓글 목록 조회 시 예외 발생"""
-        from apps.posts.exceptions.comment_exceptions import CommentNotFoundException
+        from apps.posts.exceptions.post_exceptions import PostNotFoundException
 
-        with self.assertRaises(CommentNotFoundException):
+        with self.assertRaises(PostNotFoundException):
             CommentSelector.get_comments_for_post(99999999)
 
     def test_get_comment_by_id_success(self) -> None:

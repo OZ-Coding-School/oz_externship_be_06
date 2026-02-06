@@ -13,7 +13,6 @@ from apps.posts.models.post_comment_tags import PostCommentTag
 from apps.posts.serializers.post_serializers import PostAuthorSerializer
 from apps.posts.services.comment.comment_create_services import create_comment
 from apps.posts.services.comment.comment_delete_services import delete_comment
-from apps.posts.services.comment.comment_list_services import list_comments
 from apps.posts.services.comment.comment_update_services import update_comment
 
 
@@ -69,8 +68,6 @@ class PostCommentCreateSerializer(serializers.Serializer[PostComment]):
         # 댓글 객체를 생성합니다. request의 user와 post를 context에서 받아 사용합니다.
         request = self.context.get("request")
         user = getattr(request, "user", None) if request is not None else None
-        if request is None or not user or not user.is_authenticated:
-            raise CommentUnauthorizedException()
 
         context_post = self.context.get("post")
         if context_post is None or not isinstance(context_post, Post):
