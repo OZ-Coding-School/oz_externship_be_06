@@ -22,12 +22,14 @@ class CommentSelector:
         Returns:
             QuerySet[PostComment]: 해당 게시글의 댓글 목록 쿼리셋
         Raises:
-            CommentNotFoundException: 게시글이 존재하지 않을 때
+            PostNotFoundException: 게시글이 존재하지 않을 때
         """
+        from apps.posts.exceptions.post_exceptions import PostNotFoundException
+
         try:
             post = Post.objects.get(pk=post_id)
         except Post.DoesNotExist:
-            raise CommentNotFoundException()
+            raise PostNotFoundException()
         return (
             PostComment.objects.filter(post=post)
             .select_related("author")
