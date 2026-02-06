@@ -77,6 +77,7 @@ class ErrorMessages(str, Enum):
     # 404 - Admin
     NOT_FOUND_ADMIN_CATEGORY = "해당 카테고리를 찾을 수 없습니다."
     NOT_FOUND_ADMIN_CATEGORY_PARENT = "부모 카테고리를 찾을 수 없습니다."
+    NOT_FOUND_ADMIN_QUESTION_DETAIL = "해당 질문을 찾을 수 없습니다."
     NOT_FOUND_ADMIN_QUESTION = "삭제할 질문을 찾을 수 없습니다."
     NOT_FOUND_ADMIN_ANSWER = "삭제할 답변을 찾을 수 없습니다."
 
