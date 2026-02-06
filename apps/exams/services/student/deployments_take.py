@@ -98,7 +98,11 @@ def build_take_exam_response(*, result: TakeExamResult) -> dict[str, Any]:
                 "point": question_data.get("point", 0),
                 "prompt": question_data.get("prompt"),
                 "blank_count": question_data.get("blank_count") if question_type == "fill_blank" else None,
-                "options": question_data.get("options") if question_type in ["multiple_choice", "ordering"] else None,
+                "options": (
+                    question_data.get("options")
+                    if question_type in ["multiple_choice", "ordering", "single_choice"]
+                    else None
+                ),
                 "answer_input": None,
             }
 
