@@ -214,11 +214,11 @@ class SuccessResponseExamples:
                     "title": "Django ORM 역참조는 어떻게 사용하나요?",
                     "category_path": "백엔드 > 웹프레임워크 > Django",
                     "content_preview": "ForeignKey에 related_name을 지정하면 역참조가 가능합니다...",
-                    "nickname": "한율_회장",
+                    "nickname": "김동석",
                     "view_count": 132,
                     "has_answer": True,
-                    "created_at": "2025-03-01 10:03:21",
-                    "updated_at": "2025-03-02 11:20:10",
+                    "created_at": "2026-02-01 10:03:21",
+                    "updated_at": "2026-02-02 11:20:10",
                 }
             ],
         },
@@ -519,17 +519,17 @@ class ErrorResponseExamples:
 
     # --- ADMIN_QUESTION_LIST ---
     ADMIN_QUESTION_LIST_400 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 잘못된 요청",
+        name="어드민 질의응답 목록 조회 실패 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )
     ADMIN_QUESTION_LIST_401 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 인증 실패",
+        name="어드민 질의응답 목록 조회 실패 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )
     ADMIN_QUESTION_LIST_403 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 권한 없음",
+        name="어드민 질의응답 목록 조회 실패 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )

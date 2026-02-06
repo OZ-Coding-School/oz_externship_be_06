@@ -1,5 +1,8 @@
 from enum import Enum
 
+ANSWER_STATUS_CHOICES = ("waiting", "answered")
+SORT_CHOICES = ("latest", "oldest", "most_views")
+
 
 class ErrorMessages(str, Enum):
     """
@@ -79,6 +82,7 @@ class ErrorMessages(str, Enum):
     NOT_FOUND_ADMIN_CATEGORY_PARENT = "부모 카테고리를 찾을 수 없습니다."
     NOT_FOUND_ADMIN_QUESTION = "삭제할 질문을 찾을 수 없습니다."
     NOT_FOUND_ADMIN_ANSWER = "삭제할 답변을 찾을 수 없습니다."
+    NOT_FOUND_PAGE = "해당 페이지를 찾을 수 없습니다."
 
     # --- 409 Conflict (Business Logic Collision) ---
     DEFAULT_409 = "409 충돌"
