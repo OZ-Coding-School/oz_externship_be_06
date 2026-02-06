@@ -13,6 +13,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY environment variable not set")
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 
 # Application definition
 DJANGO_APPS = [
