@@ -38,17 +38,17 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     질문 등록 및 목록 조회 API View
     """
 
-    serializer_classes = {
-        "GET": QuestionQuerySerializer,
-        "POST": QuestionCreateSerializer,
-    }
-
     def get_permissions(self) -> list[Any]:
         if self.request.method == "POST":
             return [IsAuthenticated(), IsStudent()]
         elif self.request.method == "GET":
             return [AllowAny()]
-        return [AllowAny()]
+        return []
+
+    serializer_classes = {
+        "GET": QuestionQuerySerializer,
+        "POST": QuestionCreateSerializer,
+    }
 
     # 질문 등록
     # [POST] /api/v1/qna/questions
@@ -142,7 +142,10 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     질문 상세 조회 API View
     """
 
-    permission_classes = [AllowAny]
+    def get_permissions(self) -> list[Any]:
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return []
 
     # 질의응답 상세 조회
     # [GET] /api/v1/qna/questions/{question_id}
@@ -182,7 +185,10 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
     질의응답 카테고리 전체 계층 구조 조회 API
     """
 
-    permission_classes = [AllowAny]
+    def get_permissions(self) -> list[Any]:
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return []
 
     # 카테고리 목록 조회
     # [GET] /api/v1/qna/categories
