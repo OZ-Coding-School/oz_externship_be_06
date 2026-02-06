@@ -29,7 +29,7 @@ from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.model_types import User
 from apps.qna.utils.permissions import IsStudent
-from apps.qna.utils.qna_paginator import QnAPaginator
+from apps.qna.utils.qna_paginator import QnaPaginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -46,6 +46,8 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     def get_permissions(self) -> list[Any]:
         if self.request.method == "POST":
             return [IsAuthenticated(), IsStudent()]
+        elif self.request.method == "GET":
+            return [AllowAny()]
         return [AllowAny()]
 
     # 질문 등록
@@ -81,15 +83,15 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request) -> Response:
         """질문 생성"""
-        serializer = QuestionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # Request serializer
+        request_serializer = QuestionCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+        validated_data = request_serializer.validated_data
 
-        # 서비스 호출
-        question = QuestionCommandService.create_question(
-            author=cast(User, request.user), data=serializer.validated_data
-        )
+        # Service (command)
+        question = QuestionCommandService.create_question(author=cast(User, request.user), data=validated_data)
 
-        # 응답 출력
+        # Response serializer & Response
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -121,15 +123,17 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     )
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
-        # 쿼리 파라미터 검증
-        query_serializer = QuestionQuerySerializer(data=request.query_params)
-        query_serializer.is_valid(raise_exception=True)
+        # Request serializer
+        request_serializer = QuestionQuerySerializer(data=request.query_params)
+        request_serializer.is_valid(raise_exception=True)
+        validated_data = request_serializer.validated_data
 
-        queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
+        # Service (query)
+        question_list = QuestionQueryService.get_question_list(validated_data)
 
-        # Response 생성
-        return QnAPaginator.get_paginated_data_response(
-            queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
+        # Response serializer & Paginated response
+        return QnaPaginator.get_paginated_data_response(
+            queryset=question_list, request=request, serializer_class=QuestionListSerializer, view=self
         )
 
 
@@ -165,11 +169,12 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         tags=["qna"],
     )
     def get(self, request: Request, question_id: int) -> Response:
+        # Service (query)
         question = QuestionQueryService.get_question_detail(question_id)
 
-        serializer = QuestionDetailSerializer(cast(Any, question))
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Response serializer & Response
+        response_serializer = QuestionDetailSerializer(cast(Any, question))
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class QuestionCategoryTreeAPIView(QnaBaseAPIView):
@@ -197,8 +202,9 @@ class QuestionCategoryTreeAPIView(QnaBaseAPIView):
         tags=["qna"],
     )
     def get(self, request: Request) -> Response:
+        # Service (query)
         categories_tree = QuestionQueryService.get_question_category_tree()
 
+        # Response serializer & Response
         response_serializer = QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
-
         return Response(response_serializer.data)
