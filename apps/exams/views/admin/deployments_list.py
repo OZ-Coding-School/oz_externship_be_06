@@ -8,7 +8,6 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
-from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -18,7 +17,7 @@ from rest_framework.views import APIView
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.deployments_list import (
     AdminExamDeploymentListItemSerializer,
 )
@@ -102,7 +101,7 @@ class AdminExamDeploymentListAPIView(ExamsExceptionMixin, APIView):
                 order=qp.get("order"),
             )
         except InvalidAdminDeploymentListParams as exc:
-            raise ErrorDetailException(str(exc), status.HTTP_400_BAD_REQUEST) from exc
+            raise_error(ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST)
 
         queryset = AdminDeploymentListService.get_queryset(params)
 

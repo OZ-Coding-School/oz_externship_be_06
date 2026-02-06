@@ -25,7 +25,6 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
-from apps.exams.serializers.student.deployments_list import ExamListQuerySerializer
 
 
 @dataclass(frozen=True)
@@ -110,6 +109,7 @@ class ExamDeploymentListService:
     # 코호트 조회 + status 파라미터 검증을 한 번에 수행.
     @staticmethod
     def _validate_request(user_id: int, params: dict[str, str]) -> ExamListParams:
+        allowed_status = {"all", "done", "pending"}
         cohort_id = (
             CohortStudent.objects.filter(user_id=user_id)
             .order_by("created_at")
@@ -119,14 +119,14 @@ class ExamDeploymentListService:
         if cohort_id is None:
             raise_error(ErrorMessages.USER_NOT_FOUND)
 
-        query_serializer = ExamListQuerySerializer(data=params)
-        if not query_serializer.is_valid():
+        status = params.get("status") or "all"
+        if status not in allowed_status:
             raise_error(ErrorMessages.INVALID_EXAM_LIST_REQUEST, status_override=404)
 
         return ExamListParams(
             user_id=user_id,
             cohort_id=int(cohort_id),
-            status=str(query_serializer.validated_data["status"]),
+            status=status,
         )
 
     # 검증된 파라미터로 학생 시험 목록 조회용 QuerySet 구성.
