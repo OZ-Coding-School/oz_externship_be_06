@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.exams.constants import ErrorMessages
+from apps.exams.error_map import raise_error
 from apps.exams.models import ExamQuestion
 
 
@@ -22,12 +23,10 @@ class ExamAnswerSerializer(serializers.Serializer[Any]):
             "ox": ExamQuestion.TypeChoices.OX,
         }
 
-        mapped = type_map.get(value)
+        mapped = type_map.get(value.lower())
 
         # 모델에 있는 값인지 검증
-        valid_internal_types = {
-            choice for choice, _ in ExamQuestion.TypeChoices.choices
-        }
+        valid_internal_types = {choice for choice, _ in ExamQuestion.TypeChoices.choices}
         if mapped not in valid_internal_types:
             raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_SESSION.value)
 
@@ -49,7 +48,13 @@ class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
     deployment_id = serializers.IntegerField()
     started_at = serializers.DateTimeField()
     cheating_count = serializers.IntegerField(default=0)
-    answers = ExamAnswerSerializer(many=True, allow_empty=False)  # 아예 하나도 안푼것에 대한 방지
+    answers = ExamAnswerSerializer(many=True)
+
+    # answer이 비었을 때
+    def validate_answers(self, value: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not value:
+            raise_error(ErrorMessages.INVALID_EXAM_SESSION)
+        return value
 
 
 class ExamSubmissionCreateResponseSerializer(serializers.Serializer[Any]):
