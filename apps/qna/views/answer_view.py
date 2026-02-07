@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
+    QueryParameterExamples,
     RequestBodyExamples,
 )
 from apps.qna.docs.api_response_examples import (
@@ -15,18 +16,23 @@ from apps.qna.docs.api_response_examples import (
     SuccessResponseExamples,
 )
 from apps.qna.models import QuestionAIAnswer
-from apps.qna.serializers.answer.request import AnswerCreateSerializer
+from apps.qna.serializers.answer.request import (
+    AnswerCommentCreateSerializer,
+    AnswerCreateSerializer,
+)
 from apps.qna.serializers.answer.response import (
     AIAnswerResponseSerializer,
     AnswerAdoptResponseSerializer,
+    AnswerCommentCreateResponseSerializer,
     AnswerCreateResponseSerializer,
 )
 from apps.qna.services.answer.command import (
     AIAnswerCommandService,
     AnswerCommandService,
+    AnswerCommentCommandService,
 )
 from apps.qna.utils.model_types import User
-from apps.qna.utils.permissions import CanWriteAnswer
+from apps.qna.utils.permissions import CanWriteAnswer, CanWriteComment
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -145,6 +151,65 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
         # 응답 출력
         response_serializer = AnswerAdoptResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
+class AnswerCommentCreateAPIView(QnaBaseAPIView):
+    """
+    답변에 대한 댓글 등록 API View
+    """
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), CanWriteAnswer()]
+
+    # 댓글 등록
+    # [POST] /api/v1/qna/answers/{answer_id}/comments
+    @extend_schema(
+        tags=["qna"],
+        summary="답변 댓글 등록 API",
+        description=ApiDescriptions.ANSWER_COMMENT_CREATE,
+        request=AnswerCommentCreateSerializer,
+        examples=[RequestBodyExamples.ANSWER_COMMENT_CREATE],
+        responses={
+            201: OpenApiResponse(
+                description="Created",
+                response=AnswerCommentCreateResponseSerializer,
+                examples=[SuccessResponseExamples.ANSWER_COMMENT_CREATE],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_400],
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_401],
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_403],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_404],
+            ),
+        },
+    )
+    def post(self, request: Request, answer_id: int) -> Response:
+        """댓글 생성"""
+        serializer = AnswerCommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        comment = AnswerCommentCommandService.create_comment(
+            answer_id=answer_id,
+            author=self.request_user,
+            content=serializer.validated_data["content"],
+        )
+
+        response_serializer = AnswerCommentCreateResponseSerializer(comment)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):

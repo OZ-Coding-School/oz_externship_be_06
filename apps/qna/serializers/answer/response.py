@@ -63,7 +63,6 @@ class AIAnswerResponseSerializer(serializers.Serializer[Any]):
 
 
 # ==============================================================================
-# [ACTION RESPONSES] POST Success
 # [POST] Answer Create
 # /api/v1/qna/questions/{id}/answers
 # ==============================================================================
@@ -98,3 +97,22 @@ class AnswerAdoptResponseSerializer(serializers.ModelSerializer[Answer]):
     class Meta:
         model = Answer
         fields = ["question_id", "answer_id", "is_adopted"]
+
+
+# ==============================================================================
+# [POST] Answer Comment Create
+# /api/v1/qna/answers/{answer_id}/comments
+# ==============================================================================
+class AnswerCommentCreateResponseSerializer(serializers.ModelSerializer[AnswerComment]):
+    """
+    답변 댓글 등록 응답 시리얼라이저
+    """
+
+    comment_id = serializers.IntegerField(source="id", help_text="댓글 ID")
+    answer_id = serializers.IntegerField(source="answer.id", help_text="답변 ID")
+    author_id = serializers.IntegerField(source="author.id", help_text="작성자 ID")
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", help_text="생성 일시")
+
+    class Meta:
+        model = AnswerComment
+        fields = ["comment_id", "answer_id", "author_id", "created_at"]
