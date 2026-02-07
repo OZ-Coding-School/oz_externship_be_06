@@ -446,22 +446,22 @@ class ErrorResponseExamples:
 
     # --- ANSWER_COMMENT_CREATE ---
     ANSWER_COMMENT_CREATE_400 = OpenApiExample(
-        name="답변 댓글 등록 실패 response body 예시 - 글자 수 초과",
-        value={"error_detail": ErrorMessages.INVALID_COMMENT_LENGTH.value},
+        name="답변 댓글 등록 실패 응답 예시 - 글자 수 초과",
+        value={"error_detail": ErrorMessages.INVALID_COMMENT_LENGTH_LIMIT.value},
         response_only=True,
     )
     ANSWER_COMMENT_CREATE_401 = OpenApiExample(
-        name="답변 댓글 등록 실패 response body 예시 - 인증 실패",
+        name="답변 댓글 등록 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_COMMENT_CREATE.value},
         response_only=True,
     )
     ANSWER_COMMENT_CREATE_403 = OpenApiExample(
-        name="답변 댓글 등록 실패 response body 예시 - 권한 없음",
+        name="답변 댓글 등록 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_COMMENT_CREATE.value},
         response_only=True,
     )
     ANSWER_COMMENT_CREATE_404 = OpenApiExample(
-        name="답변 댓글 등록 실패 response body 예시 - 답변 찾을 수 없음",
+        name="답변 댓글 등록 실패 응답 예시 - 답변 찾을 수 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ANSWER.value},
         response_only=True,
     )
