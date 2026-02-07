@@ -120,8 +120,8 @@ class SuccessResponseExamples:
     )
 
     ANSWER_UPDATE = OpenApiExample(
-        name="답변 수정 성공 response body 예시",
-        value={"answer_id": 801, "updated_at": "2025-03-02 15:22:41"},
+        name="답변 수정 성공 응답 예시",
+        value={"answer_id": 801, "updated_at": "2026-02-02 15:22:41"},
         response_only=True,
     )
 
@@ -370,22 +370,22 @@ class ErrorResponseExamples:
 
     # --- ANSWER_UPDATE ---
     ANSWER_UPDATE_400 = OpenApiExample(
-        name="답변 수정 실패 response body 예시 - 잘못된 요청",
+        name="답변 수정 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ANSWER_UPDATE.value},
         response_only=True,
     )
     ANSWER_UPDATE_401 = OpenApiExample(
-        name="답변 수정 실패 response body 예시 - 인증 실패",
+        name="답변 수정 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE.value},
         response_only=True,
     )
     ANSWER_UPDATE_403 = OpenApiExample(
-        name="답변 수정 실패 response body 예시 - 권한 없음",
+        name="답변 수정 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ANSWER_UPDATE.value},
         response_only=True,
     )
     ANSWER_UPDATE_404 = OpenApiExample(
-        name="답변 수정 실패 response body 예시 - 데이터 없음",
+        name="답변 수정 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ANSWER.value},
         response_only=True,
     )
