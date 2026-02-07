@@ -29,7 +29,7 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # [POST] - Create
     ("AnswerCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
     ("AnswerCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
-    # [POST] Adopt - TODO: View 구현 시 클래스명 업데이트 필요
+    # [POST] Adopt
     ("AnswerAdoptAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT,
     ("AnswerAdoptAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_ADOPT,
     # [PUT] Update - TODO: View 구현 시 클래스명 업데이트 필요

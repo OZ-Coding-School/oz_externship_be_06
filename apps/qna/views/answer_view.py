@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
-    QueryParameterExamples,
     RequestBodyExamples,
 )
 from apps.qna.docs.api_response_examples import (
@@ -104,7 +103,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
         tags=["qna"],
         summary="답변 채택 API",
         description=ApiDescriptions.ANSWER_ADOPT,
-        request = None,
+        request=None,
         responses={
             200: OpenApiResponse(
                 description="답변 채택 성공",
