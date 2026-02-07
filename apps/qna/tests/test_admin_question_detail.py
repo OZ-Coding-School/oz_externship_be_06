@@ -164,8 +164,8 @@ class AdminQuestionDetailAPITest(TestCase):
         self.assertTrue(data["has_answer"])
 
         # 이미지
-        self.assertEqual(len(data["img_url"]), 2)
-        self.assertIn("http://example.com/img1.jpg", data["img_url"])
+        self.assertEqual(len(data["images"]), 2)
+        self.assertIn({"id": 9, "img_url": "http://example.com/img1.jpg"}, data["images"])
 
         # 작성자 정보
         author = data["author"]

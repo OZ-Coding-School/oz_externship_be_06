@@ -1,8 +1,7 @@
-from typing import Any, Optional
-
 from rest_framework import serializers
 
 from apps.qna.models import Answer, Question
+from apps.qna.serializers.question.response import QuestionImageSerializer
 from apps.qna.utils.course_info import get_course_generation, get_role_title
 from apps.qna.utils.model_types import User
 
@@ -66,7 +65,7 @@ class AdminQuestionDetailResponseSerializer(serializers.ModelSerializer[Question
 
     question_id = serializers.IntegerField(source="id")
     author = AdminQuestionAuthorSerializer(read_only=True)
-    img_url = serializers.SerializerMethodField()
+    images = QuestionImageSerializer(many=True, read_only=True)
     has_answer = serializers.SerializerMethodField()
     answers = AdminAnswerSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
@@ -78,7 +77,7 @@ class AdminQuestionDetailResponseSerializer(serializers.ModelSerializer[Question
             "question_id",
             "title",
             "content",
-            "img_url",
+            "images",
             "author",
             "view_count",
             "has_answer",
@@ -87,8 +86,5 @@ class AdminQuestionDetailResponseSerializer(serializers.ModelSerializer[Question
             "answers",
         ]
 
-    def get_img_url(self, obj: Question) -> list[Optional[str]]:
-        return [image.img_url for image in obj.images.all()]
-
-    def get_has_answer(self, obj: Any) -> bool:
-        return bool(obj.answers.exists())
+    def get_has_answer(self, obj: Question) -> bool:
+        return len(obj.answers.all()) > 0
