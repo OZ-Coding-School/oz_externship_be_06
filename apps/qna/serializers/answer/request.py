@@ -26,6 +26,27 @@ class AnswerCreateSerializer(serializers.ModelSerializer[Answer]):
 
 
 # ==============================================================================
+# [PUT] Answer Update
+# /api/v1/qna/answers/{answer_id}
+# ==============================================================================
+class AnswerUpdateSerializer(serializers.ModelSerializer[Answer]):
+    """
+    답변 수정 시리얼라이저
+    """
+
+    content = serializers.CharField(required=True, help_text="답변 내용")
+    image_urls = serializers.ListField(
+        child=serializers.URLField(), required=False, allow_empty=True, default=list, help_text="첨부 이미지 URL 목록"
+    )
+
+    default_error_message = ErrorMessages.INVALID_ANSWER_UPDATE
+
+    class Meta:
+        model = Answer
+        fields = ["content", "image_urls"]
+
+
+# ==============================================================================
 # [POST] Answer Comment Create
 # /api/v1/qna/answers/{answer_id}/comments
 # ==============================================================================

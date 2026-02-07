@@ -17,14 +17,16 @@ from apps.qna.docs.api_response_examples import (
 )
 from apps.qna.models import QuestionAIAnswer
 from apps.qna.serializers.answer.request import (
-    AnswerCommentCreateSerializer,
     AnswerCreateSerializer,
+    AnswerUpdateSerializer,
+    AnswerCommentCreateSerializer,
 )
 from apps.qna.serializers.answer.response import (
     AIAnswerResponseSerializer,
+    AnswerCreateResponseSerializer,
+    AnswerUpdateResponseSerializer,
     AnswerAdoptResponseSerializer,
     AnswerCommentCreateResponseSerializer,
-    AnswerCreateResponseSerializer,
 )
 from apps.qna.services.answer.command import (
     AIAnswerCommandService,
@@ -169,6 +171,65 @@ class AnswerCreateAPIView(QnaBaseAPIView):
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
+class AnswerUpdateAPIView(QnaBaseAPIView):
+    """
+    답변 수정 API View
+    """
+
+    permission_classes = [IsAuthenticated, CanWriteAnswer]
+    serializer_class = AnswerUpdateSerializer
+
+    # 답변 수정
+    # [PUT] /api/v1/qna/answers/{answer_id}
+    @extend_schema(
+        summary="답변 수정 API",
+        description=ApiDescriptions.ANSWER_UPDATE,
+        request=AnswerUpdateSerializer,
+        examples=[RequestBodyExamples.ANSWER_UPDATE],
+        responses={
+            200: OpenApiResponse(
+                description="답변 수정 성공",
+                response=AnswerUpdateResponseSerializer,
+                examples=[SuccessResponseExamples.ANSWER_UPDATE],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_UPDATE_400],
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_UPDATE_401],
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_UPDATE_403],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_UPDATE_404],
+            ),
+        },
+        tags=["qna"],
+    )
+    def put(self, request: Request, answer_id: int) -> Response:
+        """답변 수정"""
+        serializer = AnswerUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 서비스 호출
+        answer = AnswerCommandService.update_answer(
+            answer_id=answer_id, user=cast(User, request.user), data=serializer.validated_data
+        )
+
+        # 응답 출력
+        response_serializer = AnswerUpdateResponseSerializer(answer)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+
 class AnswerAdoptAPIView(QnaBaseAPIView):
     """
     답변 채택 API View
@@ -235,7 +296,7 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
     """
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteAnswer()]
+        return [IsAuthenticated(), CanWriteComment()]
 
     serializer_class = AnswerCommentCreateSerializer
 
