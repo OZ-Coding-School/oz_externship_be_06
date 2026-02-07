@@ -137,7 +137,9 @@ class AnswerUpdateAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         # Permission check에서 막히므로 FORBIDDEN_ANSWER_UPDATE나 FORBIDDEN_ANSWER_CREATE 중 하나
         error_detail = response.json()["error_detail"]
-        self.assertIn(error_detail, [ErrorMessages.FORBIDDEN_ANSWER_CREATE.value, ErrorMessages.FORBIDDEN_ANSWER_UPDATE.value])
+        self.assertIn(
+            error_detail, [ErrorMessages.FORBIDDEN_ANSWER_CREATE.value, ErrorMessages.FORBIDDEN_ANSWER_UPDATE.value]
+        )
 
     def test_update_answer_not_found(self) -> None:
         """[실패] 존재하지 않는 답변 ID로 요청 시 404 반환 검증"""
