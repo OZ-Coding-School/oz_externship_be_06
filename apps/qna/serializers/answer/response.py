@@ -80,3 +80,21 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer[Answer]):
     class Meta:
         model = Answer
         fields = ["answer_id", "question_id", "author_id", "created_at"]
+
+
+# ==============================================================================
+# [POST] Answer Adopt
+# /api/v1/qna/answers/{answer_id}/accept
+# ==============================================================================
+class AnswerAdoptResponseSerializer(serializers.ModelSerializer[Answer]):
+    """
+    답변 채택 응답 시리얼라이저
+    """
+
+    question_id = serializers.IntegerField(source="question.id", help_text="질문 ID")
+    answer_id = serializers.IntegerField(source="id", help_text="답변 ID")
+    is_adopted = serializers.BooleanField(help_text="채택 여부")
+
+    class Meta:
+        model = Answer
+        fields = ["question_id", "answer_id", "is_adopted"]
