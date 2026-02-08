@@ -261,7 +261,7 @@ class SuccessResponseExamples:
     )
 
     ADMIN_QUESTION_DELETE = OpenApiExample(
-        name="어드민 질의응답 삭제 성공 response body 예시",
+        name="어드민 질의응답 삭제 성공 응답 예시",
         value={"question_id": 10501, "deleted_answer_count": 12, "deleted_comment_count": 45},
         response_only=True,
     )
@@ -558,22 +558,22 @@ class ErrorResponseExamples:
 
     # --- ADMIN_QUESTION_DELETE ---
     ADMIN_QUESTION_DELETE_400 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 잘못된 요청",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_401 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 인증 실패",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_403 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 권한 없음",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_404 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 데이터 없음",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_QUESTION.value},
         response_only=True,
     )
