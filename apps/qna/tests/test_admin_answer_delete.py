@@ -20,6 +20,7 @@ class AdminAnswerDeleteAPITest(APITestCase):
         - 401 Unauthorized: 로그인하지 않은 유저
         - 403 Forbidden: 수강생(STUDENT) 유저
         - 404 Not Found: 존재하지 않는 answer_id
+        - 404 Not Found: answer_id가 int가 아닌 str인 경우
     """
 
     def setUp(self) -> None:
@@ -154,3 +155,11 @@ class AdminAnswerDeleteAPITest(APITestCase):
         response = self.client.delete(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_answer_invalid_id_type_string(self) -> None:
+        """[실패] answer_id가 int가 아닌 str인 경우 → 404"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = "/api/v1/admin/qna/answers/invalid_string_id"
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
