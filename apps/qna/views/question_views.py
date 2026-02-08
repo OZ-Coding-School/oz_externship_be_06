@@ -2,6 +2,7 @@ from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -137,10 +138,23 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
 
 class QuestionDetailAPIView(QnaBaseAPIView):
     """
-    질문 상세 조회 API View
+    질문 상세 API View
+    [GET] 질문 상세 조회
+    [PUT] 질문 상세 수정
     """
 
-    permission_classes = [AllowAny]
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "GET":
+            return [AllowAny()]
+        elif method == "PUT":
+            return [IsAuthenticated(), IsStudent()]
+        raise MethodNotAllowed(method)
+
+    serializer_classes = {
+        "GET": None,
+        "PUT": QuestionUpdateRequestSerializer,
+    }
 
     # 질의응답 상세 조회
     # [GET] /api/v1/qna/questions/{question_id}
@@ -172,17 +186,6 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer = QuestionDetailSerializer(cast(Any, question))
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class QuestionUpdateAPIView(QnaBaseAPIView):
-    """
-    질문 수정 API
-    """
-
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated()]
-
-    serializer_classes = {QuestionUpdateRequestSerializer}
 
     @extend_schema(
         tags=["qna"],
