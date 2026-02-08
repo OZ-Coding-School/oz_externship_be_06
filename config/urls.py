@@ -17,6 +17,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     # Other admin modules
     path("api/v1/admin/", include("apps.exams.urls.admin")),
     path("api/v1/admin/", include("apps.courses.admin_urls")),
+    path("api/v1/admin/", include("apps.qna.urls.admin_urls")),
     # Student / Public
     path("api/v1/exams/", include("apps.exams.urls.student")),
     path("api/v1/qna/", include("apps.qna.urls.qna_urls")),
