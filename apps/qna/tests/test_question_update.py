@@ -26,6 +26,7 @@ class QuestionUpdateAPITestResult(APITestCase):
             password="password",
             name="Test User",
             nickname="test",
+            role="STUDENT",
             phone_number="01012345678",
             gender="MALE",
             birthday="2000-01-01",
@@ -35,6 +36,7 @@ class QuestionUpdateAPITestResult(APITestCase):
             password="password",
             name="Other User",
             nickname="other",
+            role="STUDENT",
             phone_number="01087654321",
             gender="FEMALE",
             birthday="2000-01-01",
@@ -51,7 +53,7 @@ class QuestionUpdateAPITestResult(APITestCase):
         )
 
         # URL
-        self.url = f"/api/v1/qna/questions/{self.question.id}/update"
+        self.url = f"/api/v1/qna/questions/{self.question.id}"
 
     def test_update_question_success(self) -> None:
         """[성공] 질문 수정 성공 테스트"""
@@ -74,34 +76,6 @@ class QuestionUpdateAPITestResult(APITestCase):
         first_image = QuestionImage.objects.first()
         assert first_image is not None
         self.assertEqual(first_image.img_url, "http://example.com/image1.jpg")
-
-    def test_update_question_forbidden_not_author(self) -> None:
-        """[실패] 본인 질문이 아닌 경우 403 에러 테스트"""
-        self.client.force_authenticate(user=self.other_user)
-
-        data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
-
-        response = self.client.put(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_update_question_not_found(self) -> None:
-        """[실패] 존재하지 않는 질문 수정 시 404 에러 테스트"""
-        self.client.force_authenticate(user=self.user)
-
-        url = "/api/v1/qna/questions/99999/update"
-        data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
-
-        response = self.client.put(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_update_question_invalid_category(self) -> None:
-        """[실패] 유효하지 않은 데이터로 수정 시 404 에러 테스트 (카테고리 없음)"""
-        self.client.force_authenticate(user=self.user)
-
-        data = {"title": "New Title", "content": "New Content", "category_id": 99999}  # 존재하지 않는 카테고리
-
-        response = self.client.put(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_question_missing_title(self) -> None:
         """[실패] 필수 필드 누락 시 400 에러 테스트 (title 누락)"""
@@ -149,3 +123,31 @@ class QuestionUpdateAPITestResult(APITestCase):
 
         response = self.client.put(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_question_forbidden_not_author(self) -> None:
+        """[실패] 본인 질문이 아닌 경우 403 에러 테스트"""
+        self.client.force_authenticate(user=self.other_user)
+
+        data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
+
+        response = self.client.put(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_question_not_found(self) -> None:
+        """[실패] 존재하지 않는 질문 수정 시 404 에러 테스트"""
+        self.client.force_authenticate(user=self.user)
+
+        url = "/api/v1/qna/questions/99999/update"
+        data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
+
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_question_invalid_category(self) -> None:
+        """[실패] 유효하지 않은 데이터로 수정 시 404 에러 테스트 (카테고리 없음)"""
+        self.client.force_authenticate(user=self.user)
+
+        data = {"title": "New Title", "content": "New Content", "category_id": 99999}  # 존재하지 않는 카테고리
+
+        response = self.client.put(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
