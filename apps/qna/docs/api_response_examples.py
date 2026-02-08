@@ -107,8 +107,8 @@ class SuccessResponseExamples:
     )
 
     QUESTION_UPDATE = OpenApiExample(
-        name="질문 수정 성공 response body 예시",
-        value={"question_id": 10501, "updated_at": "2025-03-02 14:14:22"},
+        name="질문 수정 성공 응답 예시",
+        value={"question_id": 10501, "updated_at": "2026-02-08 14:14:22"},
         response_only=True,
     )
 
@@ -326,22 +326,22 @@ class ErrorResponseExamples:
 
     # --- QUESTION_UPDATE ---
     QUESTION_UPDATE_400 = OpenApiExample(
-        name="질문 수정 실패 response body 예시 - 잘못된 요청",
+        name="질문 수정 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_QUESTION_UPDATE.value},
         response_only=True,
     )
     QUESTION_UPDATE_401 = OpenApiExample(
-        name="질문 수정 실패 response body 예시 - 인증 실패",
+        name="질문 수정 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE.value},
         response_only=True,
     )
     QUESTION_UPDATE_403 = OpenApiExample(
-        name="질문 수정 실패 response body 예시 - 권한 없음",
+        name="질문 수정 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_QUESTION_UPDATE.value},
         response_only=True,
     )
     QUESTION_UPDATE_404 = OpenApiExample(
-        name="질문 수정 실패 response body 예시 - 데이터 없음",
+        name="질문 수정 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION.value},
         response_only=True,
     )

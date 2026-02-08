@@ -25,6 +25,9 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # 질문 등록
     ("QuestionCreateListAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
     ("QuestionCreateListAPIView", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
+    # [PUT] - 질문 수정
+    ("QuestionUpdateAPIView", "PUT", True): ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE,
+    ("QuestionUpdateAPIView", "PUT", False): ErrorMessages.FORBIDDEN_QUESTION_UPDATE,
     # ---------- Answer -----------
     # 답변 등록
     ("AnswerCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
