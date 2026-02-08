@@ -18,12 +18,14 @@ from apps.qna.docs.api_response_examples import (
 from apps.qna.serializers.question.request import (
     QuestionCreateSerializer,
     QuestionQuerySerializer,
+    QuestionUpdateRequestSerializer,
 )
 from apps.qna.serializers.question.response import (
     QuestionCategoryTreeResponseSerializer,
     QuestionCreateResponseSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
+    QuestionUpdateResponseSerializer,
 )
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
@@ -170,6 +172,62 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer = QuestionDetailSerializer(cast(Any, question))
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class QuestionUpdateAPIView(QnaBaseAPIView):
+    """
+    질문 수정 API
+    """
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated()]
+
+    serializer_classes = {QuestionUpdateRequestSerializer}
+
+    @extend_schema(
+        tags=["qna"],
+        summary="질문 수정 API",
+        description=ApiDescriptions.QUESTION_UPDATE,
+        request=QuestionUpdateRequestSerializer,
+        examples=[RequestBodyExamples.QUESTION_UPDATE],
+        responses={
+            200: OpenApiResponse(
+                description="OK",
+                response=QuestionUpdateResponseSerializer,
+                examples=[SuccessResponseExamples.QUESTION_UPDATE],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_400],
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_401],
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_403],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_404],
+            ),
+        },
+    )
+    def put(self, request: Request, question_id: int) -> Response:
+        serializer = QuestionUpdateRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        question = QuestionCommandService.update_question(
+            question_id, cast(User, request.user), serializer.validated_data
+        )
+
+        response_serializer = QuestionUpdateResponseSerializer(question)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class QuestionCategoryTreeAPIView(QnaBaseAPIView):

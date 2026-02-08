@@ -12,6 +12,7 @@ from apps.qna.views.question_views import (
     QuestionCategoryTreeAPIView,
     QuestionCreateListAPIView,
     QuestionDetailAPIView,
+    QuestionUpdateAPIView,
 )
 
 urlpatterns = [
@@ -19,6 +20,7 @@ urlpatterns = [
     # Question
     path("questions", QuestionCreateListAPIView.as_view(), name="question-list-create"),
     path("questions/<int:question_id>", QuestionDetailAPIView.as_view(), name="question-detail"),
+    path("questions/<int:question_id>", QuestionUpdateAPIView.as_view(), name="question-update"),
     path("categories", QuestionCategoryTreeAPIView.as_view(), name="question-category-list"),
     # Answer
     path("questions/<int:question_id>/ai-answer", AIAnswerGenerateAPIView.as_view(), name="ai-answer-generate"),
