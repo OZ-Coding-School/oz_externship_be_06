@@ -19,9 +19,18 @@ class QuestionUpdateAPITestResult(APITestCase):
         - 404 Not Found: 존재하지 않는 카테고리
     """
 
-    def setUp(self) -> None:
+    student_user: User
+    other_user: User
+    parent_category: QuestionCategory
+    category: QuestionCategory
+    other_category: QuestionCategory
+    question: Question
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 유저 생성
-        self.user = User.objects.create_user(
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="password",
             name="Test User",
@@ -31,7 +40,7 @@ class QuestionUpdateAPITestResult(APITestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
-        self.other_user = User.objects.create_user(
+        cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password",
             name="Other User",
@@ -43,17 +52,17 @@ class QuestionUpdateAPITestResult(APITestCase):
         )
 
         # 카테고리 생성 (depth=1을 만들기 위해 부모 카테고리 생성)
-        self.parent_category = QuestionCategory.objects.create(name="Programming")
-        self.category = QuestionCategory.objects.create(name="Python", parent=self.parent_category)
-        self.other_category = QuestionCategory.objects.create(name="Django", parent=self.parent_category)
+        cls.parent_category = QuestionCategory.objects.create(name="Programming")
+        cls.category = QuestionCategory.objects.create(name="Python", parent=cls.parent_category)
+        cls.other_category = QuestionCategory.objects.create(name="Django", parent=cls.parent_category)
 
         # 질문 생성
-        self.question = Question.objects.create(
-            author=self.user, title="Old Title", content="Old Content", category=self.category
+        cls.question = Question.objects.create(
+            author=cls.user, title="Old Title", content="Old Content", category=cls.category
         )
 
         # URL
-        self.url = f"/api/v1/qna/questions/{self.question.id}"
+        cls.url = f"/api/v1/qna/questions/{cls.question.id}"
 
     def test_update_question_success(self) -> None:
         """[성공] 질문 수정 성공 테스트"""
@@ -137,7 +146,7 @@ class QuestionUpdateAPITestResult(APITestCase):
         """[실패] 존재하지 않는 질문 수정 시 404 에러 테스트"""
         self.client.force_authenticate(user=self.user)
 
-        url = "/api/v1/qna/questions/99999/update"
+        url = "/api/v1/qna/questions/99999"
         data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
 
         response = self.client.put(url, data, format="json")
