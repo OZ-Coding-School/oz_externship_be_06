@@ -24,21 +24,17 @@ class AdminAnswerDeleteAPITest(APITestCase):
     """
 
     def setUp(self) -> None:
-        # 유저 생성 variables
-        self.email = "admin@example.com"
-        self.password = "password123!"
-        self.nickname = "admin"
-        self.name = "Admin"
-        self.phone_number = "01012341234"
-
         # Admin 유저 생성
-        self.admin_user = User.objects.create_superuser(
-            email=self.email,
-            password=self.password,
-            nickname=self.nickname,
-            name=self.name,
-            phone_number=self.phone_number,
+        self.admin_user = User.objects.create_user(
+            email="admin@test.com",
+            password="password123",
+            name="관리자",
+            nickname="관리자닉",
+            phone_number="010-0000-0000",
+            role="ADMIN",
+            gender="MALE",
             birthday="2000-01-01",
+            is_active=True,
         )
 
         # Staff(TA) 유저 생성
@@ -47,8 +43,11 @@ class AdminAnswerDeleteAPITest(APITestCase):
             password="password123!",
             nickname="staff_ta",
             name="StaffTA",
+            role="TA",
+            gender="MALE",
             phone_number="01012345678",
             birthday="2000-01-01",
+            is_active=True,
         )
         self.staff_user.is_staff = True
         self.staff_user.save()
@@ -60,7 +59,9 @@ class AdminAnswerDeleteAPITest(APITestCase):
             nickname="student",
             name="Student",
             phone_number="01012341234",
+            role="USER",
             birthday="2000-01-01",
+            is_active=True,
         )
 
         # 카테고리 생성
