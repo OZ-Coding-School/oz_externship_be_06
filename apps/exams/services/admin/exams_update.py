@@ -1,10 +1,10 @@
 from django.db import transaction
-from rest_framework import status
 
 from apps.courses.models import Subject
 from apps.exams.constants import ErrorMessages
+from apps.exams.error_map import raise_error
 from apps.exams.models import Exam
-from apps.exams.exceptions import ErrorDetailException
+
 
 @transaction.atomic
 def update_exam(
@@ -20,18 +20,13 @@ def update_exam(
     try:
         exam = Exam.objects.select_for_update().get(id=exam_id)
     except Exam.DoesNotExist:
-        raise ErrorDetailException(
-            ErrorMessages.EXAM_UPDATE_NOT_FOUND.value,
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise_error(ErrorMessages.EXAM_UPDATE_NOT_FOUND)
 
     # 409
     if title is not None:
         if Exam.objects.filter(title=title).exclude(id=exam.id).exists():
-            raise ErrorDetailException(
-                ErrorMessages.EXAM_UPDATE_CONFLICT.value,
-                status.HTTP_409_CONFLICT,
-            )
+            raise_error(ErrorMessages.EXAM_UPDATE_CONFLICT)
+
         exam.title = title
 
     if subject is not None:

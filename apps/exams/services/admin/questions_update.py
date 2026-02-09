@@ -2,11 +2,11 @@ import json
 from typing import Any
 
 from django.db import transaction
-from rest_framework import status
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.models import ExamQuestion
+
 
 @transaction.atomic
 def update_exam_question(

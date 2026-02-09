@@ -1,10 +1,9 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
-from django.db import IntegrityError
 
 from apps.exams.constants import ErrorMessages
-from apps.exams.models import ExamDeployment, ExamSubmission
 from apps.exams.error_map import raise_error
+from apps.exams.models import ExamDeployment, ExamSubmission
 
 
 def delete_exam_deployment(deployment_id: int) -> dict[str, int | bool]:
