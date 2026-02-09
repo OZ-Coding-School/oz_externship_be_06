@@ -119,7 +119,7 @@ class AnswerAdoptTest(APITestCase):
         response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(response.data["error_detail"], ErrorMessages.CONFLICT_ANSWER_ADOPT.value)
+        self.assertEqual(response.data["error_detail"], ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT.value)
 
     def test_performance_query_count(self) -> None:
         """
