@@ -82,6 +82,23 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer[Answer]):
 
 
 # ==============================================================================
+# [PUT] Answer Update
+# /api/v1/qna/answers/{answer_id}
+# ==============================================================================
+class AnswerUpdateResponseSerializer(serializers.ModelSerializer[Answer]):
+    """
+    답변 수정 응답 시리얼라이저
+    """
+
+    answer_id = serializers.IntegerField(source="id", help_text="답변 ID")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", help_text="수정 일시")
+
+    class Meta:
+        model = Answer
+        fields = ["answer_id", "updated_at"]
+
+
+# ==============================================================================
 # [POST] Answer Adopt
 # /api/v1/qna/answers/{answer_id}/accept
 # ==============================================================================

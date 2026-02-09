@@ -6,6 +6,7 @@ from apps.qna.views.answer_views import (
     AnswerAdoptAPIView,
     AnswerCommentCreateAPIView,
     AnswerCreateAPIView,
+    AnswerUpdateAPIView,
 )
 from apps.qna.views.question_views import (
     QuestionCategoryTreeAPIView,
@@ -22,6 +23,7 @@ urlpatterns = [
     # Answer
     path("questions/<int:question_id>/ai-answer", AIAnswerGenerateAPIView.as_view(), name="ai-answer-generate"),
     path("questions/<int:question_id>/answers", AnswerCreateAPIView.as_view(), name="answer-create"),
+    path("answers/<int:answer_id>", AnswerUpdateAPIView.as_view(), name="answer-update"),
     path("answers/<int:answer_id>/accept", AnswerAdoptAPIView.as_view(), name="answer-adopt"),
     path("answers/<int:answer_id>/comments", AnswerCommentCreateAPIView.as_view(), name="answer-comment-create"),  # fmt: skip
     # --- Presigned URL Endpoints ---

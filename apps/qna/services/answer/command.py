@@ -31,6 +31,44 @@ class AnswerCommandService:
 
     @staticmethod
     @transaction.atomic
+    def update_answer(answer_id: int, user: User, data: dict[str, Any]) -> Answer:
+        """
+        답변을 수정하고 이미지들을 업데이트
+
+        - Args:
+            answer_id (int): 수정할 답변의 ID (PK)
+            user (User): 수정 요청한 사용자 객체
+            data (dict): content(str) 및 image_urls(list)를 포함한 검증된 데이터
+        - Returns:
+            Answer: 수정된 답변 객체
+        - Raises:
+            QnaBaseException(404): 답변이 존재하지 않을 경우
+            QnaBaseException(403): 본인이 작성한 답변이 아닐 경우
+        """
+        # 답변 조회
+        try:
+            answer = Answer.objects.select_for_update().get(id=answer_id)
+        except Answer.DoesNotExist:
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_ANSWER, status_code=status.HTTP_404_NOT_FOUND)
+
+        # 작성자 확인
+        if answer.author_id != user.id:
+            raise QnaBaseException(detail=ErrorMessages.FORBIDDEN_ANSWER_UPDATE, status_code=status.HTTP_403_FORBIDDEN)
+
+        # 답변 내용 수정
+        answer.content = cast(str, data["content"])
+        answer.save(update_fields=["content"])
+
+        # 기존 이미지 삭제 후 새로운 이미지 일괄 생성
+        AnswerImage.objects.filter(answer=answer).delete()
+        image_urls = data.get("image_urls", [])
+        if image_urls:
+            AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
+
+        return answer
+
+    @staticmethod
+    @transaction.atomic
     def create_answer(question_id: int, author: User, data: dict[str, Any]) -> Answer:
         """
         특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
