@@ -1,16 +1,27 @@
 from typing import Any
 
 from rest_framework import serializers
-from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
+from rest_framework.utils.serializer_helpers import ReturnList
 
-from apps.qna.constants import ErrorMessages
 from apps.qna.models import Question, QuestionCategory, QuestionImage
-from apps.qna.serializers.answer.response import AnswerSerializer
+from apps.qna.serializers.answer.common import AnswerSerializer
 from apps.qna.serializers.question.common import (
     QuestionAuthorSerializer,
     QuestionCategoryListSerializer,
 )
-from apps.qna.utils.content_parser import ContentParser
+
+
+# ==============================================================================
+# [POST] Question Create
+# /api/v1/qna/questions/
+# ==============================================================================
+class QuestionCreateResponseSerializer(serializers.Serializer[Question]):
+    """
+    질문 등록 응답 시리얼라이저
+    """
+
+    message = serializers.CharField(default="질문이 성공적으로 등록되었습니다.")
+    question_id = serializers.IntegerField(source="id")
 
 
 # ==============================================================================
@@ -42,14 +53,6 @@ class QuestionListSerializer(serializers.ModelSerializer[Question]):
             "created_at",
             "thumbnail_img_url",
         ]
-
-    def get_content_preview(self, obj: Question) -> str:
-        """본문 프리뷰 생성"""
-        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
-
-    def get_thumbnail_img_url(self, obj: Question) -> Any:
-        """본문 내용에서 첫 번째 이미지 URL을 파싱하여 반환"""
-        return ContentParser.extract_thumbnail_img_url(obj.content)
 
 
 # ==============================================================================
@@ -138,16 +141,3 @@ class QuestionCategoryTreeResponseSerializer(serializers.Serializer[Any]):
 
     categories = QuestionCategoryTreeSerializer(many=True)
 
-
-# ==============================================================================
-# [ACTION RESPONSES] POST Success
-# [POST] Question Create
-# /api/v1/qna/questions/
-# ==============================================================================
-class QuestionCreateResponseSerializer(serializers.Serializer[Question]):
-    """
-    질문 등록 응답 시리얼라이저
-    """
-
-    message = serializers.CharField(default="질문이 성공적으로 등록되었습니다.")
-    question_id = serializers.IntegerField(source="id")
