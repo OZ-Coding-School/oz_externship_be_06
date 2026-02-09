@@ -1,6 +1,5 @@
 import json
 
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -9,8 +8,7 @@ from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, AnswerImage, Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AnswerUpdateAPITest(APITestCase):
@@ -25,11 +23,18 @@ class AnswerUpdateAPITest(APITestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        # self.client = APIClient()  # APITestCase provides this automatically
+    student: User
+    regular_user: User
+    another_student: User
+    category: QuestionCategory
+    question: Question
+    answer: Answer
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # Users
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password",
             nickname="학생",
@@ -37,7 +42,7 @@ class AnswerUpdateAPITest(APITestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-        self.another_student = User.objects.create_user(
+        cls.another_student = User.objects.create_user(
             email="another@ozcoding.com",
             password="password",
             nickname="다른학생",
@@ -45,7 +50,7 @@ class AnswerUpdateAPITest(APITestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-        self.regular_user = User.objects.create_user(
+        cls.regular_user = User.objects.create_user(
             email="user@ozcoding.com",
             password="password",
             nickname="일반유저",
@@ -55,24 +60,24 @@ class AnswerUpdateAPITest(APITestCase):
         )
 
         # Base Data
-        self.category = QuestionCategory.objects.create(name="Python")
-        self.question = Question.objects.create(
-            author=self.student,
-            category=self.category,
+        cls.category = QuestionCategory.objects.create(name="Python")
+        cls.question = Question.objects.create(
+            author=cls.student,
+            category=cls.category,
             title="질문입니다",
             content="내용",
         )
-        self.answer = Answer.objects.create(
-            question=self.question,
-            author=self.student,
+        cls.answer = Answer.objects.create(
+            question=cls.question,
+            author=cls.student,
             content="원래 답변 내용",
         )
         AnswerImage.objects.create(
-            answer=self.answer,
+            answer=cls.answer,
             img_url="https://example.com/old_img.png",
         )
 
-        self.url = reverse("answer-update", kwargs={"answer_id": self.answer.id})
+        cls.url = reverse("answer-update", kwargs={"answer_id": cls.answer.id})
 
     def test_update_answer_success(self) -> None:
         """[성공] 본인이 작성한 답변 수정 성공 검증"""
