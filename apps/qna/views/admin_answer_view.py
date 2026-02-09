@@ -1,9 +1,10 @@
+from typing import Any
+
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_response_examples import (
@@ -14,14 +15,17 @@ from apps.qna.serializers.admin.answer.response import (
     AdminAnswerDeleteResponseSerializer,
 )
 from apps.qna.services.admin.answer.command import AdminAnswerCommandService
+from apps.qna.utils.permissions import IsAdminOrStaff
+from apps.qna.views.base_view import QnaBaseAPIView
 
 
-class AdminAnswerDeleteAPIView(APIView):
+class AdminAnswerDeleteAPIView(QnaBaseAPIView):
     """
     어드민 답변 삭제 API
     """
 
-    permission_classes = [IsAdminUser]
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), IsAdminOrStaff()]
 
     @extend_schema(
         tags=["admin_qna"],
