@@ -51,18 +51,6 @@ class AdminCategoryListAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
-
-        # 예외 케이스 테스트용 스태프 유저 (조교)
-        self.ta_user = User.objects.create_user(
-            email="ta@ozcoding.com",
-            password="password123",
-            name="조교",
-            role="TA",
-            gender="MALE",
-            birthday="1991-01-01",
-            is_active=True,
-        )
-
         # 일반 유저 (권한 없음)
         self.student_user = User.objects.create_user(
             email="student@ozcoding.com",
@@ -147,6 +135,56 @@ class AdminCategoryListAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(res_data["total_count"], 1)
         self.assertEqual(res_data["categories"][0]["name"], "Django")
+
+    # ==========================================================================
+    # 페이지네이션 동작 확인
+    # ==========================================================================
+    def test_pagination_first_page(self) -> None:
+        """[성공] 첫 번째 페이지 조회"""
+        # 기본 page_size는 20이므로 20개 이상의 카테고리 생성
+        for i in range(25):
+            QuestionCategory.objects.create(name=f"Category_{i:02d}")
+
+        auth_header = self._get_auth_header(self.admin_user)
+        response = self.client.get(self.url, {"page": "1"}, secure=False, **auth_header)
+        res_data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_data["page"], 1)
+        self.assertEqual(res_data["size"], 20)
+        self.assertEqual(res_data["total_count"], 31)  # 기존 6개 + 추가 25개
+        self.assertEqual(len(res_data["categories"]), 20)
+
+    def test_pagination_second_page(self) -> None:
+        """[성공] 두 번째 페이지 조회"""
+        # 기본 page_size 이상의 카테고리 생성
+        for i in range(25):
+            QuestionCategory.objects.create(name=f"Category_{i:02d}")
+
+        auth_header = self._get_auth_header(self.admin_user)
+        response = self.client.get(self.url, {"page": "2"}, secure=False, **auth_header)
+        res_data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_data["page"], 2)
+        self.assertEqual(res_data["size"], 20)
+        self.assertEqual(res_data["total_count"], 31)
+        self.assertEqual(len(res_data["categories"]), 11)  # 2번째 페이지는 남은 11개
+
+    def test_pagination_custom_page_size(self) -> None:
+        """[성공] 커스텀 page_size로 조회"""
+        for i in range(25):
+            QuestionCategory.objects.create(name=f"Category_{i:02d}")
+
+        auth_header = self._get_auth_header(self.admin_user)
+        response = self.client.get(self.url, {"page": "1", "size": "10"}, secure=False, **auth_header)
+        res_data = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_data["page"], 1)
+        self.assertEqual(res_data["size"], 10)
+        self.assertEqual(res_data["total_count"], 31)
+        self.assertEqual(len(res_data["categories"]), 10)
 
     # ==========================================================================
     # 상속/계층 구조 응답 확인
