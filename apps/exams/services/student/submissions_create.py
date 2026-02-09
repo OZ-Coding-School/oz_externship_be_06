@@ -38,16 +38,6 @@ def submit_exam(
     if submission.answers_json:
         raise_error(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED)
 
-    # 응시 중에 시험 시간이 끝나면 푼 답안까지만 저장 (자동제출)
-    if is_deployment_time_closed(submission.deployment):
-        # 남은 문제 제외하고 제출된 것만 저장
-        # answers에는 실제 제출한 문제만 담겨 있으므로 그대로 사용
-        submission.answers_json = normalize_answers_json(answers)
-        submission.started_at = started_at
-        submission.cheating_count = cheating_count
-        submission.save(update_fields=["answers_json", "started_at", "cheating_count", "updated_at"])
-        return submission
-
     # 답안 저장
     submission.answers_json = normalize_answers_json(answers)
     submission.started_at = started_at

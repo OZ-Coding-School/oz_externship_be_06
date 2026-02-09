@@ -25,6 +25,9 @@ class ExamAnswerSerializer(serializers.Serializer[Any]):
 
         mapped = type_map.get(value.lower())
 
+        if mapped is None:
+            raise serializers.ValidationError(ErrorMessages.INVALID_EXAM_SESSION.value)
+
         # 모델에 있는 값인지 검증
         valid_internal_types = {choice for choice, _ in ExamQuestion.TypeChoices.choices}
         if mapped not in valid_internal_types:
