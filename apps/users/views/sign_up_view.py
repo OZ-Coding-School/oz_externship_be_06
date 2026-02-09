@@ -7,8 +7,11 @@ from rest_framework.views import APIView
 
 from apps.users.models import User
 from apps.users.serializers.sign_up_serializer import (
+    SignupEmailCheckSerializer,
     SignupNicknameCheckSerializer,
+    SignupPhoneCheckSerializer,
     SignUpSerializer,
+    normalize_phone_number,
 )
 
 
@@ -116,5 +119,95 @@ class SignupNicknameCheckAPIView(APIView):
 
         return Response(
             {"detail": "사용가능한 닉네임 입니다."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# 이메일 중복 확인 api
+class SignupEmailCheckAPIView(APIView):
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["accounts"],
+        summary="이메일 중복 확인 API",
+        description="""
+회원가입 시 사용할 이메일의 중복 여부를 확인합니다.
+
+## 응답
+- **200**: 사용 가능한 이메일
+- **409**: 이미 사용 중인 이메일
+        """,
+        request=SignupEmailCheckSerializer,
+        responses={
+            200: OpenApiResponse(description="사용 가능한 이메일"),
+            400: OpenApiResponse(description="유효성 검사 실패"),
+            409: OpenApiResponse(description="중복된 이메일"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = SignupEmailCheckSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"error_detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        email = serializer.validated_data["email"]
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error_detail": "이미 사용중인 이메일입니다."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            {"detail": "사용가능한 이메일입니다."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# 휴대폰 번호 중복 확인 api
+class SignupPhoneCheckAPIView(APIView):
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["accounts"],
+        summary="휴대폰 번호 중복 확인 API",
+        description="""
+회원가입 시 사용할 휴대폰 번호의 중복 여부를 확인합니다.
+
+## 응답
+- **200**: 사용 가능한 휴대폰 번호
+- **409**: 이미 사용 중인 휴대폰 번호
+        """,
+        request=SignupPhoneCheckSerializer,
+        responses={
+            200: OpenApiResponse(description="사용 가능한 휴대폰 번호"),
+            400: OpenApiResponse(description="유효성 검사 실패"),
+            409: OpenApiResponse(description="중복된 휴대폰 번호"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = SignupPhoneCheckSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"error_detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        phone_number = normalize_phone_number(serializer.validated_data["phone_number"])
+
+        if User.objects.filter(phone_number=phone_number).exists():
+            return Response(
+                {"error_detail": "이미 사용중인 휴대폰 번호입니다."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            {"detail": "사용가능한 휴대폰 번호입니다."},
             status=status.HTTP_200_OK,
         )

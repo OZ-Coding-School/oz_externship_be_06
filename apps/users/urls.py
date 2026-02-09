@@ -16,7 +16,12 @@ from apps.users.views.profile_image_view import (
     ProfilePresignedUrlAPIView,
 )
 from apps.users.views.restore_view import RestoreAPIView
-from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
+from apps.users.views.sign_up_view import (
+    SignUpAPIView,
+    SignupEmailCheckAPIView,
+    SignupNicknameCheckAPIView,
+    SignupPhoneCheckAPIView,
+)
 from apps.users.views.sms_verification_view import (
     SendSmsVerificationAPIView,
     VerifySmsAPIView,
@@ -34,6 +39,8 @@ urlpatterns = [
     # 회원가입
     path("signup/", SignUpAPIView.as_view(), name="signup"),
     path("check-nickname/", SignupNicknameCheckAPIView.as_view(), name="check-nickname"),
+    path("check-email/", SignupEmailCheckAPIView.as_view(), name="check-email"),
+    path("check-phone/", SignupPhoneCheckAPIView.as_view(), name="check-phone"),
     # 이메일 인증
     path("verification/send-email/", SendEmailVerificationAPIView.as_view(), name="send-email-verification"),
     path("verification/verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),

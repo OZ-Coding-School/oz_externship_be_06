@@ -140,3 +140,27 @@ class SignupNicknameCheckSerializer(serializers.Serializer[dict[str, Any]]):
             "max_length": "닉네임은 10자 이하로 입력해주세요.",
         },
     )
+
+
+class SignupEmailCheckSerializer(serializers.Serializer[dict[str, Any]]):
+
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이 필드는 필수 항목입니다.",
+            "blank": "이메일을 입력해주세요.",
+            "invalid": "올바른 이메일 형식이 아닙니다.",
+        },
+    )
+
+
+class SignupPhoneCheckSerializer(serializers.Serializer[dict[str, Any]]):
+
+    phone_number = serializers.CharField(
+        max_length=20,
+        required=True,
+        error_messages={
+            "required": "이 필드는 필수 항목입니다.",
+            "blank": "휴대폰 번호를 입력해주세요.",
+        },
+    )
