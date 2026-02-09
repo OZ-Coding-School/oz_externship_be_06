@@ -48,7 +48,31 @@ class AdminExamRouterAPIView(ExamsExceptionMixin, APIView):
             ),
         ],
         responses={
-            200: OpenApiResponse(description="OK"),
+            200: OpenApiResponse(
+                description="OK",
+                examples=[
+                    OpenApiExample(
+                        "성공",
+                        value={
+                            "page": 1,
+                            "size": 10,
+                            "total_count": 42,
+                            "exams": [
+                                {
+                                    "id": 101,
+                                    "title": "Python 기본 문법 테스트",
+                                    "subject_name": "Python",
+                                    "question_count": 20,
+                                    "submit_count": 65,
+                                    "created_at": "2025-02-01 13:20:33",
+                                    "updated_at": "2025-02-05 15:10:20",
+                                    "detail_url": "/admin/exams/101",
+                                }
+                            ],
+                        },
+                    )
+                ],
+            ),
             400: OpenApiResponse(
                 response=ErrorResponseSerializer,
                 description="Bad Request",
