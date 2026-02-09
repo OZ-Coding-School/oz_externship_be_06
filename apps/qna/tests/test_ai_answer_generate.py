@@ -1,7 +1,6 @@
 from typing import Any
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
@@ -11,8 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Question, QuestionAIAnswer, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AIAnswerGenerateAPITest(TestCase):
@@ -26,11 +24,15 @@ class AIAnswerGenerateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    student: User
+    category: QuestionCategory
+    question: Question
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 테스트용 유저 생성
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
             name="테스트학생",
@@ -41,15 +43,18 @@ class AIAnswerGenerateAPITest(TestCase):
         )
 
         # 테스트용 카테고리 및 질문 생성
-        self.category = QuestionCategory.objects.create(name="Python")
-        self.question = Question.objects.create(
-            author=self.student,
-            category=self.category,
+        cls.category = QuestionCategory.objects.create(name="Python")
+        cls.question = Question.objects.create(
+            author=cls.student,
+            category=cls.category,
             title="리스트와 튜플의 차이점",
             content="파이썬에서 리스트와 튜플의 차이점이 무엇인가요?",
         )
 
-        self.url = reverse("ai-answer-generate", kwargs={"question_id": self.question.id})
+        cls.url = reverse("ai-answer-generate", kwargs={"question_id": cls.question.id})
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         """JWT 인증 헤더 생성"""

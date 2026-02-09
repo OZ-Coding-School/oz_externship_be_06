@@ -11,9 +11,13 @@ from apps.users.models.withdrawal import Withdrawal
 
 
 class WithdrawalReasonMonthlyStatsAPITest(TestCase):
-    def setUp(self) -> None:
-        self.client: APIClient = APIClient()
-        self.admin = User.objects.create_user(
+    admin: User
+    normal_user: User
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -25,7 +29,7 @@ class WithdrawalReasonMonthlyStatsAPITest(TestCase):
             is_active=True,
             is_staff=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="사용자",
@@ -36,7 +40,10 @@ class WithdrawalReasonMonthlyStatsAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.url = "/api/v1/admin/analytics/withdrawal-reasons/monthly-stats"
+        cls.url = "/api/v1/admin/analytics/withdrawal-reasons/monthly-stats"
+
+    def setUp(self) -> None:
+        self.client: APIClient = APIClient()
 
     def test_returns_200_for_admin(self) -> None:
         withdrawal = Withdrawal.objects.create(

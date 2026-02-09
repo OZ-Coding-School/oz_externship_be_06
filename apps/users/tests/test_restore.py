@@ -12,9 +12,14 @@ User = get_user_model()
 
 
 class RestoreAPITest(TestCase):
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/restore/"
+
     def setUp(self) -> None:
         self.client = APIClient()
-        self.url = "/api/v1/accounts/restore/"
 
     @patch("apps.users.views.restore_view.delete_email_token")
     @patch("apps.users.views.restore_view.get_email_by_token")

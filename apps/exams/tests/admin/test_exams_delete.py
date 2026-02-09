@@ -16,35 +16,45 @@ from apps.users.models import User
 class AdminExamDeleteAPITest(TestCase):
     """어드민 쪽지시험 삭제 API 테스트."""
 
-    def setUp(self) -> None:
-        self.course = Course.objects.create(
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    deployment: ExamDeployment
+    question: ExamQuestion
+    admin_user: User
+    normal_user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(
             name="코스",
             tag="CS",
             description="설명",
             thumbnail_img_url="course.png",
         )
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=10,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-        self.deployment = ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam,
+        cls.deployment = ExamDeployment.objects.create(
+            cohort=cls.cohort,
+            exam=cls.exam,
             duration_time=30,
             access_code="CODE",
             open_at=timezone.now(),
@@ -52,15 +62,15 @@ class AdminExamDeleteAPITest(TestCase):
             questions_snapshot_json={},
             status=ExamDeployment.StatusChoices.ACTIVATED,
         )
-        self.question = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.question = ExamQuestion.objects.create(
+            exam=cls.exam,
             question="OX 문제",
             type=ExamQuestion.TypeChoices.OX,
             answer="O",
             point=5,
             explanation="",
         )
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -71,7 +81,7 @@ class AdminExamDeleteAPITest(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="사용자",

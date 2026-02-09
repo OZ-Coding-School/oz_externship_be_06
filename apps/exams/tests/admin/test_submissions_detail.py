@@ -15,35 +15,47 @@ from apps.users.models import User
 class AdminExamSubmissionDetailAPITest(TestCase):
     """어드민 쪽지시험 응시 내역 상세 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.course = Course.objects.create(
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    deployment: ExamDeployment
+    admin_user: User
+    normal_user: User
+    student_user: User
+    submission: ExamSubmission
+    expected_elapsed: int
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(
             name="코스",
             tag="CS",
             description="설명",
             thumbnail_img_url="course.png",
         )
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=11,
             max_student=30,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-        self.deployment = ExamDeployment.objects.create(
-            exam=self.exam,
-            cohort=self.cohort,
+        cls.deployment = ExamDeployment.objects.create(
+            exam=cls.exam,
+            cohort=cls.cohort,
             duration_time=45,
             access_code="ACCESSCODE",
             open_at=timezone.make_aware(datetime(2025, 3, 2, 10, 0, 0)),
@@ -61,7 +73,7 @@ class AdminExamSubmissionDetailAPITest(TestCase):
                 }
             ],
         )
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -72,7 +84,7 @@ class AdminExamSubmissionDetailAPITest(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="사용자",
@@ -83,7 +95,7 @@ class AdminExamSubmissionDetailAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="수강생",
@@ -95,16 +107,16 @@ class AdminExamSubmissionDetailAPITest(TestCase):
             is_active=True,
         )
         started_at = timezone.now() - timedelta(minutes=30)
-        self.submission = ExamSubmission.objects.create(
-            submitter=self.student_user,
-            deployment=self.deployment,
+        cls.submission = ExamSubmission.objects.create(
+            submitter=cls.student_user,
+            deployment=cls.deployment,
             started_at=started_at,
             cheating_count=1,
             answers_json=[{"question_id": 1, "submitted_answer": "인터프리터"}],
             score=10,
             correct_answer_count=1,
         )
-        self.expected_elapsed = int((self.submission.created_at - started_at).total_seconds() // 60)
+        cls.expected_elapsed = int((cls.submission.created_at - started_at).total_seconds() // 60)
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)

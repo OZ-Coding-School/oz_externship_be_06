@@ -6,22 +6,27 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.users.models import User
 from apps.users.models.withdrawal import Withdrawal
 
 
 class WithdrawalAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.withdrawal_url = "/api/v1/accounts/withdrawal/"
+    withdrawal_url: str
+    email: str
+    password: str
+    user: User
 
-        User = get_user_model()
-        self.email = "withdrawal_test@example.com"
-        self.password = "Testpass123!"
-        self.user = User.objects.create_user(
-            email=self.email,
-            password=self.password,
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.withdrawal_url = "/api/v1/accounts/withdrawal/"
+
+        cls.email = "withdrawal_test@example.com"
+        cls.password = "Testpass123!"
+        cls.user = User.objects.create_user(
+            email=cls.email,
+            password=cls.password,
             birthday=date(2000, 1, 1),
             phone_number="01012345678",
             name="테스터",
@@ -30,6 +35,8 @@ class WithdrawalAPITests(TestCase):
             is_active=True,
         )
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 

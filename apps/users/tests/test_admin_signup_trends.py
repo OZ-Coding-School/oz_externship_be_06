@@ -12,12 +12,17 @@ from apps.users.models import User
 class AdminSignupTrendsAPITest(TestCase):
     """어드민 회원가입 추세 분석 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/signup/trends"
+    url: str
+    admin_user: User
+    ta_user: User
+    normal_user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/analytics/signup/trends"
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -30,7 +35,7 @@ class AdminSignupTrendsAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -43,7 +48,7 @@ class AdminSignupTrendsAPITest(TestCase):
         )
 
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@example.com",
             password="password123",
             name="일반유저",
@@ -54,6 +59,9 @@ class AdminSignupTrendsAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)

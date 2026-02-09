@@ -8,9 +8,17 @@ from apps.users.models import User
 
 
 class AnswerCommentCreateTest(APITestCase):
-    def setUp(self) -> None:
+    user: User
+    general_user: User
+    category: QuestionCategory
+    question: Question
+    answer: Answer
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 유저 생성 (수강생)
-        self.user = User.objects.create_user(
+        cls.user = User.objects.create_user(
             email="student@example.com",
             password="password!@#",
             name="test1",
@@ -21,7 +29,7 @@ class AnswerCommentCreateTest(APITestCase):
             role="STUDENT",
         )
         # 테스트용 유저 생성 (일반인/권한 없음)
-        self.general_user = User.objects.create_user(
+        cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",
             name="test2",
@@ -32,21 +40,22 @@ class AnswerCommentCreateTest(APITestCase):
             is_active=True,
         )
 
-        self.client.force_authenticate(user=self.user)
-
         # 카테고리 생성
-        self.category = QuestionCategory.objects.create(name="Django", parent=None)
+        cls.category = QuestionCategory.objects.create(name="Django", parent=None)
 
         # 질문 생성
-        self.question = Question.objects.create(
-            title="질문 제목", content="질문 내용", category=self.category, author=self.user
+        cls.question = Question.objects.create(
+            title="질문 제목", content="질문 내용", category=cls.category, author=cls.user
         )
 
         # 답변 생성
-        self.answer = Answer.objects.create(question=self.question, author=self.user, content="답변 내용")
+        cls.answer = Answer.objects.create(question=cls.question, author=cls.user, content="답변 내용")
 
         # URL
-        self.url = reverse("answer-comment-create", kwargs={"answer_id": self.answer.id})
+        cls.url = reverse("answer-comment-create", kwargs={"answer_id": cls.answer.id})
+
+    def setUp(self) -> None:
+        self.client.force_authenticate(user=self.user)
 
     def test_create_comment_success(self) -> None:
         """

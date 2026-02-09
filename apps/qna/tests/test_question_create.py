@@ -1,7 +1,6 @@
 import json
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
@@ -12,8 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class QuestionCreateAPITest(TestCase):
@@ -27,15 +25,18 @@ class QuestionCreateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        # Django 내장 TestClient 초기화
-        self.client = Client()
+    category: QuestionCategory
+    student_user: User
+    general_user: User
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 테스트용 카테고리 생성
-        self.category = QuestionCategory.objects.create(name="OZ_category")
+        cls.category = QuestionCategory.objects.create(name="OZ_category")
 
         # 테스트용 유저 생성 (수강생)
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
             name="test1",
@@ -47,7 +48,7 @@ class QuestionCreateAPITest(TestCase):
         )
 
         # 테스트용 유저 생성 (일반인/권한 없음)
-        self.general_user = User.objects.create_user(
+        cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",
             name="test2",
@@ -59,7 +60,11 @@ class QuestionCreateAPITest(TestCase):
         )
 
         # URL 설정 이름 확인
-        self.url = reverse("question-list-create")
+        cls.url = reverse("question-list-create")
+
+    def setUp(self) -> None:
+        # Django 내장 TestClient 초기화
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         """유저 객체를 받아 JWT 액세스 토큰을 생성, HTTP_AUTHORIZATION 헤더 딕셔너리를 반환"""

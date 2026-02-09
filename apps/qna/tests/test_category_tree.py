@@ -16,20 +16,27 @@ class CategoryTreeAPITest(TestCase):
         - 재귀적 트리 구조(Nesting)의 유효성 검증
     """
 
-    def setUp(self) -> None:
+    cat_be: QuestionCategory
+    cat_fe: QuestionCategory
+    cat_django: QuestionCategory
+    cat_orm: QuestionCategory
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
         """테스트 데이터 생성"""
         # 대분류
-        self.cat_be = QuestionCategory.objects.create(name="백엔드")
-        self.cat_fe = QuestionCategory.objects.create(name="프론트엔드")
+        cls.cat_be = QuestionCategory.objects.create(name="백엔드")
+        cls.cat_fe = QuestionCategory.objects.create(name="프론트엔드")
 
         # 중분류 (백엔드 하위)
-        self.cat_django = QuestionCategory.objects.create(name="Django", parent=self.cat_be)
+        cls.cat_django = QuestionCategory.objects.create(name="Django", parent=cls.cat_be)
 
         # 소분류 (Django 하위)
-        self.cat_orm = QuestionCategory.objects.create(name="ORM", parent=self.cat_django)
+        cls.cat_orm = QuestionCategory.objects.create(name="ORM", parent=cls.cat_django)
 
         # [요청 반영] urls에서 지정하신 name으로 수정
-        self.url = reverse("question-category-list")
+        cls.url = reverse("question-category-list")
 
     def test_get_category_tree_success(self) -> None:
         """[성공] 실제 DB 데이터를 기반으로 전체 트리 구조를 반환하는지 확인"""

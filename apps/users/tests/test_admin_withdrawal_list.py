@@ -12,12 +12,23 @@ from apps.users.models import User, Withdrawal
 class AdminWithdrawalListAPITest(TestCase):
     """어드민 탈퇴 내역 목록 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/withdrawals/"
+    url: str
+    admin_user: User
+    ta_user: User
+    withdrawn_student1: User
+    withdrawn_student2: User
+    withdrawn_ta: User
+    withdrawal1: Withdrawal
+    withdrawal2: Withdrawal
+    withdrawal3: Withdrawal
+    normal_user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/withdrawals/"
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -30,7 +41,7 @@ class AdminWithdrawalListAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -43,7 +54,7 @@ class AdminWithdrawalListAPITest(TestCase):
         )
 
         # 탈퇴한 학생 유저들
-        self.withdrawn_student1 = User.objects.create_user(
+        cls.withdrawn_student1 = User.objects.create_user(
             email="student1@example.com",
             password="password123",
             name="김학생",
@@ -54,7 +65,7 @@ class AdminWithdrawalListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=False,
         )
-        self.withdrawn_student2 = User.objects.create_user(
+        cls.withdrawn_student2 = User.objects.create_user(
             email="student2@example.com",
             password="password123",
             name="이학생",
@@ -67,7 +78,7 @@ class AdminWithdrawalListAPITest(TestCase):
         )
 
         # 탈퇴한 조교 유저
-        self.withdrawn_ta = User.objects.create_user(
+        cls.withdrawn_ta = User.objects.create_user(
             email="withdrawn_ta@example.com",
             password="password123",
             name="박조교",
@@ -80,24 +91,24 @@ class AdminWithdrawalListAPITest(TestCase):
         )
 
         # 탈퇴 내역 생성
-        self.withdrawal1 = Withdrawal.objects.create(
-            user=self.withdrawn_student1,
+        cls.withdrawal1 = Withdrawal.objects.create(
+            user=cls.withdrawn_student1,
             reason=Withdrawal.Reason.GRADUATION,
             reason_detail="수료 완료했습니다.",
         )
-        self.withdrawal2 = Withdrawal.objects.create(
-            user=self.withdrawn_student2,
+        cls.withdrawal2 = Withdrawal.objects.create(
+            user=cls.withdrawn_student2,
             reason=Withdrawal.Reason.NO_LONGER_NEEDED,
             reason_detail="더 이상 필요 없습니다.",
         )
-        self.withdrawal3 = Withdrawal.objects.create(
-            user=self.withdrawn_ta,
+        cls.withdrawal3 = Withdrawal.objects.create(
+            user=cls.withdrawn_ta,
             reason=Withdrawal.Reason.TRANSFER,
             reason_detail="다른 회사로 이직합니다.",
         )
 
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@example.com",
             password="password123",
             name="일반유저",
@@ -108,6 +119,9 @@ class AdminWithdrawalListAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)

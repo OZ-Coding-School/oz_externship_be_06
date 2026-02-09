@@ -1,6 +1,5 @@
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from rest_framework import status
@@ -21,8 +20,7 @@ from apps.qna.models import (
     QuestionCategory,
     QuestionImage,
 )
-
-User = get_user_model()
+from apps.users.models import User
 
 
 @override_settings(USE_QNA_MOCK=False)
@@ -33,18 +31,37 @@ class AdminQuestionDetailAPITest(TestCase):
     - 실패 케이스 (401, 403, 404)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    cat_depth1: QuestionCategory
+    cat_depth2: QuestionCategory
+    cat_depth3: QuestionCategory
+    course: Course
+    cohort: Cohort
+    admin_user: User
+    student_user: User
+    ta_user: User
+    lc_user: User
+    om_user: User
+    question: Question
+    img1: QuestionImage
+    img2: QuestionImage
+    student_answer: Answer
+    ta_answer: Answer
+    lc_answer: Answer
+    om_answer: Answer
+    admin_answer: Answer
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 카테고리 계층 생성 (대 > 중 > 소)
-        self.cat_depth1 = QuestionCategory.objects.create(name="개발")
-        self.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=self.cat_depth1)
-        self.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=self.cat_depth2)
+        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
+        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
+        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
 
         # 코스 및 기수 생성
-        self.course = Course.objects.create(name="백엔드 개발", tag="BE")
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.course = Course.objects.create(name="백엔드 개발", tag="BE")
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=3,
             max_student=30,
             start_date="2025-01-01",
@@ -52,7 +69,7 @@ class AdminQuestionDetailAPITest(TestCase):
         )
 
         # 어드민 유저 생성
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password",
             nickname="관리자",
@@ -64,7 +81,7 @@ class AdminQuestionDetailAPITest(TestCase):
         )
 
         # 수강생 유저 생성
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="password",
             nickname="수강생",
@@ -74,10 +91,10 @@ class AdminQuestionDetailAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student_user, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student_user, cohort=cls.cohort)
 
         # TA 유저 생성
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password",
             nickname="조교님",
@@ -87,10 +104,10 @@ class AdminQuestionDetailAPITest(TestCase):
             birthday="1998-01-01",
             is_active=True,
         )
-        TrainingAssistant.objects.create(user=self.ta_user, cohort=self.cohort)
+        TrainingAssistant.objects.create(user=cls.ta_user, cohort=cls.cohort)
 
         # LC 유저 생성
-        self.lc_user = User.objects.create_user(
+        cls.lc_user = User.objects.create_user(
             email="lc@example.com",
             password="password",
             nickname="코치님",
@@ -100,10 +117,10 @@ class AdminQuestionDetailAPITest(TestCase):
             birthday="1985-01-01",
             is_active=True,
         )
-        LearningCoach.objects.create(user=self.lc_user, course=self.course)
+        LearningCoach.objects.create(user=cls.lc_user, course=cls.course)
 
         # OM 유저 생성
-        self.om_user = User.objects.create_user(
+        cls.om_user = User.objects.create_user(
             email="om@example.com",
             password="password",
             nickname="매니저님",
@@ -113,37 +130,38 @@ class AdminQuestionDetailAPITest(TestCase):
             birthday="1988-01-01",
             is_active=True,
         )
-        OperationManager.objects.create(user=self.om_user, course=self.course)
+        OperationManager.objects.create(user=cls.om_user, course=cls.course)
 
         # 질문 생성
-        self.question = Question.objects.create(
-            author=self.student_user,
-            category=self.cat_depth3,
+        cls.question = Question.objects.create(
+            author=cls.student_user,
+            category=cls.cat_depth3,
             title="어드민 상세 조회 테스트 제목",
             content="테스트 본문 내용입니다.",
             view_count=10,
         )
 
         # 이미지 추가
-        QuestionImage.objects.create(question=self.question, img_url="http://example.com/img1.jpg")
-        QuestionImage.objects.create(question=self.question, img_url="http://example.com/img2.jpg")
+        cls.img1 = QuestionImage.objects.create(question=cls.question, img_url="http://example.com/img1.jpg")
+        cls.img2 = QuestionImage.objects.create(question=cls.question, img_url="http://example.com/img2.jpg")
 
         # 다양한 역할의 답변 추가
-        self.student_answer = Answer.objects.create(
-            author=self.student_user, question=self.question, content="수강생 답변입니다.", is_adopted=True
+        cls.student_answer = Answer.objects.create(
+            author=cls.student_user, question=cls.question, content="수강생 답변입니다.", is_adopted=True
         )
-        self.ta_answer = Answer.objects.create(author=self.ta_user, question=self.question, content="조교 답변입니다.")
-        self.lc_answer = Answer.objects.create(
-            author=self.lc_user, question=self.question, content="러닝코치 답변입니다."
+        cls.ta_answer = Answer.objects.create(author=cls.ta_user, question=cls.question, content="조교 답변입니다.")
+        cls.lc_answer = Answer.objects.create(author=cls.lc_user, question=cls.question, content="러닝코치 답변입니다.")
+        cls.om_answer = Answer.objects.create(
+            author=cls.om_user, question=cls.question, content="운영매니저 답변입니다."
         )
-        self.om_answer = Answer.objects.create(
-            author=self.om_user, question=self.question, content="운영매니저 답변입니다."
-        )
-        self.admin_answer = Answer.objects.create(
-            author=self.admin_user, question=self.question, content="관리자 답변입니다."
+        cls.admin_answer = Answer.objects.create(
+            author=cls.admin_user, question=cls.question, content="관리자 답변입니다."
         )
 
-        self.url = reverse("admin-qna-question-detail", kwargs={"question_id": self.question.id})
+        cls.url = reverse("admin-qna-question-detail", kwargs={"question_id": cls.question.id})
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)
@@ -165,7 +183,7 @@ class AdminQuestionDetailAPITest(TestCase):
 
         # 이미지
         self.assertEqual(len(data["images"]), 2)
-        self.assertIn({"id": 9, "img_url": "http://example.com/img1.jpg"}, data["images"])
+        self.assertIn({"id": self.img1.id, "img_url": "http://example.com/img1.jpg"}, data["images"])
 
         # 작성자 정보
         author = data["author"]

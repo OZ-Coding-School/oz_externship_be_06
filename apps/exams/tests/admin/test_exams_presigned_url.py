@@ -10,9 +10,13 @@ from apps.users.models import User
 
 
 class AdminExamPresignedUrlAPITest(TestCase):
-    def setUp(self) -> None:
-        self.client = Client()
-        self.admin_user = User.objects.create_user(
+    admin_user: User
+    normal_user: User
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password1234",
             name="Admin",
@@ -23,7 +27,7 @@ class AdminExamPresignedUrlAPITest(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password1234",
             name="User",
@@ -34,7 +38,10 @@ class AdminExamPresignedUrlAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.url = "/api/v1/admin/exams/presigned-url/thumbnail"
+        cls.url = "/api/v1/admin/exams/presigned-url/thumbnail"
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)

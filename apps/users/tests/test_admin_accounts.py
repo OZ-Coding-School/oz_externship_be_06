@@ -8,14 +8,21 @@ from apps.users.models import User, Withdrawal
 
 
 class AdminUserListViewTest(APITestCase):
-    def setUp(self) -> None:
+    admin_user: User
+    active_user: User
+    inactive_user: User
+    withdrawn_user: User
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
         """테스트 데이터 설정: birthday 필드 누락 방지"""
         # 1. 어드민 유저 생성
-        self.admin_user = User.objects.create_superuser(
+        cls.admin_user = User.objects.create_superuser(
             email="admin@test.com", password="password123", nickname="admin", birthday="1990-01-01"
         )
         # 2. 필터 테스트용 일반 유저들 생성
-        self.active_user = User.objects.create_user(
+        cls.active_user = User.objects.create_user(
             email="active@test.com",
             password="password123",
             nickname="active",
@@ -23,7 +30,7 @@ class AdminUserListViewTest(APITestCase):
             role="USER",
             birthday="1990-01-01",
         )
-        self.inactive_user = User.objects.create_user(
+        cls.inactive_user = User.objects.create_user(
             email="inactive@test.com",
             password="password123",
             nickname="inactive",
@@ -31,12 +38,12 @@ class AdminUserListViewTest(APITestCase):
             role="STUDENT",
             birthday="1990-01-01",
         )
-        self.withdrawn_user = User.objects.create_user(
+        cls.withdrawn_user = User.objects.create_user(
             email="withdrew@test.com", password="password123", nickname="withdrew", role="USER", birthday="1990-01-01"
         )
-        Withdrawal.objects.create(user=self.withdrawn_user, reason="Test reason")
+        Withdrawal.objects.create(user=cls.withdrawn_user, reason="Test reason")
 
-        self.url = reverse("admin-account-list")
+        cls.url = reverse("admin-account-list")
 
     def test_access_denied_for_normal_user(self) -> None:
         """일반 유저는 권한 없음(403) 응답 확인"""

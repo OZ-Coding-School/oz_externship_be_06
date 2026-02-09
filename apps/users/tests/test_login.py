@@ -6,22 +6,26 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.users.models import Withdrawal
+from apps.users.models import User, Withdrawal
 
 
 class LoginAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/accounts/login/"
+    url: str
+    email: str
+    password: str
+    user: User
 
-        User = get_user_model()
-        self.email = "login_test@example.com"
-        self.password = "Testpass123!"
-        self.user = User.objects.create_user(
-            email=self.email,
-            password=self.password,
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/login/"
+
+        cls.email = "login_test@example.com"
+        cls.password = "Testpass123!"
+        cls.user = User.objects.create_user(
+            email=cls.email,
+            password=cls.password,
             birthday=date(2000, 1, 1),
             phone_number="01012345678",
             name="테스터",
@@ -29,6 +33,9 @@ class LoginAPITests(TestCase):
             gender="MALE",
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def test_login_success_200(self) -> None:
         res = self.client.post(
@@ -79,12 +86,14 @@ class LoginAPITests(TestCase):
 class LogoutAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/accounts/logout/"
+    url: str
+    user: User
 
-        User = get_user_model()
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/logout/"
+
+        cls.user = User.objects.create_user(
             email="logout_test@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -95,6 +104,8 @@ class LogoutAPITests(TestCase):
             is_active=True,
         )
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 

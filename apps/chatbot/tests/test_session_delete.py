@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -6,38 +5,41 @@ from rest_framework.test import APIClient
 
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.qna.models import Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class ChatbotSessionDeleteAPITest(TestCase):
-    def setUp(self) -> None:
-        self.client: APIClient = APIClient()
+    user: User
+    other_user: User
+    category: QuestionCategory
+    question: Question
 
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user1@test.com",
             password="password",
             birthday="2000-01-01",
             is_active=True,
         )
-        self.other_user = User.objects.create_user(
+        cls.other_user = User.objects.create_user(
             email="user2@test.com",
             password="password",
             birthday="2000-01-01",
             is_active=True,
         )
-
-        self.category = QuestionCategory.objects.create(
+        cls.category = QuestionCategory.objects.create(
             name="dummy-category",
         )
-
-        self.question = Question.objects.create(
-            author=self.user,
-            category=self.category,
+        cls.question = Question.objects.create(
+            author=cls.user,
+            category=cls.category,
             title="dummy",
             content="dummy",
         )
 
+    def setUp(self) -> None:
+        self.client: APIClient = APIClient()
         self.session = ChatbotSession.objects.create(
             user=self.user,
             question_id=self.question.id,

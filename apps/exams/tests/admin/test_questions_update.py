@@ -1,7 +1,6 @@
 from datetime import date
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -14,45 +13,52 @@ from apps.exams.services.admin.questions_update import (
     BusinessRuleError,
     update_exam_question,
 )
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AdminExamQuestionUpdateAPITests(APITestCase):
-    def setUp(self) -> None:
+    admin: User
+    user: User
+    course: Course
+    subject: Subject
+    exam: Exam
+    question: ExamQuestion
+    url: str
 
-        self.admin = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin = User.objects.create_user(
             email="admin@test.com",
             password="password",
             birthday=date(1990, 1, 1),
             role=User.Role.ADMIN,
         )
 
-        self.user = User.objects.create_user(
+        cls.user = User.objects.create_user(
             email="user@test.com",
             password="password",
             birthday=date(1995, 5, 5),
             is_staff=False,
         )
 
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="테스트 강좌",
             tag="T01",
             description="테스트 강좌 설명",
         )
 
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="테스트 과목",
             number_of_days=30,
             number_of_hours=10,
             status=True,
         )
 
-        self.exam = Exam.objects.create(title="테스트 시험", subject=self.subject)
+        cls.exam = Exam.objects.create(title="테스트 시험", subject=cls.subject)
 
-        self.question = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.question = ExamQuestion.objects.create(
+            exam=cls.exam,
             type=ExamQuestion.TypeChoices.ORDERING,
             question="기존 문제",
             prompt="",
@@ -63,9 +69,9 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
             explanation="기존 해설",
         )
 
-        self.url = reverse(
+        cls.url = reverse(
             "admin-exam-question-detail",
-            kwargs={"question_id": self.question.id},
+            kwargs={"question_id": cls.question.id},
         )
 
     # 1. 성공 (200)

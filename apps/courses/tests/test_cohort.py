@@ -15,11 +15,16 @@ class AdminCohortCreateAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/cohorts"
+    url: str
+    admin_user: User
+    student_user: User
+    course: Course
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/cohorts"
+
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -32,7 +37,7 @@ class AdminCohortCreateAPITests(TestCase):
             is_active=True,
         )
 
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -44,10 +49,13 @@ class AdminCohortCreateAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -158,10 +166,15 @@ class CohortListAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    user: User
+    course: Course
+    cohort1: Cohort
+    cohort2: Cohort
+    url: str
 
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -173,18 +186,18 @@ class CohortListAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
 
-        self.cohort1 = Cohort.objects.create(
-            course=self.course,
+        cls.cohort1 = Cohort.objects.create(
+            course=cls.course,
             number=14,
             max_student=30,
             start_date=date(2025, 1, 1),
             end_date=date(2025, 6, 30),
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
-        self.cohort2 = Cohort.objects.create(
-            course=self.course,
+        cls.cohort2 = Cohort.objects.create(
+            course=cls.course,
             number=15,
             max_student=30,
             start_date=date(2025, 7, 1),
@@ -192,7 +205,10 @@ class CohortListAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
-        self.url = f"/api/v1/{self.course.id}/cohorts"
+        cls.url = f"/api/v1/{cls.course.id}/cohorts"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -231,10 +247,15 @@ class AdminCohortUpdateAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
+    course: Course
+    cohort: Cohort
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -247,7 +268,7 @@ class AdminCohortUpdateAPITests(TestCase):
             is_active=True,
         )
 
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -259,9 +280,9 @@ class AdminCohortUpdateAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=15,
             max_student=30,
             start_date=date(2025, 1, 1),
@@ -269,7 +290,10 @@ class AdminCohortUpdateAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
-        self.url = f"/api/v1/admin/cohorts/{self.cohort.id}"
+        cls.url = f"/api/v1/admin/cohorts/{cls.cohort.id}"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -338,10 +362,15 @@ class AdminCohortAvgScoresAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
+    course: Course
+    cohort: Cohort
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -354,7 +383,7 @@ class AdminCohortAvgScoresAPITests(TestCase):
             is_active=True,
         )
 
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -366,16 +395,19 @@ class AdminCohortAvgScoresAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=15,
             max_student=30,
             start_date=date(2025, 1, 1),
             end_date=date(2025, 6, 30),
         )
 
-        self.url = f"/api/v1/admin/courses/{self.course.id}/cohorts/avg-scores"
+        cls.url = f"/api/v1/admin/courses/{cls.course.id}/cohorts/avg-scores"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -430,10 +462,16 @@ class AdminCohortStudentsAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student1: User
+    student2: User
+    course: Course
+    cohort: Cohort
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -446,7 +484,7 @@ class AdminCohortStudentsAPITests(TestCase):
             is_active=True,
         )
 
-        self.student1 = User.objects.create_user(
+        cls.student1 = User.objects.create_user(
             email="student1@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -458,7 +496,7 @@ class AdminCohortStudentsAPITests(TestCase):
             is_active=True,
         )
 
-        self.student2 = User.objects.create_user(
+        cls.student2 = User.objects.create_user(
             email="student2@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -470,19 +508,22 @@ class AdminCohortStudentsAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=15,
             max_student=30,
             start_date=date(2025, 1, 1),
             end_date=date(2025, 6, 30),
         )
 
-        CohortStudent.objects.create(user=self.student1, cohort=self.cohort)
-        CohortStudent.objects.create(user=self.student2, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student1, cohort=cls.cohort)
+        CohortStudent.objects.create(user=cls.student2, cohort=cls.cohort)
 
-        self.url = f"/api/v1/admin/cohorts/{self.cohort.id}/students"
+        cls.url = f"/api/v1/admin/cohorts/{cls.cohort.id}/students"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -544,10 +585,16 @@ class AdminSubjectListAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
+    course: Course
+    subject1: Subject
+    subject2: Subject
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -560,7 +607,7 @@ class AdminSubjectListAPITests(TestCase):
             is_active=True,
         )
 
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -572,24 +619,27 @@ class AdminSubjectListAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
 
-        self.subject1 = Subject.objects.create(
-            course=self.course,
+        cls.subject1 = Subject.objects.create(
+            course=cls.course,
             title="Python",
             number_of_days=10,
             number_of_hours=80,
             status=True,
         )
-        self.subject2 = Subject.objects.create(
-            course=self.course,
+        cls.subject2 = Subject.objects.create(
+            course=cls.course,
             title="Django",
             number_of_days=15,
             number_of_hours=120,
             status=False,
         )
 
-        self.url = f"/api/v1/admin/courses/{self.course.id}/subjects"
+        cls.url = f"/api/v1/admin/courses/{cls.course.id}/subjects"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -647,10 +697,15 @@ class AdminSubjectScatterAPITests(TestCase):
 
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
+    course: Course
+    subject: Subject
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -663,7 +718,7 @@ class AdminSubjectScatterAPITests(TestCase):
             is_active=True,
         )
 
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -675,15 +730,18 @@ class AdminSubjectScatterAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(name="백엔드", tag="BE")
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.course = Course.objects.create(name="백엔드", tag="BE")
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="Python",
             number_of_days=10,
             number_of_hours=80,
         )
 
-        self.url = f"/api/v1/admin/subjects/{self.subject.id}/scatter"
+        cls.url = f"/api/v1/admin/subjects/{cls.subject.id}/scatter"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)

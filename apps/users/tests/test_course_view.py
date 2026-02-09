@@ -8,17 +8,26 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.courses.models import Cohort, Course
 from apps.courses.models.cohort_students import CohortStudent
+from apps.users.models import User
 
 
 class AvailableCoursesAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/accounts/available-courses/"
+    url: str
+    user: User
+    course_backend: Course
+    course_frontend: Course
+    cohort_backend_1: Cohort
+    cohort_backend_2: Cohort
+    cohort_backend_in_progress: Cohort
+    cohort_frontend_1: Cohort
 
-        User = get_user_model()
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/available-courses/"
+
+        cls.user = User.objects.create_user(
             email="course_test@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -29,20 +38,20 @@ class AvailableCoursesAPITests(TestCase):
             is_active=True,
         )
 
-        self.course_backend = Course.objects.create(
+        cls.course_backend = Course.objects.create(
             name="백엔드 과정",
             tag="BE",
             description="백엔드 부트캠프",
         )
 
-        self.course_frontend = Course.objects.create(
+        cls.course_frontend = Course.objects.create(
             name="프론트엔드 과정",
             tag="FE",
             description="프론트엔드 부트캠프",
         )
 
-        self.cohort_backend_1 = Cohort.objects.create(
-            course=self.course_backend,
+        cls.cohort_backend_1 = Cohort.objects.create(
+            course=cls.course_backend,
             number=1,
             max_student=30,
             start_date=date(2025, 1, 1),
@@ -50,8 +59,8 @@ class AvailableCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
-        self.cohort_backend_2 = Cohort.objects.create(
-            course=self.course_backend,
+        cls.cohort_backend_2 = Cohort.objects.create(
+            course=cls.course_backend,
             number=2,
             max_student=30,
             start_date=date(2025, 7, 1),
@@ -59,8 +68,8 @@ class AvailableCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
-        self.cohort_backend_in_progress = Cohort.objects.create(
-            course=self.course_backend,
+        cls.cohort_backend_in_progress = Cohort.objects.create(
+            course=cls.course_backend,
             number=3,
             max_student=30,
             start_date=date(2024, 1, 1),
@@ -68,8 +77,8 @@ class AvailableCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
 
-        self.cohort_frontend_1 = Cohort.objects.create(
-            course=self.course_frontend,
+        cls.cohort_frontend_1 = Cohort.objects.create(
+            course=cls.course_frontend,
             number=4,
             max_student=30,
             start_date=date(2025, 1, 1),
@@ -77,6 +86,8 @@ class AvailableCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.PREPARING,
         )
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
@@ -132,12 +143,16 @@ class AvailableCoursesAPITests(TestCase):
 class EnrolledCoursesAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/accounts/me/enrolled-courses/"
+    url: str
+    user: User
+    course: Course
+    cohort: Cohort
 
-        User = get_user_model()
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/me/enrolled-courses/"
+
+        cls.user = User.objects.create_user(
             email="enrolled_test@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -148,14 +163,14 @@ class EnrolledCoursesAPITests(TestCase):
             is_active=True,
         )
 
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="프론트엔드 과정",
             tag="FE",
             description="프론트엔드 부트캠프",
         )
 
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date(2025, 1, 1),
@@ -163,8 +178,10 @@ class EnrolledCoursesAPITests(TestCase):
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
 
-        CohortStudent.objects.create(user=self.user, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.user, cohort=cls.cohort)
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 

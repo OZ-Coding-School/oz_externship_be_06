@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -7,8 +6,7 @@ from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 @override_settings(USE_QNA_MOCK=False)
@@ -26,17 +24,23 @@ class QuestionListAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        # Django 내장 TestClient 초기화
-        self.client = Client()
+    category_fe: QuestionCategory
+    category_react: QuestionCategory
+    category_be: QuestionCategory
+    user: User
+    q1: Question
+    q2: Question
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 테스트용 카테고리 생성 (계층형)
-        self.category_fe = QuestionCategory.objects.create(name="프론트엔드")
-        self.category_react = QuestionCategory.objects.create(name="React", parent=self.category_fe)
-        self.category_be = QuestionCategory.objects.create(name="백엔드")
+        cls.category_fe = QuestionCategory.objects.create(name="프론트엔드")
+        cls.category_react = QuestionCategory.objects.create(name="React", parent=cls.category_fe)
+        cls.category_be = QuestionCategory.objects.create(name="백엔드")
 
         # 테스트용 유저 생성
-        self.user = User.objects.create_user(
+        cls.user = User.objects.create_user(
             email="tester@ozcoding.com",
             password="password123",
             name="김테스터",
@@ -49,27 +53,31 @@ class QuestionListAPITest(TestCase):
 
         # 테스트용 질문
         # Q1: React 카테고리, 이미지 포함, 답변 없음, 조회수 10
-        self.q1 = Question.objects.create(
-            author=self.user,
-            category=self.category_react,
+        cls.q1 = Question.objects.create(
+            author=cls.user,
+            category=cls.category_react,
             title="React Hooks 질문",
             content="![thumb](https://example.com/image.png) useEffect 사용법이 궁금해요.",
             view_count=10,
         )
 
         # Q2: 백엔드 카테고리, 답변 있음, 조회수 50
-        self.q2 = Question.objects.create(
-            author=self.user,
-            category=self.category_be,
+        cls.q2 = Question.objects.create(
+            author=cls.user,
+            category=cls.category_be,
             title="Django ORM 성능 최적화",
             content="select_related와 prefetch_related의 차이는 무엇인가요?",
             view_count=50,
         )
         # Q2에 대한 답변 생성
-        Answer.objects.create(author=self.user, question=self.q2, content="답변입니다.")
+        Answer.objects.create(author=cls.user, question=cls.q2, content="답변입니다.")
 
         # URL 설정
-        self.url = reverse("question-list-create")
+        cls.url = reverse("question-list-create")
+
+    def setUp(self) -> None:
+        # Django 내장 TestClient 초기화
+        self.client = Client()
 
     # --- 성공 케이스 테스트 ---------------------
 

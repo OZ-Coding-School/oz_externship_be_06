@@ -16,60 +16,73 @@ from apps.users.models import User
 class AdminExamDeploymentDetailAPITest(TestCase):
     """어드민 쪽지시험 배포 상세 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.course = Course.objects.create(
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    question: ExamQuestion
+    deployment: ExamDeployment
+    admin_user: User
+    normal_user: User
+    student1: User
+    student2: User
+    student3: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(
             name="코스",
             tag="CS",
             description="설명",
             thumbnail_img_url="course.png",
         )
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=11,
             max_student=30,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-        self.question = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.question = ExamQuestion.objects.create(
+            exam=cls.exam,
             question="OX 문제",
             type=ExamQuestion.TypeChoices.OX,
             answer="O",
             point=5,
             explanation="",
         )
-        self.deployment = ExamDeployment.objects.create(
-            exam=self.exam,
-            cohort=self.cohort,
+        cls.deployment = ExamDeployment.objects.create(
+            exam=cls.exam,
+            cohort=cls.cohort,
             duration_time=45,
             access_code="ACCESSCODE",
             open_at=timezone.make_aware(datetime(2025, 3, 2, 10, 0, 0)),
             close_at=timezone.make_aware(datetime(2025, 3, 2, 12, 0, 0)),
             questions_snapshot_json=[
                 {
-                    "question_id": self.question.id,
-                    "type": self.question.type,
-                    "question": self.question.question,
-                    "prompt": self.question.prompt,
-                    "blank_count": self.question.blank_count,
+                    "question_id": cls.question.id,
+                    "type": cls.question.type,
+                    "question": cls.question.question,
+                    "prompt": cls.question.prompt,
+                    "blank_count": cls.question.blank_count,
                     "options": None,
-                    "point": self.question.point,
+                    "point": cls.question.point,
                 }
             ],
         )
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -80,7 +93,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="사용자",
@@ -91,7 +104,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.student1 = User.objects.create_user(
+        cls.student1 = User.objects.create_user(
             email="student1@example.com",
             password="password123",
             name="수강생1",
@@ -102,7 +115,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.student2 = User.objects.create_user(
+        cls.student2 = User.objects.create_user(
             email="student2@example.com",
             password="password123",
             name="수강생2",
@@ -113,7 +126,7 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.student3 = User.objects.create_user(
+        cls.student3 = User.objects.create_user(
             email="student3@example.com",
             password="password123",
             name="수강생3",
@@ -124,12 +137,12 @@ class AdminExamDeploymentDetailAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student1, cohort=self.cohort)
-        CohortStudent.objects.create(user=self.student2, cohort=self.cohort)
-        CohortStudent.objects.create(user=self.student3, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student1, cohort=cls.cohort)
+        CohortStudent.objects.create(user=cls.student2, cohort=cls.cohort)
+        CohortStudent.objects.create(user=cls.student3, cohort=cls.cohort)
         ExamSubmission.objects.create(
-            submitter=self.student1,
-            deployment=self.deployment,
+            submitter=cls.student1,
+            deployment=cls.deployment,
             started_at=timezone.now(),
             cheating_count=0,
             answers_json=[],

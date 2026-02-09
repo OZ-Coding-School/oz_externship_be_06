@@ -1,6 +1,5 @@
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -11,19 +10,22 @@ from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.services.support_completion_policy import (
     validate_user_prompt_policy,
 )
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class ChatbotSupportSessionCreateAPITest(TestCase):
-    def setUp(self) -> None:
-        self.client: APIClient = APIClient()
+    user: User
 
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user@test.com",
             password="password",
             birthday="1995-01-01",
         )
+
+    def setUp(self) -> None:
+        self.client: APIClient = APIClient()
 
     def test_create_support_session_success(self) -> None:
         self.client.force_authenticate(user=self.user)
@@ -55,8 +57,11 @@ class ChatbotSupportSessionCreateAPITest(TestCase):
 class ChatbotSupportPolicyTest(TestCase):
     """support 챗봇 정책 테스트"""
 
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="policy@test.com",
             password="password",
             birthday="1995-01-01",

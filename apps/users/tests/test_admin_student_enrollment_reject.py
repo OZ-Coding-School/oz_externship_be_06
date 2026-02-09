@@ -14,11 +14,18 @@ from apps.users.models.enrollment import StudentEnrollmentRequest
 class AdminStudentEnrollmentRejectAPITest(TestCase):
     """어드민 수강생 등록 요청 거절 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    cohort: Cohort
+    admin_user: User
+    ta_user: User
+    user1: User
+    user2: User
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
@@ -26,8 +33,8 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date.today(),
@@ -36,7 +43,7 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -49,7 +56,7 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -62,7 +69,7 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
         )
 
         # 일반 유저들 (등록 요청자)
-        self.user1 = User.objects.create_user(
+        cls.user1 = User.objects.create_user(
             email="user1@example.com",
             password="password123",
             name="김신청",
@@ -73,7 +80,7 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
-        self.user2 = User.objects.create_user(
+        cls.user2 = User.objects.create_user(
             email="user2@example.com",
             password="password123",
             name="이신청",
@@ -85,20 +92,8 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
             is_active=True,
         )
 
-        # 등록 요청 생성
-        self.enrollment1 = StudentEnrollmentRequest.objects.create(
-            user=self.user1,
-            cohort=self.cohort,
-            status=StudentEnrollmentRequest.Status.PENDING,
-        )
-        self.enrollment2 = StudentEnrollmentRequest.objects.create(
-            user=self.user2,
-            cohort=self.cohort,
-            status=StudentEnrollmentRequest.Status.PENDING,
-        )
-
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@example.com",
             password="password123",
             name="일반유저",
@@ -108,6 +103,21 @@ class AdminStudentEnrollmentRejectAPITest(TestCase):
             birthday=date(2000, 5, 5),
             role=User.Role.USER,
             is_active=True,
+        )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+
+        # 등록 요청 생성 (tests modify enrollment status)
+        self.enrollment1 = StudentEnrollmentRequest.objects.create(
+            user=self.user1,
+            cohort=self.cohort,
+            status=StudentEnrollmentRequest.Status.PENDING,
+        )
+        self.enrollment2 = StudentEnrollmentRequest.objects.create(
+            user=self.user2,
+            cohort=self.cohort,
+            status=StudentEnrollmentRequest.Status.PENDING,
         )
 
     def _get_url(self) -> str:

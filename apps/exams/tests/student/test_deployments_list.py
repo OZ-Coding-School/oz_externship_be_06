@@ -15,28 +15,37 @@ from apps.users.models import User
 
 class ExamDeploymentListAPITest(TestCase):
 
-    def setUp(self) -> None:
-        self.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
-        self.subject = Subject.objects.create(
-            course=self.course,
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    student: User
+    normal_user: User
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=10,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="학생",
@@ -47,7 +56,7 @@ class ExamDeploymentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="일반유저",
@@ -59,11 +68,11 @@ class ExamDeploymentListAPITest(TestCase):
             is_active=True,
         )
 
-        CohortStudent.objects.create(user=self.student, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student, cohort=cls.cohort)
 
         ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam,
+            cohort=cls.cohort,
+            exam=cls.exam,
             duration_time=30,
             access_code="CODE1",
             open_at=timezone.now() - timedelta(minutes=5),
@@ -72,7 +81,7 @@ class ExamDeploymentListAPITest(TestCase):
             status=ExamDeployment.StatusChoices.ACTIVATED,
         )
 
-        self.url = "/api/v1/exams/deployments"
+        cls.url = "/api/v1/exams/deployments"
 
     def _bearer(self, user: User) -> str:
         token = AccessToken.for_user(user)

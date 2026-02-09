@@ -16,11 +16,24 @@ from apps.users.models import User, Withdrawal
 class AdminWithdrawalDetailAPITest(TestCase):
     """어드민 탈퇴 내역 상세 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    cohort: Cohort
+    admin_user: User
+    ta_user: User
+    withdrawn_student: User
+    withdrawn_ta: User
+    withdrawn_om: User
+    withdrawn_lc: User
+    withdrawal_student: Withdrawal
+    withdrawal_ta: Withdrawal
+    withdrawal_om: Withdrawal
+    withdrawal_lc: Withdrawal
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
@@ -28,8 +41,8 @@ class AdminWithdrawalDetailAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date.today(),
@@ -38,7 +51,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -51,7 +64,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -64,7 +77,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
         )
 
         # 탈퇴한 학생 유저
-        self.withdrawn_student = User.objects.create_user(
+        cls.withdrawn_student = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="김학생",
@@ -75,10 +88,10 @@ class AdminWithdrawalDetailAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=False,
         )
-        CohortStudent.objects.create(user=self.withdrawn_student, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.withdrawn_student, cohort=cls.cohort)
 
         # 탈퇴한 조교 유저
-        self.withdrawn_ta = User.objects.create_user(
+        cls.withdrawn_ta = User.objects.create_user(
             email="withdrawn_ta@example.com",
             password="password123",
             name="이조교",
@@ -89,10 +102,10 @@ class AdminWithdrawalDetailAPITest(TestCase):
             role=User.Role.TA,
             is_active=False,
         )
-        TrainingAssistant.objects.create(user=self.withdrawn_ta, cohort=self.cohort)
+        TrainingAssistant.objects.create(user=cls.withdrawn_ta, cohort=cls.cohort)
 
         # 탈퇴한 운영매니저 유저
-        self.withdrawn_om = User.objects.create_user(
+        cls.withdrawn_om = User.objects.create_user(
             email="withdrawn_om@example.com",
             password="password123",
             name="박운매",
@@ -103,10 +116,10 @@ class AdminWithdrawalDetailAPITest(TestCase):
             role=User.Role.OM,
             is_active=False,
         )
-        OperationManager.objects.create(user=self.withdrawn_om, course=self.course)
+        OperationManager.objects.create(user=cls.withdrawn_om, course=cls.course)
 
         # 탈퇴한 러닝코치 유저
-        self.withdrawn_lc = User.objects.create_user(
+        cls.withdrawn_lc = User.objects.create_user(
             email="withdrawn_lc@example.com",
             password="password123",
             name="최러닝",
@@ -117,32 +130,32 @@ class AdminWithdrawalDetailAPITest(TestCase):
             role=User.Role.LC,
             is_active=False,
         )
-        LearningCoach.objects.create(user=self.withdrawn_lc, course=self.course)
+        LearningCoach.objects.create(user=cls.withdrawn_lc, course=cls.course)
 
         # 탈퇴 내역 생성
-        self.withdrawal_student = Withdrawal.objects.create(
-            user=self.withdrawn_student,
+        cls.withdrawal_student = Withdrawal.objects.create(
+            user=cls.withdrawn_student,
             reason=Withdrawal.Reason.GRADUATION,
             reason_detail="수료 완료했습니다.",
         )
-        self.withdrawal_ta = Withdrawal.objects.create(
-            user=self.withdrawn_ta,
+        cls.withdrawal_ta = Withdrawal.objects.create(
+            user=cls.withdrawn_ta,
             reason=Withdrawal.Reason.TRANSFER,
             reason_detail="다른 회사로 이직합니다.",
         )
-        self.withdrawal_om = Withdrawal.objects.create(
-            user=self.withdrawn_om,
+        cls.withdrawal_om = Withdrawal.objects.create(
+            user=cls.withdrawn_om,
             reason=Withdrawal.Reason.NO_LONGER_NEEDED,
             reason_detail="더 이상 필요 없음",
         )
-        self.withdrawal_lc = Withdrawal.objects.create(
-            user=self.withdrawn_lc,
+        cls.withdrawal_lc = Withdrawal.objects.create(
+            user=cls.withdrawn_lc,
             reason=Withdrawal.Reason.OTHER,
             reason_detail="개인 사정",
         )
 
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@example.com",
             password="password123",
             name="일반유저",
@@ -153,6 +166,9 @@ class AdminWithdrawalDetailAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self, withdrawal_id: int) -> str:
         return f"/api/v1/admin/withdrawals/{withdrawal_id}/"

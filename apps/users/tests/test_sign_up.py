@@ -7,12 +7,21 @@ from apps.users.utils.redis_utils import save_email_token, save_sms_token
 
 
 class SignUpAPIViewTest(TestCase):
+    url: str
+    email: str
+    phone_number: str
+    email_token: str
+    sms_token: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/signup/"
+        cls.email = "test@example.com"
+        cls.phone_number = "01012345678"
+        cls.email_token = "test_email_token_12345"
+        cls.sms_token = "test_sms_token_12345"
+
     def setUp(self) -> None:
-        self.url = "/api/v1/accounts/signup/"
-        self.email = "test@example.com"
-        self.phone_number = "01012345678"
-        self.email_token = "test_email_token_12345"
-        self.sms_token = "test_sms_token_12345"
         save_email_token(self.email_token, self.email)
         save_sms_token(self.sms_token, self.phone_number)
 
@@ -95,8 +104,11 @@ class SignUpAPIViewTest(TestCase):
 
 
 class SignupNicknameCheckAPIViewTest(TestCase):
-    def setUp(self) -> None:
-        self.url = "/api/v1/accounts/check-nickname/"
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/check-nickname/"
 
     def test_nickname_available(self) -> None:
         data = {"nickname": "newuser"}

@@ -1,7 +1,6 @@
 import json
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
@@ -11,8 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AnswerCreateAPITest(TestCase):
@@ -27,11 +25,16 @@ class AnswerCreateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    student: User
+    regular_user: User
+    category: QuestionCategory
+    question: Question
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # Users
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password",
             nickname="학생",
@@ -39,7 +42,7 @@ class AnswerCreateAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-        self.regular_user = User.objects.create_user(
+        cls.regular_user = User.objects.create_user(
             email="user@ozcoding.com",
             password="password",
             nickname="일반유저",
@@ -49,15 +52,18 @@ class AnswerCreateAPITest(TestCase):
         )
 
         # Base Data
-        self.category = QuestionCategory.objects.create(name="Python")
-        self.question = Question.objects.create(
-            author=self.student,
-            category=self.category,
+        cls.category = QuestionCategory.objects.create(name="Python")
+        cls.question = Question.objects.create(
+            author=cls.student,
+            category=cls.category,
             title="질문입니다",
             content="내용",
         )
 
-        self.url = reverse("answer-create", kwargs={"question_id": self.question.id})
+        cls.url = reverse("answer-create", kwargs={"question_id": cls.question.id})
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)

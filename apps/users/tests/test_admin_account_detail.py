@@ -16,17 +16,27 @@ from apps.users.models import User
 class AdminAccountDetailAPITest(TestCase):
     """어드민 회원 정보 상세 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    course2: Course
+    cohort: Cohort
+    cohort2: Cohort
+    admin_user: User
+    ta_user: User
+    lc_user: User
+    om_user: User
+    student_user: User
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
             thumbnail_img_url="https://example.com/be.png",
         )
-        self.course2 = Course.objects.create(
+        cls.course2 = Course.objects.create(
             name="프론트엔드 부트캠프",
             tag="FE",
             description="프론트엔드 과정",
@@ -34,16 +44,16 @@ class AdminAccountDetailAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=180),
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
-        self.cohort2 = Cohort.objects.create(
-            course=self.course,
+        cls.cohort2 = Cohort.objects.create(
+            course=cls.course,
             number=2,
             max_student=30,
             start_date=date.today() + timedelta(days=200),
@@ -52,7 +62,7 @@ class AdminAccountDetailAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -65,7 +75,7 @@ class AdminAccountDetailAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -77,11 +87,11 @@ class AdminAccountDetailAPITest(TestCase):
             is_active=True,
         )
         # 조교 담당 기수 연결
-        TrainingAssistant.objects.create(user=self.ta_user, cohort=self.cohort)
-        TrainingAssistant.objects.create(user=self.ta_user, cohort=self.cohort2)
+        TrainingAssistant.objects.create(user=cls.ta_user, cohort=cls.cohort)
+        TrainingAssistant.objects.create(user=cls.ta_user, cohort=cls.cohort2)
 
         # 러닝코치 유저
-        self.lc_user = User.objects.create_user(
+        cls.lc_user = User.objects.create_user(
             email="lc@example.com",
             password="password123",
             name="러닝코치",
@@ -93,10 +103,10 @@ class AdminAccountDetailAPITest(TestCase):
             is_active=True,
         )
         # 러닝코치 담당 과정 연결
-        LearningCoach.objects.create(user=self.lc_user, course=self.course)
+        LearningCoach.objects.create(user=cls.lc_user, course=cls.course)
 
         # 운영매니저 유저
-        self.om_user = User.objects.create_user(
+        cls.om_user = User.objects.create_user(
             email="om@example.com",
             password="password123",
             name="운영매니저",
@@ -108,11 +118,11 @@ class AdminAccountDetailAPITest(TestCase):
             is_active=True,
         )
         # 운영매니저 담당 과정 연결
-        OperationManager.objects.create(user=self.om_user, course=self.course)
-        OperationManager.objects.create(user=self.om_user, course=self.course2)
+        OperationManager.objects.create(user=cls.om_user, course=cls.course)
+        OperationManager.objects.create(user=cls.om_user, course=cls.course2)
 
         # 수강생 유저
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="수강생",
@@ -124,10 +134,10 @@ class AdminAccountDetailAPITest(TestCase):
             is_active=True,
         )
         # 수강생 기수 연결
-        CohortStudent.objects.create(user=self.student_user, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student_user, cohort=cls.cohort)
 
         # 일반 유저
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="일반유저",
@@ -138,6 +148,9 @@ class AdminAccountDetailAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self, account_id: int) -> str:
         return f"/api/v1/admin/accounts/{account_id}/"
@@ -270,8 +283,7 @@ class AdminAccountDetailAPITest(TestCase):
 
     def test_deactivated_user_status(self) -> None:
         """비활성화된 유저의 status가 DEACTIVATED로 반환된다."""
-        self.normal_user.is_active = False
-        self.normal_user.save()
+        User.objects.filter(pk=self.normal_user.pk).update(is_active=False)
 
         response = self.client.get(
             self._get_url(self.normal_user.id),

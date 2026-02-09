@@ -13,12 +13,22 @@ from apps.users.models.withdrawal import Withdrawal
 
 class AdminWithdrawalTrendsAPITest(TestCase):
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/withdrawals/trends"
+    url: str
+    admin_user: User
+    staff_user: User
+    normal_user: User
+    current_year: Any
+    prev_year: Any
+    w1: Withdrawal
+    w2: Withdrawal
+    w3: Withdrawal
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/analytics/withdrawals/trends"
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin_wd@example.com",
             password="password123",
             name="관리자",
@@ -30,7 +40,7 @@ class AdminWithdrawalTrendsAPITest(TestCase):
             is_active=True,
         )
 
-        self.staff_user = User.objects.create_user(
+        cls.staff_user = User.objects.create_user(
             email="ta_wd@example.com",
             password="password123",
             name="조교",
@@ -43,7 +53,7 @@ class AdminWithdrawalTrendsAPITest(TestCase):
         )
 
         # 일반 유저(권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal_wd@example.com",
             password="password123",
             name="일반유저",
@@ -57,8 +67,8 @@ class AdminWithdrawalTrendsAPITest(TestCase):
 
         # 탈퇴 데이터(연도/월 분산)
         today = date.today()
-        self.current_year = today.year
-        self.prev_year = today.year - 1
+        cls.current_year = today.year
+        cls.prev_year = today.year - 1
 
         w_user1 = User.objects.create_user(
             email="wd_data_1@example.com",
@@ -94,31 +104,34 @@ class AdminWithdrawalTrendsAPITest(TestCase):
             is_active=False,
         )
 
-        self.w1 = Withdrawal.objects.create(
+        cls.w1 = Withdrawal.objects.create(
             user=w_user1,
             reason=Withdrawal.Reason.OTHER,
             reason_detail="test",
         )
-        self.w2 = Withdrawal.objects.create(
+        cls.w2 = Withdrawal.objects.create(
             user=w_user2,
             reason=Withdrawal.Reason.PRIVACY_CONCERN,
             reason_detail="test",
         )
-        self.w3 = Withdrawal.objects.create(
+        cls.w3 = Withdrawal.objects.create(
             user=w_user3,
             reason=Withdrawal.Reason.SERVICE_DISSATISFACTION,
             reason_detail="test",
         )
 
-        Withdrawal.objects.filter(id=self.w1.id).update(
-            created_at=timezone.make_aware(datetime(self.prev_year, 11, 10, 10, 0, 0))
+        Withdrawal.objects.filter(id=cls.w1.id).update(
+            created_at=timezone.make_aware(datetime(cls.prev_year, 11, 10, 10, 0, 0))
         )
-        Withdrawal.objects.filter(id=self.w2.id).update(
-            created_at=timezone.make_aware(datetime(self.prev_year, 12, 10, 10, 0, 0))
+        Withdrawal.objects.filter(id=cls.w2.id).update(
+            created_at=timezone.make_aware(datetime(cls.prev_year, 12, 10, 10, 0, 0))
         )
-        Withdrawal.objects.filter(id=self.w3.id).update(
-            created_at=timezone.make_aware(datetime(self.current_year, 1, 10, 10, 0, 0))
+        Withdrawal.objects.filter(id=cls.w3.id).update(
+            created_at=timezone.make_aware(datetime(cls.current_year, 1, 10, 10, 0, 0))
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)

@@ -13,11 +13,14 @@ class PostDetailReadTest(APITestCase):
     게시글 상세 조회 API 기능을 검증하는 테스트 클래스입니다.
     """
 
-    def setUp(self) -> None:
-        """
-        테스트에 필요한 초기 데이터를 생성합니다.
-        """
-        self.user = User.objects.create_user(
+    user: User
+    category: PostCategory
+    post: Post
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="lead_dev@test.com",
             password="Password1234!",
             nickname="리드개발자",
@@ -26,15 +29,15 @@ class PostDetailReadTest(APITestCase):
             gender="M",
             birthday="1990-01-01",
         )
-        self.category = PostCategory.objects.create(name="자유게시판")
-        self.post = Post.objects.create(
-            author=self.user,
-            category=self.category,
+        cls.category = PostCategory.objects.create(name="자유게시판")
+        cls.post = Post.objects.create(
+            author=cls.user,
+            category=cls.category,
             title="테스트 게시글 제목",
             content="테스트 게시글 본문 내용입니다.",
             view_count=0,
         )
-        self.url = reverse("posts:post-detail", kwargs={"post_id": self.post.id})
+        cls.url = reverse("posts:post-detail", kwargs={"post_id": cls.post.id})
 
     def test_get_post_detail_success_status_200(self) -> None:
         """
