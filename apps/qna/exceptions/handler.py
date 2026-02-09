@@ -36,8 +36,8 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     ("AnswerUpdateAPIView", "PUT", True): ErrorMessages.UNAUTHORIZED_ANSWER_UPDATE,
     ("AnswerUpdateAPIView", "PUT", False): ErrorMessages.FORBIDDEN_ANSWER_UPDATE,
     # [POST] Create - TODO: View 구현 시 클래스명 업데이트 필요
-    ("CommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
-    ("CommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
+    ("AnswerCommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
+    ("AnswerCommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
     # [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
     ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,

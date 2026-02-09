@@ -11,7 +11,13 @@ from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
-from apps.qna.models import Answer, AnswerImage, Question, QuestionAIAnswer
+from apps.qna.models import (
+    Answer,
+    AnswerComment,
+    AnswerImage,
+    Question,
+    QuestionAIAnswer,
+)
 from apps.qna.utils.config_ai import AIConfig
 from apps.qna.utils.model_types import User
 
@@ -90,6 +96,37 @@ class AnswerCommandService:
         answer.save(update_fields=["is_adopted"])
 
         return answer
+
+
+class AnswerCommentCommandService:
+    """
+    답변 댓글 관련 데이터 변경(CUD) 로직 처리 서비스
+    """
+
+    @staticmethod
+    @transaction.atomic
+    def create_comment(answer_id: int, author: User, content: str) -> AnswerComment:
+        """
+        특정 답변에 대한 댓글 생성
+
+        - Args:
+            answer_id (int): 댓글을 달 답변의 ID (PK)
+            author (User): 댓글 작성자 객체
+            content (str): 댓글 내용
+        - Returns:
+            AnswerComment: 생성된 댓글 객체
+        - Raises:
+            QnaBaseException: 답변이 존재하지 않을 경우 (404)
+        """
+        # 답변 조회
+        try:
+            answer = Answer.objects.select_for_update().get(id=answer_id)
+        except Answer.DoesNotExist:
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_ANSWER, status_code=status.HTTP_404_NOT_FOUND)
+
+        # 댓글 생성
+        comment = AnswerComment.objects.create(answer=answer, author=author, content=content)
+        return comment
 
 
 class AIAnswerCommandService:

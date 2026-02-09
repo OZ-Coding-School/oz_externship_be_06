@@ -17,7 +17,8 @@ class ErrorMessages(str, Enum):
     INVALID_ANSWER_UPDATE = "유효하지 않은 답변 수정 요청입니다."
     INVALID_ANSWER_ADOPT = "유효하지 않은 답변 채택 요청입니다."
     INVALID_AI_REQUEST = "유효하지 않은 데이터 요청입니다."
-    INVALID_COMMENT_LENGTH = "댓글 내용은 1~500자 사이로 입력해야 합니다."
+    INVALID_COMMENT_LENGTH_LIMIT = "댓글 내용은 500자 이내로 입력해야 합니다."
+    INVALID_COMMENT_BLANK = "댓글 내용을 입력해주세요."
     # 400 - Admin
     INVALID_ADMIN_CATEGORY_CREATE = "카테고리 종류와 이름은 필수 입력값입니다."
     INVALID_ADMIN_CATEGORY_LIST = "유효하지 않은 목록 조회 요청입니다."

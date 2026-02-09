@@ -3,6 +3,10 @@ from typing import Any
 from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 
+from apps.core.utils.permissions import RolePermission
+from apps.qna.constants import ErrorMessages
+from apps.qna.utils.model_types import User
+
 
 class IsStudent(BasePermission):
     """
@@ -53,3 +57,18 @@ class CanWriteAnswer(BasePermission):
             return False
 
         return True
+
+
+class CanWriteComment(RolePermission):
+    """
+    댓글 작성 권한 검증
+    """
+
+    allowed_roles = {
+        User.Role.STUDENT,
+        User.Role.ADMIN,
+        User.Role.TA,
+        User.Role.LC,
+        User.Role.OM,
+    }
+    message = ErrorMessages.FORBIDDEN_COMMENT_CREATE.value

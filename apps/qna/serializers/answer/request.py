@@ -23,3 +23,22 @@ class AnswerCreateSerializer(serializers.ModelSerializer[Answer]):
     class Meta:
         model = Answer
         fields = ["content", "image_urls"]
+
+
+# ==============================================================================
+# [POST] Answer Comment Create
+# /api/v1/qna/answers/{answer_id}/comments
+# ==============================================================================
+class AnswerCommentCreateSerializer(serializers.Serializer[Answer]):
+    """
+    답변 댓글 등록 시리얼라이저
+    """
+
+    content = serializers.CharField(
+        max_length=500,
+        required=True,
+        error_messages={
+            "max_length": ErrorMessages.INVALID_COMMENT_LENGTH_LIMIT.value,
+            "blank": ErrorMessages.INVALID_COMMENT_BLANK.value,
+        },
+    )
