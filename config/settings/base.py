@@ -29,6 +29,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "django_filters",
+    "django_celery_results",
     "django_celery_beat",
 ]
 
@@ -216,20 +217,6 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Celery Settings
-CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_BEAT_SCHEDULE = {
-    "exams-auto-submit-overdue": {
-        "task": "apps.exams.tasks.auto_submit_overdue_exams",
-        "schedule": 30.0,
-    },
-}
-
 # Twilio SMS Verify Settings
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -263,3 +250,17 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Chatbot 세션 만료 기준 시간 (hours)
 CHATBOT_SESSION_EXPIRE_HOURS = 3
+
+# Celery Settings
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    "exams-auto-submit-overdue": {
+        "task": "apps.exams.tasks.auto_submit_overdue_exams",
+        "schedule": 30.0,
+    },
+}

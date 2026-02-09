@@ -2,12 +2,11 @@ from django.urls import path
 
 from apps.chatbot.views.completion import ChatbotCompletionCreateAPIView
 from apps.chatbot.views.session import ChatbotSessionAPIView
-from apps.chatbot.views.session_close import ChatbotSessionCloseAPIView
 from apps.chatbot.views.session_delete import ChatbotSessionDeleteAPIView
 from apps.chatbot.views.support import ChatbotSupportSessionCreateAPIView
 
 urlpatterns = [
-    # 세션 목록 조회 (GET) / 세션 생성 (POST, activate 포함)
+    # 세션 조회 (GET) / 세션 생성 (POST)
     path(
         "sessions/",
         ChatbotSessionAPIView.as_view(),
@@ -19,19 +18,13 @@ urlpatterns = [
         ChatbotSessionDeleteAPIView.as_view(),
         name="chatbot-session-delete",
     ),
-    # 세션 닫기
-    path(
-        "sessions/<int:session_id>/close/",
-        ChatbotSessionCloseAPIView.as_view(),
-        name="chatbot-session-close",
-    ),
-    # 챗봇 응답 생성 (SSE)
+    # 챗봇 응답 생성 (POST, SSE)
     path(
         "sessions/<int:session_id>/completions",
         ChatbotCompletionCreateAPIView.as_view(),
         name="chatbot-completions",
     ),
-    # 시스템 챗봇 세션 생성 (플로팅 버튼 진입)
+    # 시스템 챗봇 세션 생성 (Support)
     path(
         "support",
         ChatbotSupportSessionCreateAPIView.as_view(),
