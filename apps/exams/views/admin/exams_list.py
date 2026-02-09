@@ -1,7 +1,6 @@
 from typing import NoReturn
 
 from django.db.models import QuerySet
-from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -9,7 +8,7 @@ from rest_framework.request import Request
 from apps.core.utils.pagination import AdminExamPagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
-from apps.exams.exceptions import ErrorDetailException
+from apps.exams.error_map import raise_error
 from apps.exams.models import Exam
 from apps.exams.serializers.admin.exams_list import AdminExamListItemSerializer
 from apps.exams.services.admin.exams_list import (
@@ -47,5 +46,5 @@ class AdminExamListView(ExamsExceptionMixin, ListAPIView[Exam]):
                 order=qp.get("order"),
             )
         except InvalidAdminExamListParams as exc:
-            raise ErrorDetailException(str(exc), status.HTTP_400_BAD_REQUEST) from exc
+            raise_error(ErrorMessages.INVALID_EXAM_LIST_REQUEST)
         return AdminExamListService.get_queryset(params)
