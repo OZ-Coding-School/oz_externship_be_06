@@ -21,6 +21,7 @@ class ExamResultRetrieveAPITest(TestCase):
     other_user: User
     q1: ExamQuestion
     q2: ExamQuestion
+    q3: ExamQuestion
     submission: ExamSubmission
     url: str
 
@@ -97,8 +98,8 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json='["a","b","c"]',
             explanation="설명",
         )
-        self.q3 = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.q3 = ExamQuestion.objects.create(
+            exam=cls.exam,
             question="순서 문제",
             type=ExamQuestion.TypeChoices.ORDERING,
             answer=["1", "2", "3"],
