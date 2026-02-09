@@ -55,8 +55,8 @@ class MeUpdateResponseSerializer(serializers.ModelSerializer):  # type: ignore[t
         return "M" if obj.gender == "MALE" else "F"
 
 
-class ProfileImageRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]
-    image = serializers.ImageField()
+class ProfileImageUrlRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    profile_img_url = serializers.URLField(max_length=255)
 
 
 class ChangePhoneRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]

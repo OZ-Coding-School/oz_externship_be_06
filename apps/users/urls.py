@@ -11,7 +11,10 @@ from apps.users.views.find_email_view import FindEmailAPIView
 from apps.users.views.login_view import LoginAPIView, LogoutAPIView
 from apps.users.views.me import MeView
 from apps.users.views.password_view import ChangePasswordAPIView, FindPasswordAPIView
-from apps.users.views.profile_image_view import ProfileImageView
+from apps.users.views.profile_image_view import (
+    ProfileImageView,
+    ProfilePresignedUrlAPIView,
+)
 from apps.users.views.restore_view import RestoreAPIView
 from apps.users.views.sign_up_view import SignUpAPIView, SignupNicknameCheckAPIView
 from apps.users.views.sms_verification_view import (
@@ -40,6 +43,7 @@ urlpatterns = [
     # 내 정보
     path("me/", MeView.as_view(), name="me"),
     path("me/profile-image/", ProfileImageView.as_view(), name="profile-image"),
+    path("me/profile-image/presigned-url/", ProfilePresignedUrlAPIView.as_view(), name="profile-image-presigned-url"),
     path("me/refresh/", TokenRefreshAPIView.as_view(), name="token-refresh"),
     # 로그인/로그아웃
     path("login/", LoginAPIView.as_view(), name="login"),

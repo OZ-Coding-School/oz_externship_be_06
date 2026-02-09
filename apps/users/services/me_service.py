@@ -1,8 +1,8 @@
 from typing import Any
 
-from django.core.files.uploadedfile import UploadedFile
 from django.db import IntegrityError
 
+from apps.core.utils.s3_handler import S3Handler
 from apps.users.models import User
 from apps.users.utils.redis_utils import delete_sms_token, get_phone_by_token
 
@@ -32,19 +32,15 @@ def update_user_profile(*, user: User, validated_data: dict[str, Any]) -> User:
     return user
 
 
-# 프로필 이미지 수정 - S3
-def update_profile_image(*, user: User, image: UploadedFile) -> User:
-    from apps.core.utils.s3 import S3Client
-
-    s3 = S3Client()
+# 프로필 이미지 URL 저장
+def save_profile_image_url(*, user: User, profile_img_url: str) -> User:
+    s3 = S3Handler()
 
     # 기존 이미지 삭제
     if user.profile_img_url:
         s3.delete_by_url(user.profile_img_url)
 
-    # 새 이미지 업로드
-    key = s3.upload(image, path_prefix="profile")
-    user.profile_img_url = s3.build_url(key)
+    user.profile_img_url = profile_img_url
     user.save(update_fields=["profile_img_url", "updated_at"])
     return user
 
