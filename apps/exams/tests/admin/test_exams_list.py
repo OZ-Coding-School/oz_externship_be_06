@@ -126,6 +126,8 @@ class AdminExamListAPITest(TestCase):
 
         self.assertEqual(data["total_count"], 3)
         self.assertEqual(len(data["exams"]), 3)
+        for exam in data["exams"]:
+            self.assertIn("subject_name", exam)
 
     def test_200_success_and_title_asc_sort(self) -> None:
         client = self._auth_client(self.admin_user)
@@ -149,7 +151,7 @@ class AdminExamListAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        titles = [e["exam_title"] for e in data["exams"]]
+        titles = [e["title"] for e in data["exams"]]
         self.assertEqual(titles, ["aaa", "bbb", "ccc"])
 
     def test_200_filter_by_subject(self) -> None:
@@ -179,7 +181,7 @@ class AdminExamListAPITest(TestCase):
         data = response.json()
 
         self.assertEqual(data["total_count"], 1)
-        self.assertEqual(data["exams"][0]["exam_title"], "bbb")
+        self.assertEqual(data["exams"][0]["title"], "bbb")
 
     def test_200_question_and_submit_count_calculated_correctly(self) -> None:
         client = self._auth_client(self.admin_user)
@@ -237,12 +239,12 @@ class AdminExamListAPITest(TestCase):
         data = response.json()
         exams = data["exams"]
 
-        exam_aaa = next(e for e in exams if e["exam_title"] == "aaa")
+        exam_aaa = next(e for e in exams if e["title"] == "aaa")
 
         self.assertEqual(exam_aaa["question_count"], 2)
         self.assertEqual(exam_aaa["submit_count"], 1)
 
         for e in exams:
-            if e["exam_title"] != "aaa":
+            if e["title"] != "aaa":
                 self.assertEqual(e["question_count"], 0)
                 self.assertEqual(e["submit_count"], 0)
