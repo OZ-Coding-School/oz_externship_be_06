@@ -19,7 +19,7 @@ class QuestionUpdateAPITestResult(APITestCase):
         - 404 Not Found: 존재하지 않는 카테고리
     """
 
-    student_user: User
+    user: User
     other_user: User
     parent_category: QuestionCategory
     category: QuestionCategory
