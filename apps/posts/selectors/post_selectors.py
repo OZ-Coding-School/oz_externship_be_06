@@ -57,7 +57,7 @@ class PostSelector:
         """
 
         queryset = Post.objects.select_related("author", "category").annotate(
-            like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
+            likes_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
         )
 
         try:
