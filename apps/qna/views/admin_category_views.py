@@ -83,13 +83,14 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
     )
     def post(self, request: Request) -> Response:
         """카테고리 생성"""
+        # Request serializer
         serializer = AdminCategoryCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # 서비스 호출
+        # Service (command)
         category = AdminCategoryCommandService.create_category(data=serializer.validated_data)
 
-        # 응답 출력
+        # Response serializer & response
         response_serializer = AdminCategoryCreateResponseSerializer(category)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
