@@ -40,15 +40,15 @@ class AdminCategoryCreateAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = reverse("admin-qna-category-create")
+        cls.url = reverse("admin-qna-categories")
 
         # 카테고리 계층 생성 (대분류 → 중분류 → 소분류)
-        self.cat_large = QuestionCategory.objects.create(name="백엔드")
-        self.cat_medium = QuestionCategory.objects.create(name="웹프레임워크", parent=self.cat_large)
-        self.cat_small = QuestionCategory.objects.create(name="Django", parent=self.cat_medium)
+        cls.cat_large = QuestionCategory.objects.create(name="백엔드")
+        cls.cat_medium = QuestionCategory.objects.create(name="웹프레임워크", parent=cls.cat_large)
+        cls.cat_small = QuestionCategory.objects.create(name="Django", parent=cls.cat_medium)
 
         # 스태프 유저 (관리자)
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@ozcoding.com",
             password="password123",
             name="관리자",
@@ -60,7 +60,7 @@ class AdminCategoryCreateAPITest(TestCase):
         )
 
         # 스태프 유저 (조교)
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@ozcoding.com",
             password="password123",
             name="조교",
@@ -72,7 +72,7 @@ class AdminCategoryCreateAPITest(TestCase):
         )
 
         # 수강생 유저 (권한 없음)
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
             name="수강생",
@@ -84,7 +84,7 @@ class AdminCategoryCreateAPITest(TestCase):
         )
 
         # 일반 유저 (권한 없음)
-        self.general_user = User.objects.create_user(
+        cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",
             name="일반유저",

@@ -52,7 +52,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     def get_permissions(self) -> list[Any]:
         return [IsAuthenticated()]
 
-    serializer_class = None
+    serializer_class: Any = None
 
     # AI 생성 답변 조회
     # [GET] /api/v1/qna/questions/{question_id}/ai-answer
@@ -177,7 +177,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
     def get_permissions(self) -> list[Any]:
         return [IsAuthenticated()]
 
-    serializer_class = None
+    serializer_class: Any = None
 
     # 답변 채택
     # [POST] /api/v1/qna/answers/{answer_id}/accept

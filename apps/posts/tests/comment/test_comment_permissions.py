@@ -41,7 +41,7 @@ class CommentPermissionTests(TestCase):
             user = self.user
 
         class DummyObj:
-            author = None
+            author: object = None
 
         perm = IsCommentAuthorOrReadOnly()
         request = DummyRequest()
