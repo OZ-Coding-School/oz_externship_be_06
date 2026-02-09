@@ -61,11 +61,13 @@ class PostListCreateView(APIView):
         validated_data = filter_serializer.validated_data
 
         # 2. 검증된 데이터를 Selector로 전달
+        user_id = request.user.id if request.user.is_authenticated else None
         posts = PostSelector.get_post_list(
             category_id=validated_data.get("category_id"),
             search=validated_data.get("search"),
             search_filter=validated_data.get("search_filter"),
             sort=validated_data.get("sort"),
+            user_id=user_id,
         )
 
         paginator = PostPagination()
@@ -117,15 +119,15 @@ class PostDetailView(APIView):
         """
         게시글 상세 조회
         """
+        user_id = request.user.id if request.user.is_authenticated else None
 
-        # Selector
-        post = PostSelector.get_post_detail(post_id=post_id)
-
-        # Service
+        # 존재 확인 + 조회수 증가
+        post = PostSelector.get_post_detail(post_id=post_id, user_id=user_id)
         PostService.increment_view_count(post)
 
-        # Serializer
-        post.refresh_from_db()
+        # annotation 포함 재조회 (refresh_from_db는 annotation을 날리므로)
+        post = PostSelector.get_post_detail(post_id=post_id, user_id=user_id)
+
         serializer = PostDetailSerializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

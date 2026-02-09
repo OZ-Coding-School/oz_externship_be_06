@@ -39,8 +39,9 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
     thumbnail_img_url = serializers.SerializerMethodField()
     content_preview = serializers.SerializerMethodField()
 
-    comments_count = serializers.IntegerField(read_only=True)
-    likes_count = serializers.IntegerField(read_only=True)
+    comment_count = serializers.IntegerField(read_only=True)
+    like_count = serializers.IntegerField(read_only=True)
+    is_like = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Post
@@ -50,9 +51,10 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
             "title",
             "thumbnail_img_url",
             "content_preview",
-            "comments_count",
+            "comment_count",
             "view_count",
-            "likes_count",
+            "like_count",
+            "is_like",
             "created_at",
             "updated_at",
             "category_id",
@@ -122,7 +124,8 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
 
     author = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    likes_count = serializers.IntegerField()
+    like_count = serializers.IntegerField()
+    is_like = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Post
@@ -133,7 +136,8 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
             "category",
             "content",
             "view_count",
-            "likes_count",
+            "like_count",
+            "is_like",
             "created_at",
             "updated_at",
         ]
