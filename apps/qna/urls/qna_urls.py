@@ -3,10 +3,10 @@ from django.urls import path
 from apps.qna.views import presigned_url_views
 from apps.qna.views.answer_views import (
     AIAnswerGenerateAPIView,
-    AnswerCreateAPIView,
-    AnswerUpdateAPIView,
     AnswerAdoptAPIView,
     AnswerCommentCreateAPIView,
+    AnswerCreateAPIView,
+    AnswerUpdateAPIView,
 )
 from apps.qna.views.question_views import (
     QuestionCategoryTreeAPIView,

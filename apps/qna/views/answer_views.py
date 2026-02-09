@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
-    QueryParameterExamples,
     RequestBodyExamples,
 )
 from apps.qna.docs.api_response_examples import (
@@ -17,16 +16,16 @@ from apps.qna.docs.api_response_examples import (
 )
 from apps.qna.models import QuestionAIAnswer
 from apps.qna.serializers.answer.request import (
+    AnswerCommentCreateSerializer,
     AnswerCreateSerializer,
     AnswerUpdateSerializer,
-    AnswerCommentCreateSerializer,
 )
 from apps.qna.serializers.answer.response import (
     AIAnswerResponseSerializer,
-    AnswerCreateResponseSerializer,
-    AnswerUpdateResponseSerializer,
     AnswerAdoptResponseSerializer,
     AnswerCommentCreateResponseSerializer,
+    AnswerCreateResponseSerializer,
+    AnswerUpdateResponseSerializer,
 )
 from apps.qna.services.answer.command import (
     AIAnswerCommandService,
