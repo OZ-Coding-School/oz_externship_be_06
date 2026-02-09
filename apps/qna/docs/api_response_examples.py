@@ -167,7 +167,7 @@ class SuccessResponseExamples:
             "name": "FastAPI",
             "category_type": "small",
             "parent_id": 12,
-            "created_at": "2025-03-03 14:11:22",
+            "created_at": "2026-02-03 14:11:22",
         },
         response_only=True,
     )
@@ -413,7 +413,7 @@ class ErrorResponseExamples:
     )
     ANSWER_ADOPT_409 = OpenApiExample(
         name="답변 채택 실패 response body 예시 - 이미 채택됨",
-        value={"error_detail": ErrorMessages.CONFLICT_ANSWER_ADOPT.value},
+        value={"error_detail": ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT.value},
         response_only=True,
     )
 
@@ -440,7 +440,7 @@ class ErrorResponseExamples:
     )
     AI_GEN_ANSWER_409 = OpenApiExample(
         name="AI 답변 생성 실패 response body 예시 - 이미 생성됨",
-        value={"error_detail": ErrorMessages.CONFLICT_AI_GEN_ANSWER.value},
+        value={"error_detail": ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value},
         response_only=True,
     )
 
@@ -475,28 +475,28 @@ class ErrorResponseExamples:
 
     # --- ADMIN_CATEGORY_CREATE ---
     ADMIN_CATEGORY_CREATE_400 = OpenApiExample(
-        name="어드민 카테고리 등록 실패 response body 예시 - 잘못된 요청",
+        name="어드민 카테고리 등록 실패 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_CATEGORY_CREATE.value},
         response_only=True,
     )
     ADMIN_CATEGORY_CREATE_401 = OpenApiExample(
-        name="어드민 카테고리 등록 실패 response body 예시 - 인증 실패",
+        name="어드민 카테고리 등록 실패 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE.value},
         response_only=True,
     )
     ADMIN_CATEGORY_CREATE_403 = OpenApiExample(
-        name="어드민 카테고리 등록 실패 response body 예시 - 권한 없음",
+        name="어드민 카테고리 등록 실패 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE.value},
         response_only=True,
     )
     ADMIN_CATEGORY_CREATE_404 = OpenApiExample(
-        name="어드민 카테고리 등록 실패 response body 예시 - 부모 미존재",
+        name="어드민 카테고리 등록 실패 예시 - 부모카테고리 미존재",
         value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_CATEGORY_PARENT.value},
         response_only=True,
     )
     ADMIN_CATEGORY_CREATE_409 = OpenApiExample(
-        name="어드민 카테고리 등록 실패 response body 예시 - 이름 중복",
-        value={"error_detail": ErrorMessages.CONFLICT_ADMIN_CATEGORY_NAME.value},
+        name="어드민 카테고리 등록 실패 예시 - 이름 중복",
+        value={"error_detail": ErrorMessages.ALREADY_EXISTS_ADMIN_CATEGORY_NAME.value},
         response_only=True,
     )
 

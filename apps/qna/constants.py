@@ -1,5 +1,7 @@
 from enum import Enum
 
+CATEGORY_LABELS = ("대분류", "중분류", "소분류")
+
 
 class ErrorMessages(str, Enum):
     """
@@ -84,10 +86,10 @@ class ErrorMessages(str, Enum):
 
     # --- 409 Conflict (Business Logic Collision) ---
     DEFAULT_409 = "409 충돌"
-    CONFLICT_AI_GEN_ANSWER = "이미 AI가 답변을 생성했습니다."
-    CONFLICT_ANSWER_ADOPT = "이미 채택된 답변이 존재합니다."
+    ALREADY_EXISTS_AI_ANSWER = "이미 AI가 답변을 생성했습니다."
+    ALREADY_EXISTS_ANSWER_ADOPT = "이미 채택된 답변이 존재합니다."
     # 409 - Admin
-    CONFLICT_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
+    ALREADY_EXISTS_ADMIN_CATEGORY_NAME = "동일한 이름의 카테고리가 이미 존재합니다."
     CONFLICT_ADMIN_DEFAULT_CATEGORY_DELETE = "기본 카테고리는 삭제할 수 없습니다."
 
     # --- 500 Internal Server Error & Unexpected (System) ---

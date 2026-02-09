@@ -101,6 +101,6 @@ class RequestBodyExamples:
     # --- admin ---
     ADMIN_CATEGORY_CREATE = OpenApiExample(
         name="어드민 카테고리 등록 request body 예시",
-        value={"category_type": "large", "name": "백엔드", "parent_id": None},
+        value={"category_type": "대분류", "name": "백엔드", "parent_id": None},
         request_only=True,
     )
