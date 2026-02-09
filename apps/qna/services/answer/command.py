@@ -293,7 +293,7 @@ class AIAnswerCommandService:
             logger.warning("Gemini API가 빈 응답을 반환했습니다.")
             raise ValueError("AI 응답이 비어있습니다.")
 
-        return cast(str, response.text)
+        return response.text
 
     @classmethod
     def _call_openai_api(cls, title: str, content: str, model_name: str) -> str:
