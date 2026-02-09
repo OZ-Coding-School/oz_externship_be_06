@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.error_map import raise_error
+from apps.exams.models import ExamDeployment
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
@@ -70,7 +71,8 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
         if user_id is None:
             raise_error(ErrorMessages.UNAUTHORIZED)
 
-        auto_submitted = auto_submit_if_overdue(deployment=deployment, user_id=user_id).submitted
+        force_by_admin = deployment.status != ExamDeployment.StatusChoices.ACTIVATED
+        auto_submitted = auto_submit_if_overdue(deployment=deployment, user_id=user_id, force=force_by_admin).submitted
         exam_status = ExamStatus.CLOSED if auto_submitted else get_exam_status(deployment)
         is_closed = exam_status == ExamStatus.CLOSED
         serializer = self.serializer_class(

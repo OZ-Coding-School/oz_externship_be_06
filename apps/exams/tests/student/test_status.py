@@ -94,6 +94,23 @@ class ExamStatusCheckAPITest(TestCase):
         self.deployment.status = ExamDeployment.StatusChoices.DEACTIVATED
         self.deployment.save(update_fields=["status"])
 
+        ExamQuestion.objects.create(
+            exam=self.exam,
+            question="OX 문제",
+            type=ExamQuestion.TypeChoices.OX,
+            answer="O",
+            point=5,
+            explanation="설명",
+        )
+
+        submission = ExamSubmission.objects.create(
+            submitter=self.student,
+            deployment=self.deployment,
+            started_at=timezone.now(),
+            cheating_count=0,
+            answers_json=[],
+        )
+
         response = self.client.get(
             f"/api/v1/exams/deployments/{self.deployment.id}/status",
             headers=self._auth_headers(self.student),
@@ -103,6 +120,10 @@ class ExamStatusCheckAPITest(TestCase):
         data = response.json()
         self.assertEqual(data["exam_status"], "closed")
         self.assertTrue(data["force_submit"])
+
+        submission.refresh_from_db()
+        self.assertEqual(len(submission.answers_json), 1)
+        self.assertIsNone(submission.answers_json[0].get("submitted_answer"))
 
     def test_status_returns_403_for_non_student(self) -> None:
         response = self.client.get(

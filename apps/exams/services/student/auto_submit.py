@@ -22,6 +22,7 @@ def auto_submit_if_overdue(
     deployment: ExamDeployment,
     user_id: int,
     now: datetime | None = None,
+    force: bool = False,
 ) -> AutoSubmitResult:
     current = now or timezone.now()
 
@@ -37,9 +38,10 @@ def auto_submit_if_overdue(
     if submission.answers_json:
         return AutoSubmitResult(submitted=False)
 
-    deadline = submission.started_at + timedelta(minutes=deployment.duration_time)
-    if current <= deadline:
-        return AutoSubmitResult(submitted=False)
+    if not force:
+        deadline = submission.started_at + timedelta(minutes=deployment.duration_time)
+        if current <= deadline:
+            return AutoSubmitResult(submitted=False)
 
     answers = normalize_answers_json(submission.answers_json)
     if not answers:
