@@ -122,7 +122,7 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
 
     author = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
-    like_count = serializers.IntegerField()
+    likes_count = serializers.IntegerField()
 
     class Meta:
         model = Post
@@ -133,7 +133,7 @@ class PostDetailSerializer(serializers.ModelSerializer[Post]):
             "category",
             "content",
             "view_count",
-            "like_count",
+            "likes_count",
             "created_at",
             "updated_at",
         ]
