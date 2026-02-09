@@ -26,7 +26,7 @@ class AdminCategoryListAPITest(TestCase):
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("admin-qna-category-create-list")
+        self.url = reverse("admin-qna-categories")
 
         # 카테고리 데이터 생성
         # 대분류 2개
@@ -69,7 +69,6 @@ class AdminCategoryListAPITest(TestCase):
     # ==========================================================================
     # 성공 케이스
     # ==========================================================================
-
     def test_list_all_categories_success(self) -> None:
         """[성공] 필터 없이 전체 목록 조회"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -137,7 +136,7 @@ class AdminCategoryListAPITest(TestCase):
         self.assertEqual(res_data["categories"][0]["name"], "Django")
 
     # ==========================================================================
-    # 페이지네이션 동작 확인
+    # 성공 케이스 - 페이지네이션 동작 확인
     # ==========================================================================
     def test_pagination_first_page(self) -> None:
         """[성공] 첫 번째 페이지 조회"""
@@ -187,7 +186,7 @@ class AdminCategoryListAPITest(TestCase):
         self.assertEqual(len(res_data["categories"]), 10)
 
     # ==========================================================================
-    # 상속/계층 구조 응답 확인
+    # 성공 케이스 - 상속/계층 구조 응답 확인
     # ==========================================================================
     def test_response_hierarchy_info(self) -> None:
         """[성공] 부모, 자식 카테고리 정보가 올바르게 내려오는지 확인"""
