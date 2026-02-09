@@ -1,12 +1,12 @@
-from typing import Any, Optional
+from typing import Any
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.core.utils.permissions import IsStaffRole
-from apps.core.utils.pagination import AdminCategoryPagination
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import RequestBodyExamples
 from apps.qna.docs.api_response_examples import (
@@ -21,7 +21,6 @@ from apps.qna.serializers.admin.category.response import (
 )
 from apps.qna.services.admin.category.command import AdminCategoryCommandService
 from apps.qna.services.admin.category.query import AdminCategoryQueryService
-from apps.qna.utils.permissions import IsAdminOrStaff
 from apps.qna.utils.qna_paginator import AdminCategoryListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
