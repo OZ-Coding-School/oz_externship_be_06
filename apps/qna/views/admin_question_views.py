@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.utils.permissions import IsStaffRole
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
@@ -15,7 +16,6 @@ from apps.qna.serializers.admin.question.response import (
     AdminQuestionDetailResponseSerializer,
 )
 from apps.qna.services.admin.question.query import AdminQuestionQueryService
-from apps.qna.utils.permissions import IsAdminOrStaff
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -25,7 +25,7 @@ class AdminQuestionDetailAPIView(QnaBaseAPIView):
     """
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), IsAdminOrStaff()]
+        return [IsAuthenticated(), IsStaffRole()]
 
     # 어드민 질의응답 상세 조회
     # [GET] /api/v1/admin/qna/questions/{question_id}

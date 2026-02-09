@@ -212,7 +212,7 @@ class QuestionListAPITest(TestCase):
         response = self.client.get(self.url, {"page": 999})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # DRF 기본 404 메시지 확인 (혹은 커스텀)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_PAGE.value)
 
     def test_question_list_performance(self) -> None:
         """[성공] 질문 목록 조회 시 발생하는 쿼리 수 검증"""

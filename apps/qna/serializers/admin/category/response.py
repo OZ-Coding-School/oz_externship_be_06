@@ -5,7 +5,7 @@ from apps.qna.models import QuestionCategory
 
 
 # ==============================================================================
-# [POST] Admin Category Create Response
+# [POST] Admin Category - Create
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryCreateResponseSerializer(serializers.ModelSerializer[QuestionCategory]):
@@ -26,3 +26,46 @@ class AdminCategoryCreateResponseSerializer(serializers.ModelSerializer[Question
     def get_category_type(self, obj: QuestionCategory) -> str:
         """depth 프로퍼티를 기반으로 category_type 문자열 반환"""
         return CATEGORY_LABELS[obj.depth]
+
+
+# ==============================================================================
+# [GET] Admin Category List - Read
+# /api/v1/admin/qna/categories
+# ==============================================================================
+class AdminCategoryListResponseSerializer(serializers.ModelSerializer[QuestionCategory]):
+    """
+    어드민 카테고리 목록 응답 시리얼라이저
+    """
+
+    category_id = serializers.IntegerField(source="id")
+    category_type = serializers.SerializerMethodField()
+    parent_category = serializers.SerializerMethodField()
+    child_categories = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = QuestionCategory
+        fields = [
+            "category_id",
+            "name",
+            "category_type",
+            "parent_category",
+            "child_categories",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_category_type(self, obj: QuestionCategory) -> str:
+        return CATEGORY_LABELS[obj.depth]
+
+    def get_parent_category(self, obj: QuestionCategory) -> str:
+        if obj.parent:
+            return obj.parent.name
+        return ""
+
+    def get_child_categories(self, obj: QuestionCategory) -> list[str]:
+        children = getattr(obj, "subcategories", None)
+        if children:
+            return [child.name for child in children.all()]
+        return []

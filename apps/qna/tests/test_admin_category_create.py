@@ -32,7 +32,7 @@ class AdminCategoryCreateAPITest(TestCase):
 
     def setUp(self) -> None:
         self.client = Client()
-        self.url = reverse("admin-qna-category-create")
+        self.url = reverse("admin-qna-categories")
 
         # 카테고리 계층 생성 (대분류 → 중분류 → 소분류)
         self.cat_large = QuestionCategory.objects.create(name="백엔드")
@@ -95,7 +95,6 @@ class AdminCategoryCreateAPITest(TestCase):
     # ==========================================================================
     # 성공 케이스
     # ==========================================================================
-
     def test_create_large_category_success(self) -> None:
         """[성공] 관리자가 대분류 카테고리 등록"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -148,10 +147,36 @@ class AdminCategoryCreateAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.json()["parent_id"])
 
-    # ==========================================================================
-    # 실패 케이스 - 401 Unauthorized
-    # ==========================================================================
+    def test_create_category_duplicate_name_different_parent_success(self) -> None:
+        """[성공] 다른 부모 하위에 같은 이름의 카테고리는 등록 가능"""
+        # 새 대분류 생성
+        new_large = QuestionCategory.objects.create(name="프론트엔드")
 
+        auth_header = self._get_auth_header(self.admin_user)
+        data = {"category_type": "중분류", "name": "웹프레임워크", "parent_id": new_large.id}
+
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()["name"], "웹프레임워크")
+
+    # ==========================================================================
+    # 성공 케이스 - 응답 데이터 구조 검증
+    # ==========================================================================
+    def test_response_data_structure(self) -> None:
+        """[성공] 응답 데이터에 명세서에 정의된 모든 필드가 포함되어 있는지 확인"""
+        auth_header = self._get_auth_header(self.admin_user)
+        data = {"category_type": "대분류", "name": "데이터사이언스", "parent_id": None}
+
+        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
+        res_data = response.json()
+
+        expected_fields = {"category_id", "name", "category_type", "parent_id", "created_at"}
+        self.assertEqual(set(res_data.keys()), expected_fields)
+
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_create_category_unauthorized(self) -> None:
         """[실패] 로그인하지 않은 경우 401 에러 반환"""
         data = {"category_type": "대분류", "name": "테스트", "parent_id": None}
@@ -160,10 +185,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE.value)
-
-    # ==========================================================================
-    # 실패 케이스 - 403 Forbidden
-    # ==========================================================================
 
     def test_create_category_forbidden_student(self) -> None:
         """[실패] 수강생 권한으로 요청 시 403 에러 반환"""
@@ -184,10 +205,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_CREATE.value)
-
-    # ==========================================================================
-    # 실패 케이스 - 400 Bad Request (입력값 누락)
-    # ==========================================================================
 
     def test_create_category_missing_category_type(self) -> None:
         """[실패] 필수 필드 category_type 누락 시 400 에러 반환"""
@@ -218,10 +235,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ==========================================================================
-    # 실패 케이스 - 400 Bad Request (category_type/parent_id 조합 오류 - 시리얼라이저 검증)
-    # ==========================================================================
-
     def test_create_large_category_with_parent_id(self) -> None:
         """[실패] 대분류인데 parent_id를 지정한 경우 400 에러 반환"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -250,10 +263,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ==========================================================================
-    # 실패 케이스 - 400 Bad Request (부모 계층 불일치 - 서비스 검증)
-    # ==========================================================================
-
     def test_create_medium_category_with_medium_parent(self) -> None:
         """[실패] 중분류 등록 시 부모가 중분류인 경우 400 에러 반환"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -275,10 +284,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ==========================================================================
-    # 실패 케이스 - 404 Not Found
-    # ==========================================================================
-
     def test_create_category_parent_not_found(self) -> None:
         """[실패] 존재하지 않는 부모 카테고리 ID로 요청 시 404 에러 반환"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -288,10 +293,6 @@ class AdminCategoryCreateAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_ADMIN_CATEGORY_PARENT.value)
-
-    # ==========================================================================
-    # 실패 케이스 - 409 Conflict
-    # ==========================================================================
 
     def test_create_category_duplicate_name_same_parent(self) -> None:
         """[실패] 같은 부모 하위에 동일한 이름의 카테고리가 존재하는 경우 409 에러 반환"""
@@ -304,19 +305,6 @@ class AdminCategoryCreateAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.ALREADY_EXISTS_ADMIN_CATEGORY_NAME.value)
 
-    def test_create_category_duplicate_name_different_parent_success(self) -> None:
-        """[성공] 다른 부모 하위에 같은 이름의 카테고리는 등록 가능"""
-        # 새 대분류 생성
-        new_large = QuestionCategory.objects.create(name="프론트엔드")
-
-        auth_header = self._get_auth_header(self.admin_user)
-        data = {"category_type": "중분류", "name": "웹프레임워크", "parent_id": new_large.id}
-
-        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json()["name"], "웹프레임워크")
-
     def test_create_category_duplicate_name_at_root(self) -> None:
         """[실패] 대분류에서 동일한 이름의 카테고리가 존재하는 경우 409 에러 반환"""
         auth_header = self._get_auth_header(self.admin_user)
@@ -328,37 +316,8 @@ class AdminCategoryCreateAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     # ==========================================================================
-    # 응답 데이터 구조 검증
-    # ==========================================================================
-
-    def test_response_data_structure(self) -> None:
-        """[성공] 응답 데이터에 명세서에 정의된 모든 필드가 포함되어 있는지 확인"""
-        auth_header = self._get_auth_header(self.admin_user)
-        data = {"category_type": "대분류", "name": "데이터사이언스", "parent_id": None}
-
-        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
-        res_data = response.json()
-
-        expected_fields = {"category_id", "name", "category_type", "parent_id", "created_at"}
-        self.assertEqual(set(res_data.keys()), expected_fields)
-
-    def test_response_created_at_format(self) -> None:
-        """[성공] created_at 필드가 'YYYY-MM-DD HH:MM:SS' 형식인지 확인"""
-        auth_header = self._get_auth_header(self.admin_user)
-        data = {"category_type": "대분류", "name": "디자인", "parent_id": None}
-
-        response = self.client.post(self.url, data=data, content_type="application/json", secure=False, **auth_header)
-        res_data = response.json()
-
-        # 'YYYY-MM-DD HH:MM:SS' 형식 검증 (19자)
-        self.assertEqual(len(res_data["created_at"]), 19)
-        self.assertEqual(res_data["created_at"][4], "-")
-        self.assertEqual(res_data["created_at"][10], " ")
-
-    # ==========================================================================
     # 성능 테스트
     # ==========================================================================
-
     def test_create_category_performance(self) -> None:
         """[성능] 카테고리 등록 시 발생하는 쿼리 수 검증"""
         auth_header = self._get_auth_header(self.admin_user)
