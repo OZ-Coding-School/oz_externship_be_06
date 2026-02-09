@@ -20,7 +20,7 @@ logger = logging.getLogger("django")
 
 class AnswerCommandService:
     """
-    답변 관련 데이터 변경(CUD) 로직 처리 서비스
+    답변 등록, 수정, 채택 로직 처리 서비스
     """
 
     @staticmethod
@@ -28,7 +28,6 @@ class AnswerCommandService:
     def create_answer(question_id: int, author: User, data: dict[str, Any]) -> Answer:
         """
         특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
-
         - Args:
             question_id (int): 답변을 달 질문의 ID (PK)
             author (User): 답변 작성자 객체 (User Instance)
@@ -52,6 +51,43 @@ class AnswerCommandService:
         image_urls = data.get("image_urls", [])
         if image_urls:
             AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
+
+        return answer
+
+    @staticmethod
+    @transaction.atomic
+    def adopt_answer(answer_id: int, user: User) -> Answer:
+        """
+        답변을 채택 처리
+        - Args:
+            answer_id (int): 채택할 답변의 ID (PK)
+            user (User): 채택 요청한 사용자 객체
+        - Returns:
+            Answer: 채택된 답변 객체
+        - Raises:
+            QnaBaseException(404): 답변이 존재하지 않을 경우
+            QnaBaseException(403): 본인이 작성한 질문이 아닐 경우
+            QnaBaseException(409): 이미 채택된 답변이 존재할 경우
+        """
+        # 답변 조회
+        try:
+            answer = Answer.objects.select_related("question", "author").select_for_update().get(id=answer_id)
+        except Answer.DoesNotExist:
+            raise QnaBaseException(
+                detail=ErrorMessages.NOT_FOUND_QUESTION_OR_ANSWER, status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        # 질문 작성자 확인
+        if answer.question.author_id != user.id:
+            raise QnaBaseException(detail=ErrorMessages.FORBIDDEN_ANSWER_ADOPT, status_code=status.HTTP_403_FORBIDDEN)
+
+        # 이미 채택된 답변이 있는지 확인
+        if Answer.objects.filter(question=answer.question, is_adopted=True).exists():
+            raise QnaBaseException(detail=ErrorMessages.CONFLICT_ANSWER_ADOPT, status_code=status.HTTP_409_CONFLICT)
+
+        # 답변 채택 처리
+        answer.is_adopted = True
+        answer.save(update_fields=["is_adopted"])
 
         return answer
 

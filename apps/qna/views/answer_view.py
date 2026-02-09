@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
-    QueryParameterExamples,
     RequestBodyExamples,
 )
 from apps.qna.docs.api_response_examples import (
@@ -19,6 +18,7 @@ from apps.qna.models import QuestionAIAnswer
 from apps.qna.serializers.answer.request import AnswerCreateSerializer
 from apps.qna.serializers.answer.response import (
     AIAnswerResponseSerializer,
+    AnswerAdoptResponseSerializer,
     AnswerCreateResponseSerializer,
 )
 from apps.qna.services.answer.command import (
@@ -87,6 +87,64 @@ class AnswerCreateAPIView(QnaBaseAPIView):
         # 응답 출력
         response_serializer = AnswerCreateResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AnswerAdoptAPIView(QnaBaseAPIView):
+    """
+    답변 채택 API View
+    """
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated()]
+
+    # 답변 채택
+    # [POST] /api/v1/qna/answers/{answer_id}/accept
+    @extend_schema(
+        tags=["qna"],
+        summary="답변 채택 API",
+        description=ApiDescriptions.ANSWER_ADOPT,
+        request=None,
+        responses={
+            200: OpenApiResponse(
+                description="답변 채택 성공",
+                response=AnswerAdoptResponseSerializer,
+                examples=[SuccessResponseExamples.ANSWER_ADOPT],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_ADOPT_400],
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_ADOPT_401],
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_ADOPT_403],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_ADOPT_404],
+            ),
+            409: OpenApiResponse(
+                description="Conflict",
+                response=dict,
+                examples=[ErrorResponseExamples.ANSWER_ADOPT_409],
+            ),
+        },
+    )
+    def post(self, request: Request, answer_id: int) -> Response:
+        """답변 채택 처리"""
+        # 서비스 호출
+        answer = AnswerCommandService.adopt_answer(answer_id=answer_id, user=cast(User, request.user))
+
+        # 응답 출력
+        response_serializer = AnswerAdoptResponseSerializer(answer)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):

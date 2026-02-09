@@ -49,7 +49,7 @@ class AdminUserListView(generics.ListAPIView[Any]):
                 queryset = queryset.filter(role=target_role)
         return queryset
 
-    @extend_schema(tags=["Admin - Accounts"], summary="어드민 회원 목록 조회")
+    @extend_schema(tags=["admin_accounts"], summary="어드민 회원 목록 조회")
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return super().get(request, *args, **kwargs)
 
