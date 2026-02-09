@@ -1,11 +1,10 @@
-from io import BytesIO
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
 from django.test import TestCase, override_settings
 
-from apps.core.utils.s3 import S3Client
+from apps.core.utils.s3_handler import S3Handler
 
 
 @override_settings(
@@ -14,8 +13,8 @@ from apps.core.utils.s3 import S3Client
     AWS_S3_REGION="ap-northeast-2",
     AWS_S3_BUCKET_NAME="test-bucket",
 )
-class S3ClientTests(TestCase):
-    s3_client: S3Client
+class S3HandlerTests(TestCase):
+    s3_handler: S3Handler
     mock_s3: Any
 
     def setUp(self) -> None:
@@ -23,53 +22,26 @@ class S3ClientTests(TestCase):
         self.patcher = patch("boto3.client", return_value=self.mock_s3)
         self.patcher.start()
 
-        self.s3_client = S3Client()
+        self.s3_handler = S3Handler()
 
     def tearDown(self) -> None:
         self.patcher.stop()
 
-    def test_upload_success(self) -> None:
-        file: Any = BytesIO(b"test content")
-        file.name = "test.jpg"
-        file.content_type = "image/jpeg"
+    def test_generate_presigned_url_success(self) -> None:
+        self.mock_s3.generate_presigned_url.return_value = "https://presigned-url.com"
 
-        result = self.s3_client.upload(file, path_prefix="images")
+        result = self.s3_handler.generate_presigned_url("uploads/images", "test.png")
 
-        self.mock_s3.upload_fileobj.assert_called_once()
-        self.assertTrue(result.startswith("images/"))
-        self.assertTrue(result.endswith(".jpg"))
-
-    def test_upload_without_extension(self) -> None:
-        file = BytesIO(b"test content")
-        file.name = "noextension"
-
-        result = self.s3_client.upload(file)
-
-        self.assertTrue(result.endswith(".bin"))
-
-    def test_upload_with_extra_args(self) -> None:
-        file = BytesIO(b"test content")
-        file.name = "test.pdf"
-
-        self.s3_client.upload(file, extra_args={"ContentType": "application/pdf"})
-
-        call_args = self.mock_s3.upload_fileobj.call_args
-        self.assertEqual(call_args.kwargs["ExtraArgs"]["ContentType"], "application/pdf")
-
-    def test_upload_client_error(self) -> None:
-        file = BytesIO(b"test content")
-        file.name = "test.jpg"
-
-        self.mock_s3.upload_fileobj.side_effect = ClientError(
-            {"Error": {"Code": "500", "Message": "Internal Error"}},
-            "upload_fileobj",
-        )
-
-        with self.assertRaises(ClientError):
-            self.s3_client.upload(file)
+        self.assertIsNotNone(result)
+        self.assertIn("presigned_url", result)
+        self.assertIn("img_url", result)
+        self.assertIn("key", result)
+        self.assertEqual(result["presigned_url"], "https://presigned-url.com")
+        self.assertTrue(result["key"].startswith("uploads/images/"))
+        self.assertTrue(result["key"].endswith("_test.png"))
 
     def test_delete_success(self) -> None:
-        self.s3_client.delete("images/test.jpg")
+        self.s3_handler.delete("images/test.jpg")
 
         self.mock_s3.delete_object.assert_called_once_with(
             Bucket="test-bucket",
@@ -77,7 +49,7 @@ class S3ClientTests(TestCase):
         )
 
     def test_delete_empty_key(self) -> None:
-        self.s3_client.delete("")
+        self.s3_handler.delete("")
 
         self.mock_s3.delete_object.assert_not_called()
 
@@ -87,12 +59,12 @@ class S3ClientTests(TestCase):
             "delete_object",
         )
 
-        self.s3_client.delete("images/test.jpg")
+        self.s3_handler.delete("images/test.jpg")
 
     def test_delete_by_url(self) -> None:
         url = "https://test-bucket.s3.ap-northeast-2.amazonaws.com/images/test.jpg"
 
-        self.s3_client.delete_by_url(url)
+        self.s3_handler.delete_by_url(url)
 
         self.mock_s3.delete_object.assert_called_once_with(
             Bucket="test-bucket",
@@ -100,7 +72,7 @@ class S3ClientTests(TestCase):
         )
 
     def test_build_url(self) -> None:
-        result = self.s3_client.build_url("images/test.jpg")
+        result = self.s3_handler.build_url("images/test.jpg")
 
         self.assertEqual(
             result,
@@ -108,60 +80,39 @@ class S3ClientTests(TestCase):
         )
 
     def test_build_url_empty_key(self) -> None:
-        result = self.s3_client.build_url("")
+        result = self.s3_handler.build_url("")
 
         self.assertEqual(result, "")
 
     @override_settings(AWS_S3_CUSTOM_DOMAIN="cdn.example.com")
     def test_build_url_with_custom_domain(self) -> None:
-        client = S3Client()
-        result = client.build_url("images/test.jpg")
+        handler = S3Handler()
+        result = handler.build_url("images/test.jpg")
 
         self.assertEqual(result, "https://cdn.example.com/images/test.jpg")
 
     def test_extract_key_from_url(self) -> None:
         url = "https://test-bucket.s3.ap-northeast-2.amazonaws.com/images/test.jpg"
 
-        result = self.s3_client.extract_key_from_url(url)
+        result = self.s3_handler.extract_key_from_url(url)
 
         self.assertEqual(result, "images/test.jpg")
 
     def test_extract_key_from_url_empty(self) -> None:
-        result = self.s3_client.extract_key_from_url("")
+        result = self.s3_handler.extract_key_from_url("")
 
         self.assertEqual(result, "")
 
     def test_extract_key_from_url_invalid(self) -> None:
-        result = self.s3_client.extract_key_from_url("https://other-domain.com/test.jpg")
+        result = self.s3_handler.extract_key_from_url("https://other-domain.com/test.jpg")
 
         self.assertEqual(result, "")
 
     @override_settings(AWS_S3_CUSTOM_DOMAIN="cdn.example.com")
     def test_extract_key_from_url_with_custom_domain(self) -> None:
-        client = S3Client()
+        handler = S3Handler()
         url = "https://cdn.example.com/images/test.jpg"
 
-        result = client.extract_key_from_url(url)
+        result = handler.extract_key_from_url(url)
 
         self.assertEqual(result, "images/test.jpg")
-
-    def test_generate_presigned_url_success(self) -> None:
-        self.mock_s3.generate_presigned_url.return_value = "https://presigned-url.com"
-
-        result = self.s3_client.generate_presigned_url("images/test.jpg", expires_in=3600)
-
-        self.assertEqual(result, "https://presigned-url.com")
-        self.mock_s3.generate_presigned_url.assert_called_once_with(
-            ClientMethod="put_object",
-            Params={"Bucket": "test-bucket", "Key": "images/test.jpg"},
-            ExpiresIn=3600,
-        )
-
-    def test_generate_presigned_url_client_error(self) -> None:
-        self.mock_s3.generate_presigned_url.side_effect = ClientError(
-            {"Error": {"Code": "500", "Message": "Internal Error"}},
-            "generate_presigned_url",
-        )
-
-        with self.assertRaises(ClientError):
-            self.s3_client.generate_presigned_url("images/test.jpg")
