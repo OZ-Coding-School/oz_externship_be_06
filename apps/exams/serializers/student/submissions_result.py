@@ -17,7 +17,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
     total_score = serializers.IntegerField(source="score", read_only=True)
     elapsed_time = serializers.SerializerMethodField()
 
-    submitted_at = serializers.DateTimeField(source="created_at", read_only=True)
+    submitted_at = serializers.DateTimeField(source="updated_at", read_only=True)
 
     exam = ExamSimpleSerializer(source="deployment.exam", read_only=True)
 
