@@ -69,7 +69,7 @@ class PostSelector:
         """
 
         queryset = Post.objects.select_related("author", "category").annotate(
-            likes_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
+            like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
         )
 
         # 현재 유저의 좋아요 여부
