@@ -13,8 +13,10 @@ from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
-from apps.qna.serializers.admin.category.request import AdminCategoryCreateSerializer
-from apps.qna.serializers.admin.category.request import AdminCategoryListQuerySerializer
+from apps.qna.serializers.admin.category.request import (
+    AdminCategoryCreateSerializer,
+    AdminCategoryListQuerySerializer,
+)
 from apps.qna.serializers.admin.category.response import (
     AdminCategoryCreateResponseSerializer,
     AdminCategoryListResponseSerializer,
@@ -34,8 +36,8 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
         return [IsAuthenticated(), IsStaffRole()]
 
     serializer_class = {
-        'POST': AdminCategoryCreateSerializer,
-        'GET': AdminCategoryListQuerySerializer,
+        "POST": AdminCategoryCreateSerializer,
+        "GET": AdminCategoryListQuerySerializer,
     }
 
     # 카테고리 등록
@@ -135,6 +137,3 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
         return Paginator.get_paginated_data_response(
             queryset=category_list, request=request, serializer_class=AdminCategoryListResponseSerializer, view=self
         )
-
-
-

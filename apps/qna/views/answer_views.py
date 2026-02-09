@@ -60,7 +60,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
         tags=["qna"],
         summary="AI 답변 생성 API",
         description=ApiDescriptions.AI_GEN_ANSWER,
-        request = None,
+        request=None,
         responses={
             201: OpenApiResponse(
                 description="Created",

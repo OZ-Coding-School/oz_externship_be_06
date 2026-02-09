@@ -68,4 +68,3 @@ class AdminCategoryListQuerySerializer(serializers.Serializer[Any]):
     category_type = serializers.ChoiceField(choices=CATEGORY_LABELS, required=False)
 
     default_error_message = ErrorMessages.INVALID_ADMIN_CATEGORY_LIST
-
