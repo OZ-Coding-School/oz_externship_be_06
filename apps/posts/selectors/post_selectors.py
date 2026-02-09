@@ -1,9 +1,10 @@
 from typing import Optional
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, QuerySet, Value
 
 from apps.posts.exceptions.post_exceptions import PostNotFoundException
 from apps.posts.models.post import Post
+from apps.posts.models.post_likes import PostLike
 
 
 class PostSelector:
@@ -17,14 +18,25 @@ class PostSelector:
         search: Optional[str] = None,
         search_filter: Optional[str] = "all",
         sort: Optional[str] = "latest",
+        user_id: Optional[int] = None,
     ) -> QuerySet[Post]:
         """
         검색, 필터, 정렬 및 N+1 최적화가 적용된 게시글 목록을 반환합니다.
         """
         queryset: QuerySet[Post] = Post.objects.select_related("author", "category").prefetch_related("images")
         queryset = queryset.annotate(
-            likes_count=Count("likes", distinct=True), comments_count=Count("comments", distinct=True)
+            like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True),
+            comment_count=Count("comments", distinct=True),
         )
+
+        # 현재 유저의 좋아요 여부
+        if user_id:
+            queryset = queryset.annotate(
+                is_like=Exists(PostLike.objects.filter(post=OuterRef("pk"), user_id=user_id, is_liked=True))
+            )
+        else:
+            queryset = queryset.annotate(is_like=Value(False, output_field=BooleanField()))
+
         if category_id:
             queryset = queryset.filter(category_id=category_id)
         if search:
@@ -40,8 +52,8 @@ class PostSelector:
                 )
         sort_map = {
             "latest": "-created_at",
-            "likes": "-likes_count",
-            "comments": "-comments_count",
+            "likes": "-like_count",
+            "comments": "-comment_count",
             "oldest": "created_at",
         }
 
@@ -50,15 +62,23 @@ class PostSelector:
         return queryset.order_by(order_by)
 
     @staticmethod
-    def get_post_detail(post_id: int) -> Post:
+    def get_post_detail(post_id: int, user_id: Optional[int] = None) -> Post:
         """
         게시글 상세 정보 조회
         카테고리는 JOIN, 좋아요 개수만 집계
         """
 
         queryset = Post.objects.select_related("author", "category").annotate(
-            likes_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
+            like_count=Count("likes", filter=Q(likes__is_liked=True), distinct=True)
         )
+
+        # 현재 유저의 좋아요 여부
+        if user_id:
+            queryset = queryset.annotate(
+                is_like=Exists(PostLike.objects.filter(post=OuterRef("pk"), user_id=user_id, is_liked=True))
+            )
+        else:
+            queryset = queryset.annotate(is_like=Value(False, output_field=BooleanField()))
 
         try:
             return queryset.get(id=post_id)
