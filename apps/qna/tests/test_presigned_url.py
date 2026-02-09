@@ -2,7 +2,6 @@ import json
 from typing import Any, Dict
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -10,8 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.utils.model_types import User
 from apps.qna.views.presigned_url_views import StorageTarget
-
-UserModel = get_user_model()
+from apps.users.models import User as UserModel
 
 
 class PresignedUrlAPITest(TestCase):
@@ -20,9 +18,13 @@ class PresignedUrlAPITest(TestCase):
     - 성공 케이스 (QUSTION, ANSWER 도메인)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
-        self.user = UserModel.objects.create_user(
+    user: UserModel
+    question_url: str
+    answer_url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = UserModel.objects.create_user(
             email="test@ozcoding.com",
             password="password",
             nickname="테스터",
@@ -30,8 +32,11 @@ class PresignedUrlAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-        self.question_url = reverse("question-presigned-url")
-        self.answer_url = reverse("answer-presigned-url")
+        cls.question_url = reverse("question-presigned-url")
+        cls.answer_url = reverse("answer-presigned-url")
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: User) -> Dict[str, Any]:
         refresh = RefreshToken.for_user(user)

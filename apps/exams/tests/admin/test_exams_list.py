@@ -17,26 +17,33 @@ from apps.users.models import User
 
 class AdminExamListAPITest(TestCase):
 
-    def setUp(self) -> None:
-        self.course = Course.objects.create(
+    course: Course
+    subject: Subject
+    admin_user: User
+    normal_user: User
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(
             name="코스",
             tag="CS",
             description="설명",
             thumbnail_img_url="course.png",
         )
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
 
-        Exam.objects.create(subject=self.subject, title="ccc", thumbnail_img_url="exam1.png")
-        Exam.objects.create(subject=self.subject, title="aaa", thumbnail_img_url="exam2.png")
-        Exam.objects.create(subject=self.subject, title="bbb", thumbnail_img_url="exam3.png")
+        Exam.objects.create(subject=cls.subject, title="ccc", thumbnail_img_url="exam1.png")
+        Exam.objects.create(subject=cls.subject, title="aaa", thumbnail_img_url="exam2.png")
+        Exam.objects.create(subject=cls.subject, title="bbb", thumbnail_img_url="exam3.png")
 
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="어드민",
@@ -48,7 +55,7 @@ class AdminExamListAPITest(TestCase):
             is_active=True,
         )
 
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="일반유저",
@@ -60,7 +67,7 @@ class AdminExamListAPITest(TestCase):
             is_active=True,
         )
 
-        self.url = "/api/v1/admin/exams"
+        cls.url = "/api/v1/admin/exams"
 
     def _auth_client(self, user: User) -> Client:
         token = AccessToken.for_user(user)

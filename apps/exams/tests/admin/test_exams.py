@@ -22,6 +22,11 @@ class AdminExamCreateAPITest(TestCase):
     _temp_media: ClassVar[tempfile.TemporaryDirectory[str]]
     _override: ClassVar[Any]
 
+    course: Course
+    subject: Subject
+    admin_user: User
+    normal_user: User
+
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -35,16 +40,16 @@ class AdminExamCreateAPITest(TestCase):
         cls._temp_media.cleanup()
         super().tearDownClass()
 
-    def setUp(self) -> None:
-        self.client = Client()
-        self.course = Course.objects.create(name="Python", tag="PY")
-        self.subject = Subject.objects.create(
-            course=self.course,
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(name="Python", tag="PY")
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="Python Basic",
             number_of_days=10,
             number_of_hours=40,
         )
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password1234",
             name="Admin",
@@ -55,7 +60,7 @@ class AdminExamCreateAPITest(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password1234",
             name="User",
@@ -66,6 +71,9 @@ class AdminExamCreateAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)

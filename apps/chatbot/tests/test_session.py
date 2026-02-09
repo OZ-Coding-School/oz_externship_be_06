@@ -1,6 +1,6 @@
 from datetime import date
+from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -8,45 +8,50 @@ from rest_framework.test import APITestCase
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.qna.models import Question
 from apps.qna.models.question_category import QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class TestChatbotSessionAPI(APITestCase):
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+    other: User
+    category: QuestionCategory
+    questions: Any
+    session_url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user1@test.com",
             password="pw1234",
             birthday=date(2000, 1, 1),
             is_active=True,
         )
-        self.other = User.objects.create_user(
+        cls.other = User.objects.create_user(
             email="user2@test.com",
             password="pw1234",
             birthday=date(2000, 1, 2),
             is_active=True,
         )
 
-        self.category = QuestionCategory.objects.create(
+        cls.category = QuestionCategory.objects.create(
             name="테스트 카테고리",
         )
 
-        self.questions = [
+        cls.questions = [
             Question.objects.create(
-                category=self.category,
-                author=self.user,
+                category=cls.category,
+                author=cls.user,
                 title=f"테스트 질문 {i}",
                 content="테스트 내용",
             )
             for i in range(15)
         ]
 
-        # user 세션 12개
         ChatbotSession.objects.bulk_create(
             [
                 ChatbotSession(
-                    user=self.user,
-                    question=self.questions[i],
+                    user=cls.user,
+                    question=cls.questions[i],
                     title=f"title-{i}",
                     using_model=ChatbotSession.AIModel.GEMINI,
                 )
@@ -54,12 +59,11 @@ class TestChatbotSessionAPI(APITestCase):
             ]
         )
 
-        # other user 세션 3개
         ChatbotSession.objects.bulk_create(
             [
                 ChatbotSession(
-                    user=self.other,
-                    question=self.questions[i],
+                    user=cls.other,
+                    question=cls.questions[i],
                     title=f"other-{i}",
                     using_model=ChatbotSession.AIModel.GEMINI,
                 )
@@ -67,7 +71,7 @@ class TestChatbotSessionAPI(APITestCase):
             ]
         )
 
-        self.session_url = reverse("chatbot-session")
+        cls.session_url = reverse("chatbot-session")
 
     # -------------------------
     # GET /sessions

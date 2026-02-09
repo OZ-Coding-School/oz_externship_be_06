@@ -4,7 +4,6 @@ from datetime import date
 from typing import Iterable, cast
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.http import StreamingHttpResponse
 from django.test import TestCase
@@ -15,34 +14,37 @@ from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.services.completion_create import create_user_completion
 from apps.chatbot.services.support_completion_policy import validate_user_prompt_policy
 from apps.qna.models import Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class ChatbotCompletionTest(TestCase):
-    def setUp(self) -> None:
-        self.factory = APIRequestFactory()
-        self.user = User.objects.create_user(
+    user: User
+    category: QuestionCategory
+    question: Question
+    session: ChatbotSession
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user@test.com",
             password="password",
             birthday=date(1995, 1, 1),
         )
-
-        # 필수 FK
-        self.category = QuestionCategory.objects.create(name="테스트 카테고리")
-
-        self.question = Question.objects.create(
-            category=self.category,
-            author=self.user,
+        cls.category = QuestionCategory.objects.create(name="테스트 카테고리")
+        cls.question = Question.objects.create(
+            category=cls.category,
+            author=cls.user,
             title="테스트 질문",
             content="질문 내용입니다.",
         )
-
-        self.session = ChatbotSession.objects.create(
-            user=self.user,
+        cls.session = ChatbotSession.objects.create(
+            user=cls.user,
             title="test_session",
             using_model=ChatbotSession.AIModel.GEMINI,
         )
+
+    def setUp(self) -> None:
+        self.factory = APIRequestFactory()
 
     def test_create_user_completion_success(self) -> None:
         completion = create_user_completion(

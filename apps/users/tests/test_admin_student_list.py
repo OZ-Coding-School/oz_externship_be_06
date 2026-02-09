@@ -13,17 +13,29 @@ from apps.users.models import User
 class AdminStudentListAPITest(TestCase):
     """어드민 수강생 목록 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course_be: Course
+    course_fe: Course
+    cohort_be_1: Cohort
+    cohort_be_2: Cohort
+    cohort_fe_1: Cohort
+    admin_user: User
+    ta_user: User
+    student1: User
+    student2: User
+    student3: User
+    inactive_student: User
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course_be = Course.objects.create(
+        cls.course_be = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
             thumbnail_img_url="https://example.com/be.png",
         )
-        self.course_fe = Course.objects.create(
+        cls.course_fe = Course.objects.create(
             name="프론트엔드 부트캠프",
             tag="FE",
             description="프론트엔드 과정",
@@ -31,24 +43,24 @@ class AdminStudentListAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort_be_1 = Cohort.objects.create(
-            course=self.course_be,
+        cls.cohort_be_1 = Cohort.objects.create(
+            course=cls.course_be,
             number=1,
             max_student=30,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=180),
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
-        self.cohort_be_2 = Cohort.objects.create(
-            course=self.course_be,
+        cls.cohort_be_2 = Cohort.objects.create(
+            course=cls.course_be,
             number=2,
             max_student=30,
             start_date=date.today() + timedelta(days=200),
             end_date=date.today() + timedelta(days=380),
             status=Cohort.StatusChoices.PREPARING,
         )
-        self.cohort_fe_1 = Cohort.objects.create(
-            course=self.course_fe,
+        cls.cohort_fe_1 = Cohort.objects.create(
+            course=cls.course_fe,
             number=1,
             max_student=30,
             start_date=date.today(),
@@ -57,7 +69,7 @@ class AdminStudentListAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -70,7 +82,7 @@ class AdminStudentListAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -83,7 +95,7 @@ class AdminStudentListAPITest(TestCase):
         )
 
         # 수강생 유저들
-        self.student1 = User.objects.create_user(
+        cls.student1 = User.objects.create_user(
             email="student1@example.com",
             password="password123",
             name="김수강",
@@ -94,9 +106,9 @@ class AdminStudentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student1, cohort=self.cohort_be_1)
+        CohortStudent.objects.create(user=cls.student1, cohort=cls.cohort_be_1)
 
-        self.student2 = User.objects.create_user(
+        cls.student2 = User.objects.create_user(
             email="student2@example.com",
             password="password123",
             name="이수강",
@@ -107,9 +119,9 @@ class AdminStudentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student2, cohort=self.cohort_be_2)
+        CohortStudent.objects.create(user=cls.student2, cohort=cls.cohort_be_2)
 
-        self.student3 = User.objects.create_user(
+        cls.student3 = User.objects.create_user(
             email="student3@example.com",
             password="password123",
             name="박수강",
@@ -120,10 +132,10 @@ class AdminStudentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student3, cohort=self.cohort_fe_1)
+        CohortStudent.objects.create(user=cls.student3, cohort=cls.cohort_fe_1)
 
         # 비활성화된 수강생
-        self.inactive_student = User.objects.create_user(
+        cls.inactive_student = User.objects.create_user(
             email="inactive@example.com",
             password="password123",
             name="비활성수강생",
@@ -134,10 +146,10 @@ class AdminStudentListAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=False,
         )
-        CohortStudent.objects.create(user=self.inactive_student, cohort=self.cohort_be_1)
+        CohortStudent.objects.create(user=cls.inactive_student, cohort=cls.cohort_be_1)
 
         # 일반 유저
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="일반유저",
@@ -148,6 +160,9 @@ class AdminStudentListAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self) -> str:
         return "/api/v1/admin/students/"

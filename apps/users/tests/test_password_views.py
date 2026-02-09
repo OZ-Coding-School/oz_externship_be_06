@@ -11,8 +11,11 @@ from apps.users.utils.redis_utils import save_email_token
 class ChangePasswordAPITest(TestCase):
     """비밀번호 변경 API 테스트."""
 
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="OldPass123!",
             name="테스트",
@@ -22,6 +25,8 @@ class ChangePasswordAPITest(TestCase):
             birthday=date(2000, 1, 1),
             is_active=True,
         )
+
+    def setUp(self) -> None:
         self.api_client = APIClient()
 
     def test_change_password_success(self) -> None:
@@ -92,8 +97,11 @@ class ChangePasswordAPITest(TestCase):
 class FindPasswordAPITest(TestCase):
     """비밀번호 분실 재설정 API 테스트."""
 
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="OldPass123!",
             name="테스트",
@@ -158,8 +166,11 @@ class FindPasswordAPITest(TestCase):
 class TokenRefreshAPITest(TestCase):
     """JWT 토큰 재발급 API 테스트."""
 
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="TestPass123!",
             name="테스트",

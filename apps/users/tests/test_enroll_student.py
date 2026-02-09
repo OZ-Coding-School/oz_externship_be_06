@@ -13,9 +13,31 @@ from apps.users.models import StudentEnrollmentRequest
 class EnrollStudentAPITests(TestCase):
     client: APIClient
 
+    url: str
+    course: Course
+    cohort: Cohort
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/accounts/enroll-student/"
+
+        cls.course = Course.objects.create(
+            name="백엔드 과정",
+            tag="BE",
+            description="백엔드 부트캠프",
+        )
+
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
+            number=1,
+            max_student=30,
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 6, 30),
+            status=Cohort.StatusChoices.PREPARING,
+        )
+
     def setUp(self) -> None:
         self.client = APIClient()
-        self.url = "/api/v1/accounts/enroll-student/"
 
         User = get_user_model()
         self.user = User.objects.create_user(
@@ -28,21 +50,6 @@ class EnrollStudentAPITests(TestCase):
             gender="MALE",
             role="USER",
             is_active=True,
-        )
-
-        self.course = Course.objects.create(
-            name="백엔드 과정",
-            tag="BE",
-            description="백엔드 부트캠프",
-        )
-
-        self.cohort = Cohort.objects.create(
-            course=self.course,
-            number=1,
-            max_student=30,
-            start_date=date(2025, 1, 1),
-            end_date=date(2025, 6, 30),
-            status=Cohort.StatusChoices.PREPARING,
         )
 
         access = str(RefreshToken.for_user(self.user).access_token)

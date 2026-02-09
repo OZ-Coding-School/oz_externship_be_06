@@ -14,11 +14,14 @@ class PostLikeAPITest(APITestCase):
     게시글 좋아요 등록(POST) 및 취소(DELETE) API 기능을 검증하는 테스트 클래스입니다.
     """
 
-    def setUp(self) -> None:
-        """
-        테스트에 필요한 초기 데이터를 생성합니다.
-        """
-        self.user = User.objects.create_user(
+    user: User
+    category: PostCategory
+    post: Post
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="test_user@test.com",
             password="Password1234!",
             nickname="테스터",
@@ -27,17 +30,16 @@ class PostLikeAPITest(APITestCase):
             gender="M",
             birthday="1995-01-01",
         )
-        self.category = PostCategory.objects.create(name="커뮤니티")
-        self.post = Post.objects.create(
-            author=self.user,
-            category=self.category,
+        cls.category = PostCategory.objects.create(name="커뮤니티")
+        cls.post = Post.objects.create(
+            author=cls.user,
+            category=cls.category,
             title="좋아요 테스트용 게시글",
             content="본문 내용",
         )
-        # URL 설정: posts:post-like-registration (명세에 따른 name)
-        self.url = reverse("posts:post-like", kwargs={"post_id": self.post.id})
+        cls.url = reverse("posts:post-like", kwargs={"post_id": cls.post.id})
 
-        # 유저 인증 처리
+    def setUp(self) -> None:
         self.client.force_authenticate(user=self.user)
 
     def test_post_like_registration_success_status_201(self) -> None:

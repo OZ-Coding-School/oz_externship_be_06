@@ -15,10 +15,18 @@ from apps.users.models import User
 
 
 class AdminExamDeploymentDeleteAPITest(TestCase):
-    def setUp(self) -> None:
-        self.client: APIClient = APIClient()
+    staff_user: User
+    normal_user: User
+    course: Course
+    cohort: Cohort
+    subject: Subject
+    exam: Exam
+    deployment: ExamDeployment
+    submission: ExamSubmission
 
-        self.staff_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.staff_user = User.objects.create_user(
             email="staff@example.com",
             password="password",
             role=User.Role.ADMIN,
@@ -29,7 +37,7 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
             birthday=date(1990, 1, 1),
         )
 
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password",
             is_staff=False,
@@ -40,50 +48,53 @@ class AdminExamDeploymentDeleteAPITest(TestCase):
             birthday=date(1980, 11, 18),
         )
 
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="Python Course",
             tag="PY",  # 3글자 이하
             description="Python 기초 강좌",
             thumbnail_img_url=None,
         )
 
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date(2026, 2, 5),
             end_date=date(2026, 5, 5),
         )
 
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="Python 기초",
             number_of_days=30,
             number_of_hours=60,
             status=True,
         )
 
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="Python 기초 시험",
             thumbnail_img_url="default_img_url",
         )
 
-        self.deployment = ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam,
+        cls.deployment = ExamDeployment.objects.create(
+            cohort=cls.cohort,
+            exam=cls.exam,
             access_code="ABC123",
             open_at=timezone.now(),
             close_at=timezone.now() + timedelta(hours=1),
             questions_snapshot_json=[],
         )
 
-        self.submission = ExamSubmission.objects.create(
-            deployment=self.deployment,
-            submitter=self.staff_user,
-            started_at=self.deployment.open_at,
+        cls.submission = ExamSubmission.objects.create(
+            deployment=cls.deployment,
+            submitter=cls.staff_user,
+            started_at=cls.deployment.open_at,
             answers_json={"q1": "a"},
         )
+
+    def setUp(self) -> None:
+        self.client: APIClient = APIClient()
 
     def test_success_delete_deployment(self) -> None:
         self.client.force_authenticate(user=self.staff_user)

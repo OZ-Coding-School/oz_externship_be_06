@@ -4,25 +4,27 @@ from datetime import date
 from typing import Any, Iterator
 from unittest.mock import MagicMock, patch
 
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.services.completion_answer import generate_completion_answer
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class CompletionAnswerTest(TestCase):
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+    session: ChatbotSession
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="user@test.com",
             password="password",
             birthday=date(1995, 1, 1),
         )
-        self.session = ChatbotSession.objects.create(
-            user=self.user,
+        cls.session = ChatbotSession.objects.create(
+            user=cls.user,
             title="test_session",
             using_model="gemini-1.5-flash",
         )

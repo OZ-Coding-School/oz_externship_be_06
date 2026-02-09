@@ -12,11 +12,17 @@ from apps.users.models import User
 class AdminAccountDeleteAPITest(TestCase):
     """어드민 회원 정보 삭제 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    ta_user: User
+    lc_user: User
+    om_user: User
+    target_user: User
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -29,7 +35,7 @@ class AdminAccountDeleteAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -42,7 +48,7 @@ class AdminAccountDeleteAPITest(TestCase):
         )
 
         # 러닝코치 유저
-        self.lc_user = User.objects.create_user(
+        cls.lc_user = User.objects.create_user(
             email="lc@example.com",
             password="password123",
             name="러닝코치",
@@ -55,7 +61,7 @@ class AdminAccountDeleteAPITest(TestCase):
         )
 
         # 운영매니저 유저
-        self.om_user = User.objects.create_user(
+        cls.om_user = User.objects.create_user(
             email="om@example.com",
             password="password123",
             name="운영매니저",
@@ -68,7 +74,7 @@ class AdminAccountDeleteAPITest(TestCase):
         )
 
         # 일반 유저 (삭제 대상)
-        self.target_user = User.objects.create_user(
+        cls.target_user = User.objects.create_user(
             email="target@example.com",
             password="password123",
             name="삭제대상",
@@ -81,7 +87,7 @@ class AdminAccountDeleteAPITest(TestCase):
         )
 
         # 일반 유저
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="user@example.com",
             password="password123",
             name="일반유저",
@@ -92,6 +98,9 @@ class AdminAccountDeleteAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self, account_id: int) -> str:
         return f"/api/v1/admin/accounts/{account_id}/"

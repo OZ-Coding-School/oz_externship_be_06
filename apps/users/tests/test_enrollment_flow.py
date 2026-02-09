@@ -26,6 +26,17 @@ from apps.users.services.enroll_student_service import (
 class EnrollmentFlowTestCase(TestCase):
     """수강신청 → 승인 → 수강목록 확인 전체 플로우 테스트"""
 
+    course: Course
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # 과정 생성
+        cls.course = Course.objects.create(
+            name="Python 기초",
+            tag="PY",
+            description="파이썬 입문 과정",
+        )
+
     def setUp(self) -> None:
         """테스트 데이터 생성"""
         # 일반 사용자 생성
@@ -38,13 +49,6 @@ class EnrollmentFlowTestCase(TestCase):
             birthday="1990-01-01",
             role=User.Role.USER,
             is_active=True,
-        )
-
-        # 과정 생성
-        self.course = Course.objects.create(
-            name="Python 기초",
-            tag="PY",
-            description="파이썬 입문 과정",
         )
 
         # 기수 생성 (모집중 상태)

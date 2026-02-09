@@ -14,8 +14,17 @@ from apps.users.models import User
 
 
 class CheckCodeAPITest(APITestCase):
-    def setUp(self) -> None:
-        self.student_user = User.objects.create_user(
+    student_user: User
+    admin_user: User
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    deployment: ExamDeployment
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.student_user = User.objects.create_user(
             email="student@test.com",
             password="testpass123",
             name="테스트 학생",
@@ -26,7 +35,7 @@ class CheckCodeAPITest(APITestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@test.com",
             password="testpass123",
             name="테스트 관리자",
@@ -37,26 +46,26 @@ class CheckCodeAPITest(APITestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-        self.course = Course.objects.create(name="테스트 강좌")
-        self.subject = Subject.objects.create(
-            course=self.course, title="테스트 과목", number_of_days=30, number_of_hours=120
+        cls.course = Course.objects.create(name="테스트 강좌")
+        cls.subject = Subject.objects.create(
+            course=cls.course, title="테스트 과목", number_of_days=30, number_of_hours=120
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=100,
             start_date="2025-01-01",
             end_date="2025-12-31",
         )
-        self.exam = Exam.objects.create(
+        cls.exam = Exam.objects.create(
             title="테스트 시험",
             thumbnail_img_url="https://example.com/thumb.jpg",
-            subject=self.subject,
+            subject=cls.subject,
         )
         now = timezone.now()
-        self.deployment = ExamDeployment.objects.create(
-            exam=self.exam,
-            cohort=self.cohort,
+        cls.deployment = ExamDeployment.objects.create(
+            exam=cls.exam,
+            cohort=cls.cohort,
             duration_time=60,
             access_code="testcode123",
             open_at=now - timedelta(hours=1),

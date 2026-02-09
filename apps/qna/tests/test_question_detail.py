@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import connection
 from django.test import Client, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
@@ -13,8 +12,7 @@ from apps.qna.models import (
     QuestionCategory,
     QuestionImage,
 )
-
-User = get_user_model()
+from apps.users.models import User
 
 
 @override_settings(USE_QNA_MOCK=False)
@@ -28,16 +26,24 @@ class QuestionDetailAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증, 조회수 증가 동시성)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    cat_depth1: QuestionCategory
+    cat_depth2: QuestionCategory
+    cat_depth3: QuestionCategory
+    user: User
+    question: Question
+    answer: Answer
+    comment: AnswerComment
+    url: str
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 카테고리 계층 생성 (대 > 중 > 소)
-        self.cat_depth1 = QuestionCategory.objects.create(name="개발")
-        self.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=self.cat_depth1)
-        self.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=self.cat_depth2)
+        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
+        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
+        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
 
         # 유저 생성
-        self.user = User.objects.create_user(
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="password",
             nickname="테스터",
@@ -49,27 +55,30 @@ class QuestionDetailAPITest(TestCase):
         )
 
         # 질문 생성
-        self.question = Question.objects.create(
-            author=self.user,
-            category=self.cat_depth3,
+        cls.question = Question.objects.create(
+            author=cls.user,
+            category=cls.cat_depth3,
             title="상세 조회 테스트 제목",
             content="테스트 본문 내용입니다.",
             view_count=10,
         )
 
         # 이미지 추가
-        QuestionImage.objects.create(question=self.question, img_url="http://example.com/q_img.jpg")
+        QuestionImage.objects.create(question=cls.question, img_url="http://example.com/q_img.jpg")
 
         # 답변 및 댓글 추가 (계층 구조)
-        self.answer = Answer.objects.create(
-            author=self.user, question=self.question, content="첫 번째 답변입니다.", is_adopted=True
+        cls.answer = Answer.objects.create(
+            author=cls.user, question=cls.question, content="첫 번째 답변입니다.", is_adopted=True
         )
 
-        self.comment = AnswerComment.objects.create(
-            author=self.user, answer=self.answer, content="답변에 대한 댓글입니다."
+        cls.comment = AnswerComment.objects.create(
+            author=cls.user, answer=cls.answer, content="답변에 대한 댓글입니다."
         )
 
-        self.url = reverse("question-detail", kwargs={"question_id": self.question.id})
+        cls.url = reverse("question-detail", kwargs={"question_id": cls.question.id})
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def test_get_question_detail_data_integrity(self) -> None:
         """[성공] 질문 상세 정보의 모든 필드와 계층 구조 정합성 검증"""

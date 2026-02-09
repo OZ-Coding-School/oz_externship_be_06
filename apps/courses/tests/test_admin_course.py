@@ -13,11 +13,13 @@ from apps.users.models import User
 class AdminCourseCreateAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/courses"
+    admin_user: User
+    student_user: User
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -28,8 +30,7 @@ class AdminCourseCreateAPITests(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -40,6 +41,10 @@ class AdminCourseCreateAPITests(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
+        cls.url = "/api/v1/admin/courses"
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -110,10 +115,14 @@ class AdminCourseCreateAPITests(TestCase):
 class AdminCourseUpdateAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
+    course: Course
+    url: str
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -124,8 +133,7 @@ class AdminCourseUpdateAPITests(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -136,14 +144,15 @@ class AdminCourseUpdateAPITests(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="기존 과정",
             tag="OLD",
             description="기존 설명",
         )
+        cls.url = f"/api/v1/admin/courses/{cls.course.id}"
 
-        self.url = f"/api/v1/admin/courses/{self.course.id}"
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _set_auth(self, user: User) -> None:
         access = str(RefreshToken.for_user(user).access_token)
@@ -211,10 +220,12 @@ class AdminCourseUpdateAPITests(TestCase):
 class AdminCourseDeleteAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    admin_user: User
+    student_user: User
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -225,8 +236,7 @@ class AdminCourseDeleteAPITests(TestCase):
             role=User.Role.ADMIN,
             is_active=True,
         )
-
-        self.student_user = User.objects.create_user(
+        cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -238,11 +248,12 @@ class AdminCourseDeleteAPITests(TestCase):
             is_active=True,
         )
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         self.course = Course.objects.create(
             name="삭제할 과정",
             tag="DEL",
         )
-
         self.url = f"/api/v1/admin/courses/{self.course.id}"
 
     def _set_auth(self, user: User) -> None:

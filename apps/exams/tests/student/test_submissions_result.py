@@ -12,30 +12,43 @@ from apps.users.models import User
 
 
 class ExamResultRetrieveAPITest(TestCase):
-    def setUp(self) -> None:
-        self.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
-        self.subject = Subject.objects.create(
-            course=self.course,
+    course: Course
+    subject: Subject
+    cohort: Cohort
+    exam: Exam
+    deployment: ExamDeployment
+    student: User
+    other_user: User
+    q1: ExamQuestion
+    q2: ExamQuestion
+    submission: ExamSubmission
+    url: str
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(name="코스", tag="CS", description="설명", thumbnail_img_url="course.png")
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="과목",
             number_of_days=1,
             number_of_hours=1,
             thumbnail_img_url="subject.png",
         )
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=10,
             start_date=date.today(),
             end_date=date.today() + timedelta(days=30),
         )
-        self.exam = Exam.objects.create(
-            subject=self.subject,
+        cls.exam = Exam.objects.create(
+            subject=cls.subject,
             title="시험",
             thumbnail_img_url="exam.png",
         )
-        self.deployment = ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam,
+        cls.deployment = ExamDeployment.objects.create(
+            cohort=cls.cohort,
+            exam=cls.exam,
             duration_time=30,
             access_code="CODE",
             open_at=timezone.now() - timedelta(minutes=30),
@@ -43,7 +56,7 @@ class ExamResultRetrieveAPITest(TestCase):
             questions_snapshot_json={},
             status=ExamDeployment.StatusChoices.ACTIVATED,
         )
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="학생",
@@ -54,7 +67,7 @@ class ExamResultRetrieveAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.other_user = User.objects.create_user(
+        cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password123",
             name="다른유저",
@@ -66,8 +79,8 @@ class ExamResultRetrieveAPITest(TestCase):
             is_active=True,
         )
 
-        self.q1 = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.q1 = ExamQuestion.objects.create(
+            exam=cls.exam,
             question="객관식 문제",
             type=ExamQuestion.TypeChoices.MULTI_SELECT,
             answer="A",
@@ -75,8 +88,8 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json="{invalid-json",
             explanation="설명",
         )
-        self.q2 = ExamQuestion.objects.create(
-            exam=self.exam,
+        cls.q2 = ExamQuestion.objects.create(
+            exam=cls.exam,
             question="빈칸 문제",
             type=ExamQuestion.TypeChoices.FILL_IN_BLANK,
             answer=["a", "b"],
@@ -85,15 +98,15 @@ class ExamResultRetrieveAPITest(TestCase):
             explanation="설명",
         )
 
-        self.submission = ExamSubmission.objects.create(
-            submitter=self.student,
-            deployment=self.deployment,
+        cls.submission = ExamSubmission.objects.create(
+            submitter=cls.student,
+            deployment=cls.deployment,
             started_at=timezone.now() - timedelta(minutes=10),
             cheating_count=0,
             answers_json=[],
         )
 
-        self.url = f"/api/v1/exams/submissions/{self.submission.id}"
+        cls.url = f"/api/v1/exams/submissions/{cls.submission.id}"
 
     def _bearer(self, user: User) -> str:
         token = AccessToken.for_user(user)

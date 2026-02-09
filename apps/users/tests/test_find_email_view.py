@@ -30,8 +30,11 @@ class MaskEmailTest(TestCase):
 class FindEmailAPITest(TestCase):
     """이메일 찾기 API 테스트."""
 
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
+    user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="test@example.com",
             password="TestPass123!",
             name="홍길동",

@@ -8,9 +8,16 @@ from apps.users.models import User
 
 
 class AnswerAdoptTest(APITestCase):
-    def setUp(self) -> None:
+    author: User
+    answerer: User
+    other_user: User
+    category: QuestionCategory
+    question: Question
+
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 질문 작성자 (수강생)
-        self.author = User.objects.create_user(
+        cls.author = User.objects.create_user(
             email="author@example.com",
             password="password!@#",
             name="작성자",
@@ -22,7 +29,7 @@ class AnswerAdoptTest(APITestCase):
         )
 
         # 답변 작성자 (다른 수강생)
-        self.answerer = User.objects.create_user(
+        cls.answerer = User.objects.create_user(
             email="answerer@example.com",
             password="password!@#",
             name="답변자",
@@ -34,7 +41,7 @@ class AnswerAdoptTest(APITestCase):
         )
 
         # 제3자 (권한 없는 유저)
-        self.other_user = User.objects.create_user(
+        cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password!@#",
             name="제3자",
@@ -45,17 +52,18 @@ class AnswerAdoptTest(APITestCase):
             role="STUDENT",
         )
 
-        self.client.force_authenticate(user=self.author)
-
         # 카테고리 생성
-        self.category = QuestionCategory.objects.create(name="Django", parent=None)
+        cls.category = QuestionCategory.objects.create(name="Django", parent=None)
 
         # 질문 생성
-        self.question = Question.objects.create(
-            title="질문 제목", content="질문 내용", category=self.category, author=self.author
+        cls.question = Question.objects.create(
+            title="질문 제목", content="질문 내용", category=cls.category, author=cls.author
         )
 
-        # 답변 생성
+    def setUp(self) -> None:
+        self.client.force_authenticate(user=self.author)
+
+        # 답변 생성 (is_adopted가 테스트에서 변경되므로 매 테스트마다 새로 생성)
         self.answer = Answer.objects.create(question=self.question, author=self.answerer, content="답변 내용")
 
         # URL

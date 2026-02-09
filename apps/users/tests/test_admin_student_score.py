@@ -17,11 +17,23 @@ from apps.users.models import User
 class AdminStudentScoreAPITest(TestCase):
     """학생별 과목 점수 조회 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    cohort: Cohort
+    subject1: Subject
+    subject2: Subject
+    exam1: Exam
+    exam2: Exam
+    deployment1: ExamDeployment
+    deployment2: ExamDeployment
+    admin_user: User
+    ta_user: User
+    student: User
+    normal_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
@@ -29,8 +41,8 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date.today(),
@@ -39,33 +51,33 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 과목 생성
-        self.subject1 = Subject.objects.create(
-            course=self.course,
+        cls.subject1 = Subject.objects.create(
+            course=cls.course,
             title="HTML/CSS",
             number_of_days=5,
             number_of_hours=40,
         )
-        self.subject2 = Subject.objects.create(
-            course=self.course,
+        cls.subject2 = Subject.objects.create(
+            course=cls.course,
             title="JavaScript",
             number_of_days=10,
             number_of_hours=80,
         )
 
         # 시험 생성
-        self.exam1 = Exam.objects.create(
-            subject=self.subject1,
+        cls.exam1 = Exam.objects.create(
+            subject=cls.subject1,
             title="HTML/CSS 기초 시험",
         )
-        self.exam2 = Exam.objects.create(
-            subject=self.subject2,
+        cls.exam2 = Exam.objects.create(
+            subject=cls.subject2,
             title="JavaScript 기초 시험",
         )
 
         # 시험 배포 생성
-        self.deployment1 = ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam1,
+        cls.deployment1 = ExamDeployment.objects.create(
+            cohort=cls.cohort,
+            exam=cls.exam1,
             duration_time=60,
             access_code="test123",
             open_at=timezone.now(),
@@ -73,9 +85,9 @@ class AdminStudentScoreAPITest(TestCase):
             questions_snapshot_json=[],
             status=ExamDeployment.StatusChoices.ACTIVATED,
         )
-        self.deployment2 = ExamDeployment.objects.create(
-            cohort=self.cohort,
-            exam=self.exam2,
+        cls.deployment2 = ExamDeployment.objects.create(
+            cohort=cls.cohort,
+            exam=cls.exam2,
             duration_time=60,
             access_code="test456",
             open_at=timezone.now(),
@@ -85,7 +97,7 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -98,7 +110,7 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -111,7 +123,7 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 학생 유저
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@example.com",
             password="password123",
             name="김학생",
@@ -122,20 +134,20 @@ class AdminStudentScoreAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        CohortStudent.objects.create(user=self.student, cohort=self.cohort)
+        CohortStudent.objects.create(user=cls.student, cohort=cls.cohort)
 
         # 시험 제출 생성
         ExamSubmission.objects.create(
-            submitter=self.student,
-            deployment=self.deployment1,
+            submitter=cls.student,
+            deployment=cls.deployment1,
             started_at=timezone.now(),
             answers_json=[],
             score=85,
             correct_answer_count=17,
         )
         ExamSubmission.objects.create(
-            submitter=self.student,
-            deployment=self.deployment2,
+            submitter=cls.student,
+            deployment=cls.deployment2,
             started_at=timezone.now(),
             answers_json=[],
             score=65,
@@ -143,7 +155,7 @@ class AdminStudentScoreAPITest(TestCase):
         )
 
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@example.com",
             password="password123",
             name="일반유저",
@@ -154,6 +166,9 @@ class AdminStudentScoreAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self, student_id: int) -> str:
         return f"/api/v1/admin/students/{student_id}/scores"

@@ -10,8 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AdminCategoryCreateAPITest(TestCase):
@@ -30,9 +29,18 @@ class AdminCategoryCreateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("admin-qna-categories")
+    url: str
+    cat_large: QuestionCategory
+    cat_medium: QuestionCategory
+    cat_small: QuestionCategory
+    admin_user: User
+    ta_user: User
+    student_user: User
+    general_user: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = reverse("admin-qna-category-create")
 
         # 카테고리 계층 생성 (대분류 → 중분류 → 소분류)
         self.cat_large = QuestionCategory.objects.create(name="백엔드")
@@ -87,6 +95,9 @@ class AdminCategoryCreateAPITest(TestCase):
             is_active=True,
         )
 
+    def setUp(self) -> None:
+        self.client = Client()
+
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         """유저 객체를 받아 JWT 액세스 토큰을 생성, HTTP_AUTHORIZATION 헤더 딕셔너리를 반환"""
         refresh = RefreshToken.for_user(user)
@@ -95,6 +106,7 @@ class AdminCategoryCreateAPITest(TestCase):
     # ==========================================================================
     # 성공 케이스
     # ==========================================================================
+
     def test_create_large_category_success(self) -> None:
         """[성공] 관리자가 대분류 카테고리 등록"""
         auth_header = self._get_auth_header(self.admin_user)

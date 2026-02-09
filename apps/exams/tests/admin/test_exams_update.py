@@ -1,6 +1,5 @@
 from datetime import date
 
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -8,38 +7,43 @@ from rest_framework.test import APIClient, APITestCase
 from apps.courses.models import Course, Subject
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class AdminExamUpdateAPITests(APITestCase):
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    subject: Subject
+    exam: Exam
+    url: str
+    staff_user: User
+    normal_user: User
 
-        self.course = Course.objects.create(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.course = Course.objects.create(
             name="테스트 강좌",
             tag="TST",
         )
 
-        self.subject = Subject.objects.create(
-            course=self.course,
+        cls.subject = Subject.objects.create(
+            course=cls.course,
             title="테스트 과목",
             number_of_days=10,
             number_of_hours=5,
         )
 
         # Exam 생성
-        self.exam = Exam.objects.create(
+        cls.exam = Exam.objects.create(
             title="기존 시험",
-            subject=self.subject,
+            subject=cls.subject,
             thumbnail_img_url="http://example.com/old.png",
         )
 
         # URL
-        self.url = reverse("admin-exam-detail", kwargs={"exam_id": self.exam.id})
+        cls.url = reverse("admin-exam-detail", kwargs={"exam_id": cls.exam.id})
 
         # 유저 생성
-        self.staff_user = User.objects.create_user(
+        cls.staff_user = User.objects.create_user(
             email="staff@test.com",
             password="password",
             name="테스트 스태프",
@@ -50,7 +54,7 @@ class AdminExamUpdateAPITests(APITestCase):
             role=User.Role.ADMIN,
         )
 
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal@test.com",
             password="pass1234",
             name="일반유저",

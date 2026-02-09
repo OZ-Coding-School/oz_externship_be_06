@@ -16,12 +16,29 @@ from apps.users.models import User
 class AdminStudentEnrollmentTrendsAPITest(TestCase):
     """어드민 수강 등록 추세 분석 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/student-enrollments/trends/"
+    url: str
+    admin_user: User
+    ta_user: User
+    lc_user: User
+    om_user: User
+    normal_user: User
+    student1: User
+    student2: User
+    student3: User
+    course: Course
+    current_year: Any
+    prev_year: Any
+    cohort: Cohort
+    cs1: CohortStudent
+    cs2: CohortStudent
+    cs3: CohortStudent
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/analytics/student-enrollments/trends/"
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin_enroll@example.com",
             password="password123",
             name="관리자",
@@ -34,7 +51,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # 조교 유저
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta_enroll@example.com",
             password="password123",
             name="조교",
@@ -47,7 +64,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # 러닝코치 유저
-        self.lc_user = User.objects.create_user(
+        cls.lc_user = User.objects.create_user(
             email="lc_enroll@example.com",
             password="password123",
             name="러닝코치",
@@ -60,7 +77,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # 운영매니저 유저
-        self.om_user = User.objects.create_user(
+        cls.om_user = User.objects.create_user(
             email="om_enroll@example.com",
             password="password123",
             name="운영매니저",
@@ -73,7 +90,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # 일반 유저 (권한 없음)
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal_enroll@example.com",
             password="password123",
             name="일반유저",
@@ -86,7 +103,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # 수강생 유저들 (CohortStudent 데이터용)
-        self.student1 = User.objects.create_user(
+        cls.student1 = User.objects.create_user(
             email="student1@example.com",
             password="password123",
             name="수강생1",
@@ -97,7 +114,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.student2 = User.objects.create_user(
+        cls.student2 = User.objects.create_user(
             email="student2@example.com",
             password="password123",
             name="수강생2",
@@ -108,7 +125,7 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
             role=User.Role.STUDENT,
             is_active=True,
         )
-        self.student3 = User.objects.create_user(
+        cls.student3 = User.objects.create_user(
             email="student3@example.com",
             password="password123",
             name="수강생3",
@@ -121,40 +138,43 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         )
 
         # Course 및 Cohort 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="테스트 강좌",
             tag="TST",
             description="테스트용 강좌입니다.",
         )
 
         today = date.today()
-        self.current_year = today.year
-        self.prev_year = today.year - 1
+        cls.current_year = today.year
+        cls.prev_year = today.year - 1
 
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
-            start_date=date(self.current_year, 1, 1),
-            end_date=date(self.current_year, 6, 30),
+            start_date=date(cls.current_year, 1, 1),
+            end_date=date(cls.current_year, 6, 30),
             status=Cohort.StatusChoices.IN_PROGRESS,
         )
 
         # CohortStudent 데이터 생성 (연도/월 분산)
-        self.cs1 = CohortStudent.objects.create(user=self.student1, cohort=self.cohort)
-        self.cs2 = CohortStudent.objects.create(user=self.student2, cohort=self.cohort)
-        self.cs3 = CohortStudent.objects.create(user=self.student3, cohort=self.cohort)
+        cls.cs1 = CohortStudent.objects.create(user=cls.student1, cohort=cls.cohort)
+        cls.cs2 = CohortStudent.objects.create(user=cls.student2, cohort=cls.cohort)
+        cls.cs3 = CohortStudent.objects.create(user=cls.student3, cohort=cls.cohort)
 
         # created_at 날짜 수동 설정
-        CohortStudent.objects.filter(id=self.cs1.id).update(
-            created_at=timezone.make_aware(datetime(self.prev_year, 11, 10, 10, 0, 0))
+        CohortStudent.objects.filter(id=cls.cs1.id).update(
+            created_at=timezone.make_aware(datetime(cls.prev_year, 11, 10, 10, 0, 0))
         )
-        CohortStudent.objects.filter(id=self.cs2.id).update(
-            created_at=timezone.make_aware(datetime(self.prev_year, 12, 15, 10, 0, 0))
+        CohortStudent.objects.filter(id=cls.cs2.id).update(
+            created_at=timezone.make_aware(datetime(cls.prev_year, 12, 15, 10, 0, 0))
         )
-        CohortStudent.objects.filter(id=self.cs3.id).update(
-            created_at=timezone.make_aware(datetime(self.current_year, 1, 20, 10, 0, 0))
+        CohortStudent.objects.filter(id=cls.cs3.id).update(
+            created_at=timezone.make_aware(datetime(cls.current_year, 1, 20, 10, 0, 0))
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)

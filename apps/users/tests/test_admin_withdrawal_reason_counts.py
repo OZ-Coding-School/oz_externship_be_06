@@ -12,11 +12,15 @@ from apps.users.models import User, Withdrawal
 
 class AdminWithdrawalReasonCountsAPITest(TestCase):
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/admin/analytics/withdrawal-reasons/counts"
+    url: str
+    admin_user: User
+    normal_user: User
 
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = "/api/v1/admin/analytics/withdrawal-reasons/counts"
+
+        cls.admin_user = User.objects.create_user(
             email="admin_wd@example.com",
             password="password123",
             name="관리자",
@@ -28,7 +32,7 @@ class AdminWithdrawalReasonCountsAPITest(TestCase):
             is_active=True,
         )
 
-        self.normal_user = User.objects.create_user(
+        cls.normal_user = User.objects.create_user(
             email="normal_wd@example.com",
             password="password123",
             name="일반유저",
@@ -39,6 +43,9 @@ class AdminWithdrawalReasonCountsAPITest(TestCase):
             role=User.Role.USER,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)

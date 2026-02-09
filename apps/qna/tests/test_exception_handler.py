@@ -12,7 +12,6 @@ QnA 예외처리 시나리오별 테스트
 import json
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -21,8 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-
-User = get_user_model()
+from apps.users.models import User
 
 
 class CategoryNotFoundExceptionTest(TestCase):
@@ -31,15 +29,19 @@ class CategoryNotFoundExceptionTest(TestCase):
     - 존재하지 않는 카테고리 ID로 질문 생성 시 400 에러 반환 검증
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("question-list-create")
+    url: str
+    category: QuestionCategory
+    student: User
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.url = reverse("question-list-create")
 
         # 유효한 카테고리 생성
-        self.category = QuestionCategory.objects.create(name="ValidCategory")
+        cls.category = QuestionCategory.objects.create(name="ValidCategory")
 
         # 테스트 유저 (수강생)
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@test.com",
             password="password123",
             nickname="수강생",
@@ -47,6 +49,9 @@ class CategoryNotFoundExceptionTest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)
@@ -89,12 +94,16 @@ class ExceptionResponseFormatTest(TestCase):
     모든 에러 응답이 {"error_detail": "..."} 포맷을 준수하는지 검증
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    category: QuestionCategory
+    student: User
+    general_user: User
+    question: Question
 
-        self.category = QuestionCategory.objects.create(name="TestCategory")
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.category = QuestionCategory.objects.create(name="TestCategory")
 
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@test.com",
             password="password123",
             nickname="수강생",
@@ -103,7 +112,7 @@ class ExceptionResponseFormatTest(TestCase):
             is_active=True,
         )
 
-        self.general_user = User.objects.create_user(
+        cls.general_user = User.objects.create_user(
             email="general@test.com",
             password="password123",
             nickname="일반유저",
@@ -112,12 +121,15 @@ class ExceptionResponseFormatTest(TestCase):
             is_active=True,
         )
 
-        self.question = Question.objects.create(
-            author=self.student,
-            category=self.category,
+        cls.question = Question.objects.create(
+            author=cls.student,
+            category=cls.category,
             title="테스트 질문",
             content="내용",
         )
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)
@@ -178,12 +190,14 @@ class ExceptionHandlerLoggingTest(TestCase):
     qna_exception_handler의 로깅 동작 검증
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
+    category: QuestionCategory
+    student: User
 
-        self.category = QuestionCategory.objects.create(name="TestCategory")
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.category = QuestionCategory.objects.create(name="TestCategory")
 
-        self.student = User.objects.create_user(
+        cls.student = User.objects.create_user(
             email="student@test.com",
             password="password123",
             nickname="수강생",
@@ -191,6 +205,9 @@ class ExceptionHandlerLoggingTest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)

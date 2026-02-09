@@ -16,17 +16,23 @@ from apps.users.models import User
 class AdminAccountRoleUpdateAPITest(TestCase):
     """어드민 권한 변경 API 테스트."""
 
-    def setUp(self) -> None:
-        self.client = APIClient()
+    course: Course
+    course2: Course
+    cohort: Cohort
+    admin_user: User
+    target_user: User
+    ta_user: User
 
+    @classmethod
+    def setUpTestData(cls) -> None:
         # 과정 생성
-        self.course = Course.objects.create(
+        cls.course = Course.objects.create(
             name="백엔드 부트캠프",
             tag="BE",
             description="백엔드 과정",
             thumbnail_img_url="https://example.com/be.png",
         )
-        self.course2 = Course.objects.create(
+        cls.course2 = Course.objects.create(
             name="프론트엔드 부트캠프",
             tag="FE",
             description="프론트엔드 과정",
@@ -34,8 +40,8 @@ class AdminAccountRoleUpdateAPITest(TestCase):
         )
 
         # 기수 생성
-        self.cohort = Cohort.objects.create(
-            course=self.course,
+        cls.cohort = Cohort.objects.create(
+            course=cls.course,
             number=1,
             max_student=30,
             start_date=date.today(),
@@ -44,7 +50,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
         )
 
         # 관리자 유저
-        self.admin_user = User.objects.create_user(
+        cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password123",
             name="관리자",
@@ -57,7 +63,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
         )
 
         # 일반 유저 (권한 변경 대상)
-        self.target_user = User.objects.create_user(
+        cls.target_user = User.objects.create_user(
             email="target@example.com",
             password="password123",
             name="대상유저",
@@ -70,7 +76,7 @@ class AdminAccountRoleUpdateAPITest(TestCase):
         )
 
         # 조교 유저 (권한 변경 불가 테스트용)
-        self.ta_user = User.objects.create_user(
+        cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password123",
             name="조교",
@@ -81,6 +87,9 @@ class AdminAccountRoleUpdateAPITest(TestCase):
             role=User.Role.TA,
             is_active=True,
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
 
     def _get_url(self, account_id: int) -> str:
         return f"/api/v1/admin/accounts/{account_id}/role/"

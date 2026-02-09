@@ -6,16 +6,18 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.users.models import User
+
 
 class CourseListAPITests(TestCase):
     client: APIClient
 
-    def setUp(self) -> None:
-        self.client = APIClient()
-        self.url = "/api/v1/course/"
+    user: User
+    url: str
 
-        User = get_user_model()
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.user = User.objects.create_user(
             email="course_list_test@example.com",
             password="Testpass123!",
             birthday=date(2000, 1, 1),
@@ -25,7 +27,10 @@ class CourseListAPITests(TestCase):
             gender="MALE",
             is_active=True,
         )
+        cls.url = "/api/v1/course/"
 
+    def setUp(self) -> None:
+        self.client = APIClient()
         access = str(RefreshToken.for_user(self.user).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
