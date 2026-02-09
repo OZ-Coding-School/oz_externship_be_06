@@ -21,6 +21,7 @@ class ExamResultRetrieveAPITest(TestCase):
     other_user: User
     q1: ExamQuestion
     q2: ExamQuestion
+    q3: ExamQuestion
     submission: ExamSubmission
     url: str
 
@@ -97,6 +98,15 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json='["a","b","c"]',
             explanation="설명",
         )
+        cls.q3 = ExamQuestion.objects.create(
+            exam=cls.exam,
+            question="순서 문제",
+            type=ExamQuestion.TypeChoices.ORDERING,
+            answer=["1", "2", "3"],
+            point=10,
+            options_json='["1","2","3"]',
+            explanation="설명",
+        )
 
         cls.submission = ExamSubmission.objects.create(
             submitter=cls.student,
@@ -149,3 +159,29 @@ class ExamResultRetrieveAPITest(TestCase):
         self.submission.save(update_fields=["answers_json"])
         res = self.client.get(self.url, HTTP_AUTHORIZATION=self._bearer(self.student))
         self.assertEqual(res.status_code, 400)
+
+    def test_ordering_question_requires_correct_order(self) -> None:
+        self.submission.answers_json = [
+            {"question_id": self.q3.id, "submitted_answer": ["3", "2", "1"]},
+        ]
+        self.submission.save(update_fields=["answers_json"])
+
+        res = self.client.get(self.url, HTTP_AUTHORIZATION=self._bearer(self.student))
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+
+        q3_data = next(q for q in data["questions"] if q["id"] == self.q3.id)
+        self.assertFalse(q3_data["is_correct"])
+
+    def test_ordering_question_accepts_correct_order(self) -> None:
+        self.submission.answers_json = [
+            {"question_id": self.q3.id, "submitted_answer": ["1", "2", "3"]},
+        ]
+        self.submission.save(update_fields=["answers_json"])
+
+        res = self.client.get(self.url, HTTP_AUTHORIZATION=self._bearer(self.student))
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+
+        q3_data = next(q for q in data["questions"] if q["id"] == self.q3.id)
+        self.assertTrue(q3_data["is_correct"])

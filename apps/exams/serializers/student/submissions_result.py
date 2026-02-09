@@ -3,7 +3,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.exams.models import Exam, ExamSubmission
+from apps.exams.models import Exam, ExamQuestion, ExamSubmission
 from apps.exams.services.answers_json import normalize_answers_json
 
 
@@ -41,15 +41,11 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
         read_only_fields = fields
 
     def get_elapsed_time(self, obj: ExamSubmission) -> int:
-        seconds = (obj.created_at - obj.started_at).total_seconds()
+        seconds = (obj.updated_at - obj.started_at).total_seconds()
         return int(seconds // 60)
 
     def _answers_map(self, obj: ExamSubmission) -> dict[int, object]:
         normalized = normalize_answers_json(obj.answers_json)
-        if obj.answers_json != normalized:
-            obj.answers_json = normalized
-            obj.save(update_fields=["answers_json"])
-
         m: dict[int, object] = {}
         for item in normalized:
             qid = item.get("question_id")
@@ -89,7 +85,12 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             else:
                 answer_norm = [answer]
 
-            is_correct = sorted(map(str, submitted_norm)) == sorted(map(str, answer_norm))
+            submitted_values = list(map(str, submitted_norm))
+            answer_values = list(map(str, answer_norm))
+            if q.type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
+                is_correct = submitted_values == answer_values
+            else:
+                is_correct = sorted(submitted_values) == sorted(answer_values)
 
             options = []
             if q.options_json:
