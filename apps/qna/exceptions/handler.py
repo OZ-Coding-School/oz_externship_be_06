@@ -41,6 +41,10 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # [GET] AI Request - TODO: View 구현 시 클래스명 업데이트 필요
     ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
+    # ---------- Admin -----------
+    # [DELETE] Admin delete answer
+    ("AdminAnswerDeleteAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_ANSWER_DELETE,
+    ("AdminAnswerDeleteAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_ANSWER_DELETE,
 }
 
 # 기본 폴백 메시지
