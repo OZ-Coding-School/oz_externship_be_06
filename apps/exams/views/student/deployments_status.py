@@ -1,4 +1,3 @@
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,7 +7,7 @@ from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.error_map import raise_error
 from apps.exams.models import ExamDeployment
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.schemas.student import exam_status_check_schema
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
 )
@@ -20,44 +19,8 @@ from apps.exams.services.student.deployments_status import (
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-@extend_schema(
-    tags=["exams"],
-    summary="시험 상태 확인",
-    description="응시 세션의 현재 시험 상태를 조회합니다.",
-    responses={
-        200: ExamStatusResponseSerializer,
-        401: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Unauthorized",
-            examples=[
-                OpenApiExample(
-                    "인증 실패",
-                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
-                ),
-            ],
-        ),
-        403: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Forbidden",
-            examples=[
-                OpenApiExample(
-                    "권한 없음",
-                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
-                ),
-            ],
-        ),
-        404: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Not Found",
-            examples=[
-                OpenApiExample(
-                    "시험 정보 없음",
-                    value={"error_detail": ErrorMessages.EXAM_NOT_FOUND.value},
-                ),
-            ],
-        ),
-    },
-)
+# 시험 상태 확인
+@exam_status_check_schema
 class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
     """수강생 응시 세션의 현재 시험 상태를 조회."""
 

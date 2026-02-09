@@ -2,12 +2,6 @@ from __future__ import annotations
 
 from typing import NoReturn
 
-from drf_spectacular.utils import (
-    OpenApiExample,
-    OpenApiParameter,
-    OpenApiResponse,
-    extend_schema,
-)
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -18,10 +12,10 @@ from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
+from apps.exams.schemas.admin import admin_exam_deployment_list_schema
 from apps.exams.serializers.admin.deployments_list import (
     AdminExamDeploymentListItemSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_list import (
     AdminDeploymentListService,
     InvalidAdminDeploymentListParams,
@@ -29,55 +23,8 @@ from apps.exams.services.admin.deployments_list import (
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-@extend_schema(
-    tags=["admin_exams"],
-    operation_id="admin_exam_deployments_list",
-    summary="어드민 배포 목록 조회",
-    description="쪽지시험 배포 내역을 페이지네이션/검색/필터/정렬로 조회합니다.",
-    parameters=[
-        OpenApiParameter(name="page", required=False, type=int, description="페이지(1부터)"),
-        OpenApiParameter(name="size", required=False, type=int, description="페이지 크기"),
-        OpenApiParameter(name="search_keyword", required=False, type=str, description="검색어(시험 제목)"),
-        OpenApiParameter(name="subject_id", required=False, type=int, description="과목 ID"),
-        OpenApiParameter(name="cohort_id", required=False, type=int, description="기수 ID"),
-        OpenApiParameter(
-            name="sort",
-            required=False,
-            type=str,
-            description="정렬 기준",
-            enum=["created_at", "submit_count", "avg_score"],
-        ),
-        OpenApiParameter(name="order", required=False, type=str, description="정렬 방향", enum=["asc", "desc"]),
-    ],
-    responses={
-        200: OpenApiResponse(description="OK"),
-        400: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Bad Request",
-            examples=[
-                OpenApiExample(
-                    "유효하지 않은 조회 요청",
-                    value={"error_detail": ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST.value},
-                )
-            ],
-        ),
-        401: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Unauthorized",
-            examples=[OpenApiExample("인증 실패", value={"error_detail": ErrorMessages.UNAUTHORIZED.value})],
-        ),
-        403: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Forbidden",
-            examples=[
-                OpenApiExample(
-                    "권한 없음",
-                    value={"error_detail": ErrorMessages.NO_DEPLOYMENT_LIST_PERMISSION.value},
-                )
-            ],
-        ),
-    },
-)
+# 어드민 배포 목록 조회
+@admin_exam_deployment_list_schema
 class AdminExamDeploymentListAPIView(ExamsExceptionMixin, APIView):
     """어드민 쪽지시험 배포 목록 조회 API."""
 
