@@ -89,7 +89,9 @@ class AnswerCommandService:
 
         # 이미 채택된 답변이 있는지 확인
         if Answer.objects.filter(question=answer.question, is_adopted=True).exists():
-            raise QnaBaseException(detail=ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT, status_code=status.HTTP_409_CONFLICT)
+            raise QnaBaseException(
+                detail=ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT, status_code=status.HTTP_409_CONFLICT
+            )
 
         # 답변 채택 처리
         answer.is_adopted = True
