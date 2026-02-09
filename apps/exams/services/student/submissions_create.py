@@ -7,7 +7,6 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.models import ExamSubmission
 from apps.exams.services.answers_json import normalize_answers_json
-from apps.exams.services.student.deployments_status import is_deployment_time_closed
 from apps.users.models import User
 
 
