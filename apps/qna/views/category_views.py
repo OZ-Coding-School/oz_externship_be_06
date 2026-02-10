@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.serializers import ErrorResponseSerializer
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
@@ -43,7 +44,7 @@ class CategoryTreeAPIView(QnaBaseAPIView):
                 examples=[SuccessResponseExamples.CATEGORY_LIST],
             ),
             400: OpenApiResponse(
-                description="Bad Request", response=dict, examples=[ErrorResponseExamples.CATEGORY_LIST_400]
+                description="Bad Request", response=ErrorResponseSerializer, examples=[ErrorResponseExamples.CATEGORY_LIST_400]
             ),
         },
     )

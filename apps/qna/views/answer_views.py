@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.serializers import ErrorResponseSerializer
 from apps.core.utils.permissions import CanWriteAnswerComment
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
@@ -70,22 +71,22 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
             ),
             400: OpenApiResponse(
                 description="Bad Request",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_401],
             ),
             404: OpenApiResponse(
                 description="Not Found",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_404],
             ),
             409: OpenApiResponse(
                 description="Conflict",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_409],
             ),
         },
@@ -134,22 +135,22 @@ class AnswerCreateAPIView(QnaBaseAPIView):
             ),
             400: OpenApiResponse(
                 description="Bad Request",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_CREATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_CREATE_401],
             ),
             403: OpenApiResponse(
                 description="Forbidden",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_CREATE_403],
             ),
             404: OpenApiResponse(
                 description="Not Found",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_CREATE_404],
             ),
         },
@@ -198,22 +199,22 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
             ),
             400: OpenApiResponse(
                 description="Bad Request",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_401],
             ),
             403: OpenApiResponse(
                 description="Forbidden",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_403],
             ),
             404: OpenApiResponse(
                 description="Not Found",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_404],
             ),
         },
@@ -261,27 +262,27 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
             ),
             400: OpenApiResponse(
                 description="Bad Request",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_ADOPT_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_ADOPT_401],
             ),
             403: OpenApiResponse(
                 description="Forbidden",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_ADOPT_403],
             ),
             404: OpenApiResponse(
                 description="Not Found",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_ADOPT_404],
             ),
             409: OpenApiResponse(
                 description="Conflict",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_ADOPT_409],
             ),
         },
@@ -325,22 +326,22 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
             ),
             400: OpenApiResponse(
                 description="Bad Request",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_401],
             ),
             403: OpenApiResponse(
                 description="Forbidden",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_403],
             ),
             404: OpenApiResponse(
                 description="Not Found",
-                response=dict,
+                response=ErrorResponseSerializer,
                 examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_404],
             ),
         },
