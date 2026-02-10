@@ -3,6 +3,7 @@ from typing import Any
 from rest_framework import serializers
 
 from apps.exams.constants import ErrorMessages
+from apps.exams.validators import validate_duration_minutes, validate_time_range
 
 
 class AdminExamDeploymentCreateRequestSerializer(serializers.Serializer[Any]):
@@ -16,13 +17,18 @@ class AdminExamDeploymentCreateRequestSerializer(serializers.Serializer[Any]):
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         duration_time = attrs.get("duration_time")
-        if not isinstance(duration_time, int) or duration_time <= 0:
-            raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST.value)
+        validate_duration_minutes(
+            duration_time,
+            error_message=ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST,
+            exc_factory=serializers.ValidationError,
+        )
 
-        open_at = attrs.get("open_at")
-        close_at = attrs.get("close_at")
-        if open_at and close_at and open_at >= close_at:
-            raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST.value)
+        validate_time_range(
+            attrs.get("open_at"),
+            attrs.get("close_at"),
+            error_message=ErrorMessages.INVALID_DEPLOYMENT_CREATE_REQUEST,
+            exc_factory=serializers.ValidationError,
+        )
 
         return attrs
 

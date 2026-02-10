@@ -20,7 +20,7 @@ from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
-from apps.exams.validators import parse_positive_int
+from apps.exams.validators import normalize_optional_str, parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -85,7 +85,11 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
     def get(self, request: Request) -> Response:
         # Query parameters
-        search_keyword = request.query_params.get("search_keyword", "")
+        search_keyword = normalize_optional_str(
+            request.query_params.get("search_keyword"),
+            max_length=None,
+            error_message=ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST,
+        ) or ""
         cohort_id = request.query_params.get("cohort_id")
         exam_id = request.query_params.get("exam_id")
         sort = request.query_params.get("sort", "started_at")

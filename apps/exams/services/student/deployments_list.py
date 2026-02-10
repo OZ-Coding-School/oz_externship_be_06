@@ -25,6 +25,7 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.models.exam_deployments import ExamDeployment
 from apps.exams.models.exam_submissions import ExamSubmission
+from apps.exams.validators import parse_choice
 
 
 @dataclass(frozen=True)
@@ -119,9 +120,13 @@ class ExamDeploymentListService:
         if cohort_id is None:
             raise_error(ErrorMessages.USER_NOT_FOUND)
 
-        status = params.get("status") or "all"
-        if status not in allowed_status:
-            raise_error(ErrorMessages.INVALID_EXAM_LIST_REQUEST, status_override=404)
+        status = parse_choice(
+            params.get("status"),
+            allowed=allowed_status,
+            default="all",
+            error_message=ErrorMessages.INVALID_EXAM_LIST_REQUEST,
+            status_override=404,
+        )
 
         return ExamListParams(
             user_id=user_id,
