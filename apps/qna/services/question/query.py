@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 from rest_framework import status
 
-from apps.qna.constants import ErrorMessages
+from apps.qna.constants import ErrorMessages, ANSWER_STATUS_CHOICES, SORT_CHOICES
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
 
@@ -69,7 +69,7 @@ class QuestionQueryService:
 
         # DB에 존재하지 않는 카테고리일 경우만 404 발생
         if not QuestionCategory.objects.filter(id=category_id).exists():
-            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_CATEGORY, status_code=status.HTTP_404_NOT_FOUND)
 
         return queryset.filter(category_id=category_id)
 
@@ -97,11 +97,14 @@ class QuestionQueryService:
         - Returns:
             QuerySet[Question]: 필터링된 질문 QuerySet
         """
-        if answer_status == "waiting":
+
+        # waiting
+        if answer_status == ANSWER_STATUS_CHOICES[0]:
             # Count를 구하는 것보다 역참조 존재 여부를 체크하는 것이 훨씬 빠름
             return queryset.filter(answers__isnull=True)
 
-        if answer_status == "answered":
+        # answered
+        if answer_status == ANSWER_STATUS_CHOICES[1]:
             # 답변이 하나라도 있는 경우 (Distinct를 통한 중복 방지)
             return queryset.filter(answers__isnull=False).distinct()
 
@@ -119,12 +122,12 @@ class QuestionQueryService:
         """
         # 정렬 시 created_at과 id를 같이 사용하여 페이징 시 정렬 보장 (Stable Sort)
         sort_map = {
-            "latest": ["-created_at", "-id"],
-            "oldest": ["created_at", "id"],
-            "most_views": ["-view_count", "-created_at"],
+            SORT_CHOICES[0]: ["-created_at", "-id"],  # "latest"
+            SORT_CHOICES[1]: ["created_at", "id"],  # "oldest"
+            SORT_CHOICES[2]: ["-view_count", "-created_at"],  # "most_views"
         }
 
-        order_by = sort_map.get(sort, sort_map["latest"])
+        order_by = sort_map.get(sort, sort_map[SORT_CHOICES[0]])
 
         # 목록 조회 시점에 답변 개수가 필요하다면 여기서만 annotate (지연 연산)
         return queryset.annotate(answer_count=Count("answers")).order_by(*order_by)
