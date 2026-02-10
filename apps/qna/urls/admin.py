@@ -1,7 +1,7 @@
 from django.urls import path
 
-from apps.qna.views.admin_category_views import AdminCategoriesAPIView
-from apps.qna.views.admin_question_views import AdminQuestionDetailAPIView
+from apps.qna.views.admin.admin_category_views import AdminCategoriesAPIView
+from apps.qna.views.admin.admin_question_views import AdminQuestionDetailAPIView
 
 urlpatterns = [
     # --- Admin QnA Category CRD Endpoints ---
