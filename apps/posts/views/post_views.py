@@ -104,9 +104,9 @@ class PostListCreateView(APIView):
                     "type": "object",
                     "properties": {
                         "detail": {"type": "string", "example": PostSuccessMessage.POST_CREATE_SUCCESS},
-                        "pk": {"type": "integer", "example": 1}
-                    }
-                }
+                        "pk": {"type": "integer", "example": 1},
+                    },
+                },
             ),
             400: OpenApiResponse(
                 description="입력값 유효성 검증 실패 (필드 누락, 잘못된 타입 등)",
@@ -115,23 +115,24 @@ class PostListCreateView(APIView):
                     "properties": {
                         "error_detail": {
                             "type": "object",
-                            "example": {"title": ["이 필드는 필수 항목입니다."], "category_id": ["유효한 정수를 입력하십시오."]}
+                            "example": {
+                                "title": ["이 필드는 필수 항목입니다."],
+                                "category_id": ["유효한 정수를 입력하십시오."],
+                            },
                         }
-                    }
-                }
+                    },
+                },
             ),
             401: OpenApiResponse(description="인증 자격 증명이 유효하지 않음"),
             500: OpenApiResponse(
                 description="서버 내부 오류",
                 response={
                     "type": "object",
-                    "properties": {
-                        "error_detail": {"type": "string", "example": PostErrorMessage.SERVER_ERROR}
-                    }
-                }
+                    "properties": {"error_detail": {"type": "string", "example": PostErrorMessage.SERVER_ERROR}},
+                },
             ),
         },
-        tags=["posts"]
+        tags=["posts"],
     )
     def post(self, request: Request) -> Response:
         user = cast(User, request.user)
