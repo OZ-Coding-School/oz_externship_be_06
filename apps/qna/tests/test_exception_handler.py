@@ -1,14 +1,3 @@
-"""
-QnA 예외처리 시나리오별 테스트
-
-테스트 범위:
-- CategoryNotFoundException (존재하지 않는 카테고리로 질문 생성)
-- ObjectDoesNotExist 중앙 처리 검증
-- qna_exception_handler 로깅 검증
-- 권한 에러 폴백 메시지 테스트
-- 응답 포맷 일관성 검증 ({"error_detail": "..."})
-"""
-
 import json
 from typing import Any
 
@@ -29,18 +18,13 @@ class CategoryNotFoundExceptionTest(TestCase):
     - 존재하지 않는 카테고리 ID로 질문 생성 시 400 에러 반환 검증
     """
 
-    url: str
-    category: QuestionCategory
     student: User
+    category: QuestionCategory
+    url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = reverse("question-list-create")
-
-        # 유효한 카테고리 생성
-        cls.category = QuestionCategory.objects.create(name="ValidCategory")
-
-        # 테스트 유저 (수강생)
+        # 테스트용 유저 - 학생
         cls.student = User.objects.create_user(
             email="student@test.com",
             password="password123",
@@ -49,6 +33,13 @@ class CategoryNotFoundExceptionTest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
+
+        # 유효한 카테고리 생성
+        cls.category = QuestionCategory.objects.create(name="ValidCategory")
+
+        # URL
+        cls.url = reverse("question-list-create")
+
 
     def setUp(self) -> None:
         self.client = Client()

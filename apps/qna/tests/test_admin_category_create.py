@@ -29,25 +29,18 @@ class AdminCategoryCreateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    url: str
-    cat_large: QuestionCategory
-    cat_medium: QuestionCategory
-    cat_small: QuestionCategory
     admin_user: User
     ta_user: User
     student_user: User
     general_user: User
+    cat_large: QuestionCategory
+    cat_medium: QuestionCategory
+    cat_small: QuestionCategory
+    url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = reverse("admin-qna-categories")
-
-        # 카테고리 계층 생성 (대분류 → 중분류 → 소분류)
-        cls.cat_large = QuestionCategory.objects.create(name="백엔드")
-        cls.cat_medium = QuestionCategory.objects.create(name="웹프레임워크", parent=cls.cat_large)
-        cls.cat_small = QuestionCategory.objects.create(name="Django", parent=cls.cat_medium)
-
-        # 스태프 유저 (관리자)
+        # 테스트용 유저 - 스태프 (관리자)
         cls.admin_user = User.objects.create_user(
             email="admin@ozcoding.com",
             password="password123",
@@ -58,8 +51,7 @@ class AdminCategoryCreateAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
-
-        # 스태프 유저 (조교)
+        # 테스트용 유저 - 스태프 (조교)
         cls.ta_user = User.objects.create_user(
             email="ta@ozcoding.com",
             password="password123",
@@ -70,8 +62,7 @@ class AdminCategoryCreateAPITest(TestCase):
             birthday="1991-01-01",
             is_active=True,
         )
-
-        # 수강생 유저 (권한 없음)
+        # 테스트용 유저 - 수강생 (권한 없음)
         cls.student_user = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
@@ -82,8 +73,7 @@ class AdminCategoryCreateAPITest(TestCase):
             birthday="1995-01-01",
             is_active=True,
         )
-
-        # 일반 유저 (권한 없음)
+        # 테스트용 유저 - 일반 (권한 없음)
         cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",
@@ -94,6 +84,14 @@ class AdminCategoryCreateAPITest(TestCase):
             birthday="1995-05-05",
             is_active=True,
         )
+
+        # 카테고리 계층 생성 (대분류 → 중분류 → 소분류)
+        cls.cat_large = QuestionCategory.objects.create(name="백엔드")
+        cls.cat_medium = QuestionCategory.objects.create(name="웹프레임워크", parent=cls.cat_large)
+        cls.cat_small = QuestionCategory.objects.create(name="Django", parent=cls.cat_medium)
+
+        # URL
+        cls.url = reverse("admin-qna-categories")
 
     def setUp(self) -> None:
         self.client = Client()

@@ -31,7 +31,7 @@ class AIAnswerGenerateAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 생성
+        # 테스트용 유저 - 학생
         cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
@@ -41,7 +41,6 @@ class AIAnswerGenerateAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
-
         # 테스트용 카테고리 및 질문 생성
         cls.category = QuestionCategory.objects.create(name="Python")
         cls.question = Question.objects.create(
@@ -51,6 +50,7 @@ class AIAnswerGenerateAPITest(TestCase):
             content="파이썬에서 리스트와 튜플의 차이점이 무엇인가요?",
         )
 
+        # URL
         cls.url = reverse("ai-answer-generate", kwargs={"question_id": cls.question.id})
 
     def setUp(self) -> None:

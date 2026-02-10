@@ -8,6 +8,7 @@ from apps.users.models import User
 
 
 class AnswerCommentCreateTest(APITestCase):
+
     user: User
     general_user: User
     category: QuestionCategory
@@ -17,18 +18,19 @@ class AnswerCommentCreateTest(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 유저 생성 (수강생)
+        # 테스트용 유저 - 학생
         cls.user = User.objects.create_user(
             email="student@example.com",
             password="password!@#",
             name="test1",
             nickname="student",
             phone_number="010-1234-5678",
+            role="STUDENT",
             gender="MALE",
             birthday="2000-01-01",
-            role="STUDENT",
+            is_active=True,
         )
-        # 테스트용 유저 생성 (일반인/권한 없음)
+        # 테스트용 유저 - 일반 가입자
         cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",

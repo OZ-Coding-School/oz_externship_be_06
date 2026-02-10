@@ -29,7 +29,7 @@ class QuestionUpdateAPITestResult(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 유저 생성
+        # 테스트용 유저 - 학생
         cls.user = User.objects.create_user(
             email="test@example.com",
             password="password",
@@ -40,6 +40,7 @@ class QuestionUpdateAPITestResult(APITestCase):
             gender="MALE",
             birthday="2000-01-01",
         )
+        # 테스트용 유저 - 다른 학생
         cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password",
@@ -63,6 +64,7 @@ class QuestionUpdateAPITestResult(APITestCase):
 
         # URL
         cls.url = f"/api/v1/qna/questions/{cls.question.id}"
+
 
     def test_update_question_success(self) -> None:
         """[성공] 질문 수정 성공 테스트"""

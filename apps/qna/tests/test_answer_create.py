@@ -33,7 +33,7 @@ class AnswerCreateAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # Users
+        # 테스트용 유저 - 학생
         cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password",
@@ -42,6 +42,7 @@ class AnswerCreateAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
+        # 테스트용 유저 - 일반
         cls.regular_user = User.objects.create_user(
             email="user@ozcoding.com",
             password="password",
@@ -60,6 +61,7 @@ class AnswerCreateAPITest(TestCase):
             content="내용",
         )
 
+        # URL
         cls.url = reverse("answer-create", kwargs={"question_id": cls.question.id})
 
     def setUp(self) -> None:

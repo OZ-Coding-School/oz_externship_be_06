@@ -24,6 +24,7 @@ class PresignedUrlAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
+        # 테스트용 유저 - 학생
         cls.user = UserModel.objects.create_user(
             email="test@ozcoding.com",
             password="password",
@@ -32,6 +33,8 @@ class PresignedUrlAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
+
+        # URL
         cls.question_url = reverse("question-presigned-url")
         cls.answer_url = reverse("answer-presigned-url")
 

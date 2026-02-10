@@ -8,15 +8,18 @@ from apps.users.models import User
 
 
 class AnswerAdoptTest(APITestCase):
+
     author: User
     answerer: User
     other_user: User
     category: QuestionCategory
     question: Question
+    answer: Answer
+    url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 질문 작성자 (수강생)
+        # 테스트용 유저 - 질문 작성자 (수강생)
         cls.author = User.objects.create_user(
             email="author@example.com",
             password="password!@#",
@@ -27,8 +30,7 @@ class AnswerAdoptTest(APITestCase):
             birthday="2000-01-01",
             role="STUDENT",
         )
-
-        # 답변 작성자 (다른 수강생)
+        # 테스트용 유저 - 답변 작성자 (다른 수강생)
         cls.answerer = User.objects.create_user(
             email="answerer@example.com",
             password="password!@#",
@@ -39,8 +41,7 @@ class AnswerAdoptTest(APITestCase):
             birthday="2000-02-02",
             role="STUDENT",
         )
-
-        # 제3자 (권한 없는 유저)
+        # 테스트용 유저 - 제3자 (권한 없는 유저)
         cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password!@#",
@@ -60,14 +61,14 @@ class AnswerAdoptTest(APITestCase):
             title="질문 제목", content="질문 내용", category=cls.category, author=cls.author
         )
 
-    def setUp(self) -> None:
-        self.client.force_authenticate(user=self.author)
-
         # 답변 생성 (is_adopted가 테스트에서 변경되므로 매 테스트마다 새로 생성)
-        self.answer = Answer.objects.create(question=self.question, author=self.answerer, content="답변 내용")
+        cls.answer = Answer.objects.create(question=cls.question, author=cls.answerer, content="답변 내용")
 
         # URL
-        self.url = reverse("answer-adopt", kwargs={"answer_id": self.answer.id})
+        cls.url = reverse("answer-adopt", kwargs={"answer_id": cls.answer.id})
+
+    def setUp(self) -> None:
+        self.client.force_authenticate(user=self.author)
 
     def test_adopt_answer_success(self) -> None:
         """
