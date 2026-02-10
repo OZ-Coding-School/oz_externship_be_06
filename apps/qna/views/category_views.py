@@ -16,14 +16,15 @@ from apps.qna.serializers.category.response import CategoryTreeResponseSerialize
 
 class CategoryTreeAPIView(QnaBaseAPIView):
     """
-    질의응답 카테고리 전체 계층 구조 조회 API
+    /api/v1/qna/categories
+    [GET] 질의응답 카테고리 전체 계층 구조 조회
     """
 
     permission_classes = [AllowAny]
 
-    # 카테고리 목록 조회
-    # [GET] /api/v1/qna/categories
+    # [GET] 카테고리 목록 조회
     @extend_schema(
+        tags=["qna"],
         summary="카테고리 계층 구조 조회",
         description=ApiDescriptions.CATEGORY_LIST,
         responses={
@@ -36,7 +37,6 @@ class CategoryTreeAPIView(QnaBaseAPIView):
                 description="Bad Request", response=dict, examples=[ErrorResponseExamples.CATEGORY_LIST_400]
             ),
         },
-        tags=["qna"],
     )
     def get(self, request: Request) -> Response:
         categories_tree = CategoryQueryService.get_category_tree()

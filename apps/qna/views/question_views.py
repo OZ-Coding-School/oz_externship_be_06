@@ -37,7 +37,9 @@ from apps.qna.views.base_view import QnaBaseAPIView
 
 class QuestionCreateListAPIView(QnaBaseAPIView):
     """
-    질문 등록 및 목록 조회 API View
+    /api/v1/qna/questions
+    [POST] 질문 등록
+    [GET] 질문 목록 조회
     """
 
     serializer_classes = {
@@ -50,9 +52,9 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
             return [IsAuthenticated(), IsStudent()]
         return [AllowAny()]
 
-    # 질문 등록
-    # [POST] /api/v1/qna/questions
+    # [POST] 질문 등록
     @extend_schema(
+        tags=["qna"],
         summary="질문 등록 API",
         description=ApiDescriptions.QUESTION_CREATE,
         request=QuestionCreateSerializer,
@@ -79,7 +81,6 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.QUESTION_CREATE_403],
             ),
         },
-        tags=["qna"],
     )
     def post(self, request: Request) -> Response:
         """질문 생성"""
@@ -95,9 +96,10 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-    # 질문 목록 조회
-    # [GET] /api/v1/qna/questions
+
+    # [GET] 질문 목록 조회
     @extend_schema(
+        tags=["qna"],
         summary="질문 목록 조회 API",
         description=ApiDescriptions.QUESTION_LIST,
         parameters=[QuestionQuerySerializer],
@@ -119,7 +121,6 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.QUESTION_LIST_404],
             ),
         },
-        tags=["qna"],
     )
     def get(self, request: Request) -> Response:
         """필터링 및 검색된 질문 목록 반환"""
@@ -137,7 +138,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
 
 class QuestionDetailAPIView(QnaBaseAPIView):
     """
-    질문 상세 API View
+    /api/v1/qna/questions/{question_id}
     [GET] 질문 상세 조회
     [PUT] 질문 상세 수정
     """
@@ -155,9 +156,9 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         "PUT": QuestionUpdateRequestSerializer,
     }
 
-    # 질의응답 상세 조회
-    # [GET] /api/v1/qna/questions/{question_id}
+    # [GET] 질의응답 상세 조회
     @extend_schema(
+        tags=["qna"],
         summary="질문 상세 조회 API",
         description=ApiDescriptions.QUESTION_DETAIL,
         responses={
@@ -177,7 +178,6 @@ class QuestionDetailAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.QUESTION_DETAIL_404],
             ),
         },
-        tags=["qna"],
     )
     def get(self, request: Request, question_id: int) -> Response:
         question = QuestionQueryService.get_question_detail(question_id)
@@ -186,6 +186,8 @@ class QuestionDetailAPIView(QnaBaseAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+    # [PUT] 질문 수정
     @extend_schema(
         tags=["qna"],
         summary="질문 수정 API",

@@ -38,6 +38,7 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
     storage_target = StorageTarget.QUESTION
 
     @extend_schema(
+        tags=["qna"],
         summary="질문 이미지 업로드 URL 발급",
         description="""
         S3의 'question/' 경로로 이미지를 업로드하기 위한 presigned-URL을 발급합니다.
@@ -59,7 +60,6 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
                 description="Forbidden",
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request) -> Response:
         return super().put(request)
@@ -76,6 +76,7 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
     storage_target = StorageTarget.ANSWER
 
     @extend_schema(
+        tags=["qna"],
         summary="답변 이미지 업로드 URL 발급",
         description="""
         S3의 'answers/' 경로로 이미지를 업로드하기 위한 presigned-URL을 발급합니다.
@@ -97,7 +98,6 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
                 description="Forbidden",
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request) -> Response:
         return super().put(request)

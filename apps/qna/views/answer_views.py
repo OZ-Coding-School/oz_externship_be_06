@@ -39,7 +39,8 @@ from apps.qna.views.base_view import QnaBaseAPIView
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):
     """
-    질문에 대한 AI 답변 생성 및 결과 반환 API
+    /api/v1/qna/questions/{question_id}/ai-answer
+    [GET] 질문에 대한 AI 답변 생성 및 결과 반환
     """
 
     # 사용할 AI 모델 설정 (Gemini 또는 GPT)
@@ -55,8 +56,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
 
     serializer_class: Any = None
 
-    # AI 생성 답변 조회
-    # [GET] /api/v1/qna/questions/{question_id}/ai-answer
+    # [GET] AI 생성 답변 조회
     @extend_schema(
         tags=["qna"],
         summary="AI 답변 생성 API",
@@ -107,14 +107,14 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
 
 class AnswerCreateAPIView(QnaBaseAPIView):
     """
-    질문에 대한 답변 등록 API View
+    /api/v1/qna/questions/{question_id}/answers
+    [POST] 질문에 대한 답변 등록
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
     serializer_class = AnswerCreateSerializer
 
-    # 답변 등록
-    # [POST] /api/v1/qna/questions/{question_id}/answers
+    # [POST] 답변 등록
     @extend_schema(
         tags=["qna"],
         summary="답변 등록 API",
@@ -166,15 +166,16 @@ class AnswerCreateAPIView(QnaBaseAPIView):
 
 class AnswerUpdateAPIView(QnaBaseAPIView):
     """
-    답변 수정 API View
+    /api/v1/qna/answers/{answer_id}
+    [PUT] 답변 수정
     """
 
     permission_classes = [IsAuthenticated, CanWriteAnswer]
     serializer_class = AnswerUpdateSerializer
 
-    # 답변 수정
-    # [PUT] /api/v1/qna/answers/{answer_id}
+    # [PUT] 답변 수정
     @extend_schema(
+        tags=["qna"],
         summary="답변 수정 API",
         description=ApiDescriptions.ANSWER_UPDATE,
         request=AnswerUpdateSerializer,
@@ -206,7 +207,6 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_404],
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request, answer_id: int) -> Response:
         """답변 수정"""
@@ -225,7 +225,8 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
 
 class AnswerAdoptAPIView(QnaBaseAPIView):
     """
-    답변 채택 API View
+    /api/v1/qna/answers/{answer_id}/accept
+    [POST] 답변 채택
     """
 
     def get_permissions(self) -> list[Any]:
@@ -233,8 +234,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
 
     serializer_class: Any = None
 
-    # 답변 채택
-    # [POST] /api/v1/qna/answers/{answer_id}/accept
+    # [POST] 답변 채택
     @extend_schema(
         tags=["qna"],
         summary="답변 채택 API",
@@ -285,7 +285,8 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
 
 class AnswerCommentCreateAPIView(QnaBaseAPIView):
     """
-    답변에 대한 댓글 등록 API View
+    /api/v1/qna/answers/{answer_id}/comments
+    [POST] 답변에 대한 댓글 등록
     """
 
     def get_permissions(self) -> list[Any]:
@@ -293,8 +294,7 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
 
     serializer_class = AnswerCommentCreateSerializer
 
-    # 댓글 등록
-    # [POST] /api/v1/qna/answers/{answer_id}/comments
+    # [POST] 댓글 등록
     @extend_schema(
         tags=["qna"],
         summary="답변 댓글 등록 API",
