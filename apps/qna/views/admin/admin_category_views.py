@@ -1,18 +1,14 @@
 from typing import Any
 
-from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.serializers import ErrorResponseSerializer
 from apps.core.utils.permissions import IsStaffRole
-from apps.qna.docs.api_descriptions import ApiDescriptions
-from apps.qna.docs.api_request_examples import RequestBodyExamples
-from apps.qna.docs.api_response_examples import (
-    ErrorResponseExamples,
-    SuccessResponseExamples,
+from apps.qna.docs.schemas_admin_category import (
+    ADMIN_CATEGORY_CREATE_SCHEMA,
+    ADMIN_CATEGORY_LIST_SCHEMA,
 )
 from apps.qna.serializers.admin.category.request import (
     AdminCategoryCreateSerializer,
@@ -43,45 +39,7 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
 
     # 카테고리 등록
     # [POST] /api/v1/admin/qna/categories
-    @extend_schema(
-        tags=["admin_qna"],
-        summary="어드민 카테고리 등록 API",
-        description=ApiDescriptions.ADMIN_CATEGORY_CREATE,
-        request=AdminCategoryCreateSerializer,
-        examples=[RequestBodyExamples.ADMIN_CATEGORY_CREATE],
-        responses={
-            201: OpenApiResponse(
-                description="Created",
-                response=AdminCategoryCreateResponseSerializer,
-                examples=[SuccessResponseExamples.ADMIN_CATEGORY_CREATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_404],
-            ),
-            409: OpenApiResponse(
-                description="Conflict",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_CREATE_409],
-            ),
-        },
-    )
+    @ADMIN_CATEGORY_CREATE_SCHEMA
     def post(self, request: Request) -> Response:
         """카테고리 생성"""
         # Request serializer
@@ -97,34 +55,7 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
 
     # 카테고리 목록 조회
     # [GET] /api/v1/admin/qna/categories
-    @extend_schema(
-        tags=["admin_qna"],
-        summary="카테고리 목록 조회 API",
-        description=ApiDescriptions.ADMIN_CATEGORY_LIST,
-        parameters=[AdminCategoryListQuerySerializer],
-        responses={
-            200: OpenApiResponse(
-                description="OK",
-                response=AdminCategoryListResponseSerializer,
-                examples=[SuccessResponseExamples.ADMIN_CATEGORY_LIST],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_LIST_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_LIST_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ADMIN_CATEGORY_LIST_403],
-            ),
-        },
-    )
+    @ADMIN_CATEGORY_LIST_SCHEMA
     def get(self, request: Request) -> Response:
         """카테고리 목록 조회"""
         # Request serializer

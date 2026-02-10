@@ -1,21 +1,18 @@
-from typing import Any, cast
+from typing import Any
 
-from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.core.serializers import ErrorResponseSerializer
 from apps.core.utils.permissions import CanWriteAnswerComment
-from apps.qna.docs.api_descriptions import ApiDescriptions
-from apps.qna.docs.api_request_examples import (
-    RequestBodyExamples,
-)
-from apps.qna.docs.api_response_examples import (
-    ErrorResponseExamples,
-    SuccessResponseExamples,
+from apps.qna.docs.schemas_answer import (
+    AI_ANSWER_GENERATE_SCHEMA,
+    ANSWER_ADOPT_SCHEMA,
+    ANSWER_COMMENT_CREATE_SCHEMA,
+    ANSWER_CREATE_SCHEMA,
+    ANSWER_UPDATE_SCHEMA,
 )
 from apps.qna.models import QuestionAIAnswer
 from apps.qna.serializers.answer.request import (
@@ -58,39 +55,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [GET] AI 생성 답변 조회
-    @extend_schema(
-        tags=["qna"],
-        summary="AI 답변 생성 API",
-        description=ApiDescriptions.AI_ANSWER_GENERATE,
-        request=None,
-        responses={
-            201: OpenApiResponse(
-                description="Created",
-                response=AIAnswerResponseSerializer,
-                examples=[SuccessResponseExamples.AI_ANSWER_GENERATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_401],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_404],
-            ),
-            409: OpenApiResponse(
-                description="Conflict",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_409],
-            ),
-        },
-    )
+    @AI_ANSWER_GENERATE_SCHEMA
     def get(self, request: Request, question_id: int) -> Response:
         """질문 ID를 받아 AI 답변을 생성하고 저장된 결과를 반환함"""
         # 서비스 레이어 호출 (비즈니스 로직 및 예외 처리 집중)
@@ -121,40 +86,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [POST] 답변 등록
-    @extend_schema(
-        tags=["qna"],
-        summary="답변 등록 API",
-        description=ApiDescriptions.ANSWER_CREATE,
-        request=AnswerCreateSerializer,
-        examples=[RequestBodyExamples.ANSWER_CREATE],
-        responses={
-            201: OpenApiResponse(
-                description="답변 등록 성공",
-                response=AnswerCreateResponseSerializer,
-                examples=[SuccessResponseExamples.ANSWER_CREATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_CREATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_CREATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_CREATE_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_CREATE_404],
-            ),
-        },
-    )
+    @ANSWER_CREATE_SCHEMA
     def post(self, request: Request, question_id: int) -> Response:
         """답변 생성"""
         serializer = AnswerCreateSerializer(data=request.data)
@@ -185,40 +117,7 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [PUT] 답변 수정
-    @extend_schema(
-        tags=["qna"],
-        summary="답변 수정 API",
-        description=ApiDescriptions.ANSWER_UPDATE,
-        request=AnswerUpdateSerializer,
-        examples=[RequestBodyExamples.ANSWER_UPDATE],
-        responses={
-            200: OpenApiResponse(
-                description="답변 수정 성공",
-                response=AnswerUpdateResponseSerializer,
-                examples=[SuccessResponseExamples.ANSWER_UPDATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_UPDATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_UPDATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_UPDATE_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_UPDATE_404],
-            ),
-        },
-    )
+    @ANSWER_UPDATE_SCHEMA
     def put(self, request: Request, answer_id: int) -> Response:
         """답변 수정"""
         serializer = AnswerUpdateSerializer(data=request.data)
@@ -249,44 +148,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [POST] 답변 채택
-    @extend_schema(
-        tags=["qna"],
-        summary="답변 채택 API",
-        description=ApiDescriptions.ANSWER_ADOPT,
-        request=None,
-        responses={
-            200: OpenApiResponse(
-                description="답변 채택 성공",
-                response=AnswerAdoptResponseSerializer,
-                examples=[SuccessResponseExamples.ANSWER_ADOPT],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_ADOPT_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_ADOPT_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_ADOPT_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_ADOPT_404],
-            ),
-            409: OpenApiResponse(
-                description="Conflict",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_ADOPT_409],
-            ),
-        },
-    )
+    @ANSWER_ADOPT_SCHEMA
     def post(self, request: Request, answer_id: int) -> Response:
         """답변 채택 처리"""
         # 서비스 호출
@@ -312,40 +174,7 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [POST] 댓글 등록
-    @extend_schema(
-        tags=["qna"],
-        summary="답변 댓글 등록 API",
-        description=ApiDescriptions.ANSWER_COMMENT_CREATE,
-        request=AnswerCommentCreateSerializer,
-        examples=[RequestBodyExamples.ANSWER_COMMENT_CREATE],
-        responses={
-            201: OpenApiResponse(
-                description="Created",
-                response=AnswerCommentCreateResponseSerializer,
-                examples=[SuccessResponseExamples.ANSWER_COMMENT_CREATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=ErrorResponseSerializer,
-                examples=[ErrorResponseExamples.ANSWER_COMMENT_CREATE_404],
-            ),
-        },
-    )
+    @ANSWER_COMMENT_CREATE_SCHEMA
     def post(self, request: Request, answer_id: int) -> Response:
         """댓글 생성"""
         serializer = AnswerCommentCreateSerializer(data=request.data)
