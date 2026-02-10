@@ -65,7 +65,6 @@ class QuestionUpdateAPITestResult(APITestCase):
         # URL
         cls.url = f"/api/v1/qna/questions/{cls.question.id}"
 
-
     def test_update_question_success(self) -> None:
         """[성공] 질문 수정 성공 테스트"""
         self.client.force_authenticate(user=self.user)

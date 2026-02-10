@@ -40,7 +40,6 @@ class CategoryNotFoundExceptionTest(TestCase):
         # URL
         cls.url = reverse("question-list-create")
 
-
     def setUp(self) -> None:
         self.client = Client()
 

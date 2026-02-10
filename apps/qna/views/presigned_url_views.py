@@ -10,8 +10,8 @@ from apps.core.serializers.presigned_url import (
     PresignedUrlRequestSerializer,
     PresignedUrlResponseSerializer,
 )
-from apps.core.views.presigned_url import BasePresignedUrlAPIView
 from apps.core.utils.permissions import CanWriteAnswerComment, IsStudentRole
+from apps.core.views.presigned_url import BasePresignedUrlAPIView
 
 
 class StorageTarget(Enum):

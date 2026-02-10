@@ -78,7 +78,6 @@ class QuestionDetailAPITest(TestCase):
         # URL
         cls.url = reverse("question-detail", kwargs={"question_id": cls.question.id})
 
-
     def setUp(self) -> None:
         self.client = Client()
 

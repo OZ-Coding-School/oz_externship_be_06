@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.qna.models import QuestionCategory, Answer
+from apps.qna.models import Answer, QuestionCategory
 from apps.users.models import User
 
 
