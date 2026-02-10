@@ -92,8 +92,7 @@ class AdminExamSubmissionDetailAPIView(ExamsExceptionMixin, APIView):
         parse_positive_int(submission_id, ErrorMessages.INVALID_SUBMISSION_DETAIL_REQUEST)
 
         payload = get_admin_submission_detail(submission_id)
-        serializer = self.serializer_class(data=payload)
-        serializer.is_valid(raise_exception=True)
+        serializer = self.serializer_class(instance=payload)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
