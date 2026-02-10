@@ -86,16 +86,14 @@ class PostService:
         # 2. 본문 변경 시 이미지 테이블 동기화
         if content_changed:
             # 본문에서 현재 이미지 URL들을 순서대로 추출
-            current_image_urls = ContentParser.extract_all_image_urls(post.content) # 리스트 형태 (순서 유지)
+            current_image_urls = ContentParser.extract_all_image_urls(post.content)  # 리스트 형태 (순서 유지)
 
             # 실무형 로직: 기존 이미지를 모두 지우고 새로 생성하여 '첫 번째 이미지'의 순서를 보장함
             # (만약 성능 최적화가 더 중요하다면 이전 답변의 Set 연산 방식을 유지하되 ID 순서를 관리해야 함)
             post.images.all().delete()
 
             if current_image_urls:
-                PostImage.objects.bulk_create([
-                    PostImage(post=post, img_url=url) for url in current_image_urls
-                ])
+                PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in current_image_urls])
 
         return post
 
