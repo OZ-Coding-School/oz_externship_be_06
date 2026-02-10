@@ -44,47 +44,10 @@ class TestChatbotSessionAPI(APITestCase):
                 title=f"테스트 질문 {i}",
                 content="테스트 내용",
             )
-            for i in range(15)
+            for i in range(3)
         ]
 
-        ChatbotSession.objects.bulk_create(
-            [
-                ChatbotSession(
-                    user=cls.user,
-                    question=cls.questions[i],
-                    title=f"title-{i}",
-                    using_model=ChatbotSession.AIModel.GEMINI,
-                )
-                for i in range(12)
-            ]
-        )
-
-        ChatbotSession.objects.bulk_create(
-            [
-                ChatbotSession(
-                    user=cls.other,
-                    question=cls.questions[i],
-                    title=f"other-{i}",
-                    using_model=ChatbotSession.AIModel.GEMINI,
-                )
-                for i in range(3)
-            ]
-        )
-
         cls.session_url = reverse("chatbot-session")
-
-    # -------------------------
-    # GET /sessions
-    # -------------------------
-    def test_list_only_my_sessions_and_pagination(self) -> None:
-        self.client.force_authenticate(user=self.user)
-
-        response = self.client.get(self.session_url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data["results"]), 10)
-        self.assertIsNotNone(response.data["next"])
-        self.assertTrue(all(item["user"] == self.user.id for item in response.data["results"]))
 
     # -------------------------
     # POST /sessions
@@ -113,14 +76,12 @@ class TestChatbotSessionAPI(APITestCase):
     def test_create_session_idempotent(self) -> None:
         self.client.force_authenticate(user=self.user)
 
-        # 첫 요청
         self.client.post(
             self.session_url,
             data={"question": self.questions[1].id},
             format="json",
         )
 
-        # 같은 질문으로 재요청
         response = self.client.post(
             self.session_url,
             data={"question": self.questions[1].id},

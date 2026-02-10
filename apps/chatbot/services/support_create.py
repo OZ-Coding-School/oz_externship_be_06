@@ -8,8 +8,6 @@ def create_support_session(
     title: str,
     using_model: str,
 ) -> ChatbotSession:
-    """고객지원(support) 전용 챗봇 세션 생성"""
-
     return ChatbotSession.objects.create(
         user=user,
         question=None,

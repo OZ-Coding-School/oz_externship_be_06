@@ -55,7 +55,6 @@ class ChatbotCompletionCreateAPIView(APIView):
         },
     )
     def post(self, request: Request, session_id: int) -> Union[Response, StreamingHttpResponse]:
-        # 1. 권한 및 입력값 검증
         if not request.user or not request.user.is_authenticated:
             return Response(
                 {"error_detail": "로그인한 사용자만 채팅할 수 있습니다."},
@@ -65,7 +64,7 @@ class ChatbotCompletionCreateAPIView(APIView):
         message = request.data.get("message")
         if not message or not isinstance(message, str) or not message.strip():
             return Response(
-                {"message": "유효한 메시지를 입력해주세요."},
+                {"error_detail": "유효한 메시지를 입력해주세요."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -77,26 +76,22 @@ class ChatbotCompletionCreateAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # 2. 중복 요청 방지 (Redis Lock)
         lock_key = f"chatbot:responding:{session.id}"
         if not cache.add(lock_key, "1", timeout=180):
             return Response(
-                {"message": "현재 답변 생성 중입니다."},
+                {"error_detail": "현재 답변 생성 중입니다."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            # 3. USER 메시지 DB 저장
             ChatbotCompletions.objects.create(
                 session=session,
                 content=message,
                 role=ChatbotCompletions.Role.USER,
             )
 
-            # 4. 세션 타입에 따른 SYSTEM 프롬프트 선택
             system_prompt = SUPPORT_FULL_PROMPT if session.question_id is None else QUESTION_SYSTEM_PROMPT
 
-            # 5. 스트리밍 Generator 정의
             def stream() -> Iterator[str]:
                 full_answer = ""
                 try:
@@ -107,7 +102,6 @@ class ChatbotCompletionCreateAPIView(APIView):
                         full_answer += chunk
                         yield sse(json.dumps({"content": chunk}, ensure_ascii=False))
 
-                    # 6. ASSISTANT 응답 DB 저장
                     if full_answer:
                         ChatbotCompletions.objects.create(
                             session=session,
@@ -121,14 +115,13 @@ class ChatbotCompletionCreateAPIView(APIView):
                     print(f"DEBUG ERROR: {exc}")
                     yield sse(
                         json.dumps(
-                            {"error": "응답 생성 중 오류가 발생했습니다."},
+                            {"error_detail": "응답 생성 중 오류가 발생했습니다."},
                             ensure_ascii=False,
                         )
                     )
                 finally:
                     cache.delete(lock_key)
 
-            # 7. Response 반환
             response = StreamingHttpResponse(
                 stream(),
                 content_type="text/event-stream; charset=utf-8",

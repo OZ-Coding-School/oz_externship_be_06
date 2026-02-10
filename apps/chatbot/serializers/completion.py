@@ -1,7 +1,9 @@
+from typing import Any
+
 from rest_framework import serializers
 
 
-class ChatbotCompletionCreateSerializer(serializers.Serializer):  # type: ignore[type-arg]
+class ChatbotCompletionCreateSerializer(serializers.Serializer[Any]):
     message = serializers.CharField(
         required=True,
         allow_blank=False,

@@ -7,10 +7,6 @@ from apps.qna.models import Question
 
 
 class ChatbotSessionCreateSerializer(serializers.Serializer[Any]):
-    """
-    챗봇 세션 생성용 Serializer
-    """
-
     question = serializers.IntegerField(min_value=1)
     title = serializers.CharField(
         max_length=255,
@@ -32,7 +28,6 @@ class ChatbotSessionCreateSerializer(serializers.Serializer[Any]):
         choice_map = {choice.lower(): choice for choice in valid_choices}
 
         normalized_input = value.lower()
-
         if normalized_input not in choice_map:
             allowed = ", ".join(valid_choices)
             raise serializers.ValidationError(f"지원하지 않는 모델입니다. (가능한 모델: {allowed})")
@@ -41,10 +36,6 @@ class ChatbotSessionCreateSerializer(serializers.Serializer[Any]):
 
 
 class ChatbotSessionSerializer(serializers.ModelSerializer[Any]):
-    """
-    챗봇 세션 응답 Serializer
-    """
-
     class Meta:
         model = ChatbotSession
         fields = [

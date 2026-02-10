@@ -10,45 +10,41 @@ from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 
 
-def generate_completion_answer(
-    *,
-    session: ChatbotSession,
-    system_prompt: str,
-) -> Iterator[str]:
+def _get_genai_client() -> genai.Client:
     api_key = getattr(settings, "GEMINI_API_KEY", None)
     if not api_key:
         raise ValidationError("Gemini API 키가 설정되지 않았습니다.")
 
-    client = genai.Client(api_key=api_key)
+    return genai.Client(api_key=api_key)
 
-    # 모델명 정규화 및 매핑 (GEMINI, gemini-2.5-flash 등 예외 처리)
+
+def _resolve_model_name(*, session: ChatbotSession) -> str:
     raw_model = session.using_model.lower() if session.using_model else "gemini"
 
     if "gpt" in raw_model:
-        model_name = "gpt-4o"
-    else:
-        # 안정성을 위해 gemini-2.0-flash로 고정
-        model_name = "gemini-2.0-flash"
+        return "gpt-4o"
 
-    # 대화 기록 조회
+    return "gemini-2.0-flash"
+
+
+def _build_chat_history(
+    *,
+    session: ChatbotSession,
+    system_prompt: str,
+) -> List[Dict[str, Any]]:
     history_objs = ChatbotCompletions.objects.filter(session=session).order_by("created_at")
-    chat_history: List[Dict[str, Any]] = []
 
-    # 시스템 프롬프트 주입 (오케스트레이션 레이어에서 결정됨)
-    chat_history.append(
+    chat_history: List[Dict[str, Any]] = [
         {
             "role": "user",
             "parts": [system_prompt],
-        }
-    )
-    chat_history.append(
+        },
         {
             "role": "model",
             "parts": ["네, 알겠습니다."],
-        }
-    )
+        },
+    ]
 
-    # 기존 대화 히스토리 주입
     for h in history_objs:
         role = "user" if h.role == ChatbotCompletions.Role.USER else "model"
         chat_history.append(
@@ -58,7 +54,18 @@ def generate_completion_answer(
             }
         )
 
-    # 스트리밍 요청
+    return chat_history
+
+
+def generate_completion_answer(
+    *,
+    session: ChatbotSession,
+    system_prompt: str,
+) -> Iterator[str]:
+    client = _get_genai_client()
+    model_name = _resolve_model_name(session=session)
+    chat_history = _build_chat_history(session=session, system_prompt=system_prompt)
+
     try:
         response = client.models.generate_content_stream(
             model=model_name,
