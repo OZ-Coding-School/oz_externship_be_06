@@ -12,7 +12,7 @@ from apps.core.serializers.presigned_url import (
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
 
 
-#게시글 이미지 업로드 도메인 및 S3 경로 정의
+# 게시글 이미지 업로드 도메인 및 S3 경로 정의
 class StorageTarget(Enum):
 
     POST = ("post", "uploads/images/posts")
@@ -21,7 +21,8 @@ class StorageTarget(Enum):
         self.domain = domain
         self.s3_path = s3_path
 
-#게시글 이미지 업로드용 Presigned URL 발급 API
+
+# 게시글 이미지 업로드용 Presigned URL 발급 API
 class PostPresignedUrlAPIView(BasePresignedUrlAPIView):
 
     permission_classes = [IsAuthenticated]
