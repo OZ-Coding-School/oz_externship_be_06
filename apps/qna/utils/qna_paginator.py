@@ -1,7 +1,7 @@
 # File Path: apps/qna/utils/qna_paginator.py
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Type
 
 from rest_framework import status
 from rest_framework.exceptions import NotFound

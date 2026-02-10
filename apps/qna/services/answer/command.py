@@ -4,7 +4,6 @@ import logging
 from typing import Any, cast
 
 from django.db import transaction
-from google import genai
 from google.genai import types
 from rest_framework import status
 
