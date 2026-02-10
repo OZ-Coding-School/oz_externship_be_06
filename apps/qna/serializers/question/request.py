@@ -43,3 +43,21 @@ class QuestionQuerySerializer(serializers.Serializer[Any]):
     size = serializers.IntegerField(default=10)
 
     default_error_message = ErrorMessages.INVALID_QUESTION_LIST
+
+
+# ==============================================================================
+# [PUT] Question Update
+# /api/v1/qna/questions/{question_id}
+# ==============================================================================
+class QuestionUpdateRequestSerializer(serializers.Serializer[Any]):
+    """
+    질문 수정 요청 시리얼라이저
+    """
+
+    title = serializers.CharField(required=True, help_text="질문 제목")
+    content = serializers.CharField(required=True, help_text="질문 내용")
+    category_id = serializers.IntegerField(help_text="카테고리 ID")
+
+    class Meta:
+        model = Question
+        fields = ["title", "content", "category_id"]

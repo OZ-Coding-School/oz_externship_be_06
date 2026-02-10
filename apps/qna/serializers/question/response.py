@@ -92,6 +92,23 @@ class QuestionDetailSerializer(serializers.ModelSerializer[Question]):
 
 
 # ==============================================================================
+# [PUT] Question Update
+# /api/v1/qna/questions/{question_id}
+# ==============================================================================
+class QuestionUpdateResponseSerializer(serializers.ModelSerializer[Question]):
+    """
+    질문 수정 응답 시리얼라이저
+    """
+
+    question_id = serializers.IntegerField(source="id", help_text="질문 ID")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", help_text="수정 일시")
+
+    class Meta:
+        model = Question
+        fields = ["question_id", "updated_at"]
+
+
+# ==============================================================================
 # [GET] Question category List
 # /api/v1/qna/categories
 # ==============================================================================

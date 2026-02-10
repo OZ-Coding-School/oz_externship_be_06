@@ -2,6 +2,7 @@ from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -18,12 +19,14 @@ from apps.qna.docs.api_response_examples import (
 from apps.qna.serializers.question.request import (
     QuestionCreateSerializer,
     QuestionQuerySerializer,
+    QuestionUpdateRequestSerializer,
 )
 from apps.qna.serializers.question.response import (
     QuestionCategoryTreeResponseSerializer,
     QuestionCreateResponseSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
+    QuestionUpdateResponseSerializer,
 )
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
@@ -135,10 +138,23 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
 
 class QuestionDetailAPIView(QnaBaseAPIView):
     """
-    질문 상세 조회 API View
+    질문 상세 API View
+    [GET] 질문 상세 조회
+    [PUT] 질문 상세 수정
     """
 
-    permission_classes = [AllowAny]
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "GET":
+            return [AllowAny()]
+        elif method == "PUT":
+            return [IsAuthenticated(), IsStudent()]
+        raise MethodNotAllowed(method)
+
+    serializer_classes = {
+        "GET": None,
+        "PUT": QuestionUpdateRequestSerializer,
+    }
 
     # 질의응답 상세 조회
     # [GET] /api/v1/qna/questions/{question_id}
@@ -170,6 +186,51 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer = QuestionDetailSerializer(cast(Any, question))
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=["qna"],
+        summary="질문 수정 API",
+        description=ApiDescriptions.QUESTION_UPDATE,
+        request=QuestionUpdateRequestSerializer,
+        examples=[RequestBodyExamples.QUESTION_UPDATE],
+        responses={
+            200: OpenApiResponse(
+                description="OK",
+                response=QuestionUpdateResponseSerializer,
+                examples=[SuccessResponseExamples.QUESTION_UPDATE],
+            ),
+            400: OpenApiResponse(
+                description="Bad Request",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_400],
+            ),
+            401: OpenApiResponse(
+                description="Unauthorized",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_401],
+            ),
+            403: OpenApiResponse(
+                description="Forbidden",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_403],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response=dict,
+                examples=[ErrorResponseExamples.QUESTION_UPDATE_404],
+            ),
+        },
+    )
+    def put(self, request: Request, question_id: int) -> Response:
+        serializer = QuestionUpdateRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        question = QuestionCommandService.update_question(
+            question_id, cast(User, request.user), serializer.validated_data
+        )
+
+        response_serializer = QuestionUpdateResponseSerializer(question)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class QuestionCategoryTreeAPIView(QnaBaseAPIView):
