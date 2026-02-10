@@ -10,7 +10,6 @@ from apps.exams.constants import ErrorMessages
 from apps.exams.exceptions import ErrorDetailException
 from apps.exams.models import Exam, ExamQuestion
 from apps.exams.services.admin.questions_update import (
-    BusinessRuleError,
     update_exam_question,
 )
 from apps.users.models import User
@@ -265,5 +264,9 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         question = self.question
         update_data = {"type": ExamQuestion.TypeChoices.SHORT_ANSWER, "question": "단답형으로 변경"}
 
-        with self.assertRaises(BusinessRuleError):
+        with self.assertRaises(ErrorDetailException) as ctx:
             update_exam_question(instance=question, update_data=update_data)
+
+        exc = ctx.exception
+        assert exc.status_code == status.HTTP_400_BAD_REQUEST
+        assert str(exc.detail) == ErrorMessages.INVALID_QUESTION_POINT_REQUIRED.value

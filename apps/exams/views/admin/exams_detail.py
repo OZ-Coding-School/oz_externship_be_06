@@ -162,7 +162,8 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
     )
     def put(self, request: Request, exam_id: int) -> Response:
         serializer = AdminExamUpdateRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            raise_error(ErrorMessages.INVALID_EXAM_UPDATE_REQUEST)
 
         exam = update_exam(
             exam_id=exam_id,

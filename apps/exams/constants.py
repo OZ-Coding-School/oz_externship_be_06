@@ -28,6 +28,13 @@ class ErrorMessages(str, Enum):
     INVALID_SUBMISSION_DELETE_REQUEST = "유효하지 않은 응시 내역 삭제 요청입니다."
     INVALID_SHORT_ANSWER_TYPE = "주관식 단답형 답안은 문자열이어야 합니다."
     INVALID_SHORT_ANSWER_LENGTH = "주관식 단답형 답안은 20자 이하로 입력해야 합니다."
+    INVALID_QUESTION_REQUIRED = "문제(question)는 필수입니다."
+    INVALID_QUESTION_POINT_REQUIRED = "배점(point)은 필수입니다."
+    INVALID_QUESTION_ANSWER_REQUIRED = "정답(answer)은 필수입니다."
+    INVALID_QUESTION_OPTIONS_REQUIRED = "객관식/순서정렬 문제는 options가 필요합니다."
+    INVALID_QUESTION_ORDERING_MIN_OPTIONS = "순서 정렬 문제는 보기 2개 이상이 필요합니다."
+    INVALID_QUESTION_PROMPT_REQUIRED = "빈칸 채우기 문제는 지문(prompt)이 필요합니다."
+    INVALID_QUESTION_BLANK_COUNT_MIN = "빈칸 채우기 문제는 blank_count가 1 이상이어야 합니다."
 
     # 401
     UNAUTHORIZED = "자격 인증 데이터가 제공되지 않았습니다."

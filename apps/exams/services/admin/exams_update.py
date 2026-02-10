@@ -1,16 +1,9 @@
 from django.db import transaction
-from rest_framework import status
-from rest_framework.exceptions import APIException, NotFound
 
 from apps.courses.models import Subject
 from apps.exams.constants import ErrorMessages
+from apps.exams.error_map import raise_error
 from apps.exams.models import Exam
-
-
-class ConflictException(APIException):
-    status_code = status.HTTP_409_CONFLICT
-    default_detail = "Conflict"
-    default_code = "conflict"
 
 
 @transaction.atomic
@@ -27,12 +20,13 @@ def update_exam(
     try:
         exam = Exam.objects.select_for_update().get(id=exam_id)
     except Exam.DoesNotExist:
-        raise NotFound(ErrorMessages.EXAM_UPDATE_NOT_FOUND.value)
+        raise_error(ErrorMessages.EXAM_UPDATE_NOT_FOUND)
 
     # 409
     if title is not None:
         if Exam.objects.filter(title=title).exclude(id=exam.id).exists():
-            raise ConflictException(ErrorMessages.EXAM_UPDATE_CONFLICT.value)
+            raise_error(ErrorMessages.EXAM_UPDATE_CONFLICT)
+
         exam.title = title
 
     if subject is not None:
