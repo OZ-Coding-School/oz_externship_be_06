@@ -87,20 +87,20 @@ class QuestionCommandService:
 
         if "title" in data:
             if not isinstance(data["title"], str):
-                raise QnaBaseException(detail="제목은 문자열이어야 합니다.")
+                raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_UPDATE, status_code=status.HTTP_400_BAD_REQUEST)
             question.title = data["title"]
             update_fields.append("title")
 
         if "content" in data:
             if not isinstance(data["content"], str):
-                raise QnaBaseException(detail="내용은 문자열이어야 합니다.")
+                raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_UPDATE, status_code=status.HTTP_400_BAD_REQUEST)
             question.content = data["content"]
             update_fields.append("content")
 
         if "category_id" in data:
             category_id = data["category_id"]
             if not isinstance(category_id, int):
-                raise QnaBaseException(detail="카테고리 ID는 숫자여야 합니다.")
+                raise QnaBaseException(detail=ErrorMessages.INVALID_QUESTION_UPDATE, status_code=status.HTTP_400_BAD_REQUEST)
             try:
                 question.category = QuestionCategory.objects.get(id=category_id)
                 update_fields.append("category")
