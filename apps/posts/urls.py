@@ -9,12 +9,14 @@ from apps.posts.views.comment.comment_nickname_views import CommentRandomNicknam
 from apps.posts.views.comment.comment_update_views import PostCommentUpdateAPIView
 from apps.posts.views.post_like_views import PostLikeAPIView
 from apps.posts.views.post_views import PostDetailView, PostListCreateView
+from apps.posts.views.presigned_url_view import PostPresignedUrlAPIView
 
 app_name = "posts"
 
 urlpatterns = [
     path("", PostListCreateView.as_view(), name="post-list-create"),
     path("<int:post_id>", PostDetailView.as_view(), name="post-detail"),
+    path("presigned-url/", PostPresignedUrlAPIView.as_view(), name="post-presigned-url"),
     path("categories", CategoryListView.as_view(), name="category-list"),
     # 댓글 목록 / 생성
     # 댓글 목록

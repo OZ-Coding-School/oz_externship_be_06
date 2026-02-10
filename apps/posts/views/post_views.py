@@ -1,8 +1,6 @@
-from typing import Any, Dict, Never, cast
+from typing import Any, Never, cast
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from moto.dynamodb.models.dynamo_type import serializer
-from numpy.f2py.crackfortran import usermodules
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
