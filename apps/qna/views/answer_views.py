@@ -33,8 +33,8 @@ from apps.qna.services.answer.command import (
     AnswerCommentCommandService,
 )
 from apps.qna.utils.model_types import User
-from apps.qna.utils.permissions import CanWriteAnswer, CanWriteComment
 from apps.qna.views.base_view import QnaBaseAPIView
+from apps.core.utils.permissions import CanWriteAnswerComment
 
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):
@@ -111,7 +111,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     [POST] 질문에 대한 답변 등록
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswer]
+    permission_classes = [IsAuthenticated, CanWriteAnswerComment]
     serializer_class = AnswerCreateSerializer
 
     # [POST] 답변 등록
@@ -170,7 +170,7 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
     [PUT] 답변 수정
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswer]
+    permission_classes = [IsAuthenticated, CanWriteAnswerComment]
     serializer_class = AnswerUpdateSerializer
 
     # [PUT] 답변 수정
@@ -290,7 +290,7 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
     """
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteComment()]
+        return [IsAuthenticated(), CanWriteAnswerComment()]
 
     serializer_class = AnswerCommentCreateSerializer
 

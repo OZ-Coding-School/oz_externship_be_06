@@ -42,3 +42,14 @@ class IsStaffRole(RolePermission):
         User.Role.LC,
         User.Role.OM,
     }
+
+class CanWriteAnswerComment(RolePermission):
+    """댓글 및 답글 작성 권한 검증"""
+
+    allowed_roles = {
+        User.Role.STUDENT,
+        User.Role.ADMIN,
+        User.Role.TA,
+        User.Role.LC,
+        User.Role.OM,
+    }

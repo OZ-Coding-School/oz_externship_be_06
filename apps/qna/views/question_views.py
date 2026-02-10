@@ -30,7 +30,7 @@ from apps.qna.serializers.question.response import (
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.model_types import User
-from apps.qna.utils.permissions import IsStudent
+from apps.core.utils.permissions import IsStudentRole
 from apps.qna.utils.qna_paginator import QuestionListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
@@ -49,7 +49,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
 
     def get_permissions(self) -> list[Any]:
         if self.request.method == "POST":
-            return [IsAuthenticated(), IsStudent()]
+            return [IsAuthenticated(), IsStudentRole()]
         return [AllowAny()]
 
     # [POST] 질문 등록
@@ -148,7 +148,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         if method == "GET":
             return [AllowAny()]
         elif method == "PUT":
-            return [IsAuthenticated(), IsStudent()]
+            return [IsAuthenticated(), IsStudentRole()]
         raise MethodNotAllowed(method)
 
     serializer_classes = {
