@@ -10,7 +10,11 @@ from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 
 
-def generate_completion_answer(*, session: ChatbotSession, user_message: str) -> Iterator[str]:
+def generate_completion_answer(
+    *,
+    session: ChatbotSession,
+    system_prompt: str,
+) -> Iterator[str]:
     api_key = getattr(settings, "GEMINI_API_KEY", None)
     if not api_key:
         raise ValidationError("Gemini API 키가 설정되지 않았습니다.")
@@ -23,35 +27,42 @@ def generate_completion_answer(*, session: ChatbotSession, user_message: str) ->
     if "gpt" in raw_model:
         model_name = "gpt-4o"
     else:
-        # 안정성을 위해 gemini-pro로 고정
+        # 안정성을 위해 gemini-2.0-flash로 고정
         model_name = "gemini-2.0-flash"
 
     # 대화 기록 조회
     history_objs = ChatbotCompletions.objects.filter(session=session).order_by("created_at")
     chat_history: List[Dict[str, Any]] = []
 
-    # 시스템 프롬프트 설정
-    system_text = "당신은 오즈 익스턴십 LMS의 서포트 챗봇입니다. 친절하게 답변하세요."
-    if session.question_id and session.question:
-        system_text = f"다음 질문에 대해 정확하고 간결하게 답변하세요:\n{session.question.content}"
+    # 시스템 프롬프트 주입 (오케스트레이션 레이어에서 결정됨)
+    chat_history.append(
+        {
+            "role": "user",
+            "parts": [system_prompt],
+        }
+    )
+    chat_history.append(
+        {
+            "role": "model",
+            "parts": ["네, 알겠습니다."],
+        }
+    )
 
-    # 히스토리 주입 (구버전 호환성 확보)
-    if not history_objs.exists():
-        chat_history.append({"role": "user", "parts": [system_text]})
-        chat_history.append({"role": "model", "parts": ["네, 알겠습니다."]})
-
+    # 기존 대화 히스토리 주입
     for h in history_objs:
         role = "user" if h.role == ChatbotCompletions.Role.USER else "model"
-        chat_history.append({"role": role, "parts": [h.content]})
+        chat_history.append(
+            {
+                "role": role,
+                "parts": [h.content],
+            }
+        )
 
     # 스트리밍 요청
     try:
         response = client.models.generate_content_stream(
             model=model_name,
-            contents=cast(
-                Any,
-                chat_history + [{"role": "user", "parts": [user_message]}],
-            ),
+            contents=cast(Any, chat_history),
         )
 
         for chunk in response:
