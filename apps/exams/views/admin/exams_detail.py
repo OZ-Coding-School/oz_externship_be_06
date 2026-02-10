@@ -25,6 +25,7 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.exams_delete import delete_exam
 from apps.exams.services.admin.exams_detail import get_exam_detail_or_error
 from apps.exams.services.admin.exams_update import update_exam
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -96,6 +97,7 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def get(self, request: Request, exam_id: int) -> Response:
+        parse_positive_int(exam_id, ErrorMessages.INVALID_EXAM_LIST_REQUEST)
         exam = get_exam_detail_or_error(exam_id=exam_id)
         serializer = AdminExamDetailSerializer(exam)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -161,6 +163,7 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def put(self, request: Request, exam_id: int) -> Response:
+        parse_positive_int(exam_id, ErrorMessages.INVALID_EXAM_UPDATE_REQUEST)
         serializer = AdminExamUpdateRequestSerializer(data=request.data)
         if not serializer.is_valid():
             raise_error(ErrorMessages.INVALID_EXAM_UPDATE_REQUEST)
@@ -233,8 +236,7 @@ class AdminExamDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def delete(self, request: Request, exam_id: int) -> Response:
-        if exam_id <= 0:
-            raise_error(ErrorMessages.INVALID_EXAM_DELETE_REQUEST)
+        parse_positive_int(exam_id, ErrorMessages.INVALID_EXAM_DELETE_REQUEST)
 
         deleted_id = delete_exam(exam_id)
 

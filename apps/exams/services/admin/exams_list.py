@@ -7,6 +7,11 @@ from django.db.models import Count, Q, QuerySet
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam
+from apps.exams.validators import (
+    normalize_optional_str,
+    parse_optional_positive_int,
+    parse_sort_order,
+)
 
 
 class InvalidAdminExamListParams(Exception):
@@ -31,21 +36,27 @@ class AdminExamListService:
     def parse_params(
         cls, *, search_keyword: str | None, subject_id: str | None, sort: str | None, order: str | None
     ) -> AdminExamListParams:
-        sort_v = sort or cls.DEFAULT_SORT
-        order_v = order or cls.DEFAULT_ORDER
-
-        if sort_v not in cls.ALLOWED_SORT or order_v not in cls.ALLOWED_ORDER:
-            raise InvalidAdminExamListParams(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST.value)
-
-        subject_id_v: int | None = None
-        if subject_id:
-            try:
-                subject_id_v = int(subject_id)
-            except ValueError:
-                raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value)
+        try:
+            sort_v, order_v = parse_sort_order(
+                sort=sort,
+                order=order,
+                allowed_sort=cls.ALLOWED_SORT,
+                allowed_order=cls.ALLOWED_ORDER,
+                default_sort=cls.DEFAULT_SORT,
+                default_order=cls.DEFAULT_ORDER,
+                error_message=ErrorMessages.INVALID_EXAM_LIST_REQUEST,
+            )
+            subject_id_v = parse_optional_positive_int(subject_id, ErrorMessages.INVALID_EXAM_LIST_REQUEST)
+            search_keyword_v = normalize_optional_str(
+                search_keyword,
+                max_length=None,
+                error_message=ErrorMessages.INVALID_EXAM_LIST_REQUEST,
+            )
+        except Exception as exc:
+            raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value) from exc
 
         return AdminExamListParams(
-            search_keyword=search_keyword or None,
+            search_keyword=search_keyword_v,
             subject_id=subject_id_v,
             sort=sort_v,
             order=order_v,

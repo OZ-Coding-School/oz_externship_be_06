@@ -17,6 +17,7 @@ from apps.exams.serializers.admin.questions_create import (
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.questions_create import create_exam_question
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -91,6 +92,7 @@ class AdminExamQuestionCreateAPIView(ExamsExceptionMixin, APIView):
         raise PermissionDenied(detail=ErrorMessages.NO_QUESTION_CREATE_PERMISSION.value)
 
     def post(self, request: Request, exam_id: int) -> Response:
+        parse_positive_int(exam_id, ErrorMessages.INVALID_QUESTION_CREATE_REQUEST)
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             raise_error(ErrorMessages.INVALID_QUESTION_CREATE_REQUEST)

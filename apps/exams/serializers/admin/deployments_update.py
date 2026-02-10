@@ -2,6 +2,9 @@ from typing import Any
 
 from rest_framework import serializers
 
+from apps.exams.constants import ErrorMessages
+from apps.exams.validators import validate_duration_within_window, validate_time_range
+
 
 class AdminExamDeploymentUpdateRequestSerializer(serializers.Serializer[Any]):
     """쪽지시험 배포 수정 요청 스키마."""
@@ -11,14 +14,19 @@ class AdminExamDeploymentUpdateRequestSerializer(serializers.Serializer[Any]):
     duration_time = serializers.IntegerField(min_value=1, required=True)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        from apps.exams.constants import ErrorMessages
-
-        if attrs["open_at"] >= attrs["close_at"]:
-            raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value)
-
-        window_minutes = (attrs["close_at"] - attrs["open_at"]).total_seconds() / 60
-        if attrs["duration_time"] > window_minutes:
-            raise serializers.ValidationError(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST.value)
+        validate_time_range(
+            attrs.get("open_at"),
+            attrs.get("close_at"),
+            error_message=ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST,
+            exc_factory=serializers.ValidationError,
+        )
+        validate_duration_within_window(
+            attrs.get("open_at"),
+            attrs.get("close_at"),
+            attrs.get("duration_time"),
+            error_message=ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST,
+            exc_factory=serializers.ValidationError,
+        )
 
         return attrs
 

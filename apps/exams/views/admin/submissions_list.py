@@ -20,6 +20,7 @@ from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.validators import normalize_optional_str, parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -84,7 +85,14 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
     def get(self, request: Request) -> Response:
         # Query parameters
-        search_keyword = request.query_params.get("search_keyword", "")
+        search_keyword = (
+            normalize_optional_str(
+                request.query_params.get("search_keyword"),
+                max_length=None,
+                error_message=ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST,
+            )
+            or ""
+        )
         cohort_id = request.query_params.get("cohort_id")
         exam_id = request.query_params.get("exam_id")
         sort = request.query_params.get("sort", "started_at")
@@ -108,19 +116,13 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
         # 필터링: 기수 ID
         if cohort_id:
-            try:
-                cohort_id_int = int(cohort_id)
-                queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
-            except ValueError as exc:
-                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            cohort_id_int = parse_positive_int(cohort_id, ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
 
         # 필터링: 시험 ID
         if exam_id:
-            try:
-                exam_id_int = int(exam_id)
-                queryset = queryset.filter(deployment__exam_id=exam_id_int)
-            except ValueError as exc:
-                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            exam_id_int = parse_positive_int(exam_id, ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            queryset = queryset.filter(deployment__exam_id=exam_id_int)
 
         # 정렬
         valid_sort_fields = ["score", "started_at"]

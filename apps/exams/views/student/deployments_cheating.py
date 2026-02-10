@@ -14,6 +14,7 @@ from apps.exams.serializers.student.deployments_cheating import (
 )
 from apps.exams.services.student.deployments_cheating import update_cheating_count
 from apps.exams.services.student.deployments_status import get_deployment_or_404
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -83,6 +84,7 @@ class ExamCheatingUpdateAPIView(ExamsExceptionMixin, APIView):
     serializer_class = ExamCheatingResponseSerializer
 
     def post(self, request: Request, deployment_id: int) -> Response:
+        parse_positive_int(deployment_id, ErrorMessages.EXAM_NOT_FOUND)
         user = request.user
 
         deployment = get_deployment_or_404(deployment_id, error_message=ErrorMessages.EXAM_NOT_FOUND)

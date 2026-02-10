@@ -18,6 +18,7 @@ from apps.exams.services.student.deployments_status import (
     get_deployment_or_404,
     validate_deployment_active,
 )
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 from apps.users.models import User
 
@@ -89,6 +90,7 @@ class CheckCodeAPIView(ExamsExceptionMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, deployment_id: int) -> Response:
+        parse_positive_int(deployment_id, ErrorMessages.DEPLOYMENT_NOT_FOUND)
         serializer = CheckCodeRequestSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
