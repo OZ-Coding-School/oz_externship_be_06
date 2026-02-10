@@ -117,12 +117,3 @@ class QuestionQueryService:
 
         except Question.DoesNotExist:
             raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
-
-    @staticmethod
-    def get_question_category_tree() -> QuerySet[QuestionCategory]:
-        """전체 카테고리를 계층 구조(Tree)로 조회하기 위해 최상위 카테고리 목록을 반환"""
-        return (
-            QuestionCategory.objects.filter(parent__isnull=True)
-            .prefetch_related("subcategories__subcategories")
-            .order_by("name")
-        )

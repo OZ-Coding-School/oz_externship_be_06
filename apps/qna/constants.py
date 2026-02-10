@@ -10,9 +10,9 @@ class ErrorMessages(str, Enum):
 
     # --- 400 Bad Request (Invalid Inputs) ---
     DEFAULT_400 = "400 유효하지 않은 요청"
+    INVALID_CATEGORY_LIST = "유효하지 않은 카테고리 목록 조회 요청입니다."
     INVALID_QUESTION_CREATE = "유효하지 않은 질문 등록 요청입니다."
     INVALID_QUESTION_LIST = "유효하지 않은 질문 목록 조회 요청입니다."
-    INVALID_QUESTION_CATEGORY_LIST = "유효하지 않은 카테고리 목록 조회 요청입니다."
     INVALID_QUESTION_DETAIL = "유효하지 않은 질문 상세 조회 요청입니다."
     INVALID_QUESTION_UPDATE = "유효하지 않은 질문 수정 요청입니다."
     INVALID_ANSWER_CREATE = "유효하지 않은 답변 등록 요청입니다."

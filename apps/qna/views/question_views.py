@@ -22,7 +22,6 @@ from apps.qna.serializers.question.request import (
     QuestionUpdateRequestSerializer,
 )
 from apps.qna.serializers.question.response import (
-    QuestionCategoryTreeResponseSerializer,
     QuestionCreateResponseSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
@@ -231,35 +230,3 @@ class QuestionDetailAPIView(QnaBaseAPIView):
 
         response_serializer = QuestionUpdateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
-
-
-class QuestionCategoryTreeAPIView(QnaBaseAPIView):
-    """
-    질의응답 카테고리 전체 계층 구조 조회 API
-    """
-
-    permission_classes = [AllowAny]
-
-    # 카테고리 목록 조회
-    # [GET] /api/v1/qna/categories
-    @extend_schema(
-        summary="카테고리 계층 구조 조회",
-        description=ApiDescriptions.QUESTION_CATEGORY_LIST,
-        responses={
-            200: OpenApiResponse(
-                description="OK",
-                response=QuestionCategoryTreeResponseSerializer,
-                examples=[SuccessResponseExamples.QUESTION_CATEGORY_LIST],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request", response=dict, examples=[ErrorResponseExamples.QUESTION_CATEGORY_LIST_400]
-            ),
-        },
-        tags=["qna"],
-    )
-    def get(self, request: Request) -> Response:
-        categories_tree = QuestionQueryService.get_question_category_tree()
-
-        response_serializer = QuestionCategoryTreeResponseSerializer({"categories": categories_tree})
-
-        return Response(response_serializer.data)
