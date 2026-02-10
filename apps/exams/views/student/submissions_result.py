@@ -1,67 +1,20 @@
 from typing import cast
 
-from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.schemas.student import exam_submission_detail_schema
 from apps.exams.serializers.student.submissions_result import ExamSubmissionSerializer
 from apps.exams.services.student.submissions_result import get_exam_submission_detail
 from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
-@extend_schema(
-    tags=["exams"],
-    summary="시험 제출 결과 상세 조회",
-    description="submission_id로 시험 제출(결과) 상세 정보를 조회합니다.",
-    responses={
-        200: ExamSubmissionSerializer,
-        400: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Bad Request",
-            examples=[
-                OpenApiExample(
-                    "유효하지 않은 시험 응시 세션",
-                    value={"error_detail": ErrorMessages.INVALID_EXAM_SESSION.value},
-                ),
-            ],
-        ),
-        401: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Unauthorized",
-            examples=[
-                OpenApiExample(
-                    "인증 실패",
-                    value={"error_detail": ErrorMessages.UNAUTHORIZED.value},
-                ),
-            ],
-        ),
-        403: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Forbidden",
-            examples=[
-                OpenApiExample(
-                    "권한 없음",
-                    value={"error_detail": ErrorMessages.FORBIDDEN.value},
-                ),
-            ],
-        ),
-        404: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            description="Not Found",
-            examples=[
-                OpenApiExample(
-                    "시험 정보 없음",
-                    value={"error_detail": ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value},
-                ),
-            ],
-        ),
-    },
-)
+@exam_submission_detail_schema
 class ExamSubmissionDetailView(ExamsExceptionMixin, RetrieveAPIView[ExamSubmission]):
+    # 시험 제출 결과 상세 조회
     permission_classes = [IsAuthenticated]
     serializer_class = ExamSubmissionSerializer
 
