@@ -43,14 +43,17 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     """
 
     serializer_classes = {
-        "GET": QuestionQuerySerializer,
         "POST": QuestionCreateSerializer,
+        "GET": QuestionQuerySerializer,
     }
 
     def get_permissions(self) -> list[Any]:
-        if self.request.method == "POST":
+        method = self.request.method or ""
+        if method == "POST":
             return [IsAuthenticated(), IsStudentRole()]
-        return [AllowAny()]
+        elif method == "GET":
+            return [AllowAny()]
+        raise MethodNotAllowed(method)
 
     # [POST] 질문 등록
     @extend_schema(
@@ -143,6 +146,11 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     [PUT] 질문 상세 수정
     """
 
+    serializer_classes = {
+        "GET": None,
+        "PUT": QuestionUpdateRequestSerializer,
+    }
+
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
         if method == "GET":
@@ -150,11 +158,6 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         elif method == "PUT":
             return [IsAuthenticated(), IsStudentRole()]
         raise MethodNotAllowed(method)
-
-    serializer_classes = {
-        "GET": None,
-        "PUT": QuestionUpdateRequestSerializer,
-    }
 
     # [GET] 질의응답 상세 조회
     @extend_schema(

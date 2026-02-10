@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.exceptions import MethodNotAllowed
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
@@ -44,17 +45,19 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     """
 
     # 사용할 AI 모델 설정 (Gemini 또는 GPT)
-    """
-    사용할 AI 모델을 설정합니다.
-    - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
-    - QuestionAIAnswer.AIModel.GPT: gpt-4o 모델 사용 (미구현)
-    """
+    # - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
+    # - QuestionAIAnswer.AIModel.GPT: (미구현)
     using_model: str = QuestionAIAnswer.AIModel.GEMINI
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated()]
+    serializer_classes = {
+        'GET': None
+    }
 
-    serializer_class: Any = None
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "GET":
+            return [IsAuthenticated()]
+        raise MethodNotAllowed(method)
 
     # [GET] AI 생성 답변 조회
     @extend_schema(
@@ -111,8 +114,15 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     [POST] 질문에 대한 답변 등록
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswerComment]
-    serializer_class = AnswerCreateSerializer
+    serializer_classes = {
+        'GET': AnswerCreateSerializer
+    }
+
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "GET":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
 
     # [POST] 답변 등록
     @extend_schema(
@@ -170,8 +180,15 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
     [PUT] 답변 수정
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswerComment]
-    serializer_class = AnswerUpdateSerializer
+    serializer_classes = {
+        'PUT': AnswerUpdateSerializer
+    }
+
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "PUT":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
 
     # [PUT] 답변 수정
     @extend_schema(
@@ -229,10 +246,15 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
     [POST] 답변 채택
     """
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated()]
+    serializer_classes = {
+        'POST': None
+    }
 
-    serializer_class: Any = None
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "POST":
+            return [IsAuthenticated()]
+        raise MethodNotAllowed(method)
 
     # [POST] 답변 채택
     @extend_schema(
@@ -289,10 +311,15 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
     [POST] 답변에 대한 댓글 등록
     """
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteAnswerComment()]
+    serializer_classes = {
+        'POST': AnswerCommentCreateSerializer
+    }
 
-    serializer_class = AnswerCommentCreateSerializer
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "POST":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
 
     # [POST] 댓글 등록
     @extend_schema(

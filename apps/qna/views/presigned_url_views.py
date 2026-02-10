@@ -32,10 +32,12 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
     질문 이미지 업로드용 Presigned URL 발급 API
     """
 
+    storage_target = StorageTarget.QUESTION
+
+    serializer_class = PresignedUrlRequestSerializer
+
     def get_permissions(self) -> list[Any]:
         return [IsAuthenticated(), IsStudent()]
-
-    storage_target = StorageTarget.QUESTION
 
     @extend_schema(
         tags=["qna"],
@@ -70,10 +72,12 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
     답변 이미지 업로드용 Presigned URL 발급 API
     """
 
+    storage_target = StorageTarget.ANSWER
+
+    serializer_class = PresignedUrlRequestSerializer
+
     def get_permissions(self) -> list[Any]:
         return [IsAuthenticated(), CanWriteAnswer()]
-
-    storage_target = StorageTarget.ANSWER
 
     @extend_schema(
         tags=["qna"],
