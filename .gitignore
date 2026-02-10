@@ -11,3 +11,4 @@ htmlcov/
 media/
 static/
 staticfiles/
+celerybeat-schedule

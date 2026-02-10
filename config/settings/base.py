@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "django_filters",
+    "django_celery_beat",
 ]
 
 # 추가한 도메인별 앱을 줄바꿈, 쉼표를 사용하여 나열.
@@ -217,6 +218,20 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Celery Settings
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {
+    "exams-auto-submit-overdue": {
+        "task": "apps.exams.tasks.auto_submit_overdue_exams",
+        "schedule": 30.0,
+    },
+}
 
 # Twilio SMS Verify Settings
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
