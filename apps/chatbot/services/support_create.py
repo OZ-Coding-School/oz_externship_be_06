@@ -12,7 +12,7 @@ def create_support_session(
 ) -> ChatbotSession:
     """고객지원(support) 전용 챗봇 세션 생성"""
 
-    # 1) support 세션 생성
+    # support 세션 생성 (question=None으로 유형 구분)
     session = ChatbotSession.objects.create(
         user=user,
         question=None,
@@ -20,7 +20,7 @@ def create_support_session(
         using_model=using_model,
     )
 
-    # 2) 프롬프트를 USER 메시지로 1회 저장
+    # SYSTEM 프롬프트 1회 저장
     ChatbotCompletions.objects.create(
         session=session,
         role=ChatbotCompletions.Role.USER,
