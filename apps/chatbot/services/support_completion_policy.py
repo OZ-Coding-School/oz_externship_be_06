@@ -9,30 +9,67 @@ from apps.chatbot.models.chatbot_session import ChatbotSession
 
 # 프롬프트 탈옥 / 시스템·모델 정보 요청 차단 키워드
 BLOCKED_PROMPT_KEYWORDS = [
-    # 시스템 / 프롬프트 탈옥
+    # 시스템 / 프롬프트 노출
     "시스템 프롬프트",
     "system prompt",
+    "developer message",
+    "hidden prompt",
     "프롬프트 보여줘",
+    "프롬프트 공개",
+    "너의 규칙",
+    "너의 지침",
+    "정책을 보여줘",
+    "prompt",
+    # 지시 무시 / 역할 변경
     "지시를 무시",
     "이전 지시 무시",
+    "ignore instructions",
+    "override",
     "역할을 바꿔",
-    "너의 규칙",
+    "roleplay",
+    "act as",
+    "너는 이제",
+    # 탈옥 키워드
+    "탈옥",
+    "jailbreak",
+    "prompt injection",
+    "dan",
+    # 내부 설정 / 키
+    "api key",
+    "secret key",
+    "키를 알려줘",
+    "토큰",
+    "temperature",
+    "top_p",
     # 모델 노출
-    "너는 gpt",
-    "너 gpt야",
-    "너는 gemini",
-    "너 gemini야",
+    "gpt",
+    "gemini",
+    "claude",
+    "llama",
     "사용하는 모델",
     "모델 뭐야",
 ]
 
 # support 도메인 외 요청 차단 키워드
+# (support는 '안내'만 가능)
 BLOCKED_SUPPORT_KEYWORDS = [
+    # 개발 / 학습 / 창작
     "코드 짜줘",
     "프로그램 만들어줘",
+    "앱 만들어줘",
+    "웹 만들어줘",
+    "알고리즘",
+    "구현해줘",
     "소설 써줘",
+    "시 써줘",
+    "대본 써줘",
     "번역해줘",
     "요약해줘",
+    # 질문하기 성격
+    "왜 그런지",
+    "개념 설명",
+    "문제 풀어줘",
+    "로직 설명",
 ]
 
 
