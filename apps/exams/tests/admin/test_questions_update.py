@@ -250,6 +250,54 @@ class AdminExamQuestionUpdateAPITests(APITestCase):
         self.assertEqual(response.data["type"], ExamQuestion.TypeChoices.OX)
         self.assertEqual(response.data["point"], 5)
 
+    # multiple_choice 문자열 → MULTI_SELECT 매핑
+    def test_update_question_change_type_with_string_success(self) -> None:
+        self.client.force_authenticate(self.admin)
+
+        payload = {
+            "type": "multiple_choice",
+            "question": "객관식으로 변경",
+            "options": ["A", "B"],
+            "correct_answer": ["A"],
+            "point": 5,
+            "explanation": "해설",
+        }
+
+        response = self.client.put(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["type"], ExamQuestion.TypeChoices.MULTI_SELECT)
+
+    # 대소문자 섞였을 때
+    def test_update_question_type_case_insensitive(self) -> None:
+        self.client.force_authenticate(self.admin)
+
+        payload = {
+            "type": "Ox",
+            "question": "OX 문제로 변경",
+            "correct_answer": True,
+            "point": 5,
+        }
+
+        response = self.client.put(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["type"], ExamQuestion.TypeChoices.OX)
+
+    # 존재하지 않는 타입
+    def test_update_question_invalid_type_string(self) -> None:
+        self.client.force_authenticate(self.admin)
+
+        payload = {
+            "type": "essay",
+            "point": 5,
+        }
+
+        response = self.client.put(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", response.data)
+
     # service에 대한 엣지 케이스
     # payload가 비었을 때
     def test_service_empty_payload_raises_error(self) -> None:
