@@ -30,7 +30,6 @@ from apps.qna.serializers.question.response import (
 )
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
-from apps.qna.utils.model_types import User
 from apps.qna.utils.qna_paginator import QuestionListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
@@ -92,7 +91,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
 
         # 서비스 호출
         question = QuestionCommandService.create_question(
-            author=cast(User, request.user), data=serializer.validated_data
+            author=self.request_user, data=serializer.validated_data
         )
 
         # 응답 출력
@@ -228,7 +227,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer.is_valid(raise_exception=True)
 
         question = QuestionCommandService.update_question(
-            question_id, cast(User, request.user), serializer.validated_data
+            question_id, self.request_user, serializer.validated_data
         )
 
         response_serializer = QuestionUpdateResponseSerializer(question)

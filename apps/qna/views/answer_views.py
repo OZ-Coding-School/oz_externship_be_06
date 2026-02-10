@@ -34,7 +34,6 @@ from apps.qna.services.answer.command import (
     AnswerCommandService,
     AnswerCommentCommandService,
 )
-from apps.qna.utils.model_types import User
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
@@ -162,7 +161,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
 
         # 서비스 호출
         answer = AnswerCommandService.create_answer(
-            question_id=question_id, author=cast(User, request.user), data=serializer.validated_data
+            question_id=question_id, author=self.request_user, data=serializer.validated_data
         )
 
         # 응답 출력
@@ -226,7 +225,7 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
 
         # 서비스 호출
         answer = AnswerCommandService.update_answer(
-            answer_id=answer_id, user=cast(User, request.user), data=serializer.validated_data
+            answer_id=answer_id, user=self.request_user, data=serializer.validated_data
         )
 
         # 응답 출력
@@ -290,7 +289,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
     def post(self, request: Request, answer_id: int) -> Response:
         """답변 채택 처리"""
         # 서비스 호출
-        answer = AnswerCommandService.adopt_answer(answer_id=answer_id, user=cast(User, request.user))
+        answer = AnswerCommandService.adopt_answer(answer_id=answer_id, user=self.request_user)
 
         # 응답 출력
         response_serializer = AnswerAdoptResponseSerializer(answer)
