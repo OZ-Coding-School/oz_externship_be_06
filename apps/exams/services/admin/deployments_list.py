@@ -8,7 +8,11 @@ from django.db.models.functions import Coalesce
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamDeployment
-from apps.exams.validators import normalize_optional_str, parse_optional_positive_int, parse_sort_order
+from apps.exams.validators import (
+    normalize_optional_str,
+    parse_optional_positive_int,
+    parse_sort_order,
+)
 
 
 class InvalidAdminDeploymentListParams(Exception):

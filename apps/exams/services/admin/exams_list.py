@@ -7,7 +7,11 @@ from django.db.models import Count, Q, QuerySet
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import Exam
-from apps.exams.validators import normalize_optional_str, parse_optional_positive_int, parse_sort_order
+from apps.exams.validators import (
+    normalize_optional_str,
+    parse_optional_positive_int,
+    parse_sort_order,
+)
 
 
 class InvalidAdminExamListParams(Exception):

@@ -5,6 +5,7 @@ from rest_framework import serializers
 from apps.exams.constants import ErrorMessages
 from apps.exams.validators import validate_duration_within_window, validate_time_range
 
+
 class AdminExamDeploymentUpdateRequestSerializer(serializers.Serializer[Any]):
     """쪽지시험 배포 수정 요청 스키마."""
 
