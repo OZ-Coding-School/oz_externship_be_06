@@ -20,6 +20,7 @@ from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -108,19 +109,13 @@ class AdminExamSubmissionListAPIView(ExamsExceptionMixin, APIView):
 
         # 필터링: 기수 ID
         if cohort_id:
-            try:
-                cohort_id_int = int(cohort_id)
-                queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
-            except ValueError as exc:
-                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            cohort_id_int = parse_positive_int(cohort_id, ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            queryset = queryset.filter(deployment__cohort_id=cohort_id_int)
 
         # 필터링: 시험 ID
         if exam_id:
-            try:
-                exam_id_int = int(exam_id)
-                queryset = queryset.filter(deployment__exam_id=exam_id_int)
-            except ValueError as exc:
-                raise_error(ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            exam_id_int = parse_positive_int(exam_id, ErrorMessages.INVALID_SUBMISSION_LIST_REQUEST)
+            queryset = queryset.filter(deployment__exam_id=exam_id_int)
 
         # 정렬
         valid_sort_fields = ["score", "started_at"]

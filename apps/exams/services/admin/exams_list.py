@@ -43,6 +43,8 @@ class AdminExamListService:
                 subject_id_v = int(subject_id)
             except ValueError:
                 raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value)
+            if subject_id_v <= 0:
+                raise InvalidAdminExamListParams(ErrorMessages.INVALID_EXAM_LIST_REQUEST.value)
 
         return AdminExamListParams(
             search_keyword=search_keyword or None,

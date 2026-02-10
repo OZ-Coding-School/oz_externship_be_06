@@ -17,6 +17,7 @@ from apps.exams.services.student.deployments_status import (
     get_deployment_or_404,
     get_exam_status,
 )
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -65,6 +66,7 @@ class ExamStatusCheckAPIView(ExamsExceptionMixin, APIView):
     serializer_class = ExamStatusResponseSerializer
 
     def get(self, request: Request, deployment_id: int) -> Response:
+        parse_positive_int(deployment_id, ErrorMessages.EXAM_NOT_FOUND)
         deployment = get_deployment_or_404(deployment_id, error_message=ErrorMessages.EXAM_NOT_FOUND)
 
         user_id = request.user.id

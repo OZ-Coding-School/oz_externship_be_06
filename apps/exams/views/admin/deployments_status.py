@@ -17,6 +17,7 @@ from apps.exams.serializers.admin.deployments_status import (
 )
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_status import update_deployment_status
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -91,6 +92,7 @@ class AdminExamDeploymentStatusAPIView(ExamsExceptionMixin, APIView):
         raise PermissionDenied(detail=ErrorMessages.NO_DEPLOYMENT_STATUS_PERMISSION.value)
 
     def patch(self, request: Request, deployment_id: int) -> Response:
+        parse_positive_int(deployment_id, ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST)
         serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             raise_error(ErrorMessages.INVALID_DEPLOYMENT_STATUS_REQUEST)

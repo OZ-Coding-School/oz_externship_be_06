@@ -23,7 +23,12 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.questions_delete import (
     delete_exam_question,
 )
-from apps.exams.services.admin.questions_update import update_exam_question
+from apps.exams.services.admin.questions_update import (
+    BusinessRuleError,
+    ConflictRuleError,
+    update_exam_question,
+)
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -171,6 +176,7 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def put(self, request: Request, question_id: int) -> Response:
+        parse_positive_int(question_id, ErrorMessages.INVALID_QUESTION_UPDATE_REQUEST)
         # 1.문제 조회
         try:
             question = ExamQuestion.objects.get(id=question_id)

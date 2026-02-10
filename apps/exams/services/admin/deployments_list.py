@@ -51,6 +51,8 @@ class AdminDeploymentListService:
                 subject_id_v = int(subject_id)
             except ValueError as exc:
                 raise InvalidAdminDeploymentListParams(ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST.value) from exc
+            if subject_id_v <= 0:
+                raise InvalidAdminDeploymentListParams(ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST.value)
 
         cohort_id_v: int | None = None
         if cohort_id:
@@ -58,6 +60,8 @@ class AdminDeploymentListService:
                 cohort_id_v = int(cohort_id)
             except ValueError as exc:
                 raise InvalidAdminDeploymentListParams(ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST.value) from exc
+            if cohort_id_v <= 0:
+                raise InvalidAdminDeploymentListParams(ErrorMessages.INVALID_DEPLOYMENT_LIST_REQUEST.value)
 
         return AdminDeploymentListParams(
             search_keyword=search_keyword or None,
