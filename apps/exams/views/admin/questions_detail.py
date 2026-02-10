@@ -107,8 +107,7 @@ class AdminExamQuestionDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def delete(self, request: Request, question_id: int) -> Response:
-        if question_id <= 0:
-            raise_error(ErrorMessages.INVALID_QUESTION_DELETE_REQUEST)
+        parse_positive_int(question_id, ErrorMessages.INVALID_QUESTION_DELETE_REQUEST)
 
         result = delete_exam_question(question_id)
 

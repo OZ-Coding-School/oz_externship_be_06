@@ -20,6 +20,7 @@ from apps.exams.serializers.admin.submissions_detail import (
 from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.submissions_delete import delete_exam_submission
 from apps.exams.services.admin.submissions_detail import get_admin_submission_detail
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -88,8 +89,7 @@ class AdminExamSubmissionDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def get(self, request: Request, submission_id: int) -> Response:
-        if submission_id <= 0:
-            raise_error(ErrorMessages.INVALID_SUBMISSION_DETAIL_REQUEST)
+        parse_positive_int(submission_id, ErrorMessages.INVALID_SUBMISSION_DETAIL_REQUEST)
 
         payload = get_admin_submission_detail(submission_id)
         serializer = self.serializer_class(data=payload)
@@ -155,8 +155,7 @@ class AdminExamSubmissionDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def delete(self, request: Request, submission_id: int) -> Response:
-        if submission_id <= 0:
-            raise_error(ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST)
+        parse_positive_int(submission_id, ErrorMessages.INVALID_SUBMISSION_DELETE_REQUEST)
 
         result = delete_exam_submission(submission_id)
         serializer = AdminExamSubmissionDeleteResponseSerializer(data=result)

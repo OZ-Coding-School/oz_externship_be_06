@@ -26,6 +26,7 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_delete import delete_exam_deployment
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import update_exam_deployment
+from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
 
@@ -98,8 +99,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
         raise PermissionDenied(detail=detail_message)
 
     def get(self, request: Request, deployment_id: int) -> Response:
-        if deployment_id <= 0:
-            raise_error(ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST)
+        parse_positive_int(deployment_id, ErrorMessages.INVALID_DEPLOYMENT_DETAIL_REQUEST)
 
         payload = get_exam_deployment_detail(deployment_id)
 
@@ -161,8 +161,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
     )
     def patch(self, request: Request, deployment_id: int) -> Response:
         """배포 정보 수정 (open_at, close_at, duration_time)."""
-        if deployment_id <= 0:
-            raise_error(ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST)
+        parse_positive_int(deployment_id, ErrorMessages.INVALID_DEPLOYMENT_UPDATE_REQUEST)
 
         serializer = AdminExamDeploymentUpdateRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -240,8 +239,7 @@ class AdminExamDeploymentDetailAPIView(ExamsExceptionMixin, APIView):
         },
     )
     def delete(self, _request: Request, deployment_id: int) -> Response:
-        if deployment_id <= 0:
-            raise_error(ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST)
+        parse_positive_int(deployment_id, ErrorMessages.INVALID_DEPLOYMENT_DELETE_REQUEST)
 
         # service에서 404 / 409 처리
         result = delete_exam_deployment(deployment_id=deployment_id)
