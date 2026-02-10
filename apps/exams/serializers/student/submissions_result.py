@@ -1,4 +1,3 @@
-import json
 from typing import Any
 
 from rest_framework import serializers
@@ -59,16 +58,24 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
         return m
 
     def get_questions(self, obj: ExamSubmission) -> list[dict[str, Any]]:
-        exam = getattr(obj.deployment, "exam", None)
-        if not exam:
+        deployment = getattr(obj, "deployment", None)
+        if not deployment:
             return []
 
         submitted_map = self._answers_map(obj)
-        qs = exam.questions.all()
+        questions_snapshot = deployment.questions_snapshot_json
+        if not isinstance(questions_snapshot, list):
+            return []
 
         result = []
-        for q in qs:
-            submitted = submitted_map.get(q.id)
+        for question_data in questions_snapshot:
+            raw_question_id = question_data.get("question_id")
+            try:
+                question_id = int(raw_question_id)
+            except (TypeError, ValueError):
+                continue
+
+            submitted = submitted_map.get(question_id)
 
             if submitted is None:
                 submitted_norm = []
@@ -77,7 +84,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             else:
                 submitted_norm = [submitted]
 
-            answer = q.answer
+            answer = question_data.get("answer")
             if answer is None:
                 answer_norm = []
             elif isinstance(answer, list):
@@ -87,29 +94,25 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
 
             submitted_values = list(map(str, submitted_norm))
             answer_values = list(map(str, answer_norm))
-            if q.type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
+            q_type = question_data.get("type")
+            if q_type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
                 is_correct = submitted_values == answer_values
             else:
                 is_correct = sorted(submitted_values) == sorted(answer_values)
 
-            options = []
-            if q.options_json:
-                try:
-                    options = json.loads(q.options_json)
-                except Exception:
-                    options = []
+            options = question_data.get("options") or []
 
             result.append(
                 {
-                    "id": q.id,
-                    "question": q.question,
-                    "prompt": q.prompt,
-                    "blank_count": q.blank_count,
+                    "id": question_id,
+                    "question": question_data.get("question", ""),
+                    "prompt": question_data.get("prompt"),
+                    "blank_count": question_data.get("blank_count"),
                     "options": options,
-                    "type": q.type,
+                    "type": q_type,
                     "answer": answer_norm,
-                    "point": q.point,
-                    "explanation": q.explanation,
+                    "point": question_data.get("point", 0),
+                    "explanation": question_data.get("explanation", ""),
                     "is_correct": is_correct,
                     "submitted_answer": submitted_norm,
                 }

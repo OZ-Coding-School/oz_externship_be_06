@@ -107,6 +107,42 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json='["1","2","3"]',
             explanation="설명",
         )
+        cls.deployment.questions_snapshot_json = [
+            {
+                "question_id": cls.q1.id,
+                "type": cls.q1.type,
+                "question": cls.q1.question,
+                "prompt": cls.q1.prompt,
+                "blank_count": cls.q1.blank_count,
+                "options": ["A", "B"],
+                "answer": cls.q1.answer,
+                "point": cls.q1.point,
+                "explanation": cls.q1.explanation,
+            },
+            {
+                "question_id": cls.q2.id,
+                "type": cls.q2.type,
+                "question": cls.q2.question,
+                "prompt": cls.q2.prompt,
+                "blank_count": cls.q2.blank_count,
+                "options": ["a", "b", "c"],
+                "answer": cls.q2.answer,
+                "point": cls.q2.point,
+                "explanation": cls.q2.explanation,
+            },
+            {
+                "question_id": cls.q3.id,
+                "type": cls.q3.type,
+                "question": cls.q3.question,
+                "prompt": cls.q3.prompt,
+                "blank_count": cls.q3.blank_count,
+                "options": ["1", "2", "3"],
+                "answer": cls.q3.answer,
+                "point": cls.q3.point,
+                "explanation": cls.q3.explanation,
+            },
+        ]
+        cls.deployment.save(update_fields=["questions_snapshot_json"])
 
         cls.submission = ExamSubmission.objects.create(
             submitter=cls.student,
@@ -137,6 +173,7 @@ class ExamResultRetrieveAPITest(TestCase):
 
         data = res.json()
         self.assertEqual(data.get("id"), self.submission.id)
+        self.assertEqual(len(data.get("questions", [])), len(self.deployment.questions_snapshot_json))
         self.submission.refresh_from_db()
         self.assertIsInstance(self.submission.answers_json, list)
         self.assertGreaterEqual(len(self.submission.answers_json), 2)
