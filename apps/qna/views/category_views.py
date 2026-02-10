@@ -1,6 +1,7 @@
 from typing import Any
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -51,4 +52,4 @@ class CategoryTreeAPIView(QnaBaseAPIView):
 
         response_serializer = CategoryTreeResponseSerializer({"categories": categories_tree})
 
-        return Response(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

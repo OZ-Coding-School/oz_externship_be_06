@@ -25,10 +25,12 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # 질문 등록
     ("QuestionCreateListAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_QUESTION_CREATE,
     ("QuestionCreateListAPIView", "POST", False): ErrorMessages.FORBIDDEN_QUESTION_CREATE,
-    # [PUT] - 질문 수정
+    # 질문 수정
     ("QuestionUpdateAPIView", "PUT", True): ErrorMessages.UNAUTHORIZED_QUESTION_UPDATE,
     ("QuestionUpdateAPIView", "PUT", False): ErrorMessages.FORBIDDEN_QUESTION_UPDATE,
     # ---------- Answer -----------
+    # AI 답변 생성 및 생성된 답변 조회
+    ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     # 답변 등록
     ("AnswerCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ANSWER_CREATE,
     ("AnswerCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_ANSWER_CREATE,
@@ -41,8 +43,6 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # 답변 댓글 작성
     ("AnswerCommentCreateAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_COMMENT_CREATE,
     ("AnswerCommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
-    # AI 답변 생성 및 생성된 답변 조회
-    ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
     # ---------- Admin Category -----------
     # 어드민 카테고리 등록
     ("AdminCategoriesAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,4 +34,4 @@ class BasePresignedUrlAPIView(APIView):
         )
 
         response_serializer = PresignedUrlResponseSerializer(result)
-        return Response(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

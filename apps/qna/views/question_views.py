@@ -90,9 +90,7 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         serializer.is_valid(raise_exception=True)
 
         # 서비스 호출
-        question = QuestionCommandService.create_question(
-            author=self.request_user, data=serializer.validated_data
-        )
+        question = QuestionCommandService.create_question(author=self.request_user, data=serializer.validated_data)
 
         # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
@@ -226,9 +224,7 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer = QuestionUpdateRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        question = QuestionCommandService.update_question(
-            question_id, self.request_user, serializer.validated_data
-        )
+        question = QuestionCommandService.update_question(question_id, self.request_user, serializer.validated_data)
 
         response_serializer = QuestionUpdateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
