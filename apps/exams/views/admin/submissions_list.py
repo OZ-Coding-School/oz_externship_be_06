@@ -4,7 +4,6 @@ from typing import NoReturn
 
 from django.db.models import Q
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
-from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -19,7 +18,7 @@ from apps.exams.models import ExamSubmission
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.validators import normalize_optional_str, parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 

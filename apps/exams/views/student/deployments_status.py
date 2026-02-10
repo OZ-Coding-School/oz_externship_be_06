@@ -8,7 +8,7 @@ from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages, ExamStatus
 from apps.exams.error_map import raise_error
 from apps.exams.models import ExamDeployment
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_status import (
     ExamStatusResponseSerializer,
 )

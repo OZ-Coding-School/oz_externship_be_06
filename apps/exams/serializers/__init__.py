@@ -3,7 +3,7 @@ from .admin.exams_update import (
     AdminExamUpdateResponseSerializer,
 )
 from .admin.submissions_list import AdminExamSubmissionListResponseSerializer
-from .error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from .student.deployments_status import ExamStatusResponseSerializer
 from .student.deployments_take import (
     CheckCodeRequestSerializer,

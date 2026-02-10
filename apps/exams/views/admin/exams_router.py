@@ -15,7 +15,7 @@ from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
 from apps.exams.views.admin.exams_list import AdminExamListView
 from apps.exams.views.mixins import ExamsExceptionMixin

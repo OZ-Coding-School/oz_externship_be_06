@@ -15,7 +15,7 @@ from apps.exams.serializers.admin.deployments_status import (
     AdminExamDeploymentStatusRequestSerializer,
     AdminExamDeploymentStatusResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_status import update_deployment_status
 from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin

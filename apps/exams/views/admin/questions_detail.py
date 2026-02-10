@@ -19,7 +19,7 @@ from apps.exams.serializers.admin.questions_update import (
     AdminExamQuestionUpdateRequestSerializer,
     AdminExamQuestionUpdateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.questions_delete import (
     delete_exam_question,
 )

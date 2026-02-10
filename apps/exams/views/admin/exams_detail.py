@@ -1,8 +1,5 @@
 from typing import NoReturn
 
-from django.db.models import Prefetch
-from django.http import Http404
-from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
@@ -14,14 +11,13 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
-from apps.exams.models import Exam, ExamQuestion
 from apps.exams.serializers.admin.exams_delete import AdminExamDeleteResponseSerializer
 from apps.exams.serializers.admin.exams_detail import AdminExamDetailSerializer
 from apps.exams.serializers.admin.exams_update import (
     AdminExamUpdateRequestSerializer,
     AdminExamUpdateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.exams_delete import delete_exam
 from apps.exams.services.admin.exams_detail import get_exam_detail_or_error
 from apps.exams.services.admin.exams_update import update_exam

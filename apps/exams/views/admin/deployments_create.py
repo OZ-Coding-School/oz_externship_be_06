@@ -15,7 +15,7 @@ from apps.exams.serializers.admin.deployments_create import (
     AdminExamDeploymentCreateRequestSerializer,
     AdminExamDeploymentCreateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_create import create_exam_deployment
 from apps.exams.views.mixins import ExamsExceptionMixin
 

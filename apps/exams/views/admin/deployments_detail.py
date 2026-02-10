@@ -22,7 +22,7 @@ from apps.exams.serializers.admin.deployments_update import (
     AdminExamDeploymentUpdateRequestSerializer,
     AdminExamDeploymentUpdateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_delete import delete_exam_deployment
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import update_exam_deployment

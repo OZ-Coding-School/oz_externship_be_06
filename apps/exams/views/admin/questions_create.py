@@ -15,7 +15,7 @@ from apps.exams.serializers.admin.questions_create import (
     AdminExamQuestionCreateRequestSerializer,
     AdminExamQuestionCreateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.questions_create import create_exam_question
 from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin

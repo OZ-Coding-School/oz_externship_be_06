@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
 from apps.exams.serializers import CheckCodeRequestSerializer
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.student.deployments_status import (
     get_deployment_or_404,
     validate_deployment_active,

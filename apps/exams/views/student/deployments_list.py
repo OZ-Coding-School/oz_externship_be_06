@@ -14,7 +14,7 @@ from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.models.exam_deployments import ExamDeployment
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_list import (
     ExamDeploymentListSerializer,
 )

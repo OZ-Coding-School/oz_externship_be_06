@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_cheating import (
     ExamCheatingRequestSerializer,
     ExamCheatingResponseSerializer,
