@@ -11,7 +11,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
-from apps.chatbot.services.completion_create import create_user_completion
+from apps.chatbot.services.completion_user_create import create_user_completion
 from apps.chatbot.services.support_completion_policy import validate_user_prompt_policy
 from apps.qna.models import Question, QuestionCategory
 from apps.users.models import User
