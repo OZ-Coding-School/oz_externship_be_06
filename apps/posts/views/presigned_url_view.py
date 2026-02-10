@@ -11,6 +11,7 @@ from apps.core.serializers.presigned_url import (
 )
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
 
+
 #게시글 이미지 업로드 도메인 및 S3 경로 정의
 class StorageTarget(Enum):
 
