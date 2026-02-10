@@ -112,11 +112,11 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     [POST] 질문에 대한 답변 등록
     """
 
-    serializer_classes = {"GET": AnswerCreateSerializer}
+    serializer_classes = {"POST": AnswerCreateSerializer}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
-        if method == "GET":
+        if method == "POST":
             return [IsAuthenticated(), CanWriteAnswerComment()]
         raise MethodNotAllowed(method)
 
