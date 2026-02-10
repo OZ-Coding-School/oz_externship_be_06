@@ -1,31 +1,29 @@
 import json
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import patch
 
-from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
-from apps.qna.utils.model_types import User
 from apps.qna.views.presigned_url_views import StorageTarget
-from apps.users.models import User as UserModel
+from apps.users.models import User
 
 
-class PresignedUrlAPITest(TestCase):
+class PresignedUrlAPITest(APITestCase):
     """
     질문/답변 도메인별 API 연결 검증
     - 성공 케이스 (QUSTION, ANSWER 도메인)
     """
 
-    user: UserModel
+    user: User
     question_url: str
     answer_url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
         # 테스트용 유저 - 학생
-        cls.user = UserModel.objects.create_user(
+        cls.user = User.objects.create_user(
             email="test@ozcoding.com",
             password="password",
             nickname="테스터",
@@ -38,23 +36,16 @@ class PresignedUrlAPITest(TestCase):
         cls.question_url = reverse("question-presigned-url")
         cls.answer_url = reverse("answer-presigned-url")
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: User) -> Dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"Authorization": f"Bearer {str(refresh.access_token)}"}
-
     @patch("apps.core.services.presigned_url.S3Handler.generate_presigned_url")
     def test_question_endpoint_wiring(self, mock_s3: Any) -> None:
         """[성공] 질문 도메인이 QUESTION 경로를 사용하는지 확인"""
         mock_s3.return_value = {"presigned_url": "url", "img_url": "url", "key": "key"}
 
+        self.client.force_authenticate(user=self.user)
         response = self.client.put(
             self.question_url,
             data=json.dumps({"file_name": "test.png"}),
             content_type="application/json",
-            headers=self._get_auth_header(self.user),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -67,11 +58,11 @@ class PresignedUrlAPITest(TestCase):
         """[성공] 질문 도메인이 ANSWER 경로를 사용하는지 확인"""
         mock_s3.return_value = {"presigned_url": "url", "img_url": "url", "key": "key"}
 
+        self.client.force_authenticate(user=self.user)
         response = self.client.put(
             self.answer_url,
             data=json.dumps({"file_name": "test.png"}),
             content_type="application/json",
-            headers=self._get_auth_header(self.user),
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

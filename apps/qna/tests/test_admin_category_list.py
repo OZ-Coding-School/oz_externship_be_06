@@ -1,15 +1,12 @@
-from typing import Any
-
-from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
 from apps.qna.models import Answer, QuestionCategory
 from apps.users.models import User
 
 
-class AdminCategoryListAPITest(TestCase):
+class AdminCategoryListAPITest(APITestCase):
     """
     어드민 카테고리 목록 조회 API (GET) 테스트
     - 성공 케이스
@@ -73,20 +70,13 @@ class AdminCategoryListAPITest(TestCase):
         # URL
         cls.url = reverse("admin-qna-categories")
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     # ==========================================================================
     # 성공 케이스
     # ==========================================================================
     def test_list_all_categories_success(self) -> None:
         """[성공] 필터 없이 전체 목록 조회"""
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -104,8 +94,8 @@ class AdminCategoryListAPITest(TestCase):
 
     def test_filter_by_large_category(self) -> None:
         """[성공] '대분류' 필터링 조회"""
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"category_type": "대분류"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"category_type": "대분류"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -116,8 +106,8 @@ class AdminCategoryListAPITest(TestCase):
 
     def test_filter_by_medium_category(self) -> None:
         """[성공] '중분류' 필터링 조회"""
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"category_type": "중분류"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"category_type": "중분류"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -128,8 +118,8 @@ class AdminCategoryListAPITest(TestCase):
 
     def test_filter_by_small_category(self) -> None:
         """[성공] '소분류' 필터링 조회"""
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"category_type": "소분류"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"category_type": "소분류"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -140,9 +130,9 @@ class AdminCategoryListAPITest(TestCase):
 
     def test_search_by_keyword(self) -> None:
         """[성공] 검색어(search_keyword)로 조회"""
-        auth_header = self._get_auth_header(self.admin_user)
+        self.client.force_authenticate(user=self.admin_user)
         # "Django" 검색
-        response = self.client.get(self.url, {"search_keyword": "Django"}, secure=False, **auth_header)
+        response = self.client.get(self.url, {"search_keyword": "Django"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -158,15 +148,15 @@ class AdminCategoryListAPITest(TestCase):
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
 
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"page": "1"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"page": "1"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(res_data["page"], 1)
-        self.assertEqual(res_data["size"], 20)
+        self.assertEqual(res_data["size"], 10)
         self.assertEqual(res_data["total_count"], 31)  # 기존 6개 + 추가 25개
-        self.assertEqual(len(res_data["categories"]), 20)
+        self.assertEqual(len(res_data["categories"]), 10)
 
     def test_pagination_second_page(self) -> None:
         """[성공] 두 번째 페이지 조회"""
@@ -174,47 +164,47 @@ class AdminCategoryListAPITest(TestCase):
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
 
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"page": "2"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"page": "2"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(res_data["page"], 2)
-        self.assertEqual(res_data["size"], 20)
+        self.assertEqual(res_data["size"], 10)
         self.assertEqual(res_data["total_count"], 31)
-        self.assertEqual(len(res_data["categories"]), 11)  # 2번째 페이지는 남은 11개
+        self.assertEqual(len(res_data["categories"]), 10)  # 2번째 페이지는 남은 11개
 
     def test_pagination_custom_page_size(self) -> None:
         """[성공] 커스텀 page_size로 조회"""
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
 
-        auth_header = self._get_auth_header(self.admin_user)
-        response = self.client.get(self.url, {"page": "1", "size": "10"}, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url, {"page": "1", "size": "20"})
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(res_data["page"], 1)
-        self.assertEqual(res_data["size"], 10)
+        self.assertEqual(res_data["size"], 20)
         self.assertEqual(res_data["total_count"], 31)
-        self.assertEqual(len(res_data["categories"]), 10)
+        self.assertEqual(len(res_data["categories"]), 20)
 
     # ==========================================================================
     # 성공 케이스 - 상속/계층 구조 응답 확인
     # ==========================================================================
     def test_response_hierarchy_info(self) -> None:
         """[성공] 부모, 자식 카테고리 정보가 올바르게 내려오는지 확인"""
-        auth_header = self._get_auth_header(self.admin_user)
+        self.client.force_authenticate(user=self.admin_user)
 
         # 소분류(Django) 조회 -> 부모가 '웹프레임워크'여야 함
-        response = self.client.get(self.url, {"search_keyword": "Django"}, secure=False, **auth_header)
+        response = self.client.get(self.url, {"search_keyword": "Django"})
         django_cat = response.json()["categories"][0]
         self.assertEqual(django_cat["name"], "Django")
         self.assertEqual(django_cat["parent_category"], "웹프레임워크")
         self.assertEqual(django_cat["child_categories"], [])  # 소분류는 자식 없음
 
         # 중분류(웹프레임워크) 조회 -> 부모 '백엔드', 자식 ['Django', 'FastAPI']
-        response = self.client.get(self.url, {"search_keyword": "웹프레임워크"}, secure=False, **auth_header)
+        response = self.client.get(self.url, {"search_keyword": "웹프레임워크"})
         web_cat = response.json()["categories"][0]
         self.assertEqual(web_cat["name"], "웹프레임워크")
         self.assertEqual(web_cat["parent_category"], "백엔드")
@@ -222,7 +212,7 @@ class AdminCategoryListAPITest(TestCase):
         self.assertIn("FastAPI", web_cat["child_categories"])
 
         # 대분류(백엔드) 조회 -> 부모 ''(빈문자열), 자식 ['웹프레임워크', '데이터베이스']
-        response = self.client.get(self.url, {"search_keyword": "백엔드"}, secure=False, **auth_header)
+        response = self.client.get(self.url, {"search_keyword": "백엔드"})
         backend_cat = response.json()["categories"][0]
         self.assertEqual(backend_cat["name"], "백엔드")
         self.assertEqual(backend_cat["parent_category"], "")
@@ -239,6 +229,6 @@ class AdminCategoryListAPITest(TestCase):
 
     def test_list_forbidden(self) -> None:
         """[실패] 수강생이 요청한 경우 403"""
-        auth_header = self._get_auth_header(self.student_user)
-        response = self.client.get(self.url, secure=False, **auth_header)
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

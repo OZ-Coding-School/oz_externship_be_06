@@ -2,18 +2,17 @@ from typing import Any
 from unittest.mock import patch
 
 from django.db import connection
-from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Question, QuestionAIAnswer, QuestionCategory
 from apps.users.models import User
 
 
-class AIAnswerGenerateAPITest(TestCase):
+class AIAnswerGenerateAPITest(APITestCase):
     """
     AI 답변 생성 API (GET) 테스트
     - 성공 케이스: 로그인한 유저가 AI 답변 생성 성공
@@ -53,13 +52,6 @@ class AIAnswerGenerateAPITest(TestCase):
         # URL
         cls.url = reverse("ai-answer-generate", kwargs={"question_id": cls.question.id})
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        """JWT 인증 헤더 생성"""
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
 
     @patch("apps.qna.services.answer.command.AIAnswerCommandService._call_ai_model")
     def test_generate_ai_answer_success(self, mock_call_ai: Any) -> None:
@@ -67,9 +59,9 @@ class AIAnswerGenerateAPITest(TestCase):
         # AI API 모킹
         mock_call_ai.return_value = "리스트는 수정 가능한 자료구조이며, 튜플은 수정이 불가능한 자료구조입니다."
 
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
-        response = self.client.get(self.url, **auth_header)
+        response = self.client.get(self.url)
         res_data = response.json()
 
         # 응답 검증
@@ -95,10 +87,10 @@ class AIAnswerGenerateAPITest(TestCase):
 
     def test_generate_ai_answer_not_found(self) -> None:
         """[실패] 존재하지 않는 질문 ID로 요청 시 404 반환 검증"""
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
         invalid_url = reverse("ai-answer-generate", kwargs={"question_id": 99999})
-        response = self.client.get(invalid_url, **auth_header)
+        response = self.client.get(invalid_url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_AI_QUESTION.value)
@@ -113,9 +105,9 @@ class AIAnswerGenerateAPITest(TestCase):
             using_model="Gemini",
         )
 
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
-        response = self.client.get(self.url, **auth_header)
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value)
@@ -128,9 +120,9 @@ class AIAnswerGenerateAPITest(TestCase):
         """[성공] 응답 데이터 형식 검증"""
         mock_call_ai.return_value = "테스트 AI 답변입니다."
 
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
-        response = self.client.get(self.url, **auth_header)
+        response = self.client.get(self.url)
         res_data = response.json()
 
         # 응답 필드 검증
@@ -148,7 +140,7 @@ class AIAnswerGenerateAPITest(TestCase):
         """[성공] AI 답변 생성 시 쿼리 수 검증"""
         mock_call_ai.return_value = "성능 테스트용 AI 답변"
 
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
         # Query Expectation:
         # 1. Auth check (User)
@@ -158,7 +150,7 @@ class AIAnswerGenerateAPITest(TestCase):
         # 5. Update Question (is_ai_answered)
 
         with CaptureQueriesContext(connection) as context:
-            self.client.get(self.url, **auth_header)
+            self.client.get(self.url)
 
         # Allow roughly 6-8 queries
         self.assertLessEqual(len(context), 8, f"Too many queries: {len(context)}")
