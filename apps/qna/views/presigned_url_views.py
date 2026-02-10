@@ -11,7 +11,7 @@ from apps.core.serializers.presigned_url import (
     PresignedUrlResponseSerializer,
 )
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
-from apps.qna.utils.permissions import CanWriteAnswer, IsStudent
+from apps.core.utils.permissions import CanWriteAnswerComment, IsStudentRole
 
 
 class StorageTarget(Enum):
@@ -37,7 +37,7 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
     serializer_class = PresignedUrlRequestSerializer
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), IsStudent()]
+        return [IsAuthenticated(), IsStudentRole()]
 
     @extend_schema(
         tags=["qna"],
@@ -77,7 +77,7 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
     serializer_class = PresignedUrlRequestSerializer
 
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteAnswer()]
+        return [IsAuthenticated(), CanWriteAnswerComment()]
 
     @extend_schema(
         tags=["qna"],
