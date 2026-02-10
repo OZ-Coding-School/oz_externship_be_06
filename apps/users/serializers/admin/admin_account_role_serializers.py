@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from rest_framework import serializers
 
@@ -6,18 +6,13 @@ from apps.courses.models import Cohort, Course
 from apps.users.models import User
 
 
-# 어드민 권한 변경 요철
 class AdminAccountRoleUpdateSerializer(serializers.Serializer[Any]):
+    """
+    어드민 유저 권한 변경 요청 시리얼라이저
+    """
 
     role = serializers.ChoiceField(
-        choices=[
-            ("USER", "일반회원"),
-            ("ADMIN", "관리자"),
-            ("TA", "조교"),
-            ("OM", "운영매니저"),
-            ("LC", "러닝코치"),
-            ("STUDENT", "수강생"),
-        ],
+        choices=User.Role.choices,  # 모델에 정의된 choices를 활용하여 유지보수성 향상
         required=True,
     )
     cohort_id = serializers.PrimaryKeyRelatedField(
@@ -31,17 +26,22 @@ class AdminAccountRoleUpdateSerializer(serializers.Serializer[Any]):
         required=False,
     )
 
-    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        role = attrs.get("role")
-        cohort_id = attrs.get("cohort_id")
-        assigned_courses = attrs.get("assigned_courses")
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        # mypy 에러 방지를 위한 타입 명시 및 추출
+        role: Optional[str] = attrs.get("role")
+        cohort: Optional[Cohort] = attrs.get("cohort_id")
+        courses: Optional[List[Course]] = attrs.get("assigned_courses")
 
-        if role in ("TA", "STUDENT") and not cohort_id:
-            raise serializers.ValidationError({"cohort_id": [f"{role} 권한으로 변경 시 기수 선택은 필수입니다."]})
+        # 1. 조교(TA) 또는 수강생(STUDENT) 권한 검증
+        if role in (User.Role.TA, User.Role.STUDENT):
+            if not cohort:
+                raise serializers.ValidationError({"cohort_id": f"{role} 권한으로 변경 시 기수 선택은 필수입니다."})
 
-        if role in ("LC", "OM") and not assigned_courses:
-            raise serializers.ValidationError(
-                {"assigned_courses": [f"{role} 권한으로 변경 시 담당 과정 선택은 필수입니다."]}
-            )
+        # 2. 러닝코치(LC) 또는 운영매니저(OM) 권한 검증
+        if role in (User.Role.LC, User.Role.OM):
+            if not courses:
+                raise serializers.ValidationError(
+                    {"assigned_courses": f"{role} 권한으로 변경 시 담당 과정 선택은 필수입니다."}
+                )
 
         return attrs

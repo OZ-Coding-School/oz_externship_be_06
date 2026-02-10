@@ -5,23 +5,26 @@ from rest_framework import serializers
 from apps.users.models import User
 
 
-class AdminAccountListSerializer(serializers.ModelSerializer[Any]):
+class AdminAccountListSerializer(serializers.ModelSerializer[User]):
     """
     어드민 페이지 회원 목록 조회를 위한 시리얼라이저
     """
 
-    status = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    # 모델의 property를 직접 연결하여 로직을 단순화
+    status = serializers.ReadOnlyField(source="account_status")
+    role = serializers.ReadOnlyField(source="role_lower")
     created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%S.%f%z")
 
     class Meta:
         model = User
-        fields = ["id", "email", "nickname", "name", "phone_number", "birthday", "status", "role", "created_at"]
-
-    def get_status(self, obj: User) -> str:
-        if hasattr(obj, "withdrawal") and obj.withdrawal is not None:
-            return "withdrew"
-        return "active" if obj.is_active else "inactive"
-
-    def get_role(self, obj: User) -> str:
-        return obj.role.lower()
+        fields = [
+            "id",
+            "email",
+            "nickname",
+            "name",
+            "phone_number",
+            "birthday",
+            "status",
+            "role",
+            "created_at",
+        ]

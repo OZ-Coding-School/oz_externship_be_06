@@ -1,37 +1,37 @@
-from typing import Any
+from typing import Any, Dict, Optional
 
 from rest_framework import serializers
 
 from apps.users.models import User
 
 
-# 기수정보 시리얼라이저
 class CohortInfoSerializer(serializers.Serializer[Any]):
+    """기수 정보 시리얼라이저"""
 
     id = serializers.IntegerField()
     number = serializers.IntegerField()
 
 
-# 과정정보
 class CourseInfoSerializer(serializers.Serializer[Any]):
+    """과정 정보 시리얼라이저"""
 
     id = serializers.IntegerField()
     name = serializers.CharField()
     tag = serializers.CharField()
 
 
-# 수강중인 과정정보
 class InProgressCourseSerializer(serializers.Serializer[Any]):
+    """수강 중인 과정 상세 정보 (기수 + 과정)"""
 
     cohort = CohortInfoSerializer()
     course = CourseInfoSerializer()
 
 
-# 어드민 수강생 목록 조회
 class AdminStudentListSerializer(serializers.ModelSerializer[User]):
+    """어드민 수강생 목록 조회 시리얼라이저"""
 
     status = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    role = serializers.CharField()  # 단순 문자열이므로 SerializerMethodField 제거
     in_progress_course = serializers.SerializerMethodField()
 
     class Meta:
@@ -52,44 +52,41 @@ class AdminStudentListSerializer(serializers.ModelSerializer[User]):
     def get_status(self, obj: User) -> str:
         if not obj.is_active:
             return "DEACTIVATED"
-        if hasattr(obj, "withdrawal") and obj.withdrawal is not None:
+        # 역참조 필드 존재 여부를 더 안전하게 체크
+        if hasattr(obj, "withdrawals") and obj.withdrawals.exists():
             return "WITHDREW"
         return "ACTIVATED"
 
-    def get_role(self, obj: User) -> str:
-        return obj.role
-
-    def get_in_progress_course(self, obj: User) -> dict[str, Any] | None:
-        # prefetch된 cohort_students에서 첫 번째 항목 사용
+    def get_in_progress_course(self, obj: User) -> Optional[Dict[str, Any]]:
+        """
+        수강 중인 과정 정보를 반환합니다.
+        prefetch_related("cohort_students") 데이터를 우선적으로 사용합니다.
+        """
+        # 1. prefetch 데이터 확인 (View에서 prefetched_cohort_students로 넘겨준다고 가정)
         cohort_students = getattr(obj, "prefetched_cohort_students", None)
+
+        target_student = None
         if cohort_students:
-            cs = cohort_students[0] if cohort_students else None
-            if cs:
-                return {
-                    "cohort": {
-                        "id": cs.cohort.id,
-                        "number": cs.cohort.number,
-                    },
-                    "course": {
-                        "id": cs.cohort.course.id,
-                        "name": cs.cohort.course.name,
-                        "tag": cs.cohort.course.tag,
-                    },
-                }
+            target_student = cohort_students[0]
+        else:
+            # 2. prefetch가 없는 경우 DB 직접 조회
+            target_student = obj.cohort_students.select_related("cohort__course").first()
 
-        # prefetch가 없는 경우 직접 조회
-        cohort_student = obj.cohort_students.select_related("cohort__course").first()
-        if cohort_student:
-            return {
-                "cohort": {
-                    "id": cohort_student.cohort.id,
-                    "number": cohort_student.cohort.number,
-                },
-                "course": {
-                    "id": cohort_student.cohort.course.id,
-                    "name": cohort_student.cohort.course.name,
-                    "tag": cohort_student.cohort.course.tag,
-                },
-            }
+        if not target_student:
+            return None
 
-        return None
+        # 데이터 매핑 (내부 시리얼라이저 재사용)
+        data = {
+            "cohort": {
+                "id": target_student.cohort.id,
+                "number": target_student.cohort.number,
+            },
+            "course": {
+                "id": target_student.cohort.course.id,
+                "name": target_student.cohort.course.name,
+                "tag": target_student.cohort.course.tag,
+            },
+        }
+
+        # mypy의 ReturnDict 타입 불일치 방지를 위한 dict() 캐스팅
+        return dict(InProgressCourseSerializer(data).data)

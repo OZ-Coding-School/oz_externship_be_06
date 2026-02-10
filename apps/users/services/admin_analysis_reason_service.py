@@ -8,14 +8,13 @@ from apps.users.models.withdrawal import Withdrawal
 
 
 class AdminAnalysisReasonService:
-    @staticmethod
-    def get_monthly_withdrawal_stats(reason: str) -> Dict[str, Any]:
+    def get_monthly_withdrawal_stats(self, reason: str) -> Dict[str, Any]:
+        """탈퇴 사유별 월별 통계 데이터를 집계하여 반환"""
         now = timezone.now()
+        # 올해 1월 1일 00:00:00
         from_datetime = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        from_date = from_datetime.strftime("%Y-%m-%d")
-        to_date = now.strftime("%Y-%m-%d")
-
+        # 1. 데이터 조회 (QuerySet)
         stats_query = (
             Withdrawal.objects.filter(
                 reason=reason,
@@ -28,18 +27,20 @@ class AdminAnalysisReasonService:
             .order_by("period")
         )
 
-        items: List[Dict[str, Any]] = [
+        # 2. 결과 포맷팅
+        monthly_items: List[Dict[str, Any]] = [
             {"period": item["period"].strftime("%Y-%m"), "count": item["count"]} for item in stats_query
         ]
 
-        total = sum(item["count"] for item in items)
+        # 3. 추가 정보 계산
+        total_count = sum(item["count"] for item in monthly_items)
         reason_label = dict(Withdrawal.Reason.choices).get(reason, "기타")
 
         return {
             "reason": reason,
             "reason_label": reason_label,
-            "from_date": from_date,
-            "to_date": to_date,
-            "total": total,
-            "items": items,
+            "from_date": from_datetime.strftime("%Y-%m-%d"),
+            "to_date": now.strftime("%Y-%m-%d"),
+            "total": total_count,
+            "items": monthly_items,
         }

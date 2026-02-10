@@ -1,22 +1,19 @@
-from typing import Any
+from typing import Any, Dict, List, Union
 
+from django.db.models import QuerySet
 from rest_framework import serializers
 
 from apps.courses.models import Cohort, Course
 from apps.users.models import User
 
 
-# 과정 정보 시리얼라이저
 class CourseSerializer(serializers.ModelSerializer[Course]):
-
     class Meta:
         model = Course
         fields = ["id", "name", "tag"]
 
 
-# 기수정보 시시리엉라이저
 class CohortSerializer(serializers.ModelSerializer[Cohort]):
-
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 
     class Meta:
@@ -24,24 +21,22 @@ class CohortSerializer(serializers.ModelSerializer[Cohort]):
         fields = ["id", "number", "status", "status_display", "start_date", "end_date"]
 
 
-# 담당 기수 정보 - 조교 랑 수강생용
 class AssignedCohortSerializer(serializers.Serializer[Any]):
+    """조교 및 수강생용: 과정 + 기수 정보"""
 
     course = CourseSerializer()
     cohort = CohortSerializer()
 
 
-# 담당 과정 정보 - 러닝코치 운매 전용
 class AssignedCourseSerializer(serializers.Serializer[Any]):
+    """러닝코치 및 운영매니저용: 과정 정보 전용"""
 
     course = CourseSerializer()
 
 
-# 어드민 회원 상세 조회 응답
 class AdminAccountDetailResponseSerializer(serializers.ModelSerializer[User]):
-
-    gender = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    gender = serializers.CharField()
+    role = serializers.CharField()
     status = serializers.SerializerMethodField()
     assigned_courses = serializers.SerializerMethodField()
 
@@ -62,12 +57,6 @@ class AdminAccountDetailResponseSerializer(serializers.ModelSerializer[User]):
             "assigned_courses",
         ]
 
-    def get_gender(self, obj: User) -> str:
-        return obj.gender
-
-    def get_role(self, obj: User) -> str:
-        return obj.role
-
     def get_status(self, obj: User) -> str:
         if not obj.is_active:
             return "DEACTIVATED"
@@ -75,76 +64,28 @@ class AdminAccountDetailResponseSerializer(serializers.ModelSerializer[User]):
             return "WITHDREW"
         return "ACTIVATED"
 
-    def get_assigned_courses(self, obj: User) -> list[dict[str, Any]]:
-        # 권한에 따른 기수 정보 반환
-        result: list[dict[str, Any]] = []
+    def get_assigned_courses(self, obj: User) -> List[Dict[str, Any]]:
+        """
+        권한에 따른 담당/수강 정보 반환
+        """
+        # 에러 해결: 서로 다른 모델의 QuerySet을 하나의 변수에 담을 때 발생하는 [assignment] 에러 해결을 위해
+        # Union 타입을 사용하거나, 각 분기에서 즉시 처리합니다.
 
         if obj.role == User.Role.TA:
-            # 조교: 담당 기수 목록
-            for ta in obj.assisted_cohorts.select_related("cohort__course").all():
-                result.append(
-                    {
-                        "course": {
-                            "id": ta.cohort.course.id,
-                            "name": ta.cohort.course.name,
-                            "tag": ta.cohort.course.tag,
-                        },
-                        "cohort": {
-                            "id": ta.cohort.id,
-                            "number": ta.cohort.number,
-                            "status": ta.cohort.status,
-                            "status_display": ta.cohort.get_status_display(),
-                            "start_date": ta.cohort.start_date,
-                            "end_date": ta.cohort.end_date,
-                        },
-                    }
-                )
+            queryset = obj.assisted_cohorts.select_related("cohort__course").all()
+            return list(AssignedCohortSerializer(queryset, many=True).data)
 
-        elif obj.role == User.Role.LC:
-            # 러닝코치: 담당 과정 목록
-            for lc in obj.coached_courses.select_related("course").all():
-                result.append(
-                    {
-                        "course": {
-                            "id": lc.course.id,
-                            "name": lc.course.name,
-                            "tag": lc.course.tag,
-                        },
-                    }
-                )
+        if obj.role == User.Role.STUDENT:
+            # 변수명을 분리하거나 타입을 명시적으로 지정하여 assignment 에러 방지
+            student_queryset = obj.cohort_students.select_related("cohort__course").all()
+            return list(AssignedCohortSerializer(student_queryset, many=True).data)
 
-        elif obj.role == User.Role.OM:
-            # 운영매니저: 담당 과정 목록
-            for om in obj.managed_courses.select_related("course").all():
-                result.append(
-                    {
-                        "course": {
-                            "id": om.course.id,
-                            "name": om.course.name,
-                            "tag": om.course.tag,
-                        },
-                    }
-                )
+        if obj.role == User.Role.LC:
+            lc_queryset = obj.coached_courses.select_related("course").all()
+            return list(AssignedCourseSerializer(lc_queryset, many=True).data)
 
-        elif obj.role == User.Role.STUDENT:
-            # 수강생: 수강 기수 목록
-            for cs in obj.cohort_students.select_related("cohort__course").all():
-                result.append(
-                    {
-                        "course": {
-                            "id": cs.cohort.course.id,
-                            "name": cs.cohort.course.name,
-                            "tag": cs.cohort.course.tag,
-                        },
-                        "cohort": {
-                            "id": cs.cohort.id,
-                            "number": cs.cohort.number,
-                            "status": cs.cohort.status,
-                            "status_display": cs.cohort.get_status_display(),
-                            "start_date": cs.cohort.start_date,
-                            "end_date": cs.cohort.end_date,
-                        },
-                    }
-                )
+        if obj.role == User.Role.OM:
+            om_queryset = obj.managed_courses.select_related("course").all()
+            return list(AssignedCourseSerializer(om_queryset, many=True).data)
 
-        return result
+        return []

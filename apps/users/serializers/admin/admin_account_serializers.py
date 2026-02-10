@@ -1,12 +1,14 @@
-from typing import Any
+from typing import Any, Dict, Optional
 
 from rest_framework import serializers
 
 from apps.users.models import User
 
 
-# 어드민 회원 정보 수정
 class AdminAccountUpdateRequestSerializer(serializers.Serializer[Any]):
+    """
+    어드민 페이지 회원 정보 수정 요청 시리얼라이저
+    """
 
     nickname = serializers.CharField(max_length=10, required=False)
     name = serializers.CharField(max_length=30, required=False)
@@ -16,28 +18,41 @@ class AdminAccountUpdateRequestSerializer(serializers.Serializer[Any]):
     profile_img_url = serializers.URLField(required=False, allow_null=True, allow_blank=True)
     is_active = serializers.BooleanField(required=False)
 
-    def validate_phone_number(self, value: str) -> str:
-        if value and not value.isdigit():
+    def validate_phone_number(self, value: Optional[str]) -> Optional[str]:
+        if not value:
+            return value
+
+        # 숫자 이외의 문자 제거 및 길이 검증
+        if not value.isdigit():
             raise serializers.ValidationError("전화번호는 숫자만 입력 가능합니다.")
-        if value and len(value) != 11:
-            raise serializers.ValidationError("11자리 숫자로 구성된 포맷이어야 합니다.")
+        if len(value) != 11:
+            raise serializers.ValidationError("전화번호는 11자리 숫자로 구성되어야 합니다.")
         return value
 
-    def validate_nickname(self, value: str) -> str:
-        if not value or not value.strip():
-            raise serializers.ValidationError("닉네임은 빈 값일 수 없습니다.")
-        return value.strip()
+    def validate_nickname(self, value: Optional[str]) -> Optional[str]:
+        if value is not None:
+            stripped_value = value.strip()
+            if not stripped_value:
+                raise serializers.ValidationError("닉네임은 빈 값일 수 없습니다.")
+            return stripped_value
+        return value
 
-    def validate_name(self, value: str) -> str:
-        if not value or not value.strip():
-            raise serializers.ValidationError("이름은 빈 값일 수 없습니다.")
-        return value.strip()
+    def validate_name(self, value: Optional[str]) -> Optional[str]:
+        if value is not None:
+            stripped_value = value.strip()
+            if not stripped_value:
+                raise serializers.ValidationError("이름은 빈 값일 수 없습니다.")
+            return stripped_value
+        return value
 
 
-# 어드민 회원 정보 수정 응답
 class AdminAccountUpdateResponseSerializer(serializers.ModelSerializer[User]):
+    """
+    어드민 페이지 회원 정보 수정 성공 응답 시리얼라이저
+    """
 
-    gender = serializers.CharField(source="get_gender_display")
+    # ChoiceField의 display text를 반환하도록 설정
+    gender = serializers.CharField(source="get_gender_display", read_only=True)
 
     class Meta:
         model = User
