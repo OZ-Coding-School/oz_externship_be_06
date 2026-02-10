@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any, cast
 
 from django.db import transaction
@@ -24,17 +23,61 @@ from apps.qna.utils.model_types import User
 logger = logging.getLogger("django")
 
 
+# ==============================================================================
+# AnswerCommandService
+#   - create_answer: 답변 생성
+#   - update_answer: 답변 수정
+#   - adopt_answer: 답변 채택
+# AnswerCommentCommandService
+#   - create_comment: 답변에 대한 댓글 생성
+# AIAnswerCommandService
+#   - generate_ai_answer: AI 질문 생성
+# ==============================================================================
+
 class AnswerCommandService:
     """
-    답변 등록, 수정, 채택 로직 처리 서비스
+    - create_answer: 답변 생성
+    - update_answer: 답변 수정
+    - adopt_answer: 답변 채택
     """
+
+    @staticmethod
+    @transaction.atomic
+    def create_answer(question_id: int, author: User, data: dict[str, Any]) -> Answer:
+        """
+        특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
+        - Args:
+            question_id (int): 답변을 달 질문의 ID (PK)
+            author (User): 답변 작성자 객체 (User Instance)
+            data (dict): content(str) 및 image_urls(list)를 포함한 검증된 데이터
+        - Returns:
+            Answer: 생성된 답변 객체
+        - Raises:
+            QnaBaseException(404): 질문이 존재하지 않을 경우
+        """
+        # 질문 조회
+        try:
+            question = Question.objects.select_for_update().get(id=question_id)
+        except Question.DoesNotExist:
+            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
+
+        # 답변 생성
+        content = cast(str, data["content"])
+        answer = Answer.objects.create(question=question, author=author, content=content)
+
+        # 이미지 Bulk Create
+        image_urls = data.get("image_urls", [])
+        if image_urls:
+            AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
+
+        return answer
+
 
     @staticmethod
     @transaction.atomic
     def update_answer(answer_id: int, user: User, data: dict[str, Any]) -> Answer:
         """
         답변을 수정하고 이미지들을 업데이트
-
         - Args:
             answer_id (int): 수정할 답변의 ID (PK)
             user (User): 수정 요청한 사용자 객체
@@ -67,36 +110,6 @@ class AnswerCommandService:
 
         return answer
 
-    @staticmethod
-    @transaction.atomic
-    def create_answer(question_id: int, author: User, data: dict[str, Any]) -> Answer:
-        """
-        특정 질문에 대한 답변을 생성하고 이미지들을 일괄 저장
-        - Args:
-            question_id (int): 답변을 달 질문의 ID (PK)
-            author (User): 답변 작성자 객체 (User Instance)
-            data (dict): content(str) 및 image_urls(list)를 포함한 검증된 데이터
-        - Returns:
-            Answer: 생성된 답변 객체
-        - Raises:
-            QuestionNotFoundException: 질문이 존재하지 않을 경우
-        """
-        # 질문 조회
-        try:
-            question = Question.objects.select_for_update().get(id=question_id)
-        except Question.DoesNotExist:
-            raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_QUESTION, status_code=status.HTTP_404_NOT_FOUND)
-
-        # 답변 생성
-        content = cast(str, data["content"])
-        answer = Answer.objects.create(question=question, author=author, content=content)
-
-        # 이미지 Bulk Create
-        image_urls = data.get("image_urls", [])
-        if image_urls:
-            AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
-
-        return answer
 
     @staticmethod
     @transaction.atomic
@@ -140,7 +153,7 @@ class AnswerCommandService:
 
 class AnswerCommentCommandService:
     """
-    답변 댓글 관련 데이터 변경(CUD) 로직 처리 서비스
+    - create_comment: 답변에 대한 댓글 생성
     """
 
     @staticmethod
@@ -148,7 +161,6 @@ class AnswerCommentCommandService:
     def create_comment(answer_id: int, author: User, content: str) -> AnswerComment:
         """
         특정 답변에 대한 댓글 생성
-
         - Args:
             answer_id (int): 댓글을 달 답변의 ID (PK)
             author (User): 댓글 작성자 객체
@@ -156,7 +168,7 @@ class AnswerCommentCommandService:
         - Returns:
             AnswerComment: 생성된 댓글 객체
         - Raises:
-            QnaBaseException: 답변이 존재하지 않을 경우 (404)
+            QnaBaseException(404): 답변이 존재하지 않을 경우
         """
         # 답변 조회
         try:
@@ -171,7 +183,8 @@ class AnswerCommentCommandService:
 
 class AIAnswerCommandService:
     """
-    AI 답변 생성 및 비즈니스 로직 담당 서비스
+    - generate_ai_answer: AI 질문 생성
+        _call_ai_model (_call_gemini_api (_build_prompt))
     """
 
     @classmethod
@@ -179,14 +192,14 @@ class AIAnswerCommandService:
     def generate_ai_answer(cls, question_id: int, using_model: str) -> QuestionAIAnswer:
         """
         특정 질문에 대한 AI 답변을 생성하고 저장함.
-        이미 답변이 존재하는 경우 409 Conflict를 발생시킴.
-
-        Args:
+        - Args:
             question_id: 질문 ID
             using_model: 사용할 AI 모델 타입 (Gemini 또는 GPT)
-
-        Returns:
+        - Returns:
             QuestionAIAnswer: 생성된 AI 답변 객체
+        - Raises:
+            QnaBaseException(404): 질문이 존재하지 않는 경우
+            QnaBaseException(409): 이미 답변이 존재하는 경우
         """
         # 질문 존재 확인 (404)
         try:
@@ -245,16 +258,13 @@ class AIAnswerCommandService:
     def _call_ai_model(cls, title: str, content: str, model_name: str) -> str:
         """
         AI 모델 API를 호출하여 질문에 대한 답변을 생성합니다.
-
-        Args:
+        - Args:
             title: 질문 제목
             content: 질문 본문 내용
             model_name: 사용할 세부 모델명 (gemini-2.5-pro, gpt-4o 등)
-
-        Returns:
+        - Returns:
             str: AI가 생성한 답변 텍스트
-
-        Raises:
+        - Raises:
             ValueError: API 키가 설정되지 않은 경우
             Exception: API 호출 실패 시
         """
@@ -272,6 +282,14 @@ class AIAnswerCommandService:
     def _call_gemini_api(cls, title: str, content: str, model_name: str) -> str:
         """
         Google Gemini API를 호출합니다.
+        - Args:
+            title (str): 질문 제목
+            content (str): 질문 본문 내용
+            model_name (str): 사용할 Gemini 모델명
+        - Returns:
+            str: AI가 생성한 답변 텍스트
+        - Raises:
+            ValueError: API 응답이 비어있는 경우
         """
         client = AIConfig.ensure_gemini_configured()
 
@@ -299,6 +317,14 @@ class AIAnswerCommandService:
     def _call_openai_api(cls, title: str, content: str, model_name: str) -> str:
         """
         OpenAI API를 호출합니다.
+        - Args:
+            title (str): 질문 제목
+            content (str): 질문 본문 내용
+            model_name (str): 사용할 GPT 모델명
+        - Returns:
+            str: AI가 생성한 답변 텍스트
+        - Raises:
+            NotImplementedError: 현재 구현되지 않음
         """
         # 현재는 Gemini만 지원하므로 예외 발생
         raise NotImplementedError("OpenAI API 연동은 아직 구현되지 않았습니다.")
@@ -307,12 +333,10 @@ class AIAnswerCommandService:
     def _build_prompt(title: str, content: str) -> str:
         """
         AI 모델에 전달할 프롬프트를 구성합니다.
-
-        Args:
+        - Args:
             title: 질문 제목
             content: 질문 본문
-
-        Returns:
+        - Returns:
             str: 구성된 프롬프트 문자열
         """
         return f"""당신은 오즈코딩스쿨의 학습 도우미 AI입니다.
