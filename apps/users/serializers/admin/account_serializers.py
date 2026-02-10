@@ -1,6 +1,9 @@
 from typing import Any
+
 from rest_framework import serializers
+
 from apps.users.models import User
+
 
 class AdminAccountListSerializer(serializers.ModelSerializer[User]):
     """

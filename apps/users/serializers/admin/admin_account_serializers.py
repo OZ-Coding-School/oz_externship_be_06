@@ -1,11 +1,15 @@
 from typing import Any, Optional
+
 from rest_framework import serializers
+
 from apps.users.models import User
+
 
 class AdminAccountListSerializer(serializers.ModelSerializer[User]):
     """
     어드민 페이지 회원 목록 조회용 시리얼라이저 (테스트 에러 해결 버전)
     """
+
     # 모델에 account_status/role_lower 프로퍼티가 없을 경우를 대비해 안정적인 메서드 필드 사용
     status = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
@@ -27,7 +31,7 @@ class AdminAccountListSerializer(serializers.ModelSerializer[User]):
 
     def get_status(self, obj: User) -> str:
         # User 모델의 상태 로직을 안전하게 반환
-        if hasattr(obj, 'withdrawal') and obj.withdrawal:
+        if hasattr(obj, "withdrawal") and obj.withdrawal:
             return "WITHDREW"
         return "ACTIVATED" if obj.is_active else "DEACTIVATED"
 
@@ -40,6 +44,7 @@ class AdminAccountUpdateRequestSerializer(serializers.Serializer[Any]):
     """
     어드민 페이지 회원 정보 수정 요청 (입력 검증)
     """
+
     nickname = serializers.CharField(max_length=10, required=False)
     name = serializers.CharField(max_length=30, required=False)
     phone_number = serializers.CharField(max_length=20, required=False)
@@ -76,6 +81,7 @@ class AdminAccountUpdateResponseSerializer(serializers.ModelSerializer[User]):
     """
     어드민 페이지 회원 정보 수정 결과 응답 전용
     """
+
     gender_display = serializers.CharField(source="get_gender_display", read_only=True)
     role = serializers.CharField(read_only=True)
 
