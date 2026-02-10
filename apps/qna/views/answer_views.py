@@ -46,7 +46,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     """
     사용할 AI 모델을 설정합니다.
     - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
-    - QuestionAIAnswer.AIModel.GPT: gpt-4o 모델 사용
+    - QuestionAIAnswer.AIModel.GPT: gpt-4o 모델 사용 (미구현)
     """
     using_model: str = QuestionAIAnswer.AIModel.GEMINI
 
@@ -60,39 +60,33 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     @extend_schema(
         tags=["qna"],
         summary="AI 답변 생성 API",
-        description=ApiDescriptions.AI_GEN_ANSWER,
+        description=ApiDescriptions.AI_ANSWER_GENERATE,
         request=None,
         responses={
             201: OpenApiResponse(
                 description="Created",
                 response=AIAnswerResponseSerializer,
-                examples=[SuccessResponseExamples.AI_GEN_ANSWER],
+                examples=[SuccessResponseExamples.AI_ANSWER_GENERATE],
             ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_400],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_401],
-            ),
-            # 현재는 401 로그인 권한까지만 검증하도록 구현되어 403에러는 발생하지 않음
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_403],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_401],
             ),
             404: OpenApiResponse(
                 description="Not Found",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_404],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_404],
             ),
             409: OpenApiResponse(
                 description="Conflict",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_409],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_409],
             ),
         },
     )

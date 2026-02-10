@@ -60,7 +60,6 @@ class ErrorMessages(str, Enum):
     FORBIDDEN_ANSWER_UPDATE = "본인이 작성한 답변만 수정할 수 있습니다."
     FORBIDDEN_ANSWER_ADOPT = "본인이 작성한 질문의 답변만 채택할 수 있습니다."
     FORBIDDEN_COMMENT_CREATE = "댓글 작성 권한이 없습니다."
-    FORBIDDEN_AI_REQUEST = "AI 답변 생성 권한이 없습니다."
     # 403 - Admin
     FORBIDDEN_ADMIN_CATEGORY_CREATE = "카테고리 등록 권한이 없습니다."
     FORBIDDEN_ADMIN_CATEGORY_LIST = "카테고리 목록 조회 권한이 없습니다."

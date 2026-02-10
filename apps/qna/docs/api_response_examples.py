@@ -10,7 +10,7 @@ class SuccessResponseExamples:
 
     # --- Category ---
     CATEGORY_LIST = OpenApiExample(
-        name="카테고리 목록 조회 성공 response body 예시",
+        name="카테고리 목록 조회 성공 응답 예시",
         value={
             "categories": [
                 {
@@ -43,13 +43,13 @@ class SuccessResponseExamples:
 
     # --- Questions ---
     QUESTION_CREATE = OpenApiExample(
-        name="질문 등록 성공 response body 예시",
+        name="질문 등록 성공 응답 예시",
         value={"message": "질문이 성공적으로 등록되었습니다.", "question_id": 10501},
         response_only=True,
     )
 
     QUESTION_LIST = OpenApiExample(
-        name="질문 목록조회 성공 response body 예시",
+        name="질문 목록조회 성공 응답 예시",
         value={
             "count": 152,
             "next": None,
@@ -76,7 +76,7 @@ class SuccessResponseExamples:
     )
 
     QUESTION_DETAIL = OpenApiExample(
-        name="질문 상세 조회 성공 response body 예시",
+        name="질문 상세 조회 성공 응답 예시",
         value={
             "id": 10501,
             "title": "Django에서 ForeignKey 역참조는 어떻게 하나요?",
@@ -115,7 +115,7 @@ class SuccessResponseExamples:
 
     # --- Answers ---
     ANSWER_CREATE = OpenApiExample(
-        name="답변 등록 성공 response body 예시",
+        name="답변 등록 성공 응답 예시",
         value={"answer_id": 801, "question_id": 10501, "author_id": 211, "created_at": "2025-03-02 11:43:20"},
         response_only=True,
     )
@@ -127,13 +127,13 @@ class SuccessResponseExamples:
     )
 
     ANSWER_ADOPT = OpenApiExample(
-        name="답변 채택 성공 response body 예시",
+        name="답변 채택 성공 응답 예시",
         value={"question_id": 10501, "answer_id": 801, "is_adopted": True},
         response_only=True,
     )
 
-    AI_GEN_ANSWER = OpenApiExample(
-        name="AI 답변 생성 성공 response body 예시",
+    AI_ANSWER_GENERATE = OpenApiExample(
+        name="AI 답변 생성 성공 응답 예시",
         value={
             "id": 8751,
             "question_id": 10221,
@@ -145,13 +145,13 @@ class SuccessResponseExamples:
     )
 
     ANSWER_COMMENT_CREATE = OpenApiExample(
-        name="답변 댓글 등록 성공 response body 예시",
+        name="답변 댓글 등록 성공 응답 예시",
         value={"comment_id": 91001, "answer_id": 801, "author_id": 211, "created_at": "2025-03-02 16:30:18"},
         response_only=True,
     )
 
     PRESIGNED_URL = OpenApiExample(
-        name="Presigned URL 발급 성공 response body 예시",
+        name="Presigned URL 발급 성공 응답 예시",
         value={
             "presigned_url": "https://my-bucket.s3.ap-northeast-2.amazonaws.com/uploads/images/questions/uuid.png?AWSAccessKeyId=...&Signature=...",
             "img_url": "https://my-bucket.s3.ap-northeast-2.amazonaws.com/uploads/images/questions/uuid.png",
@@ -162,7 +162,7 @@ class SuccessResponseExamples:
 
     # --- Admin Category ---
     ADMIN_CATEGORY_CREATE = OpenApiExample(
-        name="어드민 카테고리 등록 성공 response body 예시",
+        name="어드민 카테고리 등록 성공 응답 예시",
         value={
             "category_id": 55,
             "name": "FastAPI",
@@ -174,7 +174,7 @@ class SuccessResponseExamples:
     )
 
     ADMIN_CATEGORY_LIST = OpenApiExample(
-        name="어드민 카테고리 목록 조회 성공 response body 예시",
+        name="어드민 카테고리 목록 조회 성공 응답 예시",
         value={
             "page": 1,
             "size": 20,
@@ -205,7 +205,7 @@ class SuccessResponseExamples:
 
     # --- Admin Question ---
     ADMIN_QUESTION_LIST = OpenApiExample(
-        name="어드민 질의응답 목록 조회 성공 response body 예시",
+        name="어드민 질의응답 목록 조회 성공 응답 예시",
         value={
             "page": 1,
             "size": 20,
@@ -228,7 +228,7 @@ class SuccessResponseExamples:
     )
 
     ADMIN_QUESTION_DETAIL = OpenApiExample(
-        name="어드민 질의응답 상세 조회 성공 response body 예시",
+        name="어드민 질의응답 상세 조회 성공 응답 예시",
         value={
             "question_id": 10501,
             "title": "Django ORM 역참조는 어떻게 사용하나요?",
@@ -263,14 +263,14 @@ class SuccessResponseExamples:
     )
 
     ADMIN_QUESTION_DELETE = OpenApiExample(
-        name="어드민 질의응답 삭제 성공 response body 예시",
+        name="어드민 질의응답 삭제 성공 응답 예시",
         value={"question_id": 10501, "deleted_answer_count": 12, "deleted_comment_count": 45},
         response_only=True,
     )
 
     # --- Admin Answer ---
     ADMIN_ANSWER_DELETE = OpenApiExample(
-        name="어드민 답변 삭제 성공 response body 예시",
+        name="어드민 답변 삭제 성공 응답 예시",
         value={"answer_id": 801, "deleted_comment_count": 9},
         response_only=True,
     )
@@ -283,48 +283,48 @@ class ErrorResponseExamples:
 
     # --- CATEGORY_LIST ---
     CATEGORY_LIST_400 = OpenApiExample(
-        name="카테고리 목록 조회 실패 response body 예시 - 잘못된 요청",
+        name="카테고리 목록 조회 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_CATEGORY_LIST.value},
         response_only=True,
     )
 
     # --- QUESTION_CREATE ---
     QUESTION_CREATE_400 = OpenApiExample(
-        name="질문 등록 실패 response body 예시 - 잘못된 요청",
+        name="질문 등록 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_QUESTION_CREATE.value},
         response_only=True,
     )
     QUESTION_CREATE_401 = OpenApiExample(
-        name="질문 등록 실패 response body 예시 - 인증 실패",
+        name="질문 등록 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_QUESTION_CREATE.value},
         response_only=True,
     )
     QUESTION_CREATE_403 = OpenApiExample(
-        name="질문 등록 실패 response body 예시 - 권한 없음",
+        name="질문 등록 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_QUESTION_CREATE.value},
         response_only=True,
     )
 
     # --- QUESTION_LIST ---
     QUESTION_LIST_400 = OpenApiExample(
-        name="질문 목록 조회 실패 response body 예시 - 잘못된 요청",
+        name="질문 목록 조회 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_QUESTION_LIST.value},
         response_only=True,
     )
     QUESTION_LIST_404 = OpenApiExample(
-        name="질문 목록 조회 실패 response body 예시 - 데이터 없음",
+        name="질문 목록 조회 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION_LIST.value},
         response_only=True,
     )
 
     # --- QUESTION_DETAIL ---
     QUESTION_DETAIL_400 = OpenApiExample(
-        name="질문 상세 조회 실패 response body 예시 - 잘못된 요청",
+        name="질문 상세 조회 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_QUESTION_DETAIL.value},
         response_only=True,
     )
     QUESTION_DETAIL_404 = OpenApiExample(
-        name="질문 상세 조회 실패 response body 예시 - 데이터 없음",
+        name="질문 상세 조회 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION.value},
         response_only=True,
     )
@@ -353,22 +353,22 @@ class ErrorResponseExamples:
 
     # --- ANSWER_CREATE ---
     ANSWER_CREATE_400 = OpenApiExample(
-        name="답변 등록 실패 response body 예시 - 잘못된 요청",
+        name="답변 등록 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ANSWER_CREATE.value},
         response_only=True,
     )
     ANSWER_CREATE_401 = OpenApiExample(
-        name="답변 등록 실패 response body 예시 - 인증 실패",
+        name="답변 등록 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ANSWER_CREATE.value},
         response_only=True,
     )
     ANSWER_CREATE_403 = OpenApiExample(
-        name="답변 등록 실패 response body 예시 - 권한 없음",
+        name="답변 등록 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ANSWER_CREATE.value},
         response_only=True,
     )
     ANSWER_CREATE_404 = OpenApiExample(
-        name="답변 등록 실패 response body 예시 - 질문 찾을 수 없음",
+        name="답변 등록 실패 응답 예시 - 질문 찾을 수 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION.value},
         response_only=True,
     )
@@ -397,54 +397,49 @@ class ErrorResponseExamples:
 
     # --- ANSWER_ADOPT ---
     ANSWER_ADOPT_400 = OpenApiExample(
-        name="답변 채택 실패 response body 예시 - 잘못된 요청",
+        name="답변 채택 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ANSWER_ADOPT.value},
         response_only=True,
     )
     ANSWER_ADOPT_401 = OpenApiExample(
-        name="답변 채택 실패 response body 예시 - 인증 실패",
+        name="답변 채택 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT.value},
         response_only=True,
     )
     ANSWER_ADOPT_403 = OpenApiExample(
-        name="답변 채택 실패 response body 예시 - 권한 없음",
+        name="답변 채택 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ANSWER_ADOPT.value},
         response_only=True,
     )
     ANSWER_ADOPT_404 = OpenApiExample(
-        name="답변 채택 실패 response body 예시 - 리소스 찾을 수 없음",
+        name="답변 채택 실패 응답 예시 - 리소스 찾을 수 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_QUESTION_OR_ANSWER.value},
         response_only=True,
     )
     ANSWER_ADOPT_409 = OpenApiExample(
-        name="답변 채택 실패 response body 예시 - 이미 채택됨",
+        name="답변 채택 실패 응답 예시 - 이미 채택됨",
         value={"error_detail": ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT.value},
         response_only=True,
     )
 
     # --- AI_ANSWER_GENERATE ---
-    AI_GEN_ANSWER_400 = OpenApiExample(
-        name="AI 답변 생성 실패 response body 예시 - 잘못된 요청",
+    AI_ANSWER_GENERATE_400 = OpenApiExample(
+        name="AI 답변 생성 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_AI_REQUEST.value},
         response_only=True,
     )
-    AI_GEN_ANSWER_401 = OpenApiExample(
-        name="AI 답변 생성 실패 response body 예시 - 인증 실패",
+    AI_ANSWER_GENERATE_401 = OpenApiExample(
+        name="AI 답변 생성 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_AI_REQUEST.value},
         response_only=True,
     )
-    AI_GEN_ANSWER_403 = OpenApiExample(
-        name="AI 답변 생성 실패 response body 예시 - 권한 없음",
-        value={"error_detail": ErrorMessages.FORBIDDEN_AI_REQUEST.value},
-        response_only=True,
-    )
-    AI_GEN_ANSWER_404 = OpenApiExample(
-        name="AI 답변 생성 실패 response body 예시 - 데이터 없음",
+    AI_ANSWER_GENERATE_404 = OpenApiExample(
+        name="AI 답변 생성 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_AI_QUESTION.value},
         response_only=True,
     )
-    AI_GEN_ANSWER_409 = OpenApiExample(
-        name="AI 답변 생성 실패 response body 예시 - 이미 생성됨",
+    AI_ANSWER_GENERATE_409 = OpenApiExample(
+        name="AI 답변 생성 실패 응답 예시 - 이미 생성됨",
         value={"error_detail": ErrorMessages.ALREADY_EXISTS_AI_ANSWER.value},
         response_only=True,
     )
@@ -473,7 +468,7 @@ class ErrorResponseExamples:
 
     # --- PRESIGNED_URL ---
     PRESIGNED_URL_400 = OpenApiExample(
-        name="Presigned URL 발급 실패 response body 예시 - 잘못된 요청",
+        name="Presigned URL 발급 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.UNSUPPORTED_FILE_FORMAT.value},
         response_only=True,
     )
@@ -507,34 +502,34 @@ class ErrorResponseExamples:
 
     # --- ADMIN_CATEGORY_LIST ---
     ADMIN_CATEGORY_LIST_400 = OpenApiExample(
-        name="어드민 카테고리 목록 조회 실패 response body 예시 - 잘못된 요청",
+        name="어드민 카테고리 목록 조회 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_CATEGORY_LIST.value},
         response_only=True,
     )
     ADMIN_CATEGORY_LIST_401 = OpenApiExample(
-        name="어드민 카테고리 목록 조회 실패 response body 예시 - 인증 실패",
+        name="어드민 카테고리 목록 조회 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_LIST.value},
         response_only=True,
     )
     ADMIN_CATEGORY_LIST_403 = OpenApiExample(
-        name="어드민 카테고리 목록 조회 실패 response body 예시 - 권한 없음",
+        name="어드민 카테고리 목록 조회 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_LIST.value},
         response_only=True,
     )
 
     # --- ADMIN_QUESTION_LIST ---
     ADMIN_QUESTION_LIST_400 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 잘못된 요청",
+        name="어드민 질의응답 목록 조회 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )
     ADMIN_QUESTION_LIST_401 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 인증 실패",
+        name="어드민 질의응답 목록 조회 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )
     ADMIN_QUESTION_LIST_403 = OpenApiExample(
-        name="어드민 질의응답 목록 조회 실패 response body 예시 - 권한 없음",
+        name="어드민 질의응답 목록 조회 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_QUESTION_LIST.value},
         response_only=True,
     )
@@ -563,44 +558,44 @@ class ErrorResponseExamples:
 
     # --- ADMIN_QUESTION_DELETE ---
     ADMIN_QUESTION_DELETE_400 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 잘못된 요청",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_401 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 인증 실패",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_403 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 권한 없음",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DELETE.value},
         response_only=True,
     )
     ADMIN_QUESTION_DELETE_404 = OpenApiExample(
-        name="어드민 질의응답 삭제 실패 response body 예시 - 데이터 없음",
+        name="어드민 질의응답 삭제 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_QUESTION.value},
         response_only=True,
     )
 
     # --- ADMIN_ANSWER_DELETE ---
     ADMIN_ANSWER_DELETE_400 = OpenApiExample(
-        name="어드민 답변 삭제 실패 response body 예시 - 잘못된 요청",
+        name="어드민 답변 삭제 실패 응답 예시 - 잘못된 요청",
         value={"error_detail": ErrorMessages.INVALID_ADMIN_ANSWER_DELETE.value},
         response_only=True,
     )
     ADMIN_ANSWER_DELETE_401 = OpenApiExample(
-        name="어드민 답변 삭제 실패 response body 예시 - 인증 실패",
+        name="어드민 답변 삭제 실패 응답 예시 - 인증 실패",
         value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_ANSWER_DELETE.value},
         response_only=True,
     )
     ADMIN_ANSWER_DELETE_403 = OpenApiExample(
-        name="어드민 답변 삭제 실패 response body 예시 - 권한 없음",
+        name="어드민 답변 삭제 실패 응답 예시 - 권한 없음",
         value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_ANSWER_DELETE.value},
         response_only=True,
     )
     ADMIN_ANSWER_DELETE_404 = OpenApiExample(
-        name="어드민 답변 삭제 실패 response body 예시 - 데이터 없음",
+        name="어드민 답변 삭제 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_ANSWER.value},
         response_only=True,
     )
