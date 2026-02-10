@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from rest_framework import serializers
 
@@ -57,6 +57,51 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             m[qid_int] = item.get("submitted_answer")
         return m
 
+    class _QuestionSnapshot(TypedDict):
+        question_id: int
+        type: str
+        question: str
+        answer: Any
+        point: int
+        prompt: NotRequired[str | None]
+        blank_count: NotRequired[int | None]
+        options: NotRequired[list[Any] | None]
+        explanation: NotRequired[str]
+
+    @staticmethod
+    def _parse_snapshot(raw: Any) -> _QuestionSnapshot | None:
+        if not isinstance(raw, dict):
+            return None
+
+        question_id = raw.get("question_id")
+        q_type = raw.get("type")
+        question = raw.get("question")
+        answer = raw.get("answer")
+        point = raw.get("point")
+
+        if not isinstance(question_id, int) or question_id <= 0:
+            return None
+        if not isinstance(q_type, str) or not isinstance(question, str):
+            return None
+        if not isinstance(point, int):
+            return None
+
+        options = raw.get("options")
+        if options is not None and not isinstance(options, list):
+            return None
+
+        return {
+            "question_id": question_id,
+            "type": q_type,
+            "question": question,
+            "answer": answer,
+            "point": point,
+            "prompt": raw.get("prompt"),
+            "blank_count": raw.get("blank_count"),
+            "options": options,
+            "explanation": raw.get("explanation", ""),
+        }
+
     def get_questions(self, obj: ExamSubmission) -> list[dict[str, Any]]:
         deployment = getattr(obj, "deployment", None)
         if not deployment:
@@ -68,12 +113,11 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             return []
 
         result = []
-        for question_data in questions_snapshot:
-            raw_question_id = question_data.get("question_id")
-            try:
-                question_id = int(raw_question_id)
-            except (TypeError, ValueError):
+        for raw_question in questions_snapshot:
+            question_data = self._parse_snapshot(raw_question)
+            if question_data is None:
                 continue
+            question_id = question_data["question_id"]
 
             submitted = submitted_map.get(question_id)
 
@@ -84,7 +128,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             else:
                 submitted_norm = [submitted]
 
-            answer = question_data.get("answer")
+            answer = question_data["answer"]
             if answer is None:
                 answer_norm = []
             elif isinstance(answer, list):
@@ -94,7 +138,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
 
             submitted_values = list(map(str, submitted_norm))
             answer_values = list(map(str, answer_norm))
-            q_type = question_data.get("type")
+            q_type = question_data["type"]
             if q_type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
                 is_correct = submitted_values == answer_values
             else:
@@ -105,13 +149,13 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             result.append(
                 {
                     "id": question_id,
-                    "question": question_data.get("question", ""),
+                    "question": question_data["question"],
                     "prompt": question_data.get("prompt"),
                     "blank_count": question_data.get("blank_count"),
                     "options": options,
                     "type": q_type,
                     "answer": answer_norm,
-                    "point": question_data.get("point", 0),
+                    "point": question_data["point"],
                     "explanation": question_data.get("explanation", ""),
                     "is_correct": is_correct,
                     "submitted_answer": submitted_norm,

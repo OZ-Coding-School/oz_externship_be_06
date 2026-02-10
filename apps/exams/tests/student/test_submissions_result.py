@@ -107,40 +107,24 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json='["1","2","3"]',
             explanation="설명",
         )
+        options_map = {
+            cls.q1.id: ["A", "B"],
+            cls.q2.id: ["a", "b", "c"],
+            cls.q3.id: ["1", "2", "3"],
+        }
         cls.deployment.questions_snapshot_json = [
             {
-                "question_id": cls.q1.id,
-                "type": cls.q1.type,
-                "question": cls.q1.question,
-                "prompt": cls.q1.prompt,
-                "blank_count": cls.q1.blank_count,
-                "options": ["A", "B"],
-                "answer": cls.q1.answer,
-                "point": cls.q1.point,
-                "explanation": cls.q1.explanation,
-            },
-            {
-                "question_id": cls.q2.id,
-                "type": cls.q2.type,
-                "question": cls.q2.question,
-                "prompt": cls.q2.prompt,
-                "blank_count": cls.q2.blank_count,
-                "options": ["a", "b", "c"],
-                "answer": cls.q2.answer,
-                "point": cls.q2.point,
-                "explanation": cls.q2.explanation,
-            },
-            {
-                "question_id": cls.q3.id,
-                "type": cls.q3.type,
-                "question": cls.q3.question,
-                "prompt": cls.q3.prompt,
-                "blank_count": cls.q3.blank_count,
-                "options": ["1", "2", "3"],
-                "answer": cls.q3.answer,
-                "point": cls.q3.point,
-                "explanation": cls.q3.explanation,
-            },
+                "question_id": question.id,
+                "type": question.type,
+                "question": question.question,
+                "prompt": question.prompt,
+                "blank_count": question.blank_count,
+                "options": options_map[question.id],
+                "answer": question.answer,
+                "point": question.point,
+                "explanation": question.explanation,
+            }
+            for question in (cls.q1, cls.q2, cls.q3)
         ]
         cls.deployment.save(update_fields=["questions_snapshot_json"])
 
