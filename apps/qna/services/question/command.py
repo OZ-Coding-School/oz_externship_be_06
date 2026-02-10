@@ -9,12 +9,12 @@ from apps.qna.models import Question, QuestionCategory, QuestionImage
 from apps.qna.utils.content_parser import ContentParser
 from apps.qna.utils.model_types import User
 
-
 # ==============================================================================
 # QuestionCommandService
 #   - create_question: 질문 생성
 #   - update_question: 질문 수정
 # ==============================================================================
+
 
 class QuestionCommandService:
     """
@@ -54,7 +54,6 @@ class QuestionCommandService:
                 QuestionImage.objects.bulk_create([QuestionImage(question=question, img_url=url) for url in image_urls])
 
         return question
-
 
     @staticmethod
     @transaction.atomic

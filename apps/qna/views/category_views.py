@@ -1,20 +1,19 @@
 from typing import Any
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
-
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import MethodNotAllowed
 
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_response_examples import (
     ErrorResponseExamples,
     SuccessResponseExamples,
 )
+from apps.qna.serializers.category.response import CategoryTreeResponseSerializer
 from apps.qna.services.category.query import CategoryQueryService
 from apps.qna.views.base_view import QnaBaseAPIView
-from apps.qna.serializers.category.response import CategoryTreeResponseSerializer
 
 
 class CategoryTreeAPIView(QnaBaseAPIView):
@@ -23,9 +22,7 @@ class CategoryTreeAPIView(QnaBaseAPIView):
     [GET] 질의응답 카테고리 전체 계층 구조 조회
     """
 
-    serializer_classes = {
-        'GET': None
-    }
+    serializer_classes = {"GET": None}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""

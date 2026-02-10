@@ -8,11 +8,11 @@ from apps.qna.views.answer_views import (
     AnswerCreateAPIView,
     AnswerUpdateAPIView,
 )
+from apps.qna.views.category_views import CategoryTreeAPIView
 from apps.qna.views.question_views import (
     QuestionCreateListAPIView,
     QuestionDetailAPIView,
 )
-from apps.qna.views.category_views import CategoryTreeAPIView
 
 urlpatterns = [
     # Category

@@ -106,4 +106,3 @@ class QuestionUpdateResponseSerializer(serializers.ModelSerializer[Question]):
     class Meta:
         model = Question
         fields = ["question_id", "updated_at"]
-

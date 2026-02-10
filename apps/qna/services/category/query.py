@@ -1,13 +1,12 @@
-
 from django.db.models import QuerySet
 
-from apps.qna.models import  QuestionCategory
-
+from apps.qna.models import QuestionCategory
 
 # ==============================================================================
 # CategoryQueryService
 #   - get_question_list: 카테고리 계층 구조 조회
 # ==============================================================================
+
 
 class CategoryQueryService:
     """

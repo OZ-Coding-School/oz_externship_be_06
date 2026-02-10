@@ -2,11 +2,12 @@ from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import MethodNotAllowed
 
+from apps.core.utils.permissions import CanWriteAnswerComment
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
     RequestBodyExamples,
@@ -35,7 +36,6 @@ from apps.qna.services.answer.command import (
 )
 from apps.qna.utils.model_types import User
 from apps.qna.views.base_view import QnaBaseAPIView
-from apps.core.utils.permissions import CanWriteAnswerComment
 
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):
@@ -49,9 +49,7 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     # - QuestionAIAnswer.AIModel.GPT: (미구현)
     using_model: str = QuestionAIAnswer.AIModel.GEMINI
 
-    serializer_classes = {
-        'GET': None
-    }
+    serializer_classes = {"GET": None}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
@@ -114,9 +112,7 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     [POST] 질문에 대한 답변 등록
     """
 
-    serializer_classes = {
-        'GET': AnswerCreateSerializer
-    }
+    serializer_classes = {"GET": AnswerCreateSerializer}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
@@ -180,9 +176,7 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
     [PUT] 답변 수정
     """
 
-    serializer_classes = {
-        'PUT': AnswerUpdateSerializer
-    }
+    serializer_classes = {"PUT": AnswerUpdateSerializer}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
@@ -246,9 +240,7 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
     [POST] 답변 채택
     """
 
-    serializer_classes = {
-        'POST': None
-    }
+    serializer_classes = {"POST": None}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""
@@ -311,9 +303,7 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
     [POST] 답변에 대한 댓글 등록
     """
 
-    serializer_classes = {
-        'POST': AnswerCommentCreateSerializer
-    }
+    serializer_classes = {"POST": AnswerCommentCreateSerializer}
 
     def get_permissions(self) -> list[Any]:
         method = self.request.method or ""

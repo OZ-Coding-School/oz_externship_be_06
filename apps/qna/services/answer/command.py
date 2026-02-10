@@ -33,6 +33,7 @@ logger = logging.getLogger("django")
 #   - generate_ai_answer: AI 질문 생성
 # ==============================================================================
 
+
 class AnswerCommandService:
     """
     - create_answer: 답변 생성
@@ -71,7 +72,6 @@ class AnswerCommandService:
 
         return answer
 
-
     @staticmethod
     @transaction.atomic
     def update_answer(answer_id: int, user: User, data: dict[str, Any]) -> Answer:
@@ -108,7 +108,6 @@ class AnswerCommandService:
             AnswerImage.objects.bulk_create([AnswerImage(answer=answer, img_url=url) for url in image_urls])
 
         return answer
-
 
     @staticmethod
     @transaction.atomic

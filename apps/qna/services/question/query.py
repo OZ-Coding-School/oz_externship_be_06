@@ -4,16 +4,16 @@ from django.db import transaction
 from django.db.models import Count, F, Q, QuerySet
 from rest_framework import status
 
-from apps.qna.constants import ErrorMessages, ANSWER_STATUS_CHOICES, SORT_CHOICES
+from apps.qna.constants import ANSWER_STATUS_CHOICES, SORT_CHOICES, ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
-
 
 # ==============================================================================
 # QuestionQueryService
 #   - get_question_list: 질문 목록 조회
 #   - get_question_detail: 질문 상세 조회
 # ==============================================================================
+
 
 class QuestionQueryService:
     """
@@ -131,7 +131,6 @@ class QuestionQueryService:
 
         # 목록 조회 시점에 답변 개수가 필요하다면 여기서만 annotate (지연 연산)
         return queryset.annotate(answer_count=Count("answers")).order_by(*order_by)
-
 
     @staticmethod
     @transaction.atomic

@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.utils.permissions import IsStudentRole
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
     QueryParameterExamples,
@@ -30,7 +31,6 @@ from apps.qna.serializers.question.response import (
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
 from apps.qna.utils.model_types import User
-from apps.core.utils.permissions import IsStudentRole
 from apps.qna.utils.qna_paginator import QuestionListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
@@ -98,7 +98,6 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-
 
     # [GET] 질문 목록 조회
     @extend_schema(
@@ -188,7 +187,6 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         serializer = QuestionDetailSerializer(cast(Any, question))
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     # [PUT] 질문 수정
     @extend_schema(

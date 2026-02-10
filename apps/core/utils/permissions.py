@@ -43,6 +43,7 @@ class IsStaffRole(RolePermission):
         User.Role.OM,
     }
 
+
 class CanWriteAnswerComment(RolePermission):
     """댓글 및 답글 작성 권한 검증"""
 
