@@ -56,7 +56,9 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         request_serializer = QuestionCreateSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
 
-        question = QuestionCommandService.create_question(author=self.request_user, data=request_serializer.validated_data)
+        question = QuestionCommandService.create_question(
+            author=self.request_user, data=request_serializer.validated_data
+        )
 
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -108,7 +110,9 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         request_serializer = QuestionUpdateRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
 
-        question = QuestionCommandService.update_question(question_id, self.request_user, request_serializer.validated_data)
+        question = QuestionCommandService.update_question(
+            question_id, self.request_user, request_serializer.validated_data
+        )
 
         response_serializer = QuestionUpdateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
