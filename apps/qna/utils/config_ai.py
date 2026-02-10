@@ -1,7 +1,7 @@
 import logging
 import os
 
-import google.generativeai as genai
+from google import genai
 
 logger = logging.getLogger("django")
 
@@ -25,22 +25,27 @@ class AIConfig:
     # API 요청 타임아웃 (초)
     REQUEST_TIMEOUT = 30
 
-    # API 설정 초기화 체크
-    _is_gemini_configured = False
+    # Gemini 클라이언트 인스턴스
+    _gemini_client: genai.Client | None = None
 
     @classmethod
-    def ensure_gemini_configured(cls) -> None:
-        """Gemini API 설정 초기화"""
-        if cls._is_gemini_configured:
-            return
+    def ensure_gemini_configured(cls) -> genai.Client:
+        """
+        Gemini API 클라이언트를 초기화하고 반환합니다.
+
+        Returns:
+            genai.Client: Gemini API 클라이언트 인스턴스
+        """
+        if cls._gemini_client is not None:
+            return cls._gemini_client
 
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             logger.error("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
             raise ValueError("AI 서비스 설정이 올바르지 않습니다.")
 
-        genai.configure(api_key=api_key)  # type: ignore[attr-defined]
-        cls._is_gemini_configured = True
+        cls._gemini_client = genai.Client(api_key=api_key)
+        return cls._gemini_client
 
     @classmethod
     def get_model_name(cls, model_type: str) -> str:

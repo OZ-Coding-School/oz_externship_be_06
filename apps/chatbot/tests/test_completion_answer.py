@@ -49,13 +49,13 @@ class CompletionAnswerTest(TestCase):
 
         mock_response: Iterator[Any] = iter([chunk1, chunk2])
 
-        mock_chat = MagicMock()
-        mock_chat.send_message.return_value = mock_response
+        mock_models = MagicMock()
+        mock_models.generate_content_stream.return_value = mock_response
 
-        mock_model = MagicMock()
-        mock_model.start_chat.return_value = mock_chat
+        mock_client = MagicMock()
+        mock_client.models = mock_models
 
-        mock_genai.GenerativeModel.return_value = mock_model
+        mock_genai.Client.return_value = mock_client
 
         result_iter = generate_completion_answer(
             session=self.session,
@@ -64,7 +64,5 @@ class CompletionAnswerTest(TestCase):
         result = "".join(list(result_iter))
 
         self.assertEqual(result, "answer")
-        mock_genai.configure.assert_called_once()
-        mock_genai.GenerativeModel.assert_called_once()
-        mock_model.start_chat.assert_called_once()
-        mock_chat.send_message.assert_called_once()
+        mock_genai.Client.assert_called_once_with(api_key="test-api-key")
+        mock_models.generate_content_stream.assert_called_once()

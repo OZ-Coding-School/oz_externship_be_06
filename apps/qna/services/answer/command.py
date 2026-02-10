@@ -4,9 +4,9 @@ import logging
 import os
 from typing import Any, cast
 
-import google.generativeai as genai
 from django.db import transaction
-from google.generativeai.types import RequestOptions
+from google import genai
+from google.genai import types
 from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
@@ -273,29 +273,27 @@ class AIAnswerCommandService:
         """
         Google Gemini API를 호출합니다.
         """
-        AIConfig.ensure_gemini_configured()
-
-        model = genai.GenerativeModel(  # type: ignore[attr-defined]
-            model_name=model_name,
-            generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
-                temperature=0.7,
-                top_p=0.9,
-                max_output_tokens=1024,
-            ),
-        )
+        client = AIConfig.ensure_gemini_configured()
 
         prompt = cls._build_prompt(title, content)
 
-        response = model.generate_content(
-            prompt,
-            request_options=RequestOptions(timeout=AIConfig.REQUEST_TIMEOUT),
+        config = types.GenerateContentConfig(
+            temperature=0.7,
+            top_p=0.9,
+            max_output_tokens=1024,
+        )
+
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config=config,
         )
 
         if not response.text:
             logger.warning("Gemini API가 빈 응답을 반환했습니다.")
             raise ValueError("AI 응답이 비어있습니다.")
 
-        return cast(str, response.text)
+        return response.text
 
     @classmethod
     def _call_openai_api(cls, title: str, content: str, model_name: str) -> str:

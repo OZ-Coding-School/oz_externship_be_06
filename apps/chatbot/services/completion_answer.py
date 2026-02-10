@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterator, List, cast
 
-import google.generativeai as _genai
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from google.generativeai.types import GenerationConfig
+from google import genai
 
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
-
-genai = cast(Any, _genai)
 
 
 def generate_completion_answer(*, session: ChatbotSession, user_message: str) -> Iterator[str]:
@@ -18,7 +15,7 @@ def generate_completion_answer(*, session: ChatbotSession, user_message: str) ->
     if not api_key:
         raise ValidationError("Gemini API 키가 설정되지 않았습니다.")
 
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
     # 모델명 정규화 및 매핑 (GEMINI, gemini-2.5-flash 등 예외 처리)
     raw_model = session.using_model.lower() if session.using_model else "gemini"
@@ -28,15 +25,6 @@ def generate_completion_answer(*, session: ChatbotSession, user_message: str) ->
     else:
         # 안정성을 위해 gemini-pro로 고정
         model_name = "gemini-2.0-flash"
-
-    # 모델 초기화
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        generation_config=GenerationConfig(
-            temperature=0.7,
-            max_output_tokens=1024,
-        ),
-    )
 
     # 대화 기록 조회
     history_objs = ChatbotCompletions.objects.filter(session=session).order_by("created_at")
@@ -57,10 +45,14 @@ def generate_completion_answer(*, session: ChatbotSession, user_message: str) ->
         chat_history.append({"role": role, "parts": [h.content]})
 
     # 스트리밍 요청
-    chat = model.start_chat(history=chat_history)
-
     try:
-        response = chat.send_message(user_message, stream=True)
+        response = client.models.generate_content_stream(
+            model=model_name,
+            contents=cast(
+                Any,
+                chat_history + [{"role": "user", "parts": [user_message]}],
+            ),
+        )
 
         for chunk in response:
             if chunk.text:
