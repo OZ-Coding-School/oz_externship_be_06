@@ -1,7 +1,6 @@
-# File Path: apps/qna/utils/qna_paginator.py
 from __future__ import annotations
 
-from typing import Any, Type
+from typing import Any, List, Type
 
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -10,9 +9,49 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-from apps.core.utils.pagination import AdminCategoryPagination, QnaPagination
+from apps.core.utils.pagination import SimplePagePagination
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
+
+
+class QnaPagination(SimplePagePagination):
+    """
+    질의응답 목록 조회를 위한 페이지네이션
+    """
+
+    def get_paginated_response(self, data: Any) -> Response:
+        if self.page is None:
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "count": self.page.paginator.count,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "results": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AdminCategoryPagination(SimplePagePagination):
+    """
+    어드민 카테고리 목록 조회를 위한 페이지네이션
+    """
+
+    def get_paginated_response(self, data: List[Any]) -> Response:
+        if self.page is None or self.request is None:
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "page": self.page.number,
+                "size": self.get_page_size(self.request),
+                "total_count": self.page.paginator.count,
+                "categories": data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class QnaBaseListPaginator:
