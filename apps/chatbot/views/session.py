@@ -12,37 +12,17 @@ from apps.chatbot.serializers.session import (
     ChatbotSessionSerializer,
 )
 from apps.chatbot.services.session_create import create_or_activate_chatbot_session
-from apps.chatbot.services.session_list import get_user_chatbot_sessions
-from apps.core.utils.pagination import ChatbotSessionCursorPagination
 from apps.users.models import User
 
 
 class ChatbotSessionAPIView(APIView):
     """
     챗봇 세션 API
-    - GET  /api/v1/chatbot/sessions : 세션 목록 조회
     - POST /api/v1/chatbot/sessions : 세션 생성 (idempotent)
     """
 
     permission_classes = [IsAuthenticated]
-    serializer_class = ChatbotSessionCreateSerializer  # 🔹 schema 추론용
-
-    @extend_schema(
-        tags=["chatbot"],
-        summary="챗봇 세션 목록 조회",
-        description="사용자의 챗봇 세션 목록을 조회합니다.",
-        responses=ChatbotSessionSerializer(many=True),
-    )
-    def get(self, request: Request) -> Response:
-        user = cast(User, request.user)
-
-        queryset = get_user_chatbot_sessions(user=user)
-
-        paginator = ChatbotSessionCursorPagination()
-        page = paginator.paginate_queryset(queryset, request)
-        serializer = ChatbotSessionSerializer(page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+    serializer_class = ChatbotSessionCreateSerializer
 
     @extend_schema(
         tags=["chatbot"],

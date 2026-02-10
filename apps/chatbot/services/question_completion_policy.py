@@ -7,17 +7,10 @@ from rest_framework.exceptions import ValidationError
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 
-# ==============================
-# 정책 상수 (Question 전용)
-# ==============================
-
 QUESTION_SESSION_TTL = timedelta(hours=3)
-
 MAX_INPUT_LENGTH = 1000
 
-# 탈옥 / 시스템·정책 노출 / 모델 노출 / 내부정보 요청 차단
 BLOCKED_PROMPT_KEYWORDS = [
-    # 시스템/프롬프트 노출
     "시스템 프롬프트",
     "system prompt",
     "developer message",
@@ -31,7 +24,6 @@ BLOCKED_PROMPT_KEYWORDS = [
     "정책을 보여줘",
     "policy",
     "content policy",
-    # 지시 무시/역할 변경
     "지시를 무시",
     "이전 지시 무시",
     "ignore instructions",
@@ -41,12 +33,10 @@ BLOCKED_PROMPT_KEYWORDS = [
     "roleplay",
     "act as",
     "너는 이제",
-    # 탈옥 키워드
     "탈옥",
     "jailbreak",
     "prompt injection",
     "dan",
-    # 내부 설정/파라미터/키
     "temperature",
     "top_p",
     "system message",
@@ -54,7 +44,6 @@ BLOCKED_PROMPT_KEYWORDS = [
     "secret key",
     "키를 알려줘",
     "토큰",
-    # 모델명/벤더 노출 유도
     "모델 뭐야",
     "사용하는 모델",
     "gpt",
@@ -64,7 +53,6 @@ BLOCKED_PROMPT_KEYWORDS = [
     "openai",
 ]
 
-# 소설/창작/번역/요약 등 질문하기 도메인 외 (학습 QnA 중심 유지)
 BLOCKED_NONQUESTION_KEYWORDS = [
     "소설",
     "시나리오",
@@ -83,7 +71,6 @@ BLOCKED_NONQUESTION_KEYWORDS = [
     "홍보 글",
 ]
 
-# “완성형 프로그램/서비스 제작” 요청 차단 (예제/부분 코드는 허용)
 BLOCKED_BUILD_REQUEST_KEYWORDS = [
     "프로그램 만들어줘",
     "앱 만들어줘",
@@ -98,7 +85,6 @@ BLOCKED_BUILD_REQUEST_KEYWORDS = [
     "운영 가능한",
 ]
 
-# 고객지원(support) 성격 키워드 (질문하기에서 처리하지 않음)
 BLOCKED_SUPPORT_LIKE_KEYWORDS = [
     "출결",
     "결석",
@@ -119,13 +105,7 @@ BLOCKED_SUPPORT_LIKE_KEYWORDS = [
     "문의",
 ]
 
-# 공백/기호 섞어서 우회하는 입력 대응용 정규화
 _NORMALIZE_RE = re.compile(r"[\s\W_]+", re.UNICODE)
-
-
-# ==============================
-# Policy Entry Point
-# ==============================
 
 
 def validate_user_prompt_policy(
@@ -133,32 +113,12 @@ def validate_user_prompt_policy(
     session: ChatbotSession,
     content: str,
 ) -> None:
-    """
-    질문하기 챗봇 USER 입력 정책 검증
-
-    정책 요약:
-    - 질문(question_id) 기반 세션 전용
-    - 마지막 USER 질문 기준 3시간 TTL
-    - ASSISTANT 응답 중 추가 질문 차단
-    - 프롬프트 탈옥/모델 노출/내부정보 요청 차단
-    - 고객지원(support) 성격 문의 차단 (support로 유도)
-    - 창작/요약/번역 등 질문하기 목적 외 요청 차단
-    - 완성형 프로그램/서비스 제작 요청 차단 (예제/부분 코드는 허용)
-    """
-
     _validate_question_session(session=session)
     _validate_question_session_alive(session=session)
     _validate_not_during_assistant_response(session=session)
     _validate_input_content(content=content)
     _validate_prompt_injection(content=content)
     _validate_question_domain(content=content)
-
-    return None
-
-
-# ==============================
-# 세부 정책 함수
-# ==============================
 
 
 def _is_question_session(*, session: ChatbotSession) -> bool:
@@ -203,8 +163,7 @@ def _validate_input_content(*, content: str) -> None:
 
 
 def _normalize_text(*, content: str) -> str:
-    lowered = content.lower()
-    return _NORMALIZE_RE.sub("", lowered)
+    return _NORMALIZE_RE.sub("", content.lower())
 
 
 def _validate_prompt_injection(*, content: str) -> None:
