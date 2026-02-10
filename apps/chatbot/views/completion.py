@@ -11,6 +11,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.chatbot.constants.question_prompts import QUESTION_SYSTEM_PROMPT
+from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.services.completion_answer import generate_completion_answer
@@ -62,36 +64,50 @@ class ChatbotCompletionCreateAPIView(APIView):
 
         message = request.data.get("message")
         if not message or not isinstance(message, str) or not message.strip():
-            return Response({"message": "유효한 메시지를 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "유효한 메시지를 입력해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             session = ChatbotSession.objects.get(id=session_id, user=request.user)
         except ChatbotSession.DoesNotExist:
-            return Response({"error_detail": "챗봇 세션이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error_detail": "챗봇 세션이 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # 2. 중복 요청 방지 (Redis Lock)
         lock_key = f"chatbot:responding:{session.id}"
         if not cache.add(lock_key, "1", timeout=180):
-            return Response({"message": "현재 답변 생성 중입니다."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "현재 답변 생성 중입니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
-            # 3. 사용자 질문 DB 저장 (선행)
+            # 3. USER 메시지 DB 저장
             ChatbotCompletions.objects.create(
                 session=session,
                 content=message,
                 role=ChatbotCompletions.Role.USER,
             )
 
-            # 4. 스트리밍 Generator 정의
+            # 4. 세션 타입에 따른 SYSTEM 프롬프트 선택
+            system_prompt = SUPPORT_FULL_PROMPT if session.question_id is None else QUESTION_SYSTEM_PROMPT
+
+            # 5. 스트리밍 Generator 정의
             def stream() -> Iterator[str]:
                 full_answer = ""
                 try:
-                    # Service로부터 실시간 chunk 수신
-                    for chunk in generate_completion_answer(session=session, user_message=message):
+                    for chunk in generate_completion_answer(
+                        session=session,
+                        system_prompt=system_prompt,
+                    ):
                         full_answer += chunk
                         yield sse(json.dumps({"content": chunk}, ensure_ascii=False))
 
-                    # 5. 응답 완료 후 Assistant 답변 DB 저장
+                    # 6. ASSISTANT 응답 DB 저장
                     if full_answer:
                         ChatbotCompletions.objects.create(
                             session=session,
@@ -101,19 +117,25 @@ class ChatbotCompletionCreateAPIView(APIView):
 
                     yield sse("[DONE]")
 
-                except Exception as e:
-                    # 스트리밍 도중 에러 발생 시 클라이언트에 알림
-                    print(f"DEBUG ERROR: {e}")
-                    yield sse(json.dumps({"error": f"상세 에러: {str(e)}"}, ensure_ascii=False))
-                    # yield sse(json.dumps({"error": "응답 생성 중 오류 발생"}, ensure_ascii=False))
+                except Exception as exc:
+                    print(f"DEBUG ERROR: {exc}")
+                    yield sse(
+                        json.dumps(
+                            {"error": "응답 생성 중 오류가 발생했습니다."},
+                            ensure_ascii=False,
+                        )
+                    )
                 finally:
                     cache.delete(lock_key)
 
-            # 6. Response 반환
-            response = StreamingHttpResponse(stream(), content_type="text/event-stream; charset=utf-8")
+            # 7. Response 반환
+            response = StreamingHttpResponse(
+                stream(),
+                content_type="text/event-stream; charset=utf-8",
+            )
             response.status_code = status.HTTP_201_CREATED
             response["Cache-Control"] = "no-cache"
-            response["X-Accel-Buffering"] = "no"  # Nginx 버퍼링 방지
+            response["X-Accel-Buffering"] = "no"
             return response
 
         except Exception:

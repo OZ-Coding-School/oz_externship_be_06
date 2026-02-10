@@ -1,16 +1,16 @@
 from django.core.exceptions import ValidationError
 
-from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
 from apps.chatbot.constants.question_prompts import QUESTION_SYSTEM_PROMPT
-from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
-from apps.chatbot.services.support_completion_policy import (
-    validate_user_prompt_policy as validate_support_policy,
-)
+from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.chatbot.services.completion_answer import generate_completion_answer
 from apps.chatbot.services.question_completion_policy import (
     validate_user_prompt_policy as validate_question_policy,
 )
-from apps.chatbot.services.completion_answer import generate_completion_answer
+from apps.chatbot.services.support_completion_policy import (
+    validate_user_prompt_policy as validate_support_policy,
+)
 
 
 def create_completion(
@@ -42,9 +42,7 @@ def create_completion(
     )
 
     # SYSTEM 프롬프트 선택
-    system_prompt = (
-        SUPPORT_FULL_PROMPT if is_support else QUESTION_SYSTEM_PROMPT
-    )
+    system_prompt = SUPPORT_FULL_PROMPT if is_support else QUESTION_SYSTEM_PROMPT
 
     # AI 응답 생성
     generate_completion_answer(

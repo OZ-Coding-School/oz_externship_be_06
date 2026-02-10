@@ -35,13 +35,14 @@ class CompletionAnswerTest(TestCase):
                 _ = list(
                     generate_completion_answer(
                         session=self.session,
-                        user_message="hi",
+                        system_prompt="test system prompt",
                     )
                 )
 
     @override_settings(GEMINI_API_KEY="test-api-key")
     @patch("apps.chatbot.services.completion_answer.genai")
     def test_generate_completion_answer_mock(self, mock_genai: Any) -> None:
+        # given
         chunk1 = MagicMock()
         chunk1.text = "an"
         chunk2 = MagicMock()
@@ -57,12 +58,14 @@ class CompletionAnswerTest(TestCase):
 
         mock_genai.Client.return_value = mock_client
 
+        # when
         result_iter = generate_completion_answer(
             session=self.session,
-            user_message="select_related가 뭐야?",
+            system_prompt="test system prompt",
         )
         result = "".join(list(result_iter))
 
+        # then
         self.assertEqual(result, "answer")
         mock_genai.Client.assert_called_once_with(api_key="test-api-key")
         mock_models.generate_content_stream.assert_called_once()
