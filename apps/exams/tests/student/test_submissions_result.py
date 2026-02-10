@@ -107,6 +107,26 @@ class ExamResultRetrieveAPITest(TestCase):
             options_json='["1","2","3"]',
             explanation="설명",
         )
+        options_map = {
+            cls.q1.id: ["A", "B"],
+            cls.q2.id: ["a", "b", "c"],
+            cls.q3.id: ["1", "2", "3"],
+        }
+        cls.deployment.questions_snapshot_json = [
+            {
+                "question_id": question.id,
+                "type": question.type,
+                "question": question.question,
+                "prompt": question.prompt,
+                "blank_count": question.blank_count,
+                "options": options_map[question.id],
+                "answer": question.answer,
+                "point": question.point,
+                "explanation": question.explanation,
+            }
+            for question in (cls.q1, cls.q2, cls.q3)
+        ]
+        cls.deployment.save(update_fields=["questions_snapshot_json"])
 
         cls.submission = ExamSubmission.objects.create(
             submitter=cls.student,
@@ -137,6 +157,7 @@ class ExamResultRetrieveAPITest(TestCase):
 
         data = res.json()
         self.assertEqual(data.get("id"), self.submission.id)
+        self.assertEqual(len(data.get("questions", [])), len(self.deployment.questions_snapshot_json))
         self.submission.refresh_from_db()
         self.assertIsInstance(self.submission.answers_json, list)
         self.assertGreaterEqual(len(self.submission.answers_json), 2)

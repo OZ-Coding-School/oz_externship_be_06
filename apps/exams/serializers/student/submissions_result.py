@@ -1,5 +1,4 @@
-import json
-from typing import Any
+from typing import Any, NotRequired, TypedDict
 
 from rest_framework import serializers
 
@@ -58,17 +57,69 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             m[qid_int] = item.get("submitted_answer")
         return m
 
+    class _QuestionSnapshot(TypedDict):
+        question_id: int
+        type: str
+        question: str
+        answer: Any
+        point: int
+        prompt: NotRequired[str | None]
+        blank_count: NotRequired[int | None]
+        options: NotRequired[list[Any] | None]
+        explanation: NotRequired[str]
+
+    @staticmethod
+    def _parse_snapshot(raw: Any) -> _QuestionSnapshot | None:
+        if not isinstance(raw, dict):
+            return None
+
+        question_id = raw.get("question_id")
+        q_type = raw.get("type")
+        question = raw.get("question")
+        answer = raw.get("answer")
+        point = raw.get("point")
+
+        if not isinstance(question_id, int) or question_id <= 0:
+            return None
+        if not isinstance(q_type, str) or not isinstance(question, str):
+            return None
+        if not isinstance(point, int):
+            return None
+
+        options = raw.get("options")
+        if options is not None and not isinstance(options, list):
+            return None
+
+        return {
+            "question_id": question_id,
+            "type": q_type,
+            "question": question,
+            "answer": answer,
+            "point": point,
+            "prompt": raw.get("prompt"),
+            "blank_count": raw.get("blank_count"),
+            "options": options,
+            "explanation": raw.get("explanation", ""),
+        }
+
     def get_questions(self, obj: ExamSubmission) -> list[dict[str, Any]]:
-        exam = getattr(obj.deployment, "exam", None)
-        if not exam:
+        deployment = getattr(obj, "deployment", None)
+        if not deployment:
             return []
 
         submitted_map = self._answers_map(obj)
-        qs = exam.questions.all()
+        questions_snapshot = deployment.questions_snapshot_json
+        if not isinstance(questions_snapshot, list):
+            return []
 
         result = []
-        for q in qs:
-            submitted = submitted_map.get(q.id)
+        for raw_question in questions_snapshot:
+            question_data = self._parse_snapshot(raw_question)
+            if question_data is None:
+                continue
+            question_id = question_data["question_id"]
+
+            submitted = submitted_map.get(question_id)
 
             if submitted is None:
                 submitted_norm = []
@@ -77,7 +128,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
             else:
                 submitted_norm = [submitted]
 
-            answer = q.answer
+            answer = question_data["answer"]
             if answer is None:
                 answer_norm = []
             elif isinstance(answer, list):
@@ -87,29 +138,25 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
 
             submitted_values = list(map(str, submitted_norm))
             answer_values = list(map(str, answer_norm))
-            if q.type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
+            q_type = question_data["type"]
+            if q_type in {ExamQuestion.TypeChoices.ORDERING, ExamQuestion.TypeChoices.FILL_IN_BLANK}:
                 is_correct = submitted_values == answer_values
             else:
                 is_correct = sorted(submitted_values) == sorted(answer_values)
 
-            options = []
-            if q.options_json:
-                try:
-                    options = json.loads(q.options_json)
-                except Exception:
-                    options = []
+            options = question_data.get("options") or []
 
             result.append(
                 {
-                    "id": q.id,
-                    "question": q.question,
-                    "prompt": q.prompt,
-                    "blank_count": q.blank_count,
+                    "id": question_id,
+                    "question": question_data["question"],
+                    "prompt": question_data.get("prompt"),
+                    "blank_count": question_data.get("blank_count"),
                     "options": options,
-                    "type": q.type,
+                    "type": q_type,
                     "answer": answer_norm,
-                    "point": q.point,
-                    "explanation": q.explanation,
+                    "point": question_data["point"],
+                    "explanation": question_data.get("explanation", ""),
                     "is_correct": is_correct,
                     "submitted_answer": submitted_norm,
                 }
