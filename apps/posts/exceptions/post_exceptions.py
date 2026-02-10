@@ -8,7 +8,11 @@ from apps.posts.constants.post_const import PostErrorMessage
 
 class PostUnauthorizedException(APIException):
     """
-    사용자의 인증 정보가 유효하지 않거나 없는 경우 발생하는 예외입니다. (401 Unauthorized)
+    사용자의 인증 정보가 누락되었거나 유효하지 않을 때 발생하는 예외 클래스입니다.
+
+    HTTP Status: 401 Unauthorized
+    Response Format: {"error_detail": "에러 메시지"}
+    Usage: 주로 View의 권한 검사(permission_denied) 단계에서 호출됩니다.
     """
 
     status_code = status.HTTP_401_UNAUTHORIZED

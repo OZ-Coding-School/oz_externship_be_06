@@ -1,6 +1,6 @@
 from typing import Any, Never, cast
 
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -24,10 +24,6 @@ from apps.users.models import User
 
 
 class PostListCreateView(APIView):
-    """
-    GET: 게시글 목록 조회 (AllowAny)
-    POST: 게시글 작성 (IsAuthenticated)
-    """
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> Never:
         raise PostUnauthorizedException()
@@ -39,33 +35,53 @@ class PostListCreateView(APIView):
 
     @extend_schema(
         summary="게시글 목록 조회",
+        description=(
+            "다양한 필터링 및 정렬 조건을 사용하여 게시글 목록을 조회합니다.\n"
+            "- **Pagination**: 기본적으로 페이징 처리가 적용되어 반환됩니다.\n"
+            "- **Filtering**: 카테고리별, 검색어별 필터링을 지원합니다.\n"
+            "- **Sorting**: 최신순, 좋아요순, 댓글순, 오래된순 정렬을 지원합니다."
+        ),
         parameters=[
-            OpenApiParameter(name="category_id", type=int, description="카테고리 ID 필터"),
-            OpenApiParameter(name="search", type=str, description="검색어"),
-            OpenApiParameter(name="search_filter", type=str, description="검색 필터 (all, title, content, nickname)"),
-            OpenApiParameter(name="sort", type=str, description="정렬 (latest, likes, comments, oldest)"),
+            OpenApiParameter(
+                name="category_id", type=int, description="특정 카테고리의 게시글만 필터링합니다. (ID 값)"
+            ),
+            OpenApiParameter(name="search", type=str, description="검색 키워드를 입력합니다."),
+            OpenApiParameter(
+                name="search_filter",
+                type=str,
+                enum=["all", "title", "content", "nickname"],
+                default="all",
+                description="검색 범위 설정",
+            ),
+            OpenApiParameter(
+                name="sort",
+                type=str,
+                enum=["latest", "likes", "comments", "oldest"],
+                default="latest",
+                description="데이터 정렬 기준",
+            ),
         ],
-        responses={200: PostListSerializer(many=True)},
+        responses={
+            200: PostListSerializer(many=True),
+            400: OpenApiResponse(description="잘못된 쿼리 파라미터 요청 (유효성 검사 실패)"),
+            401: OpenApiResponse(description="인증 정보 유효하지 않음 (게시글 작성 시 발생 가능)"),
+        },
         tags=["posts"],
     )
     def get(self, request: Request) -> Response:
-        # 1. 시리얼라이저를 통한 쿼리 파라미터 검증
         filter_serializer = PostFilterSerializer(data=request.query_params)
 
-        # 잘못된 값이 들어오면 400 Bad Request와 함께 에러 상세 반환
         if not filter_serializer.is_valid():
             return Response({"error_detail": filter_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         validated_data = filter_serializer.validated_data
 
-        # 2. 검증된 데이터를 Selector로 전달
-        user_id = request.user.id if request.user.is_authenticated else None
         posts = PostSelector.get_post_list(
             category_id=validated_data.get("category_id"),
             search=validated_data.get("search"),
             search_filter=validated_data.get("search_filter"),
             sort=validated_data.get("sort"),
-            user_id=user_id,
+            user_id=request.user.id if request.user.is_authenticated else None,
         )
 
         paginator = PostPagination()
@@ -114,16 +130,11 @@ class PostDetailView(APIView):
         tags=["posts"],
     )
     def get(self, request: Request, post_id: int) -> Response:
-        """
-        게시글 상세 조회
-        """
         user_id = request.user.id if request.user.is_authenticated else None
 
-        # 존재 확인 + 조회수 증가
         post = PostSelector.get_post_detail(post_id=post_id, user_id=user_id)
         PostService.increment_view_count(post)
 
-        # annotation 포함 재조회 (refresh_from_db는 annotation을 날리므로)
         post = PostSelector.get_post_detail(post_id=post_id, user_id=user_id)
 
         serializer = PostDetailSerializer(post)
@@ -135,14 +146,11 @@ class PostDetailView(APIView):
     def patch(self, request: Request, post_id: int) -> Response:
         user: User = cast(User, request.user)
 
-        # post 객체 확보
         post = PostSelector.get_post_detail(post_id=post_id)
 
-        # Serializer 검증
         serializer: PostUpdateSerializer = PostUpdateSerializer(data=request.data, partial=True)  # 부분 수정
         serializer.is_valid(raise_exception=True)
 
-        # Service 호출 (권한 검증 및 DB 반영)
         try:
             updated_post: Post = PostService.update_post(user=user, post=post, **serializer.validated_data)
             return Response(
