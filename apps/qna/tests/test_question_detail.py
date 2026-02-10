@@ -26,10 +26,10 @@ class QuestionDetailAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증, 조회수 증가 동시성)
     """
 
+    user: User
     cat_depth1: QuestionCategory
     cat_depth2: QuestionCategory
     cat_depth3: QuestionCategory
-    user: User
     question: Question
     answer: Answer
     comment: AnswerComment
@@ -37,12 +37,7 @@ class QuestionDetailAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 카테고리 계층 생성 (대 > 중 > 소)
-        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
-        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
-        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
-
-        # 유저 생성
+        # 테스트용 유저 - 학생
         cls.user = User.objects.create_user(
             email="test@example.com",
             password="password",
@@ -53,6 +48,11 @@ class QuestionDetailAPITest(TestCase):
             birthday="2000-01-01",
             is_active=True,
         )
+
+        # 카테고리 계층 생성 (대 > 중 > 소)
+        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
+        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
+        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
 
         # 질문 생성
         cls.question = Question.objects.create(
@@ -75,6 +75,7 @@ class QuestionDetailAPITest(TestCase):
             author=cls.user, answer=cls.answer, content="답변에 대한 댓글입니다."
         )
 
+        # URL
         cls.url = reverse("question-detail", kwargs={"question_id": cls.question.id})
 
     def setUp(self) -> None:

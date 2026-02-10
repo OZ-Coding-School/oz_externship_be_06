@@ -20,13 +20,14 @@ class QueryParameterExamples:
         request_only=True,
     )
 
-    # --- Admin ---
+    # --- Admin Category ---
     ADMIN_CATEGORY_LIST = OpenApiExample(
         name="어드민 카테고리 목록 조회 query parameter 예시",
         value={"page": 1, "size": 20, "search_keyword": "Django", "category_type": "small"},
         request_only=True,
     )
 
+    # --- Admin Question ---
     ADMIN_QUESTION_LIST = OpenApiExample(
         name="어드민 질의응답 목록 조회 query parameter 예시",
         value={
@@ -92,13 +93,14 @@ class RequestBodyExamples:
         request_only=True,
     )
 
+    # --- Presigned URL ---
     PRESIGNED_URL = OpenApiExample(
         name="Presigned URL 발급 request body 예시",
         value={"file_name": "error_screenshot.png"},
         request_only=True,
     )
 
-    # --- admin ---
+    # --- Admin Category ---
     ADMIN_CATEGORY_CREATE = OpenApiExample(
         name="어드민 카테고리 등록 request body 예시",
         value={"category_type": "대분류", "name": "백엔드", "parent_id": None},

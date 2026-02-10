@@ -31,9 +31,6 @@ class AdminQuestionDetailAPITest(TestCase):
     - 실패 케이스 (401, 403, 404)
     """
 
-    cat_depth1: QuestionCategory
-    cat_depth2: QuestionCategory
-    cat_depth3: QuestionCategory
     course: Course
     cohort: Cohort
     admin_user: User
@@ -41,6 +38,9 @@ class AdminQuestionDetailAPITest(TestCase):
     ta_user: User
     lc_user: User
     om_user: User
+    cat_depth1: QuestionCategory
+    cat_depth2: QuestionCategory
+    cat_depth3: QuestionCategory
     question: Question
     img1: QuestionImage
     img2: QuestionImage
@@ -53,11 +53,6 @@ class AdminQuestionDetailAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 카테고리 계층 생성 (대 > 중 > 소)
-        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
-        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
-        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
-
         # 코스 및 기수 생성
         cls.course = Course.objects.create(name="백엔드 개발", tag="BE")
         cls.cohort = Cohort.objects.create(
@@ -68,7 +63,7 @@ class AdminQuestionDetailAPITest(TestCase):
             end_date="2025-06-30",
         )
 
-        # 어드민 유저 생성
+        # 테스트용 유저 - 어드민
         cls.admin_user = User.objects.create_user(
             email="admin@example.com",
             password="password",
@@ -79,8 +74,7 @@ class AdminQuestionDetailAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
-
-        # 수강생 유저 생성
+        # 테스트용 유저 - 수강생
         cls.student_user = User.objects.create_user(
             email="student@example.com",
             password="password",
@@ -92,8 +86,7 @@ class AdminQuestionDetailAPITest(TestCase):
             is_active=True,
         )
         CohortStudent.objects.create(user=cls.student_user, cohort=cls.cohort)
-
-        # TA 유저 생성
+        # 테스트용 유저 - TA
         cls.ta_user = User.objects.create_user(
             email="ta@example.com",
             password="password",
@@ -105,8 +98,7 @@ class AdminQuestionDetailAPITest(TestCase):
             is_active=True,
         )
         TrainingAssistant.objects.create(user=cls.ta_user, cohort=cls.cohort)
-
-        # LC 유저 생성
+        # 테스트용 유저 - LC
         cls.lc_user = User.objects.create_user(
             email="lc@example.com",
             password="password",
@@ -118,8 +110,7 @@ class AdminQuestionDetailAPITest(TestCase):
             is_active=True,
         )
         LearningCoach.objects.create(user=cls.lc_user, course=cls.course)
-
-        # OM 유저 생성
+        # 테스트용 유저 - OM
         cls.om_user = User.objects.create_user(
             email="om@example.com",
             password="password",
@@ -131,6 +122,11 @@ class AdminQuestionDetailAPITest(TestCase):
             is_active=True,
         )
         OperationManager.objects.create(user=cls.om_user, course=cls.course)
+
+        # 카테고리 계층 생성 (대 > 중 > 소)
+        cls.cat_depth1 = QuestionCategory.objects.create(name="개발")
+        cls.cat_depth2 = QuestionCategory.objects.create(name="백엔드", parent=cls.cat_depth1)
+        cls.cat_depth3 = QuestionCategory.objects.create(name="Django", parent=cls.cat_depth2)
 
         # 질문 생성
         cls.question = Question.objects.create(
@@ -158,6 +154,7 @@ class AdminQuestionDetailAPITest(TestCase):
             author=cls.admin_user, question=cls.question, content="관리자 답변입니다."
         )
 
+        # URL
         cls.url = reverse("admin-qna-question-detail", kwargs={"question_id": cls.question.id})
 
     def setUp(self) -> None:

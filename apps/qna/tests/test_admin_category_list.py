@@ -1,14 +1,12 @@
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.qna.models import QuestionCategory
-
-User = get_user_model()
+from apps.qna.models import Answer, QuestionCategory
+from apps.users.models import User
 
 
 class AdminCategoryListAPITest(TestCase):
@@ -24,25 +22,22 @@ class AdminCategoryListAPITest(TestCase):
         - 403 Forbidden: 스태프/관리자가 아닌 유저 (수강생, 일반유저)
     """
 
-    def setUp(self) -> None:
-        self.client = Client()
-        self.url = reverse("admin-qna-categories")
+    admin_user: User
+    student_user: User
+    cat_large_1: QuestionCategory
+    cat_large_2: QuestionCategory
+    cat_medium_1: QuestionCategory
+    cat_medium_2: QuestionCategory
+    cat_small_1: QuestionCategory
+    cat_small_2: QuestionCategory
+    lc_answer: Answer
+    om_answer: Answer
+    url: str
 
-        # 카테고리 데이터 생성
-        # 대분류 2개
-        self.cat_large_1 = QuestionCategory.objects.create(name="백엔드")
-        self.cat_large_2 = QuestionCategory.objects.create(name="프론트엔드")
-
-        # 중분류 (백엔드 하위)
-        self.cat_medium_1 = QuestionCategory.objects.create(name="웹프레임워크", parent=self.cat_large_1)
-        self.cat_medium_2 = QuestionCategory.objects.create(name="데이터베이스", parent=self.cat_large_1)
-
-        # 소분류 (웹프레임워크 하위)
-        self.cat_small_1 = QuestionCategory.objects.create(name="Django", parent=self.cat_medium_1)
-        self.cat_small_2 = QuestionCategory.objects.create(name="FastAPI", parent=self.cat_medium_1)
-
-        # 스태프 유저 (관리자)
-        self.admin_user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # 테스트용 유저 - 스태프 (관리자)
+        cls.admin_user = User.objects.create_user(
             email="admin@ozcoding.com",
             password="password123",
             name="관리자",
@@ -51,8 +46,8 @@ class AdminCategoryListAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
-        # 일반 유저 (권한 없음)
-        self.student_user = User.objects.create_user(
+        # 테스트용 유저 - 일반 (권한 없음)
+        cls.student_user = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
             name="수강생",
@@ -61,6 +56,25 @@ class AdminCategoryListAPITest(TestCase):
             birthday="1995-01-01",
             is_active=True,
         )
+
+        # 카테고리 데이터 생성
+        # 대분류 2개
+        cls.cat_large_1 = QuestionCategory.objects.create(name="백엔드")
+        cls.cat_large_2 = QuestionCategory.objects.create(name="프론트엔드")
+
+        # 중분류 (백엔드 하위)
+        cls.cat_medium_1 = QuestionCategory.objects.create(name="웹프레임워크", parent=cls.cat_large_1)
+        cls.cat_medium_2 = QuestionCategory.objects.create(name="데이터베이스", parent=cls.cat_large_1)
+
+        # 소분류 (웹프레임워크 하위)
+        cls.cat_small_1 = QuestionCategory.objects.create(name="Django", parent=cls.cat_medium_1)
+        cls.cat_small_2 = QuestionCategory.objects.create(name="FastAPI", parent=cls.cat_medium_1)
+
+        # URL
+        cls.url = reverse("admin-qna-categories")
+
+    def setUp(self) -> None:
+        self.client = Client()
 
     def _get_auth_header(self, user: Any) -> dict[str, Any]:
         refresh = RefreshToken.for_user(user)

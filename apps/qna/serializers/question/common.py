@@ -3,7 +3,10 @@ from typing import Optional
 from rest_framework import serializers
 
 from apps.qna.models import QuestionCategory
-from apps.qna.utils.model_types import User
+from apps.qna.serializers.common import AuthorSerializer
+
+# Re-export for backward compatibility
+QuestionAuthorSerializer = AuthorSerializer
 
 
 class QuestionCategoryListSerializer(serializers.ModelSerializer[QuestionCategory]):
@@ -37,15 +40,3 @@ class QuestionCategoryListSerializer(serializers.ModelSerializer[QuestionCategor
                 names.append(name)
             curr = getattr(curr, "parent", None)
         return names[::-1]
-
-
-class QuestionAuthorSerializer(serializers.ModelSerializer[User]):
-    """
-    질문 작성자 정보 시리얼라이저
-    """
-
-    profile_image_url = serializers.ImageField(source="profile_img_url", use_url=True)
-
-    class Meta:
-        model = User
-        fields = ["id", "nickname", "profile_image_url"]

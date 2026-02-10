@@ -2,10 +2,12 @@ from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.utils.permissions import CanWriteAnswerComment
 from apps.qna.docs.api_descriptions import ApiDescriptions
 from apps.qna.docs.api_request_examples import (
     RequestBodyExamples,
@@ -33,66 +35,59 @@ from apps.qna.services.answer.command import (
     AnswerCommentCommandService,
 )
 from apps.qna.utils.model_types import User
-from apps.qna.utils.permissions import CanWriteAnswer, CanWriteComment
 from apps.qna.views.base_view import QnaBaseAPIView
 
 
 class AIAnswerGenerateAPIView(QnaBaseAPIView):
     """
-    질문에 대한 AI 답변 생성 및 결과 반환 API
+    /api/v1/qna/questions/{question_id}/ai-answer
+    [GET] 질문에 대한 AI 답변 생성 및 결과 반환
     """
 
     # 사용할 AI 모델 설정 (Gemini 또는 GPT)
-    """
-    사용할 AI 모델을 설정합니다.
-    - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
-    - QuestionAIAnswer.AIModel.GPT: gpt-4o 모델 사용
-    """
+    # - QuestionAIAnswer.AIModel.GEMINI: gemini-2.5-pro 모델 사용 (기본값)
+    # - QuestionAIAnswer.AIModel.GPT: (미구현)
     using_model: str = QuestionAIAnswer.AIModel.GEMINI
 
+    serializer_classes = {"GET": None}
+
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated()]
+        method = self.request.method or ""
+        if method == "GET":
+            return [IsAuthenticated()]
+        raise MethodNotAllowed(method)
 
-    serializer_class: Any = None
-
-    # AI 생성 답변 조회
-    # [GET] /api/v1/qna/questions/{question_id}/ai-answer
+    # [GET] AI 생성 답변 조회
     @extend_schema(
         tags=["qna"],
         summary="AI 답변 생성 API",
-        description=ApiDescriptions.AI_GEN_ANSWER,
+        description=ApiDescriptions.AI_ANSWER_GENERATE,
         request=None,
         responses={
             201: OpenApiResponse(
                 description="Created",
                 response=AIAnswerResponseSerializer,
-                examples=[SuccessResponseExamples.AI_GEN_ANSWER],
+                examples=[SuccessResponseExamples.AI_ANSWER_GENERATE],
             ),
             400: OpenApiResponse(
                 description="Bad Request",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_400],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_400],
             ),
             401: OpenApiResponse(
                 description="Unauthorized",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_401],
-            ),
-            # 현재는 401 로그인 권한까지만 검증하도록 구현되어 403에러는 발생하지 않음
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_403],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_401],
             ),
             404: OpenApiResponse(
                 description="Not Found",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_404],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_404],
             ),
             409: OpenApiResponse(
                 description="Conflict",
                 response=dict,
-                examples=[ErrorResponseExamples.AI_GEN_ANSWER_409],
+                examples=[ErrorResponseExamples.AI_ANSWER_GENERATE_409],
             ),
         },
     )
@@ -113,14 +108,19 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
 
 class AnswerCreateAPIView(QnaBaseAPIView):
     """
-    질문에 대한 답변 등록 API View
+    /api/v1/qna/questions/{question_id}/answers
+    [POST] 질문에 대한 답변 등록
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswer]
-    serializer_class = AnswerCreateSerializer
+    serializer_classes = {"POST": AnswerCreateSerializer}
 
-    # 답변 등록
-    # [POST] /api/v1/qna/questions/{question_id}/answers
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "POST":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
+
+    # [POST] 답변 등록
     @extend_schema(
         tags=["qna"],
         summary="답변 등록 API",
@@ -172,15 +172,21 @@ class AnswerCreateAPIView(QnaBaseAPIView):
 
 class AnswerUpdateAPIView(QnaBaseAPIView):
     """
-    답변 수정 API View
+    /api/v1/qna/answers/{answer_id}
+    [PUT] 답변 수정
     """
 
-    permission_classes = [IsAuthenticated, CanWriteAnswer]
-    serializer_class = AnswerUpdateSerializer
+    serializer_classes = {"PUT": AnswerUpdateSerializer}
 
-    # 답변 수정
-    # [PUT] /api/v1/qna/answers/{answer_id}
+    def get_permissions(self) -> list[Any]:
+        method = self.request.method or ""
+        if method == "PUT":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
+
+    # [PUT] 답변 수정
     @extend_schema(
+        tags=["qna"],
         summary="답변 수정 API",
         description=ApiDescriptions.ANSWER_UPDATE,
         request=AnswerUpdateSerializer,
@@ -212,7 +218,6 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
                 examples=[ErrorResponseExamples.ANSWER_UPDATE_404],
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request, answer_id: int) -> Response:
         """답변 수정"""
@@ -231,16 +236,19 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
 
 class AnswerAdoptAPIView(QnaBaseAPIView):
     """
-    답변 채택 API View
+    /api/v1/qna/answers/{answer_id}/accept
+    [POST] 답변 채택
     """
 
+    serializer_classes = {"POST": None}
+
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated()]
+        method = self.request.method or ""
+        if method == "POST":
+            return [IsAuthenticated()]
+        raise MethodNotAllowed(method)
 
-    serializer_class: Any = None
-
-    # 답변 채택
-    # [POST] /api/v1/qna/answers/{answer_id}/accept
+    # [POST] 답변 채택
     @extend_schema(
         tags=["qna"],
         summary="답변 채택 API",
@@ -291,16 +299,19 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
 
 class AnswerCommentCreateAPIView(QnaBaseAPIView):
     """
-    답변에 대한 댓글 등록 API View
+    /api/v1/qna/answers/{answer_id}/comments
+    [POST] 답변에 대한 댓글 등록
     """
 
+    serializer_classes = {"POST": AnswerCommentCreateSerializer}
+
     def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteComment()]
+        method = self.request.method or ""
+        if method == "POST":
+            return [IsAuthenticated(), CanWriteAnswerComment()]
+        raise MethodNotAllowed(method)
 
-    serializer_class = AnswerCommentCreateSerializer
-
-    # 댓글 등록
-    # [POST] /api/v1/qna/answers/{answer_id}/comments
+    # [POST] 댓글 등록
     @extend_schema(
         tags=["qna"],
         summary="답변 댓글 등록 API",

@@ -24,22 +24,17 @@ class QuestionListAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
+    user: User
     category_fe: QuestionCategory
     category_react: QuestionCategory
     category_be: QuestionCategory
-    user: User
     q1: Question
     q2: Question
     url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 카테고리 생성 (계층형)
-        cls.category_fe = QuestionCategory.objects.create(name="프론트엔드")
-        cls.category_react = QuestionCategory.objects.create(name="React", parent=cls.category_fe)
-        cls.category_be = QuestionCategory.objects.create(name="백엔드")
-
-        # 테스트용 유저 생성
+        # 테스트용 유저 - 일반
         cls.user = User.objects.create_user(
             email="tester@ozcoding.com",
             password="password123",
@@ -50,6 +45,11 @@ class QuestionListAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
+
+        # 테스트용 카테고리 생성 (계층형)
+        cls.category_fe = QuestionCategory.objects.create(name="프론트엔드")
+        cls.category_react = QuestionCategory.objects.create(name="React", parent=cls.category_fe)
+        cls.category_be = QuestionCategory.objects.create(name="백엔드")
 
         # 테스트용 질문
         # Q1: React 카테고리, 이미지 포함, 답변 없음, 조회수 10
@@ -72,7 +72,7 @@ class QuestionListAPITest(TestCase):
         # Q2에 대한 답변 생성
         Answer.objects.create(author=cls.user, question=cls.q2, content="답변입니다.")
 
-        # URL 설정
+        # URL
         cls.url = reverse("question-list-create")
 
     def setUp(self) -> None:
@@ -80,7 +80,6 @@ class QuestionListAPITest(TestCase):
         self.client = Client()
 
     # --- 성공 케이스 테스트 ---------------------
-
     def test_get_question_list_success(self) -> None:
         """[성공] 전체 목록 조회 및 정렬(latest) 확인"""
         response = self.client.get(self.url)
@@ -163,13 +162,12 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(q1_data["thumbnail_img_url"], "https://example.com/image.png")
 
     # --- 404 Not Found ---------------------
-
     def test_filter_by_invalid_category_returns_404(self) -> None:
         """[404] 존재하지 않는 카테고리 ID로 조회 시 404 반환 검증"""
         response = self.client.get(self.url, {"category_id": 9999})
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
+        self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_CATEGORY.value)
 
     def test_search_no_results_returns_empty_list(self) -> None:
         """[200] 검색 결과가 전혀 없을 경우 200 OK와 빈 리스트 반환 검증"""
@@ -192,7 +190,6 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(len(data["results"]), 0)
 
     # --- 400 Bad Request ---------------------
-
     def test_invalid_sort_choice_returns_400(self) -> None:
         """[400] 허용되지 않은 sort 옵션 입력 시 400 반환 검증 (ChoiceField 검증)"""
         # 'popular'는 ChoiceField에 없음

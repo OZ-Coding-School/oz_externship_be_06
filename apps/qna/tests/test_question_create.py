@@ -25,17 +25,14 @@ class QuestionCreateAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    category: QuestionCategory
     student_user: User
     general_user: User
+    category: QuestionCategory
     url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 카테고리 생성
-        cls.category = QuestionCategory.objects.create(name="OZ_category")
-
-        # 테스트용 유저 생성 (수강생)
+        # 테스트용 유저 - 학생
         cls.student_user = User.objects.create_user(
             email="student@ozcoding.com",
             password="password123",
@@ -46,8 +43,7 @@ class QuestionCreateAPITest(TestCase):
             birthday="1990-01-01",
             is_active=True,
         )
-
-        # 테스트용 유저 생성 (일반인/권한 없음)
+        # 테스트용 유저 - 일반
         cls.general_user = User.objects.create_user(
             email="general@ozcoding.com",
             password="password123",
@@ -59,7 +55,10 @@ class QuestionCreateAPITest(TestCase):
             is_active=True,
         )
 
-        # URL 설정 이름 확인
+        # 테스트용 카테고리 생성
+        cls.category = QuestionCategory.objects.create(name="OZ_category")
+
+        # URL
         cls.url = reverse("question-list-create")
 
     def setUp(self) -> None:

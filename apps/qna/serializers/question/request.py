@@ -1,10 +1,9 @@
 from typing import Any
 
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions import QnaBaseException
-from apps.qna.models import Question, QuestionCategory
+from apps.qna.models import Question
 
 
 # ==============================================================================
@@ -19,6 +18,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
     title = serializers.CharField(required=True, help_text="질문 제목")
     content = serializers.CharField(required=True, help_text="질문 내용")
     category_id = serializers.IntegerField(required=True, help_text="카테고리 ID (소분류)")
+
     default_error_message = ErrorMessages.INVALID_QUESTION_CREATE
 
     class Meta:
@@ -49,14 +49,16 @@ class QuestionQuerySerializer(serializers.Serializer[Any]):
 # [PUT] Question Update
 # /api/v1/qna/questions/{question_id}
 # ==============================================================================
-class QuestionUpdateRequestSerializer(serializers.Serializer[Any]):
+class QuestionUpdateRequestSerializer(serializers.ModelSerializer[Question]):
     """
     질문 수정 요청 시리얼라이저
     """
 
     title = serializers.CharField(required=True, help_text="질문 제목")
     content = serializers.CharField(required=True, help_text="질문 내용")
-    category_id = serializers.IntegerField(help_text="카테고리 ID")
+    category_id = serializers.IntegerField(required=True, help_text="카테고리 ID")
+
+    default_error_message = ErrorMessages.INVALID_QUESTION_UPDATE
 
     class Meta:
         model = Question

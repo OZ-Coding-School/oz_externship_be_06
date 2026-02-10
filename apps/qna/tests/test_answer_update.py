@@ -33,7 +33,7 @@ class AnswerUpdateAPITest(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # Users
+        # 테스트용 유저 - 학생
         cls.student = User.objects.create_user(
             email="student@ozcoding.com",
             password="password",
@@ -42,6 +42,7 @@ class AnswerUpdateAPITest(APITestCase):
             birthday="2000-01-01",
             is_active=True,
         )
+        # 테스트용 유저 - 다른 학생
         cls.another_student = User.objects.create_user(
             email="another@ozcoding.com",
             password="password",
@@ -50,6 +51,7 @@ class AnswerUpdateAPITest(APITestCase):
             birthday="2000-01-01",
             is_active=True,
         )
+        # 테스트용 유저 - 일반
         cls.regular_user = User.objects.create_user(
             email="user@ozcoding.com",
             password="password",
@@ -77,6 +79,7 @@ class AnswerUpdateAPITest(APITestCase):
             img_url="https://example.com/old_img.png",
         )
 
+        # URL
         cls.url = reverse("answer-update", kwargs={"answer_id": cls.answer.id})
 
     def test_update_answer_success(self) -> None:

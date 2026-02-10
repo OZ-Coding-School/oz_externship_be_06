@@ -1,4 +1,4 @@
-from typing import Any, Set, cast
+from typing import Any
 
 from django.db import transaction
 from rest_framework import status
@@ -9,10 +9,17 @@ from apps.qna.models import Question, QuestionCategory, QuestionImage
 from apps.qna.utils.content_parser import ContentParser
 from apps.qna.utils.model_types import User
 
+# ==============================================================================
+# QuestionCommandService
+#   - create_question: 질문 생성
+#   - update_question: 질문 수정
+# ==============================================================================
+
 
 class QuestionCommandService:
     """
-    질문 데이터 변경(CUD) 로직 처리 서비스
+    - create_question: 질문 생성
+    - update_question: 질문 수정
     """
 
     @staticmethod
@@ -20,13 +27,13 @@ class QuestionCommandService:
     def create_question(author: User, data: dict[str, Any]) -> Question:
         """
         새로운 질문 생성
-
         - Args:
             author (User): 질문 작성자 객체 (User Instance)
             data (dict): title(str), content(str), category_id(int)를 포함한 검증된 데이터
-
         - Returns:
             Question: 생성된 질문 객체
+        - Raises:
+            QnaBaseException(404): 카테고리가 존재하지 않을 경우
         """
 
         category_id = data.pop("category_id")
@@ -53,7 +60,6 @@ class QuestionCommandService:
     def update_question(question_id: int, user: User, data: dict[str, Any]) -> Question:
         """
         질문을 수정하고 이미지들을 업데이트
-
         - Args:
             question_id (int): 수정할 질문의 ID (PK)
             user (User): 수정 요청한 사용자 객체
@@ -103,7 +109,7 @@ class QuestionCommandService:
 
         question.save(update_fields=update_fields)
 
-        # 4. 이미지 효율적 동기화 (Diffing)
+        # 이미지 효율적 동기화 (Diffing)
         if "content" in data:
             # content에서 새 이미지 URL 리스트 추출 (중복 제거를 위해 Set 사용)
             new_image_urls = set(ContentParser.extract_all_image_urls(question.content))

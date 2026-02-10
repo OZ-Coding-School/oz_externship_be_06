@@ -43,7 +43,6 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     ("AnswerCommentCreateAPIView", "POST", False): ErrorMessages.FORBIDDEN_COMMENT_CREATE,
     # AI 답변 생성 및 생성된 답변 조회
     ("AIAnswerGenerateAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_AI_REQUEST,
-    ("AIAnswerGenerateAPIView", "GET", False): ErrorMessages.FORBIDDEN_AI_REQUEST,
     # ---------- Admin Category -----------
     # 어드민 카테고리 등록
     ("AdminCategoriesAPIView", "POST", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_CREATE,

@@ -24,19 +24,18 @@ class CategoryTreeAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        """테스트 데이터 생성"""
         # 대분류
         cls.cat_be = QuestionCategory.objects.create(name="백엔드")
         cls.cat_fe = QuestionCategory.objects.create(name="프론트엔드")
 
-        # 중분류 (백엔드 하위)
+        # 중분류
         cls.cat_django = QuestionCategory.objects.create(name="Django", parent=cls.cat_be)
 
-        # 소분류 (Django 하위)
+        # 소분류
         cls.cat_orm = QuestionCategory.objects.create(name="ORM", parent=cls.cat_django)
 
-        # [요청 반영] urls에서 지정하신 name으로 수정
-        cls.url = reverse("question-category-list")
+        # URL
+        cls.url = reverse("category-list")
 
     def test_get_category_tree_success(self) -> None:
         """[성공] 실제 DB 데이터를 기반으로 전체 트리 구조를 반환하는지 확인"""

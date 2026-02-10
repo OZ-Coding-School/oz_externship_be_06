@@ -10,8 +10,8 @@ from apps.core.serializers.presigned_url import (
     PresignedUrlRequestSerializer,
     PresignedUrlResponseSerializer,
 )
+from apps.core.utils.permissions import CanWriteAnswerComment, IsStudentRole
 from apps.core.views.presigned_url import BasePresignedUrlAPIView
-from apps.qna.utils.permissions import CanWriteAnswer, IsStudent
 
 
 class StorageTarget(Enum):
@@ -32,12 +32,15 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
     질문 이미지 업로드용 Presigned URL 발급 API
     """
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), IsStudent()]
-
     storage_target = StorageTarget.QUESTION
 
+    serializer_class = PresignedUrlRequestSerializer
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), IsStudentRole()]
+
     @extend_schema(
+        tags=["qna"],
         summary="질문 이미지 업로드 URL 발급",
         description="""
         S3의 'question/' 경로로 이미지를 업로드하기 위한 presigned-URL을 발급합니다.
@@ -59,7 +62,6 @@ class QuestionPresignedUrlAPIView(BasePresignedUrlAPIView):
                 description="Forbidden",
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request) -> Response:
         return super().put(request)
@@ -70,12 +72,15 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
     답변 이미지 업로드용 Presigned URL 발급 API
     """
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), CanWriteAnswer()]
-
     storage_target = StorageTarget.ANSWER
 
+    serializer_class = PresignedUrlRequestSerializer
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), CanWriteAnswerComment()]
+
     @extend_schema(
+        tags=["qna"],
         summary="답변 이미지 업로드 URL 발급",
         description="""
         S3의 'answers/' 경로로 이미지를 업로드하기 위한 presigned-URL을 발급합니다.
@@ -97,7 +102,6 @@ class AnswerPresignedUrlAPIView(BasePresignedUrlAPIView):
                 description="Forbidden",
             ),
         },
-        tags=["qna"],
     )
     def put(self, request: Request) -> Response:
         return super().put(request)
