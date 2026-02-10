@@ -58,17 +58,13 @@ class AIAnswerGenerateAPIView(QnaBaseAPIView):
     @AI_ANSWER_GENERATE_SCHEMA
     def get(self, request: Request, question_id: int) -> Response:
         """질문 ID를 받아 AI 답변을 생성하고 저장된 결과를 반환함"""
-        # 서비스 레이어 호출 (비즈니스 로직 및 예외 처리 집중)
         ai_answer = AIAnswerCommandService.generate_ai_answer(
             question_id=question_id,
             using_model=self.using_model,
         )
 
-        # 응답 변환
-        serializer = AIAnswerResponseSerializer(ai_answer)
-
-        # 명세서에 201이 명시되어 있으므로 Created 상태 코드로 반환
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        response_serializer = AIAnswerResponseSerializer(ai_answer)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AnswerCreateAPIView(QnaBaseAPIView):
@@ -88,16 +84,13 @@ class AnswerCreateAPIView(QnaBaseAPIView):
     # [POST] 답변 등록
     @ANSWER_CREATE_SCHEMA
     def post(self, request: Request, question_id: int) -> Response:
-        """답변 생성"""
-        serializer = AnswerCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = AnswerCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        # 서비스 호출
         answer = AnswerCommandService.create_answer(
-            question_id=question_id, author=self.request_user, data=serializer.validated_data
+            question_id=question_id, author=self.request_user, data=request_serializer.validated_data
         )
 
-        # 응답 출력
         response_serializer = AnswerCreateResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -119,16 +112,13 @@ class AnswerUpdateAPIView(QnaBaseAPIView):
     # [PUT] 답변 수정
     @ANSWER_UPDATE_SCHEMA
     def put(self, request: Request, answer_id: int) -> Response:
-        """답변 수정"""
-        serializer = AnswerUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = AnswerUpdateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        # 서비스 호출
         answer = AnswerCommandService.update_answer(
-            answer_id=answer_id, user=self.request_user, data=serializer.validated_data
+            answer_id=answer_id, user=self.request_user, data=request_serializer.validated_data
         )
 
-        # 응답 출력
         response_serializer = AnswerUpdateResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -150,11 +140,8 @@ class AnswerAdoptAPIView(QnaBaseAPIView):
     # [POST] 답변 채택
     @ANSWER_ADOPT_SCHEMA
     def post(self, request: Request, answer_id: int) -> Response:
-        """답변 채택 처리"""
-        # 서비스 호출
         answer = AnswerCommandService.adopt_answer(answer_id=answer_id, user=self.request_user)
 
-        # 응답 출력
         response_serializer = AnswerAdoptResponseSerializer(answer)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -176,14 +163,13 @@ class AnswerCommentCreateAPIView(QnaBaseAPIView):
     # [POST] 댓글 등록
     @ANSWER_COMMENT_CREATE_SCHEMA
     def post(self, request: Request, answer_id: int) -> Response:
-        """댓글 생성"""
-        serializer = AnswerCommentCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = AnswerCommentCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
         comment = AnswerCommentCommandService.create_comment(
             answer_id=answer_id,
             author=self.request_user,
-            content=serializer.validated_data["content"],
+            content=request_serializer.validated_data["content"],
         )
 
         response_serializer = AnswerCommentCreateResponseSerializer(comment)

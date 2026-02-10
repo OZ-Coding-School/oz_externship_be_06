@@ -28,6 +28,5 @@ class AdminQuestionDetailAPIView(QnaBaseAPIView):
     def get(self, request: Request, question_id: int) -> Response:
         question = AdminQuestionQueryService.get_question_detail(question_id)
 
-        serializer = AdminQuestionDetailResponseSerializer(cast(Any, question))
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_serializer = AdminQuestionDetailResponseSerializer(cast(Any, question))
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

@@ -53,28 +53,22 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
     # [POST] 질문 등록
     @QUESTION_CREATE_SCHEMA
     def post(self, request: Request) -> Response:
-        """질문 생성"""
-        serializer = QuestionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = QuestionCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        # 서비스 호출
-        question = QuestionCommandService.create_question(author=self.request_user, data=serializer.validated_data)
+        question = QuestionCommandService.create_question(author=self.request_user, data=request_serializer.validated_data)
 
-        # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     # [GET] 질문 목록 조회
     @QUESTION_LIST_SCHEMA
     def get(self, request: Request) -> Response:
-        """필터링 및 검색된 질문 목록 반환"""
-        # 쿼리 파라미터 검증
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
         queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
-        # Response 생성
         return Paginator.get_paginated_data_response(
             queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
         )
@@ -105,17 +99,16 @@ class QuestionDetailAPIView(QnaBaseAPIView):
     def get(self, request: Request, question_id: int) -> Response:
         question = QuestionQueryService.get_question_detail(question_id)
 
-        serializer = QuestionDetailSerializer(cast(Any, question))
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_serializer = QuestionDetailSerializer(cast(Any, question))
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     # [PUT] 질문 수정
     @QUESTION_UPDATE_SCHEMA
     def put(self, request: Request, question_id: int) -> Response:
-        serializer = QuestionUpdateRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = QuestionUpdateRequestSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        question = QuestionCommandService.update_question(question_id, self.request_user, serializer.validated_data)
+        question = QuestionCommandService.update_question(question_id, self.request_user, request_serializer.validated_data)
 
         response_serializer = QuestionUpdateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_200_OK)

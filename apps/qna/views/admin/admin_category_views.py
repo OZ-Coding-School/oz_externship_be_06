@@ -41,15 +41,11 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
     # [POST] /api/v1/admin/qna/categories
     @ADMIN_CATEGORY_CREATE_SCHEMA
     def post(self, request: Request) -> Response:
-        """카테고리 생성"""
-        # Request serializer
-        serializer = AdminCategoryCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = AdminCategoryCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        # Service (command)
-        category = AdminCategoryCommandService.create_category(data=serializer.validated_data)
+        category = AdminCategoryCommandService.create_category(data=request_serializer.validated_data)
 
-        # Response serializer & response
         response_serializer = AdminCategoryCreateResponseSerializer(category)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -57,16 +53,11 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
     # [GET] /api/v1/admin/qna/categories
     @ADMIN_CATEGORY_LIST_SCHEMA
     def get(self, request: Request) -> Response:
-        """카테고리 목록 조회"""
-        # Request serializer
-        request_serializer = AdminCategoryListQuerySerializer(data=request.query_params)
-        request_serializer.is_valid(raise_exception=True)
-        validated_data = request_serializer.validated_data
+        query_serializer = AdminCategoryListQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
 
-        # Service (query)
-        category_list = AdminCategoryQueryService.get_category_list(data=validated_data)
+        category_list = AdminCategoryQueryService.get_category_list(data=query_serializer.validated_data)
 
-        # Response serializer & Paginated response
         return Paginator.get_paginated_data_response(
             queryset=category_list, request=request, serializer_class=AdminCategoryListResponseSerializer, view=self
         )

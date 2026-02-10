@@ -32,5 +32,4 @@ class CategoryTreeAPIView(QnaBaseAPIView):
         categories_tree = CategoryQueryService.get_category_tree()
 
         response_serializer = CategoryTreeResponseSerializer({"categories": categories_tree})
-
         return Response(response_serializer.data, status=status.HTTP_200_OK)
