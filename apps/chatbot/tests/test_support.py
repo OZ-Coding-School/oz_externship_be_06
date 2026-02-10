@@ -87,4 +87,3 @@ class ChatbotSupportPolicyTest(TestCase):
             session=session,
             content="출결 기준이 어떻게 되나요?",
         )
-
