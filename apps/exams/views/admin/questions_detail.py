@@ -23,11 +23,7 @@ from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.questions_delete import (
     delete_exam_question,
 )
-from apps.exams.services.admin.questions_update import (
-    BusinessRuleError,
-    ConflictRuleError,
-    update_exam_question,
-)
+from apps.exams.services.admin.questions_update import update_exam_question
 from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 
