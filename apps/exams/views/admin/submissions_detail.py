@@ -8,6 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin.submissions_delete import (
@@ -16,7 +17,6 @@ from apps.exams.serializers.admin.submissions_delete import (
 from apps.exams.serializers.admin.submissions_detail import (
     AdminExamSubmissionDetailResponseSerializer,
 )
-from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.submissions_delete import delete_exam_submission
 from apps.exams.services.admin.submissions_detail import get_admin_submission_detail
 from apps.exams.validators import parse_positive_int

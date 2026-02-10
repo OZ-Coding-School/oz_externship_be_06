@@ -22,7 +22,6 @@ from apps.qna.serializers.question.response import (
     QuestionUpdateResponseSerializer,
 )
 
-
 QUESTION_CREATE_SCHEMA = extend_schema(
     tags=["qna"],
     summary="질문 등록 API",

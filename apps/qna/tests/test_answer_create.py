@@ -62,7 +62,6 @@ class AnswerCreateAPITest(APITestCase):
         # URL
         cls.url = reverse("answer-create", kwargs={"question_id": cls.question.id})
 
-
     def test_create_answer_success(self) -> None:
         """[성공] 수강생 계정으로 답변 등록 성공 검증"""
         self.client.force_authenticate(user=self.student)

@@ -59,7 +59,6 @@ class QuestionCreateAPITest(APITestCase):
         # URL
         cls.url = reverse("question-list-create")
 
-
     def test_create_question_success(self) -> None:
         """[성공] 수강생 권한으로 유효한 데이터를 전송 시 질문 등록 확인"""
         self.client.force_authenticate(user=self.student_user)

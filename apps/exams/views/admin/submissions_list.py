@@ -10,6 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
@@ -18,7 +19,6 @@ from apps.exams.models import ExamSubmission
 from apps.exams.serializers.admin.submissions_list import (
     AdminExamSubmissionListResponseSerializer,
 )
-from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.validators import normalize_optional_str, parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin
 

@@ -20,7 +20,6 @@ from apps.qna.serializers.answer.response import (
     AnswerUpdateResponseSerializer,
 )
 
-
 AI_ANSWER_GENERATE_SCHEMA = extend_schema(
     tags=["qna"],
     summary="AI 답변 생성 API",

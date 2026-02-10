@@ -14,6 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
@@ -21,7 +22,6 @@ from apps.exams.error_map import raise_error
 from apps.exams.serializers.admin.deployments_list import (
     AdminExamDeploymentListItemSerializer,
 )
-from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_list import (
     AdminDeploymentListService,
     InvalidAdminDeploymentListParams,

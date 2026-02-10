@@ -10,11 +10,11 @@ from drf_spectacular.utils import (
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.core.utils.pagination import SimplePagePagination
 from apps.core.utils.permissions import IsStudentRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.models.exam_deployments import ExamDeployment
-from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.serializers.student.deployments_list import (
     ExamDeploymentListSerializer,
 )

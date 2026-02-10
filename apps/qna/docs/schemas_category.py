@@ -8,7 +8,6 @@ from apps.qna.docs.api_response_examples import (
 )
 from apps.qna.serializers.category.response import CategoryTreeResponseSerializer
 
-
 CATEGORY_TREE_SCHEMA = extend_schema(
     tags=["qna"],
     summary="카테고리 계층 구조 조회",

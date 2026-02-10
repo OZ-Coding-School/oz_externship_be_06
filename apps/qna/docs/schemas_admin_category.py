@@ -16,7 +16,6 @@ from apps.qna.serializers.admin.category.response import (
     AdminCategoryListResponseSerializer,
 )
 
-
 ADMIN_CATEGORY_CREATE_SCHEMA = extend_schema(
     tags=["admin_qna"],
     summary="어드민 카테고리 등록 API",

@@ -52,7 +52,6 @@ class AIAnswerGenerateAPITest(APITestCase):
         # URL
         cls.url = reverse("ai-answer-generate", kwargs={"question_id": cls.question.id})
 
-
     @patch("apps.qna.services.answer.command.AIAnswerCommandService._call_ai_model")
     def test_generate_ai_answer_success(self, mock_call_ai: Any) -> None:
         """[성공] 로그인한 유저가 AI 답변 생성 성공 검증"""

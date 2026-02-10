@@ -10,7 +10,6 @@ from apps.qna.serializers.admin.question.response import (
     AdminQuestionDetailResponseSerializer,
 )
 
-
 ADMIN_QUESTION_DETAIL_SCHEMA = extend_schema(
     tags=["admin_qna"],
     summary="어드민 질문 상세 조회 API",

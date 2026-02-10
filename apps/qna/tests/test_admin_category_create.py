@@ -96,7 +96,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_large_category_success(self) -> None:
         """[성공] 관리자가 대분류 카테고리 등록"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "대분류", "name": "프론트엔드", "parent_id": None}
+        data = {"category_type": "대분류", "name": "프론트엔드", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
         res_data = response.json()
@@ -112,7 +112,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_medium_category_success(self) -> None:
         """[성공] 조교가 중분류 카테고리 등록"""
         self.client.force_authenticate(user=self.ta_user)
-        data ={"category_type": "중분류", "name": "프로그래밍 언어", "parent_id": self.cat_large.id}
+        data = {"category_type": "중분류", "name": "프로그래밍 언어", "parent_id": self.cat_large.id}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
         res_data = response.json()
@@ -125,7 +125,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_small_category_success(self) -> None:
         """[성공] 관리자가 소분류 카테고리 등록"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "소분류", "name": "FastAPI", "parent_id": self.cat_medium.id}
+        data = {"category_type": "소분류", "name": "FastAPI", "parent_id": self.cat_medium.id}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
         res_data = response.json()
@@ -138,7 +138,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_without_parent_id_field(self) -> None:
         """[성공] 대분류 등록 시 parent_id 필드 자체를 생략해도 정상 동작"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "대분류", "name": "데브옵스"}
+        data = {"category_type": "대분류", "name": "데브옵스"}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -151,7 +151,7 @@ class AdminCategoryCreateAPITest(APITestCase):
         new_large = QuestionCategory.objects.create(name="프론트엔드")
 
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "중분류", "name": "웹프레임워크", "parent_id": new_large.id}
+        data = {"category_type": "중분류", "name": "웹프레임워크", "parent_id": new_large.id}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -164,7 +164,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_response_data_structure(self) -> None:
         """[성공] 응답 데이터에 명세서에 정의된 모든 필드가 포함되어 있는지 확인"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "대분류", "name": "데이터사이언스", "parent_id": None}
+        data = {"category_type": "대분류", "name": "데이터사이언스", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
         res_data = response.json()
@@ -187,7 +187,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_forbidden_student(self) -> None:
         """[실패] 수강생 권한으로 요청 시 403 에러 반환"""
         self.client.force_authenticate(user=self.student_user)
-        data ={"category_type": "대분류", "name": "테스트", "parent_id": None}
+        data = {"category_type": "대분류", "name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -197,7 +197,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_forbidden_general_user(self) -> None:
         """[실패] 일반 유저 권한으로 요청 시 403 에러 반환"""
         self.client.force_authenticate(user=self.general_user)
-        data ={"category_type": "대분류", "name": "테스트", "parent_id": None}
+        data = {"category_type": "대분류", "name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -207,7 +207,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_missing_category_type(self) -> None:
         """[실패] 필수 필드 category_type 누락 시 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"name": "테스트", "parent_id": None}
+        data = {"name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -217,7 +217,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_missing_name(self) -> None:
         """[실패] 필수 필드 name 누락 시 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "대분류", "parent_id": None}
+        data = {"category_type": "대분류", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -227,7 +227,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_invalid_category_type(self) -> None:
         """[실패] 유효하지 않은 category_type 값 전송 시 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "초대분류", "name": "테스트", "parent_id": None}
+        data = {"category_type": "초대분류", "name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -236,7 +236,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_large_category_with_parent_id(self) -> None:
         """[실패] 대분류인데 parent_id를 지정한 경우 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "대분류", "name": "테스트", "parent_id": self.cat_large.id}
+        data = {"category_type": "대분류", "name": "테스트", "parent_id": self.cat_large.id}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -246,7 +246,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_medium_category_without_parent_id(self) -> None:
         """[실패] 중분류인데 parent_id가 없는 경우 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "중분류", "name": "테스트", "parent_id": None}
+        data = {"category_type": "중분류", "name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -255,7 +255,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_small_category_without_parent_id(self) -> None:
         """[실패] 소분류인데 parent_id가 없는 경우 400 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "소분류", "name": "테스트", "parent_id": None}
+        data = {"category_type": "소분류", "name": "테스트", "parent_id": None}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -285,7 +285,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_parent_not_found(self) -> None:
         """[실패] 존재하지 않는 부모 카테고리 ID로 요청 시 404 에러 반환"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "중분류", "name": "테스트", "parent_id": 99999}
+        data = {"category_type": "중분류", "name": "테스트", "parent_id": 99999}
 
         response = self.client.post(self.url, data=data, content_type="application/json")
 
@@ -319,7 +319,7 @@ class AdminCategoryCreateAPITest(APITestCase):
     def test_create_category_performance(self) -> None:
         """[성능] 카테고리 등록 시 발생하는 쿼리 수 검증"""
         self.client.force_authenticate(user=self.admin_user)
-        data ={"category_type": "중분류", "name": "라이브러리", "parent_id": self.cat_large.id}
+        data = {"category_type": "중분류", "name": "라이브러리", "parent_id": self.cat_large.id}
 
         # Query Expectation:
         # 1. Auth check (User)
