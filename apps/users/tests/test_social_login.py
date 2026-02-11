@@ -418,9 +418,9 @@ class KakaoLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("localhost:3000", res["Location"])
-        self.assertIn("is_success=true", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access_token", res.json())
+        self.assertIn("refresh_token", res.json())
 
     def test_kakao_callback_missing_code(self) -> None:
         res = self.client.get(
@@ -428,8 +428,8 @@ class KakaoLoginViewTests(TestCase):
             {"state": "some_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     def test_kakao_callback_invalid_state(self) -> None:
         session = self.client.session
@@ -441,8 +441,8 @@ class KakaoLoginViewTests(TestCase):
             {"code": "test_code", "state": "invalid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     @patch.object(KakaoOAuthService, "get_access_token")
     @patch.object(KakaoOAuthService, "get_user_info")
@@ -482,8 +482,8 @@ class KakaoLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     @patch.object(KakaoOAuthService, "get_access_token")
     @patch.object(KakaoOAuthService, "get_user_info")
@@ -523,8 +523,8 @@ class KakaoLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
 
 @override_settings(
@@ -568,9 +568,9 @@ class NaverLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("localhost:3000", res["Location"])
-        self.assertIn("is_success=true", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("access_token", res.json())
+        self.assertIn("refresh_token", res.json())
 
     def test_naver_callback_missing_code(self) -> None:
         res = self.client.get(
@@ -578,8 +578,8 @@ class NaverLoginViewTests(TestCase):
             {"state": "some_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     def test_naver_callback_invalid_state(self) -> None:
         session = self.client.session
@@ -591,8 +591,8 @@ class NaverLoginViewTests(TestCase):
             {"code": "test_code", "state": "invalid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     @patch.object(NaverOAuthService, "get_access_token")
     @patch.object(NaverOAuthService, "get_user_info")
@@ -630,8 +630,8 @@ class NaverLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())
 
     @patch.object(NaverOAuthService, "get_access_token")
     @patch.object(NaverOAuthService, "get_user_info")
@@ -669,5 +669,5 @@ class NaverLoginViewTests(TestCase):
             {"code": "test_code", "state": "valid_state"},
         )
 
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-        self.assertIn("is_success=false", res["Location"])
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error_detail", res.json())

@@ -1,16 +1,16 @@
 import logging
 import uuid
-from typing import Literal
-from urllib.parse import urlencode
 
 import requests
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -25,40 +25,6 @@ from apps.users.utils.social_login import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def frontend_redirect(*, provider: str, is_success: bool = True) -> HttpResponseRedirect:
-    base = getattr(settings, "FRONTEND_SOCIAL_REDIRECT_URL", "") or "/"
-    params = {"provider": provider, "is_success": str(is_success).lower()}
-    return redirect(f"{base}?{urlencode(params)}")
-
-
-def set_auth_cookies(resp: HttpResponseRedirect, *, access: str, refresh: str) -> None:
-    secure = settings.COOKIE_SECURE
-    samesite: Literal["Lax", "Strict", "None", False] = "None" if settings.COOKIE_SECURE else "Lax"
-    cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
-
-    resp.set_cookie(
-        "access_token",
-        access,
-        max_age=60 * 60,  # 60분 (이메일 로그인과 동일하게 구현)
-        domain=cookie_domain,
-        httponly=False,
-        secure=secure,
-        samesite=samesite,
-        path="/",
-    )
-
-    resp.set_cookie(
-        "refresh_token",
-        refresh,
-        max_age=7 * 24 * 60 * 60,  # 7일 (이메일 로그인과 동일)
-        domain=cookie_domain,
-        httponly=True,
-        secure=secure,
-        samesite=samesite,
-        path="/",
-    )
 
 
 # 카카오로그인
@@ -91,8 +57,16 @@ class KakaoCallbackAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @extend_schema(exclude=True)
-    def get(self, request: Request) -> HttpResponseRedirect:
+    @extend_schema(
+        tags=["accounts"],
+        summary="카카오 로그인 콜백",
+        description="카카오 OAuth 콜백. 성공 시 access_token, refresh_token 반환.",
+        responses={
+            200: OpenApiResponse(description="로그인 성공"),
+            400: OpenApiResponse(description="유효성 검사 실패"),
+        },
+    )
+    def get(self, request: Request) -> Response:
         try:
             code = request.query_params.get("code")
             state = request.query_params.get("state")
@@ -127,19 +101,32 @@ class KakaoCallbackAPIView(APIView):
             # JWT 토큰 발급
             refresh = RefreshToken.for_user(user)
 
-            resp = frontend_redirect(provider="kakao")
-            set_auth_cookies(resp, access=str(refresh.access_token), refresh=str(refresh))
-            return resp
+            return Response(
+                {
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except ValidationError as e:
             logger.warning("kakao callback validation error: %s", e.detail)
-            return frontend_redirect(provider="kakao", is_success=False)
+            return Response(
+                {"error_detail": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except requests.exceptions.HTTPError:
             logger.exception("kakao callback oauth http error")
-            return frontend_redirect(provider="kakao", is_success=False)
+            return Response(
+                {"error_detail": "카카오 인증 서버 오류"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception:
             logger.exception("kakao callback unexpected error")
-            return frontend_redirect(provider="kakao", is_success=False)
+            return Response(
+                {"error_detail": "로그인 처리 중 오류가 발생했습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         finally:
             request.session.pop("oauth_state_kakao", None)
 
@@ -174,8 +161,16 @@ class NaverCallbackAPIView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
-    @extend_schema(exclude=True)
-    def get(self, request: Request) -> HttpResponseRedirect:
+    @extend_schema(
+        tags=["accounts"],
+        summary="네이버 로그인 콜백",
+        description="네이버 OAuth 콜백. 성공 시 access_token, refresh_token 반환.",
+        responses={
+            200: OpenApiResponse(description="로그인 성공"),
+            400: OpenApiResponse(description="유효성 검사 실패"),
+        },
+    )
+    def get(self, request: Request) -> Response:
         try:
             code = request.query_params.get("code")
             state = request.query_params.get("state")
@@ -210,18 +205,31 @@ class NaverCallbackAPIView(APIView):
             # JWT 토큰 발급
             refresh = RefreshToken.for_user(user)
 
-            resp = frontend_redirect(provider="naver")
-            set_auth_cookies(resp, access=str(refresh.access_token), refresh=str(refresh))
-            return resp
+            return Response(
+                {
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except ValidationError as e:
             logger.warning("naver callback validation error: %s", e.detail)
-            return frontend_redirect(provider="naver", is_success=False)
+            return Response(
+                {"error_detail": e.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except requests.exceptions.HTTPError:
             logger.exception("naver callback oauth http error")
-            return frontend_redirect(provider="naver", is_success=False)
+            return Response(
+                {"error_detail": "네이버 인증 서버 오류"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception:
             logger.exception("naver callback unexpected error")
-            return frontend_redirect(provider="naver", is_success=False)
+            return Response(
+                {"error_detail": "로그인 처리 중 오류가 발생했습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         finally:
             request.session.pop("oauth_state_naver", None)
