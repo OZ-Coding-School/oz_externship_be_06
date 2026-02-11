@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
-from typing import Iterator, Union
+from typing import Iterator, Union, cast
 
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +16,9 @@ from apps.chatbot.constants.question_prompts import QUESTION_SYSTEM_PROMPT
 from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
+from apps.chatbot.serializers.completion import ChatbotCompletionCreateSerializer
 from apps.chatbot.services.completion_answer import generate_completion_answer
+from apps.users.models import User
 
 
 def sse(payload: str) -> str:
@@ -26,6 +29,8 @@ class ChatbotCompletionCreateAPIView(APIView):
     """
     POST /api/v1/chatbot/sessions/{session_id}/completions
     """
+
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["chatbot"],
@@ -55,21 +60,18 @@ class ChatbotCompletionCreateAPIView(APIView):
         },
     )
     def post(self, request: Request, session_id: int) -> Union[Response, StreamingHttpResponse]:
-        if not request.user or not request.user.is_authenticated:
+        serializer = ChatbotCompletionCreateSerializer(data=request.data)
+        if not serializer.is_valid():
             return Response(
-                {"error_detail": "로그인한 사용자만 채팅할 수 있습니다."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        message = request.data.get("message")
-        if not message or not isinstance(message, str) or not message.strip():
-            return Response(
-                {"error_detail": "유효한 메시지를 입력해주세요."},
+                {"error_detail": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        message = serializer.validated_data["message"]
+
         try:
-            session = ChatbotSession.objects.get(id=session_id, user=request.user)
+            user = cast(User, request.user)
+            session = ChatbotSession.objects.get(id=session_id, user=user)
         except ChatbotSession.DoesNotExist:
             return Response(
                 {"error_detail": "챗봇 세션이 존재하지 않습니다."},

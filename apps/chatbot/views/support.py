@@ -31,7 +31,11 @@ class ChatbotSupportSessionCreateAPIView(APIView):
     )
     def post(self, request: Request) -> Response:
         serializer = ChatbotSupportSessionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(
+                {"error_detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user = cast(User, request.user)
 
