@@ -67,7 +67,7 @@ class SuccessResponseExamples:
                     "content_preview": "ForeignKey에 related_name을 지정하면...",
                     "answer_count": 3,
                     "view_count": 87,
-                    "created_at": "2025-03-01 10:03:21",
+                    "created_at": "2026-03-01 10:03:21",
                     "thumbnail_img_url": "https://cdn.ozcodingschool.com/qna/thumb_10501_01.png",
                 }
             ],
@@ -82,22 +82,22 @@ class SuccessResponseExamples:
             "title": "Django에서 ForeignKey 역참조는 어떻게 하나요?",
             "content": "Django 모델에서 related_name을 지정했을 때",
             "category": {"id": 12, "depth": 2, "names": ["백엔드", "Django", "ORM"]},
-            "images": [{"id": 3, "img_url": "https://cdn.ozcodingschool.com/qna/img_20250301_101530.png"}],
+            "images": [{"id": 3, "img_url": "https://cdn.ozcodingschool.com/qna/img_20260301_101530.png"}],
             "view_count": 88,
-            "created_at": "2025-03-01 10:25:33",
+            "created_at": "2026-03-01 10:25:33",
             "author": {"id": 211, "nickname": "나일론동서크", "profile_image_url": None},
             "answers": [
                 {
                     "id": "31429",
                     "content": "답변 content",
-                    "created_at": "2025-03-02 10:33:33",
+                    "created_at": "2026-03-02 10:33:33",
                     "is_adopted": False,
                     "author": {"id": "33", "nickname": "소민 조교님", "profile_image_url": None},
                     "comments": [
                         {
                             "id": "14231",
                             "content": "댓글 content",
-                            "created_at": "2025-03-05 10:33:33",
+                            "created_at": "2026-03-05 10:33:33",
                             "author": {"id": "324120", "nickname": "이준 조교님", "profile_image_url": None},
                         }
                     ],
@@ -116,7 +116,7 @@ class SuccessResponseExamples:
     # --- Answers ---
     ANSWER_CREATE = OpenApiExample(
         name="답변 등록 성공 응답 예시",
-        value={"answer_id": 801, "question_id": 10501, "author_id": 211, "created_at": "2025-03-02 11:43:20"},
+        value={"answer_id": 801, "question_id": 10501, "author_id": 211, "created_at": "2026-03-02 11:43:20"},
         response_only=True,
     )
 
@@ -139,14 +139,14 @@ class SuccessResponseExamples:
             "question_id": 10221,
             "output": "리스트는 수정 가능한 자료구조이며, 튜플은 수정이 불가능한 자료구조입니다. 리스트는 [], 튜플은 () 를 사용합니다.",
             "using_model": "gemini-2.5-pro",
-            "created_at": "2025-03-01 14:20:33",
+            "created_at": "2026-03-01 14:20:33",
         },
         response_only=True,
     )
 
     ANSWER_COMMENT_CREATE = OpenApiExample(
         name="답변 댓글 등록 성공 응답 예시",
-        value={"comment_id": 91001, "answer_id": 801, "author_id": 211, "created_at": "2025-03-02 16:30:18"},
+        value={"comment_id": 91001, "answer_id": 801, "author_id": 211, "created_at": "2026-03-02 16:30:18"},
         response_only=True,
     )
 
@@ -186,8 +186,8 @@ class SuccessResponseExamples:
                     "category_type": "small",
                     "parent_category": "웹 프레임워크",
                     "child_categories": [],
-                    "created_at": "2025-03-03 14:11:22",
-                    "updated_at": "2025-03-03 15:21:09",
+                    "created_at": "2026-02-03 14:11:22",
+                    "updated_at": "2026-02-03 15:21:09",
                 },
                 {
                     "category_id": 5,
@@ -195,8 +195,8 @@ class SuccessResponseExamples:
                     "category_type": "medium",
                     "parent_category": "백엔드",
                     "child_categories": ["Django", "FastAPI", "Spring Boot"],
-                    "created_at": "2025-02-15 10:17:42",
-                    "updated_at": "2025-03-02 21:01:10",
+                    "created_at": "2026-02-15 10:17:42",
+                    "updated_at": "2026-03-02 21:01:10",
                 },
             ],
         },
@@ -216,11 +216,11 @@ class SuccessResponseExamples:
                     "title": "Django ORM 역참조는 어떻게 사용하나요?",
                     "category_path": "백엔드 > 웹프레임워크 > Django",
                     "content_preview": "ForeignKey에 related_name을 지정하면 역참조가 가능합니다...",
-                    "nickname": "한율_회장",
+                    "nickname": "김동석",
                     "view_count": 132,
                     "has_answer": True,
-                    "created_at": "2025-03-01 10:03:21",
-                    "updated_at": "2025-03-02 11:20:10",
+                    "created_at": "2026-02-01 10:03:21",
+                    "updated_at": "2026-02-02 11:20:10",
                 }
             ],
         },
@@ -272,6 +272,12 @@ class SuccessResponseExamples:
     ADMIN_ANSWER_DELETE = OpenApiExample(
         name="어드민 답변 삭제 성공 응답 예시",
         value={"answer_id": 801, "deleted_comment_count": 9},
+        response_only=True,
+    )
+
+    ADMIN_CATEGORY_DELETE = OpenApiExample(
+        name="어드민 카테고리 삭제 성공 응답 예시",
+        value={"category_id": 5, "category_type": "중분류", "migrated_question_count": 128},
         response_only=True,
     )
 
@@ -597,5 +603,32 @@ class ErrorResponseExamples:
     ADMIN_ANSWER_DELETE_404 = OpenApiExample(
         name="어드민 답변 삭제 실패 응답 예시 - 데이터 없음",
         value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_ANSWER.value},
+        response_only=True,
+    )
+
+    # --- ADMIN_CATEGORY_DELETE ---
+    ADMIN_CATEGORY_DELETE_400 = OpenApiExample(
+        name="어드민 카테고리 삭제 실패 응답 예시 - 잘못된 요청",
+        value={"error_detail": ErrorMessages.INVALID_ADMIN_CATEGORY_DELETE.value},
+        response_only=True,
+    )
+    ADMIN_CATEGORY_DELETE_401 = OpenApiExample(
+        name="어드민 카테고리 삭제 실패 응답 예시 - 인증 실패",
+        value={"error_detail": ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_DELETE.value},
+        response_only=True,
+    )
+    ADMIN_CATEGORY_DELETE_403 = OpenApiExample(
+        name="어드민 카테고리 삭제 실패 응답 예시 - 권한 없음",
+        value={"error_detail": ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_DELETE.value},
+        response_only=True,
+    )
+    ADMIN_CATEGORY_DELETE_404 = OpenApiExample(
+        name="어드민 카테고리 삭제 실패 응답 예시 - 데이터 없음",
+        value={"error_detail": ErrorMessages.NOT_FOUND_ADMIN_CATEGORY.value},
+        response_only=True,
+    )
+    ADMIN_CATEGORY_DELETE_409 = OpenApiExample(
+        name="어드민 카테고리 삭제 실패 응답 예시 - 충돌 (기본 카테고리)",
+        value={"error_detail": ErrorMessages.CONFLICT_ADMIN_DEFAULT_CATEGORY_DELETE.value},
         response_only=True,
     )
