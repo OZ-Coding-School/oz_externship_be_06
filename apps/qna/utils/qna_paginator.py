@@ -54,6 +54,26 @@ class AdminCategoryPagination(SimplePagePagination):
         )
 
 
+class AdminQuestionPagination(SimplePagePagination):
+    """
+    어드민 질의응답 목록 조회를 위한 페이지네이션
+    """
+
+    def get_paginated_response(self, data: List[Any]) -> Response:
+        if self.page is None or self.request is None:
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "page": self.page.number,
+                "size": self.get_page_size(self.request),
+                "total_count": self.page.paginator.count,
+                "questions": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class QnaBaseListPaginator:
     """
     QnA, QnA-Admin Base 페이지네이션 응답 빌더
@@ -90,6 +110,12 @@ class QuestionListPaginator(QnaBaseListPaginator):
     """일반 유저용 질문 목록 페이지네이터"""
 
     pagination_class = QnaPagination
+
+
+class AdminQuestionListPaginator(QnaBaseListPaginator):
+    """어드민용 질의응답 목록 페이지네이터"""
+
+    pagination_class = AdminQuestionPagination
 
 
 class AdminCategoryListPaginator(QnaBaseListPaginator):
