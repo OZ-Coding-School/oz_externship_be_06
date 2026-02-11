@@ -8,7 +8,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.posts.constants.post_const import PostErrorMessage, PostSuccessMessage
-from apps.posts.exceptions.post_exceptions import PostUnauthorizedException
+from apps.posts.exceptions.post_exceptions import (
+    PostPermissionDeniedException,
+    PostUnauthorizedException,
+)
 from apps.posts.models import Post
 from apps.posts.selectors.post_selectors import PostSelector
 from apps.posts.serializers.post_serializers import (
@@ -187,21 +190,16 @@ class PostDetailView(APIView):
 
         post = PostSelector.get_post_detail(post_id=post_id)
 
-        serializer: PostUpdateSerializer = PostUpdateSerializer(data=request.data, partial=True)  # 부분 수정
-        serializer.is_valid(raise_exception=True)
+        serializer: PostUpdateSerializer = PostUpdateSerializer(data=request.data)
 
-        try:
-            updated_post: Post = PostService.update_post(user=user, post=post, **serializer.validated_data)
-            return Response(
-                PostUpdateSerializer(updated_post).data,
-                status=status.HTTP_200_OK,
-            )
-        except PostUnauthorizedException as e:
-            raise e
-        except Exception:
-            return Response(
-                {"error_detail": PostErrorMessage.SERVER_ERROR}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        if not serializer.is_valid():
+            return Response({"error_detail": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        updated_post: Post = PostService.update_post(user=user, post=post, **serializer.validated_data)
+        return Response(
+            PostUpdateSerializer(updated_post).data,
+            status=status.HTTP_200_OK,
+        )
 
     @extend_schema(
         summary="게시글 삭제",

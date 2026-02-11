@@ -1,5 +1,6 @@
 from django.db import transaction
 
+from apps.posts.constants.post_const import PostErrorMessage
 from apps.posts.exceptions.post_exceptions import PostNotFoundException
 from apps.posts.models.post import Post
 from apps.posts.models.post_likes import PostLike
@@ -31,4 +32,6 @@ class PostLikeService:
         """
         좋아요 취소: 해당 유저의 좋아요 상태를 False로 업데이트합니다.
         """
-        PostLike.objects.filter(user=user, post_id=post_id).update(is_liked=False)
+        updated = PostLike.objects.filter(user=user, post_id=post_id, is_liked=True).update(is_liked=False)
+        if not updated:
+            raise PostNotFoundException(PostErrorMessage.LIKE_NOT_FOUND)
