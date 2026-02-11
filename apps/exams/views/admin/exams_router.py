@@ -10,12 +10,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.constants import ErrorMessages
 from apps.exams.serializers.admin.exams_create import (
     AdminExamCreateRequestSerializer,
     AdminExamCreateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.views.admin.exams_create import AdminExamCreateAPIView
 from apps.exams.views.admin.exams_list import AdminExamListView
 from apps.exams.views.mixins import ExamsExceptionMixin

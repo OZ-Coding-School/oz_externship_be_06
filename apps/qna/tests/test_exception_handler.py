@@ -1,10 +1,8 @@
 import json
-from typing import Any
 
-from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
@@ -12,7 +10,7 @@ from apps.qna.models import Question, QuestionCategory
 from apps.users.models import User
 
 
-class CategoryNotFoundExceptionTest(TestCase):
+class CategoryNotFoundExceptionTest(APITestCase):
     """
     CategoryNotFoundException 테스트
     - 존재하지 않는 카테고리 ID로 질문 생성 시 400 에러 반환 검증
@@ -40,16 +38,9 @@ class CategoryNotFoundExceptionTest(TestCase):
         # URL
         cls.url = reverse("question-list-create")
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     def test_create_question_with_invalid_category_id(self) -> None:
         """[실패] 존재하지 않는 category_id로 질문 생성 시 400 에러 반환"""
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
         data = {
             "title": "테스트 질문",
@@ -57,7 +48,7 @@ class CategoryNotFoundExceptionTest(TestCase):
             "category_id": 99999,  # 존재하지 않는 ID
         }
 
-        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json", **auth_header)
+        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -66,7 +57,7 @@ class CategoryNotFoundExceptionTest(TestCase):
 
     def test_create_question_with_valid_category_id(self) -> None:
         """[성공] 유효한 category_id로 질문 생성 시 201 반환"""
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
         data = {
             "title": "테스트 질문",
@@ -74,12 +65,12 @@ class CategoryNotFoundExceptionTest(TestCase):
             "category_id": self.category.id,
         }
 
-        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json", **auth_header)
+        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
-class ExceptionResponseFormatTest(TestCase):
+class ExceptionResponseFormatTest(APITestCase):
     """
     모든 에러 응답이 {"error_detail": "..."} 포맷을 준수하는지 검증
     """
@@ -118,13 +109,6 @@ class ExceptionResponseFormatTest(TestCase):
             content="내용",
         )
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     def test_401_response_format(self) -> None:
         """[401] 응답 포맷 검증"""
         url = reverse("question-list-create")
@@ -140,10 +124,10 @@ class ExceptionResponseFormatTest(TestCase):
     def test_403_response_format(self) -> None:
         """[403] 응답 포맷 검증"""
         url = reverse("question-list-create")
-        auth_header = self._get_auth_header(self.general_user)
+        self.client.force_authenticate(user=self.general_user)
         data = {"title": "test", "content": "test", "category_id": self.category.id}
 
-        response = self.client.post(url, data=json.dumps(data), content_type="application/json", **auth_header)
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         res_data = response.json()
@@ -153,10 +137,10 @@ class ExceptionResponseFormatTest(TestCase):
     def test_400_response_format(self) -> None:
         """[400] 응답 포맷 검증 (필수 필드 누락)"""
         url = reverse("question-list-create")
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
         data = {"content": "제목 없음", "category_id": self.category.id}  # title 누락
 
-        response = self.client.post(url, data=json.dumps(data), content_type="application/json", **auth_header)
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         res_data = response.json()
@@ -175,7 +159,7 @@ class ExceptionResponseFormatTest(TestCase):
         self.assertEqual(len(res_data.keys()), 1)
 
 
-class ExceptionHandlerLoggingTest(TestCase):
+class ExceptionHandlerLoggingTest(APITestCase):
     """
     qna_exception_handler의 로깅 동작 검증
     """
@@ -196,13 +180,6 @@ class ExceptionHandlerLoggingTest(TestCase):
             is_active=True,
         )
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     def test_401_error_logging_level(self) -> None:
         """[401] 인증 에러는 INFO 레벨로 로깅되는지 검증"""
         url = reverse("question-list-create")
@@ -220,14 +197,13 @@ class ExceptionHandlerLoggingTest(TestCase):
     def test_400_error_logging_level(self) -> None:
         """[400] 클라이언트 에러는 WARNING 레벨로 로깅되는지 검증"""
         url = reverse("question-list-create")
-        auth_header = self._get_auth_header(self.student)
+        self.client.force_authenticate(user=self.student)
 
         with self.assertLogs("apps.qna.exceptions", level="WARNING") as log_context:
             self.client.post(
                 url,
                 data=json.dumps({"content": "no title", "category_id": self.category.id}),
                 content_type="application/json",
-                **auth_header,
             )
 
         self.assertTrue(any("[Client Error]" in msg for msg in log_context.output))
@@ -242,7 +218,7 @@ class ExceptionHandlerLoggingTest(TestCase):
         self.assertTrue(any("[Not Found]" in msg for msg in log_context.output))
 
 
-class PermissionErrorFallbackTest(TestCase):
+class PermissionErrorFallbackTest(APITestCase):
     """
     _handle_permission_errors의 폴백 메시지 테스트
     - 매핑되지 않은 View/Method 조합에서도 안전하게 응답
@@ -281,7 +257,7 @@ class PermissionErrorFallbackTest(TestCase):
         self.assertEqual(_DEFAULT_PERM_ERROR, ErrorMessages.DEFAULT_403)
 
 
-class QnaBaseExceptionTest(TestCase):
+class QnaBaseExceptionTest(APITestCase):
     """
     QnaBaseException 클래스 직접 테스트
     """

@@ -1,6 +1,5 @@
 from typing import Any, cast
 
-from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,14 +7,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.core.utils.permissions import IsStudentRole
-from apps.qna.docs.api_descriptions import ApiDescriptions
-from apps.qna.docs.api_request_examples import (
-    QueryParameterExamples,
-    RequestBodyExamples,
-)
-from apps.qna.docs.api_response_examples import (
-    ErrorResponseExamples,
-    SuccessResponseExamples,
+from apps.qna.docs.schemas_question import (
+    QUESTION_CREATE_SCHEMA,
+    QUESTION_DETAIL_SCHEMA,
+    QUESTION_LIST_SCHEMA,
+    QUESTION_UPDATE_SCHEMA,
 )
 from apps.qna.serializers.question.request import (
     QuestionCreateSerializer,
@@ -30,7 +26,6 @@ from apps.qna.serializers.question.response import (
 )
 from apps.qna.services.question.command import QuestionCommandService
 from apps.qna.services.question.query import QuestionQueryService
-from apps.qna.utils.model_types import User
 from apps.qna.utils.qna_paginator import QuestionListPaginator as Paginator
 from apps.qna.views.base_view import QnaBaseAPIView
 
@@ -56,83 +51,26 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [POST] 질문 등록
-    @extend_schema(
-        tags=["qna"],
-        summary="질문 등록 API",
-        description=ApiDescriptions.QUESTION_CREATE,
-        request=QuestionCreateSerializer,
-        examples=[RequestBodyExamples.QUESTION_CREATE],
-        responses={
-            201: OpenApiResponse(
-                description="Created",
-                response=QuestionCreateResponseSerializer,
-                examples=[SuccessResponseExamples.QUESTION_CREATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_CREATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_CREATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_CREATE_403],
-            ),
-        },
-    )
+    @QUESTION_CREATE_SCHEMA
     def post(self, request: Request) -> Response:
-        """질문 생성"""
-        serializer = QuestionCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = QuestionCreateSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
-        # 서비스 호출
         question = QuestionCommandService.create_question(
-            author=cast(User, request.user), data=serializer.validated_data
+            author=self.request_user, data=request_serializer.validated_data
         )
 
-        # 응답 출력
         response_serializer = QuestionCreateResponseSerializer(question)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     # [GET] 질문 목록 조회
-    @extend_schema(
-        tags=["qna"],
-        summary="질문 목록 조회 API",
-        description=ApiDescriptions.QUESTION_LIST,
-        parameters=[QuestionQuerySerializer],
-        examples=[QueryParameterExamples.QUESTION_LIST],
-        responses={
-            200: OpenApiResponse(
-                description="OK",
-                response=QuestionListSerializer(many=True),
-                examples=[SuccessResponseExamples.QUESTION_LIST],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_LIST_400],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_LIST_404],
-            ),
-        },
-    )
+    @QUESTION_LIST_SCHEMA
     def get(self, request: Request) -> Response:
-        """필터링 및 검색된 질문 목록 반환"""
-        # 쿼리 파라미터 검증
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
         queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
 
-        # Response 생성
         return Paginator.get_paginated_data_response(
             queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
         )
@@ -159,76 +97,21 @@ class QuestionDetailAPIView(QnaBaseAPIView):
         raise MethodNotAllowed(method)
 
     # [GET] 질의응답 상세 조회
-    @extend_schema(
-        tags=["qna"],
-        summary="질문 상세 조회 API",
-        description=ApiDescriptions.QUESTION_DETAIL,
-        responses={
-            200: OpenApiResponse(
-                description="OK",
-                response=QuestionDetailSerializer,
-                examples=[SuccessResponseExamples.QUESTION_DETAIL],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_DETAIL_400],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_DETAIL_404],
-            ),
-        },
-    )
+    @QUESTION_DETAIL_SCHEMA
     def get(self, request: Request, question_id: int) -> Response:
         question = QuestionQueryService.get_question_detail(question_id)
 
-        serializer = QuestionDetailSerializer(cast(Any, question))
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_serializer = QuestionDetailSerializer(cast(Any, question))
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     # [PUT] 질문 수정
-    @extend_schema(
-        tags=["qna"],
-        summary="질문 수정 API",
-        description=ApiDescriptions.QUESTION_UPDATE,
-        request=QuestionUpdateRequestSerializer,
-        examples=[RequestBodyExamples.QUESTION_UPDATE],
-        responses={
-            200: OpenApiResponse(
-                description="OK",
-                response=QuestionUpdateResponseSerializer,
-                examples=[SuccessResponseExamples.QUESTION_UPDATE],
-            ),
-            400: OpenApiResponse(
-                description="Bad Request",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_UPDATE_400],
-            ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_UPDATE_401],
-            ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_UPDATE_403],
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=dict,
-                examples=[ErrorResponseExamples.QUESTION_UPDATE_404],
-            ),
-        },
-    )
+    @QUESTION_UPDATE_SCHEMA
     def put(self, request: Request, question_id: int) -> Response:
-        serializer = QuestionUpdateRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        request_serializer = QuestionUpdateRequestSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
 
         question = QuestionCommandService.update_question(
-            question_id, cast(User, request.user), serializer.validated_data
+            question_id, self.request_user, request_serializer.validated_data
         )
 
         response_serializer = QuestionUpdateResponseSerializer(question)

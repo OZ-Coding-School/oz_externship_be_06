@@ -9,9 +9,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.constants import ErrorMessages
 from apps.exams.serializers import TakeExamResponseSerializer
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services import build_take_exam_response, take_exam
 from apps.exams.validators import parse_positive_int
 from apps.exams.views.mixins import ExamsExceptionMixin

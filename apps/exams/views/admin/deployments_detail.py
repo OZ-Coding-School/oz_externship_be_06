@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.core.utils.permissions import IsStaffRole
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
@@ -22,7 +23,6 @@ from apps.exams.serializers.admin.deployments_update import (
     AdminExamDeploymentUpdateRequestSerializer,
     AdminExamDeploymentUpdateResponseSerializer,
 )
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.services.admin.deployments_delete import delete_exam_deployment
 from apps.exams.services.admin.deployments_detail import get_exam_deployment_detail
 from apps.exams.services.admin.deployments_update import update_exam_deployment

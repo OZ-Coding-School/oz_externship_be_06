@@ -4,9 +4,9 @@ from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 
+from apps.core.serializers.error import ErrorResponseSerializer
 from apps.exams.constants import ErrorMessages
 from apps.exams.models import ExamSubmission
-from apps.exams.serializers.error_serializers import ErrorResponseSerializer
 from apps.exams.serializers.student.submissions_result import ExamSubmissionSerializer
 from apps.exams.services.student.submissions_result import get_exam_submission_detail
 from apps.exams.validators import parse_positive_int

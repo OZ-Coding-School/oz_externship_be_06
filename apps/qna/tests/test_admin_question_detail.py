@@ -1,9 +1,7 @@
-from typing import Any
-
-from django.test import Client, TestCase, override_settings
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
 from apps.courses.models import (
     Cohort,
@@ -24,7 +22,7 @@ from apps.users.models import User
 
 
 @override_settings(USE_QNA_MOCK=False)
-class AdminQuestionDetailAPITest(TestCase):
+class AdminQuestionDetailAPITest(APITestCase):
     """
     어드민 질문 상세 조회 API (GET) 테스트
     - 성공 케이스 (기본 조회, 답변 없는 질문, 다양한 역할)
@@ -157,16 +155,10 @@ class AdminQuestionDetailAPITest(TestCase):
         # URL
         cls.url = reverse("admin-qna-question-detail", kwargs={"question_id": cls.question.id})
 
-    def setUp(self) -> None:
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     def test_admin_question_detail_success(self) -> None:
         """[성공] 어드민이 상세 조회 → 응답 필드 전체 검증"""
-        response = self.client.get(self.url, **self._get_auth_header(self.admin_user))
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
         data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -197,7 +189,8 @@ class AdminQuestionDetailAPITest(TestCase):
         )
         url = reverse("admin-qna-question-detail", kwargs={"question_id": empty_q.id})
 
-        response = self.client.get(url, **self._get_auth_header(self.admin_user))
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(url)
         data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -206,7 +199,8 @@ class AdminQuestionDetailAPITest(TestCase):
 
     def test_admin_question_detail_role_titles(self) -> None:
         """[성공] 다양한 역할의 답변 작성자 role_title, course_generation 검증"""
-        response = self.client.get(self.url, **self._get_auth_header(self.admin_user))
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(self.url)
         data = response.json()
 
         answers_by_content: dict[str, dict[str, str]] = {}
@@ -247,7 +241,8 @@ class AdminQuestionDetailAPITest(TestCase):
 
     def test_admin_question_detail_forbidden_student(self) -> None:
         """[실패] 403 Forbidden - STUDENT 접근"""
-        response = self.client.get(self.url, **self._get_auth_header(self.student_user))
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DETAIL.value)
@@ -255,7 +250,8 @@ class AdminQuestionDetailAPITest(TestCase):
     def test_admin_question_detail_not_found(self) -> None:
         """[실패] 404 Not Found - 존재하지 않는 question_id"""
         url = reverse("admin-qna-question-detail", kwargs={"question_id": 99999})
-        response = self.client.get(url, **self._get_auth_header(self.admin_user))
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)

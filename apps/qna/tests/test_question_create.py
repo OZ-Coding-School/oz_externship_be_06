@@ -1,12 +1,10 @@
 import json
-from typing import Any
 
 from django.db import connection
-from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
@@ -14,7 +12,7 @@ from apps.qna.models import Question, QuestionCategory
 from apps.users.models import User
 
 
-class QuestionCreateAPITest(TestCase):
+class QuestionCreateAPITest(APITestCase):
     """
     질문 등록 API (POST) 테스트
     - 성공 케이스 (권한 있는 유저)
@@ -61,18 +59,9 @@ class QuestionCreateAPITest(TestCase):
         # URL
         cls.url = reverse("question-list-create")
 
-    def setUp(self) -> None:
-        # Django 내장 TestClient 초기화
-        self.client = Client()
-
-    def _get_auth_header(self, user: Any) -> dict[str, Any]:
-        """유저 객체를 받아 JWT 액세스 토큰을 생성, HTTP_AUTHORIZATION 헤더 딕셔너리를 반환"""
-        refresh = RefreshToken.for_user(user)
-        return {"HTTP_AUTHORIZATION": f"Bearer {str(refresh.access_token)}"}
-
     def test_create_question_success(self) -> None:
         """[성공] 수강생 권한으로 유효한 데이터를 전송 시 질문 등록 확인"""
-        auth_header = self._get_auth_header(self.student_user)
+        self.client.force_authenticate(user=self.student_user)
 
         data = {
             "title": "장고 질문입니다.",
@@ -80,9 +69,7 @@ class QuestionCreateAPITest(TestCase):
             "category_id": self.category.id,
         }
 
-        response = self.client.post(
-            self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
         res_data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -101,27 +88,23 @@ class QuestionCreateAPITest(TestCase):
 
     def test_create_question_forbidden(self) -> None:
         """[실패] 수강생이 아닌 유저의 요청 시 403 에러 반환 검증"""
-        auth_header = self._get_auth_header(self.general_user)
+        self.client.force_authenticate(user=self.general_user)
 
         data = {"title": "일반인 질문", "content": "내용", "category_id": self.category.id}
 
-        response = self.client.post(
-            self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_QUESTION_CREATE.value)
 
     def test_create_question_bad_request(self) -> None:
         """[실패] 필수 데이터 누락 시 400 에러 반환 검증"""
-        auth_header = self._get_auth_header(self.student_user)
+        self.client.force_authenticate(user=self.student_user)
 
         # 필수 필드인 title 누락
         data = {"content": "제목이 없어요", "category_id": self.category.id}
 
-        response = self.client.post(
-            self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
-        )
+        response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
         res_data = response.json()
 
         self.assertEqual(response.status_code, QnaBaseException.status_code)
@@ -130,7 +113,7 @@ class QuestionCreateAPITest(TestCase):
     def test_create_question_performance(self) -> None:
         """[성공] 질문 등록 시 발생하는 쿼리 수 검증"""
 
-        auth_header = self._get_auth_header(self.student_user)
+        self.client.force_authenticate(user=self.student_user)
         data = {
             "title": "성능 테스트 질문",
             "content": "내용",
@@ -147,8 +130,6 @@ class QuestionCreateAPITest(TestCase):
 
         # Allow roughly 6 queries
         with CaptureQueriesContext(connection) as context:
-            self.client.post(
-                self.url, data=json.dumps(data), content_type="application/json", secure=False, **auth_header
-            )
+            self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
         self.assertLessEqual(len(context), 6, f"Expected 6 or fewer queries, but got {len(context)}")
