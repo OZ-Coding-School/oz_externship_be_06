@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import json
-from typing import Iterator, Union
+from typing import Iterator, Union, cast
 
 from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from rest_framework.permissions import IsAuthenticated
 
 from apps.chatbot.constants.question_prompts import QUESTION_SYSTEM_PROMPT
 from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
@@ -19,6 +18,7 @@ from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.serializers.completion import ChatbotCompletionCreateSerializer
 from apps.chatbot.services.completion_answer import generate_completion_answer
+from apps.users.models import User
 
 
 def sse(payload: str) -> str:
@@ -70,7 +70,8 @@ class ChatbotCompletionCreateAPIView(APIView):
         message = serializer.validated_data["message"]
 
         try:
-            session = ChatbotSession.objects.get(id=session_id, user=request.user)
+            user = cast(User, request.user)
+            session = ChatbotSession.objects.get(id=session_id, user=user)
         except ChatbotSession.DoesNotExist:
             return Response(
                 {"error_detail": "챗봇 세션이 존재하지 않습니다."},
