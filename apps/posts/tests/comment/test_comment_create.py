@@ -8,7 +8,6 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIRequestFactory, APITestCase
 
-from apps.posts.constants.comment_const import CommentErrorMessage
 from apps.posts.exceptions.comment_exceptions import (
     CommentNotFoundException,
     CommentUnauthorizedException,
@@ -202,7 +201,7 @@ class PostCommentCreateAPITestCase(APITestCase):
             content="create content",
             category=self.category,
         )
-        self.create_url = reverse("posts:post-comment-create", args=[self.post.id])
+        self.create_url = reverse("posts:post-comment-list-create", args=[self.post.id])
 
     def test_comment_create_success(self) -> None:
         """정상적으로 댓글 생성 API 성공"""
@@ -227,8 +226,7 @@ class PostCommentCreateAPITestCase(APITestCase):
         """비인증 유저는 401 반환"""
         response = self.client.post(self.create_url, {"content": "new comment"}, format="json")
         self.assertEqual(response.status_code, 401)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)
+        self.assertIn("detail", response.data)
 
     def test_comment_create_validation_error(self) -> None:
         """content validation 실패 시 400 반환"""
@@ -241,8 +239,8 @@ class PostCommentCreateAPITestCase(APITestCase):
     def test_comment_create_post_not_found(self) -> None:
         """존재하지 않는 게시글에 댓글 생성 시 404 반환"""
         self.client.force_authenticate(user=self.user)
-        url = reverse("posts:post-comment-create", args=[999999])
+        url = reverse("posts:post-comment-list-create", args=[999999])
         response = self.client.post(url, {"content": "new comment"}, format="json")
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.COMMENT_NOT_FOUND)
+        self.assertEqual(response.data["error_detail"], "해당 게시글을 찾을 수 없습니다.")

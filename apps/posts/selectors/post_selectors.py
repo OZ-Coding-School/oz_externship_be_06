@@ -16,7 +16,7 @@ class PostSelector:
     def get_post_list(
         category_id: Optional[int] = None,
         search: Optional[str] = None,
-        search_filter: Optional[str] = "all",
+        search_filter: Optional[str] = "title_or_content",
         sort: Optional[str] = "latest",
         user_id: Optional[int] = None,
     ) -> QuerySet[Post]:
@@ -44,17 +44,16 @@ class PostSelector:
                 queryset = queryset.filter(title__icontains=search)
             elif search_filter == "content":
                 queryset = queryset.filter(content__icontains=search)
-            elif search_filter == "nickname":
+            elif search_filter == "author":
                 queryset = queryset.filter(author__nickname__icontains=search)
-            else:
-                queryset = queryset.filter(
-                    Q(title__icontains=search) | Q(content__icontains=search) | Q(author__nickname__icontains=search)
-                )
+            else:  # title_or_content (default)
+                queryset = queryset.filter(Q(title__icontains=search) | Q(content__icontains=search))
         sort_map = {
             "latest": "-created_at",
-            "likes": "-like_count",
-            "comments": "-comment_count",
             "oldest": "created_at",
+            "most_views": "-view_count",
+            "most_likes": "-like_count",
+            "most_comments": "-comment_count",
         }
 
         order_by = sort_map.get(sort or "latest", "-created_at")

@@ -86,9 +86,11 @@ class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
     category_id = serializers.IntegerField(required=False)
     search = serializers.CharField(required=False, max_length=100)
     search_filter = serializers.ChoiceField(
-        choices=["all", "title", "content", "nickname"], default="all", required=False
+        choices=["author", "title", "content", "title_or_content"], default="title_or_content", required=False
     )
-    sort = serializers.ChoiceField(choices=["latest", "likes", "comments", "oldest"], default="latest", required=False)
+    sort = serializers.ChoiceField(
+        choices=["latest", "oldest", "most_views", "most_likes", "most_comments"], default="latest", required=False
+    )
 
 
 class PostCommentTagSerializer(serializers.Serializer[Dict[str, Any]]):
