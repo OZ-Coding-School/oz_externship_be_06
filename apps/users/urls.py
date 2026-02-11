@@ -71,8 +71,9 @@ urlpatterns = [
     path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
     path("restore/", RestoreAPIView.as_view(), name="restore"),
     # 소셜 로그인
-    path("login/kakao/", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
-    path("login/kakao/callback/", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
-    path("login/naver/", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
-    path("login/naver/callback/", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
+    path("social-login/kakao", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
+    path("social-login/kakao/callback", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
+    path("social-login/naver", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
+    path("social-login/naver/callback", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
+
 ]
