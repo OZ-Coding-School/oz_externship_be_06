@@ -12,7 +12,7 @@ class CustomJwtAuthTests(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.withdrawal_url = "/api/v1/accounts/withdrawal"
+        self.withdrawal_url = "/api/v1/accounts/withdrawal/"
 
         User = get_user_model()
         self.email = "withdrawal_test@example.com"
@@ -35,7 +35,7 @@ class CustomJwtAuthTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
     def test_inactive_user_cannot_access_me(self) -> None:
-        me_url = "/api/v1/accounts/me"
+        me_url = "/api/v1/accounts/me/"
         response = self.client.get(me_url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

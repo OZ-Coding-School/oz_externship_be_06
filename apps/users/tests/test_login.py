@@ -19,7 +19,7 @@ class LoginAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/login"
+        cls.url = "/api/v1/accounts/login/"
 
         cls.email = "login_test@example.com"
         cls.password = "Testpass123!"
@@ -91,7 +91,7 @@ class LogoutAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/logout"
+        cls.url = "/api/v1/accounts/logout/"
 
         cls.user = User.objects.create_user(
             email="logout_test@example.com",

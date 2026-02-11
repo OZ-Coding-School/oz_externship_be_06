@@ -37,42 +37,42 @@ from apps.users.views.withdrawal_view import WithdrawalAPIView
 
 urlpatterns = [
     # 회원가입
-    path("signup", SignUpAPIView.as_view(), name="signup"),
-    path("check-nickname", SignupNicknameCheckAPIView.as_view(), name="check-nickname"),
-    path("check-email", SignupEmailCheckAPIView.as_view(), name="check-email"),
-    path("check-phone", SignupPhoneCheckAPIView.as_view(), name="check-phone"),
+    path("signup/", SignUpAPIView.as_view(), name="signup"),
+    path("check-nickname/", SignupNicknameCheckAPIView.as_view(), name="check-nickname"),
+    path("check-email/", SignupEmailCheckAPIView.as_view(), name="check-email"),
+    path("check-phone/", SignupPhoneCheckAPIView.as_view(), name="check-phone"),
     # 이메일 인증
-    path("verification/send-email", SendEmailVerificationAPIView.as_view(), name="send-email-verification"),
-    path("verification/verify-email", VerifyEmailAPIView.as_view(), name="verify-email"),
+    path("verification/send-email/", SendEmailVerificationAPIView.as_view(), name="send-email-verification"),
+    path("verification/verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
     # SMS 인증
-    path("verification/send-sms", SendSmsVerificationAPIView.as_view(), name="send-sms-verification"),
-    path("verification/verify-sms", VerifySmsAPIView.as_view(), name="verify-sms"),
+    path("verification/send-sms/", SendSmsVerificationAPIView.as_view(), name="send-sms-verification"),
+    path("verification/verify-sms/", VerifySmsAPIView.as_view(), name="verify-sms"),
     # 내 정보
-    path("me", MeView.as_view(), name="me"),
-    path("me/profile-image", ProfileImageView.as_view(), name="profile-image"),
-    path("me/profile-image/presigned-url", ProfilePresignedUrlAPIView.as_view(), name="profile-image-presigned-url"),
-    path("me/refresh", TokenRefreshAPIView.as_view(), name="token-refresh"),
+    path("me/", MeView.as_view(), name="me"),
+    path("me/profile-image/", ProfileImageView.as_view(), name="profile-image"),
+    path("me/profile-image/presigned-url/", ProfilePresignedUrlAPIView.as_view(), name="profile-image-presigned-url"),
+    path("me/refresh/", TokenRefreshAPIView.as_view(), name="token-refresh"),
     # 로그인/로그아웃
-    path("login", LoginAPIView.as_view(), name="login"),
-    path("logout", LogoutAPIView.as_view(), name="logout"),
+    path("login/", LoginAPIView.as_view(), name="login"),
+    path("logout/", LogoutAPIView.as_view(), name="logout"),
     # 비밀번호
-    path("change-password", ChangePasswordAPIView.as_view(), name="change-password"),
-    path("find-password", FindPasswordAPIView.as_view(), name="find-password"),
+    path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+    path("find-password/", FindPasswordAPIView.as_view(), name="find-password"),
     # 이메일 찾기
-    path("find-email", FindEmailAPIView.as_view(), name="find-email"),
+    path("find-email/", FindEmailAPIView.as_view(), name="find-email"),
     # 휴대폰 번호 변경
-    path("change-phone", ChangePhoneView.as_view(), name="change-phone"),
+    path("change-phone/", ChangePhoneView.as_view(), name="change-phone"),
     # 수강생 등록 신청
-    path("enroll-student", EnrollStudentAPIView.as_view(), name="enroll-student"),
+    path("enroll-student/", EnrollStudentAPIView.as_view(), name="enroll-student"),
     # 수강 관련
-    path("available-courses", AvailableCoursesAPIView.as_view(), name="available-courses"),
-    path("me/enrolled-courses", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
+    path("available-courses/", AvailableCoursesAPIView.as_view(), name="available-courses"),
+    path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
     # 탈퇴/복구
-    path("withdrawal", WithdrawalAPIView.as_view(), name="withdrawal"),
-    path("restore", RestoreAPIView.as_view(), name="restore"),
+    path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
+    path("restore/", RestoreAPIView.as_view(), name="restore"),
     # 소셜 로그인
-    path("social-login/kakao", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
-    path("social-login/kakao/callback", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
-    path("social-login/naver", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
-    path("social-login/naver/callback", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
+    path("social-login/kakao/", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
+    path("social-login/kakao/callback/", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
+    path("social-login/naver/", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
+    path("social-login/naver/callback/", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
 ]

@@ -15,7 +15,7 @@ class SignUpAPIViewTest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/signup"
+        cls.url = "/api/v1/accounts/signup/"
         cls.email = "test@example.com"
         cls.phone_number = "01012345678"
         cls.email_token = "test_email_token_12345"
@@ -108,7 +108,7 @@ class SignupNicknameCheckAPIViewTest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/check-nickname"
+        cls.url = "/api/v1/accounts/check-nickname/"
 
     def test_nickname_available(self) -> None:
         data = {"nickname": "newuser"}

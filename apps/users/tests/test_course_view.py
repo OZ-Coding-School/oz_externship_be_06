@@ -25,7 +25,7 @@ class AvailableCoursesAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/available-courses"
+        cls.url = "/api/v1/accounts/available-courses/"
 
         cls.user = User.objects.create_user(
             email="course_test@example.com",
@@ -150,7 +150,7 @@ class EnrolledCoursesAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/me/enrolled-courses"
+        cls.url = "/api/v1/accounts/me/enrolled-courses/"
 
         cls.user = User.objects.create_user(
             email="enrolled_test@example.com",
