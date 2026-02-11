@@ -35,12 +35,12 @@ class ExamPresignedUrlAPIView(ExamsExceptionMixin, BasePresignedUrlAPIView):
     어드민 시험 썸네일 업로드용 Presigned URL 발급 API
     """
 
+    storage_target = StorageTarget.EXAM_THUMBNAIL
+
+    serializer_class = PresignedUrlRequestSerializer
+
     def get_permissions(self) -> list[Any]:
         return [IsAuthenticated(), IsStaffRole()]
-
-    parser_classes = [JSONParser]
-
-    storage_target = StorageTarget.EXAM_THUMBNAIL
 
     @extend_schema(
         summary="시험 썸네일 업로드 URL 발급",
