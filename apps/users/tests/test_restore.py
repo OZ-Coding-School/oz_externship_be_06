@@ -16,7 +16,7 @@ class RestoreAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/restore/"
+        cls.url = "/api/v1/accounts/restore"
 
     def setUp(self) -> None:
         self.client = APIClient()
