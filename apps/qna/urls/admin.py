@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.urls import path
 
 from apps.qna.views.admin.admin_answer_view import AdminAnswerDeleteAPIView

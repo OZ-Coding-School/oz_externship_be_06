@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.db import transaction
 from rest_framework import status
 
