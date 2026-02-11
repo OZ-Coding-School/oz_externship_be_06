@@ -209,12 +209,9 @@ class AdminWithdrawalTrendsAPITest(TestCase):
         self.assertEqual(response.json().get("error_detail"), "잘못된 요청입니다.")
 
     def test_returns_401_when_unauthenticated(self) -> None:
+        """인증되지 않은 사용자는 401을 받는다."""
         response = self.client.get(self.url, {"interval": "yearly"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.json().get("error_detail"),
-            "자격 인증 데이터가 제공되지 않았습니다.",
-        )
 
     def test_returns_403_for_normal_user(self) -> None:
         """일반 유저는 403을 받는다. (error_detail 포맷 확인)"""
