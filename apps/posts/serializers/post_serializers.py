@@ -5,6 +5,7 @@ from rest_framework import serializers
 from apps.posts.models import PostComment
 from apps.posts.models.post import Post
 from apps.posts.models.post_images import PostImage
+from apps.qna.utils.content_parser import ContentParser
 from apps.users.models import User
 
 
@@ -72,8 +73,9 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
     def get_content_preview(self, obj: Post) -> str:
         """
         게시글 본문의 앞부분 50자만 추출하여 반환합니다.
+        이미지 태그(마크다운/HTML)를 제거한 텍스트를 반환합니다.
         """
-        return obj.content[:50] + "..." if len(obj.content) > 50 else obj.content
+        return ContentParser.extract_content_preview(obj.content, 50) or ""
 
 
 class PostFilterSerializer(serializers.Serializer[dict[str, Any]]):
