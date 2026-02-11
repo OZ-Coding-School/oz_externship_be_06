@@ -169,7 +169,7 @@ class PostUpdateSerializer(serializers.ModelSerializer[Post]):
     게시글 수정을 위한 Serializer
     """
 
-    category_id: serializers.IntegerField = serializers.IntegerField(required=False)
+    category_id: serializers.IntegerField = serializers.IntegerField(required=True)
 
     class Meta:
         model = Post
