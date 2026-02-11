@@ -1,6 +1,5 @@
 from datetime import date
 
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -17,7 +16,7 @@ class MeAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/me/"
+        cls.url = "/api/v1/accounts/me"
 
         cls.user = User.objects.create_user(
             email="me_test@example.com",

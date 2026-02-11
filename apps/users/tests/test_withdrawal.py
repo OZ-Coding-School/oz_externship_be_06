@@ -20,7 +20,7 @@ class WithdrawalAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.withdrawal_url = "/api/v1/accounts/withdrawal/"
+        cls.withdrawal_url = "/api/v1/accounts/me"
 
         cls.email = "withdrawal_test@example.com"
         cls.password = "Testpass123!"
