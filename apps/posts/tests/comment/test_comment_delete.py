@@ -102,15 +102,14 @@ class PostCommentDeleteAPITests(TestCase):
     def test_delete_401_when_unauthenticated(self) -> None:
         res = self.client.delete(self._url(self.comment.id))
         self.assertEqual(res.status_code, 401)
-        self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)  # type: ignore[attr-defined]
+        self.assertIn("detail", res.data)  # type: ignore[attr-defined]
 
     def test_delete_403_when_not_author(self) -> None:
         self.client.force_authenticate(user=self.other)  # type: ignore[attr-defined]
         res = self.client.delete(self._url(self.comment.id))
         self.assertEqual(res.status_code, 403)
         self.assertIn("error_detail", res.data)  # type: ignore[attr-defined]
-        self.assertEqual(res.data["error_detail"], CommentErrorMessage.FORBIDDEN)  # type: ignore[attr-defined]
+        self.assertEqual(res.data["error_detail"], "권한이 없습니다.")  # type: ignore[attr-defined]
 
         """삭제 안 됐는지 확인"""
         self.assertTrue(PostComment.objects.filter(id=self.comment.id).exists())

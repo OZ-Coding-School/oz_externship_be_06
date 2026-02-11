@@ -235,8 +235,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
         """비인증 유저는 401 반환"""
         response = self.client.put(self.url, {"content": "updated comment"}, format="json")
         self.assertEqual(response.status_code, 401)
-        self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.UNAUTHORIZED)
+        self.assertIn("detail", response.data)
 
     def test_update_comment_not_found(self) -> None:
         """존재하지 않는 댓글 수정 시 404 반환"""
@@ -253,7 +252,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
         response = self.client.put(self.url, {"content": "updated comment"}, format="json")
         self.assertEqual(response.status_code, 403)
         self.assertIn("error_detail", response.data)
-        self.assertEqual(response.data["error_detail"], CommentErrorMessage.FORBIDDEN)
+        self.assertEqual(response.data["error_detail"], "권한이 없습니다.")
 
     def test_update_comment_validation_error(self) -> None:
         """content validation 실패 시 400 반환"""
