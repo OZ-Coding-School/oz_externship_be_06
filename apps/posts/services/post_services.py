@@ -37,8 +37,7 @@ class PostService:
         #     PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in images])
 
         if content:
-            # content에서 새 이미지 URL 리스트 추출 (중복 제거를 위해 Set 사용)
-            image_urls = set(ContentParser.extract_all_image_urls(post.content))
+            image_urls = ContentParser.extract_all_image_urls(post.content)
 
             # 이미지 생성
             if image_urls:
@@ -81,6 +80,8 @@ class PostService:
                     content_changed = True
 
         if updated_fields:
+            if "updated_at" not in updated_fields:
+                updated_fields.append("updated_at")
             post.save(update_fields=updated_fields)
 
         # 2. 본문 변경 시 이미지 테이블 동기화
