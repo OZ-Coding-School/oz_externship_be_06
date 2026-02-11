@@ -9,18 +9,18 @@ from django.utils import timezone
 
 from apps.courses.models import Cohort, Course
 from apps.courses.models.cohort_students import CohortStudent
+from apps.users.exceptions import (
+    AlreadyEnrolledError,
+    CohortNotFoundError,
+    NotUserRoleError,
+)
 from apps.users.models import StudentEnrollmentRequest, User
 from apps.users.services.admin_student_enrollment_service import (
     accept_enrollments,
     reject_enrollments,
 )
 from apps.users.services.course_service import get_enrolled_courses
-from apps.users.services.enroll_student_service import (
-    AlreadyEnrolledError,
-    CohortNotFoundError,
-    NotUserRoleError,
-    enroll_student,
-)
+from apps.users.services.enroll_student_service import enroll_student
 
 
 class EnrollmentFlowTestCase(TestCase):

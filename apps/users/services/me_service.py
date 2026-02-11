@@ -3,19 +3,9 @@ from typing import Any
 from django.db import IntegrityError
 
 from apps.core.utils.s3_handler import S3Handler
+from apps.users.exceptions import InvalidPhoneTokenError, PhoneNumberAlreadyExistsError
 from apps.users.models import User
 from apps.users.utils.redis_utils import delete_sms_token, get_phone_by_token
-
-
-# 이미 등록된 휴대폰 번호 예외
-class PhoneNumberAlreadyExistsError(Exception):
-    pass
-
-
-# 유효하지 않은 휴대폰 인증 토큰 예외
-class InvalidPhoneTokenError(Exception):
-
-    pass
 
 
 # 내정보 수정

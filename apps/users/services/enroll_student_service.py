@@ -1,18 +1,10 @@
 from apps.courses.models import Cohort
+from apps.users.exceptions import (
+    AlreadyEnrolledError,
+    CohortNotFoundError,
+    NotUserRoleError,
+)
 from apps.users.models import StudentEnrollmentRequest, User
-
-
-# 이미 해당 기수에 신청을 한 경우
-class AlreadyEnrolledError(Exception):
-    """이미 해당 기수에 등록 신청한 경우"""
-
-
-class NotUserRoleError(Exception):
-    """일반 회원 권한이 아닌 경우"""
-
-
-class CohortNotFoundError(Exception):
-    """기수를 찾을 수 없는 경우"""
 
 
 def enroll_student(*, user: User, cohort_id: int) -> StudentEnrollmentRequest:

@@ -2,20 +2,8 @@ from typing import Any
 
 from django.db import IntegrityError, transaction
 
+from apps.users.exceptions import AccountNotFoundError, AccountUpdateConflictError
 from apps.users.models import User
-
-
-class AccountNotFoundError(Exception):
-    """회원을 찾을 수 없을 때 발생."""
-
-
-class AccountUpdateConflictError(Exception):
-    """회원 정보 수정 중 충돌 발생 시."""
-
-    def __init__(self, field: str, message: str) -> None:
-        self.field = field
-        self.message = message
-        super().__init__(message)
 
 
 # 회원 정보 수정

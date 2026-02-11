@@ -5,12 +5,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.exceptions import InvalidPhoneTokenError, PhoneNumberAlreadyExistsError
 from apps.users.serializers.me import ChangePhoneRequestSerializer
-from apps.users.services.me_service import (
-    InvalidPhoneTokenError,
-    PhoneNumberAlreadyExistsError,
-    change_phone_number,
-)
+from apps.users.services.me_service import change_phone_number
 
 
 class ChangePhoneView(APIView):
