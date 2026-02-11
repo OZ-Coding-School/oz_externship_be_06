@@ -58,7 +58,7 @@ def get_admin_submission_detail(submission_id: int) -> dict[str, Any]:
             }
         )
 
-    elapsed_time = max(0, int((submission.created_at - submission.started_at).total_seconds() // 60))
+    elapsed_time = max(0, int((submission.created_at - submission.started_at).total_seconds()))
 
     return {
         "exam": {

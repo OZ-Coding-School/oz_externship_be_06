@@ -116,7 +116,7 @@ class AdminExamSubmissionDetailAPITest(TestCase):
             score=10,
             correct_answer_count=1,
         )
-        cls.expected_elapsed = int((cls.submission.created_at - started_at).total_seconds() // 60)
+        cls.expected_elapsed = int((cls.submission.created_at - started_at).total_seconds())
 
     def _auth_headers(self, user: User) -> dict[str, str]:
         token = AccessToken.for_user(user)
@@ -178,3 +178,23 @@ class AdminExamSubmissionDetailAPITest(TestCase):
         self.assertEqual(response.status_code, 404)
         data = response.json()
         self.assertEqual(data["error_detail"], ErrorMessages.SUBMISSION_DETAIL_NOT_FOUND.value)
+
+    def test_elapsed_time_is_calculated_in_seconds(self) -> None:
+        started_at = timezone.make_aware(datetime(2025, 3, 2, 10, 0, 0))
+        created_at = started_at + timedelta(seconds=27)
+        updated_at = started_at + timedelta(minutes=10)
+
+        ExamSubmission.objects.filter(id=self.submission.id).update(
+            started_at=started_at,
+            created_at=created_at,
+            updated_at=updated_at,
+        )
+
+        response = self.client.get(
+            f"/api/v1/admin/exams/submissions/{self.submission.id}",
+            headers=self._auth_headers(self.admin_user),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["result"]["elapsed_time"], 27)
