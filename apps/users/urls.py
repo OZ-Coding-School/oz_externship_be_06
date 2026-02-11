@@ -75,5 +75,4 @@ urlpatterns = [
     path("social-login/kakao/callback", KakaoCallbackAPIView.as_view(), name="kakao-login-callback"),
     path("social-login/naver", NaverLoginStartAPIView.as_view(), name="naver-login-start"),
     path("social-login/naver/callback", NaverCallbackAPIView.as_view(), name="naver-login-callback"),
-
 ]
