@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from apps.qna.constants import CATEGORY_LABELS
@@ -5,7 +7,7 @@ from apps.qna.models import QuestionCategory
 
 
 # ==============================================================================
-# [POST] Admin Category - Create
+# [POST] Admin Category Create
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryCreateResponseSerializer(serializers.ModelSerializer[QuestionCategory]):
@@ -29,7 +31,7 @@ class AdminCategoryCreateResponseSerializer(serializers.ModelSerializer[Question
 
 
 # ==============================================================================
-# [GET] Admin Category List - Read
+# [GET] Admin Category List
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryListResponseSerializer(serializers.ModelSerializer[QuestionCategory]):
@@ -69,3 +71,17 @@ class AdminCategoryListResponseSerializer(serializers.ModelSerializer[QuestionCa
         if children:
             return [child.name for child in children.all()]
         return []
+
+
+# ==============================================================================
+# [DELETE] Admin Category Delete
+# /api/v1/admin/qna/categories/{category_id}
+# ==============================================================================
+class AdminCategoryDeleteResponseSerializer(serializers.Serializer[Any]):
+    """
+    어드민 카테고리 삭제 응답 시리얼라이저
+    """
+
+    category_id = serializers.IntegerField()
+    category_type = serializers.CharField()
+    migrated_question_count = serializers.IntegerField()

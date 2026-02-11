@@ -12,7 +12,7 @@ from apps.qna.models import Question
 # ==============================================================================
 class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
     """
-    질문 등록 시리얼라이저
+    질문 등록 요청 시리얼라이저
     """
 
     title = serializers.CharField(required=True, help_text="질문 제목")
@@ -32,7 +32,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer[Question]):
 # ==============================================================================
 class QuestionQuerySerializer(serializers.Serializer[Any]):
     """
-    질문 목록 조회를 위한 쿼리 파라미터 시리얼라이저
+    질문 목록 조회 요청 시리얼라이저
     """
 
     search_keyword = serializers.CharField(required=False, allow_blank=True)
