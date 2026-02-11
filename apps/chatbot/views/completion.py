@@ -104,7 +104,7 @@ class ChatbotCompletionCreateAPIView(APIView):
             )
 
         try:
-            ChatbotCompletions.objects.create(
+            user_completion = ChatbotCompletions.objects.create(
                 session=session,
                 content=message,
                 role=ChatbotCompletions.Role.USER,
@@ -133,6 +133,7 @@ class ChatbotCompletionCreateAPIView(APIView):
 
                 except Exception as exc:
                     print(f"DEBUG ERROR: {exc}")
+                    user_completion.delete()
                     yield sse(
                         json.dumps(
                             {"error_detail": "응답 생성 중 오류가 발생했습니다."},
