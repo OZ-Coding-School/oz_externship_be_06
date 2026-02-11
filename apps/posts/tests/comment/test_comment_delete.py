@@ -96,8 +96,8 @@ class PostCommentDeleteAPITests(TestCase):
         )
 
     def _url(self, comment_id: int) -> str:
-        """urls.py: "<int:post_id>/comments/<int:comment_id>/delete/" """
-        return reverse("posts:post-comment-delete", args=[self.post.id, comment_id])
+        """urls.py: "<int:post_id>/comments/<int:comment_id>" """
+        return reverse("posts:post-comment-detail", args=[self.post.id, comment_id])
 
     def test_delete_401_when_unauthenticated(self) -> None:
         res = self.client.delete(self._url(self.comment.id))

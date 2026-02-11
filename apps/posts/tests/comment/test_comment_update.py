@@ -209,7 +209,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
             post=self.post,
             content="original comment",
         )
-        self.url = reverse("posts:post-comment-update", args=[self.post.id, self.comment.id])
+        self.url = reverse("posts:post-comment-detail", args=[self.post.id, self.comment.id])
 
     def test_update_comment_success(self) -> None:
         """정상적으로 댓글 수정 API 성공"""
@@ -241,7 +241,7 @@ class PostCommentUpdateAPITestCase(APITestCase):
     def test_update_comment_not_found(self) -> None:
         """존재하지 않는 댓글 수정 시 404 반환"""
         self.client.force_authenticate(user=self.user)
-        url = reverse("posts:post-comment-update", args=[self.post.id, 999999])
+        url = reverse("posts:post-comment-detail", args=[self.post.id, 999999])
         response = self.client.put(url, {"content": "updated comment"}, format="json")
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)

@@ -49,14 +49,14 @@ class PostListCreateView(APIView):
             OpenApiParameter(
                 name="search_filter",
                 type=str,
-                enum=["all", "title", "content", "nickname"],
-                default="all",
+                enum=["author", "title", "content", "title_or_content"],
+                default="title_or_content",
                 description="검색 범위 설정",
             ),
             OpenApiParameter(
                 name="sort",
                 type=str,
-                enum=["latest", "likes", "comments", "oldest"],
+                enum=["latest", "oldest", "most_views", "most_likes", "most_comments"],
                 default="latest",
                 description="데이터 정렬 기준",
             ),
@@ -159,7 +159,7 @@ class PostDetailView(APIView):
     """
 
     def get_permissions(self) -> list[Any]:
-        if self.request.method in ["PATCH", "DELETE"]:
+        if self.request.method in ["PUT", "DELETE"]:
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -182,7 +182,7 @@ class PostDetailView(APIView):
     @extend_schema(
         summary="게시글 수정", request=PostUpdateSerializer, responses={200: PostDetailSerializer}, tags=["posts"]
     )
-    def patch(self, request: Request, post_id: int) -> Response:
+    def put(self, request: Request, post_id: int) -> Response:
         user: User = cast(User, request.user)
 
         post = PostSelector.get_post_detail(post_id=post_id)

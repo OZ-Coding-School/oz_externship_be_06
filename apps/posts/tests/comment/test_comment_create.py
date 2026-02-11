@@ -202,7 +202,7 @@ class PostCommentCreateAPITestCase(APITestCase):
             content="create content",
             category=self.category,
         )
-        self.create_url = reverse("posts:post-comment-create", args=[self.post.id])
+        self.create_url = reverse("posts:post-comment-list-create", args=[self.post.id])
 
     def test_comment_create_success(self) -> None:
         """정상적으로 댓글 생성 API 성공"""
@@ -241,7 +241,7 @@ class PostCommentCreateAPITestCase(APITestCase):
     def test_comment_create_post_not_found(self) -> None:
         """존재하지 않는 게시글에 댓글 생성 시 404 반환"""
         self.client.force_authenticate(user=self.user)
-        url = reverse("posts:post-comment-create", args=[999999])
+        url = reverse("posts:post-comment-list-create", args=[999999])
         response = self.client.post(url, {"content": "new comment"}, format="json")
         self.assertEqual(response.status_code, 404)
         self.assertIn("error_detail", response.data)

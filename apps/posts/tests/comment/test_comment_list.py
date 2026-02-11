@@ -96,7 +96,7 @@ class PostCommentListAPITestCase(APITestCase):
             content="apilist content",
             category=self.category,
         )
-        self.list_url = reverse("posts:post-comment-list", args=[self.post.id])
+        self.list_url = reverse("posts:post-comment-list-create", args=[self.post.id])
 
     def test_comment_list_success(self) -> None:
         """정상적으로 댓글 목록 조회 성공 (200)"""
