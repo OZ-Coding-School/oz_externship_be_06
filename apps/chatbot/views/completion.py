@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Iterator, Union, cast
 
 from django.core.cache import cache
@@ -26,6 +27,8 @@ from apps.chatbot.services.support_completion_policy import (
     validate_user_prompt_policy as validate_support_policy,
 )
 from apps.users.models import User
+
+logger = logging.getLogger(__name__)
 
 
 def sse(payload: str) -> str:
@@ -137,7 +140,7 @@ class ChatbotCompletionCreateAPIView(APIView):
                     yield sse("[DONE]")
 
                 except Exception as exc:
-                    print(f"DEBUG ERROR: {exc}")
+                    logger.error("SSE stream error: %s", exc, exc_info=True)
                     user_completion.delete()
                     yield sse(
                         json.dumps(
