@@ -4,15 +4,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from apps.users.models import User
-from apps.users.serializers.withdrawal_serializer import WithdrawalRequestSerializer
 from apps.users.serializers.me import (
     MeResponseSerializer,
     MeUpdateRequestSerializer,
     MeUpdateResponseSerializer,
 )
+from apps.users.serializers.withdrawal_serializer import WithdrawalRequestSerializer
 from apps.users.services.me_service import update_user_profile
 from apps.users.services.withdrawal_service import withdraw_user
+
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -63,4 +65,3 @@ class MeView(APIView):
         assert isinstance(request.user, User)
         withdraw_user(user=request.user, reason=reason, reason_detail=reason_detail)
         return Response(status=status.HTTP_204_NO_CONTENT)
-

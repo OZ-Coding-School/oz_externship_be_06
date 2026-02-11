@@ -1,7 +1,9 @@
-from rest_framework.exceptions import ValidationError
-from apps.users.models.withdrawal import Withdrawal
 from django.db import transaction
+from rest_framework.exceptions import ValidationError
+
 from apps.users.models import User
+from apps.users.models.withdrawal import Withdrawal
+
 
 def withdraw_user(*, user: User, reason: str, reason_detail: str) -> None:
     if not user.is_active:

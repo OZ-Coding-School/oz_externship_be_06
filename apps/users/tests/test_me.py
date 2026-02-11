@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models import User
 from apps.users.models.withdrawal import Withdrawal
 
+
 class MeAPITests(TestCase):
     client: APIClient
 
