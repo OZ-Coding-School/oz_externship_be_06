@@ -85,6 +85,13 @@ class ChatbotCompletionCreateAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        lock_key = f"chatbot:responding:{session.id}"
+
+        if not cache.get(lock_key):
+            last = ChatbotCompletions.objects.filter(session=session).order_by("-created_at").first()
+            if last and last.role == ChatbotCompletions.Role.USER:
+                last.delete()
+
         try:
             if session.question_id is not None:
                 validate_question_policy(session=session, content=message)
@@ -95,8 +102,6 @@ class ChatbotCompletionCreateAPIView(APIView):
                 {"error_detail": exc.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        lock_key = f"chatbot:responding:{session.id}"
         if not cache.add(lock_key, "1", timeout=180):
             return Response(
                 {"error_detail": "현재 답변 생성 중입니다."},
