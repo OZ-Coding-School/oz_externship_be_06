@@ -19,7 +19,7 @@ class EnrollStudentAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/enroll-student"
+        cls.url = "/api/v1/accounts/enroll-student/"
 
         cls.course = Course.objects.create(
             name="백엔드 과정",
