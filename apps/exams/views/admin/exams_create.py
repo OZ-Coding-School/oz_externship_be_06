@@ -4,7 +4,7 @@ from typing import NoReturn
 
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -25,7 +25,7 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
     """관리자 쪽지시험 생성 API."""
 
     permission_classes = [IsAuthenticated, IsStaffRole]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    parser_classes = [JSONParser]
     serializer_class = AdminExamCreateRequestSerializer
 
     def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
@@ -43,7 +43,7 @@ class AdminExamCreateAPIView(ExamsExceptionMixin, APIView):
         exam = create_exam(
             title=data["title"],
             subject_id=data["subject_id"],
-            thumbnail_img=data.get("thumbnail_img"),
+            thumbnail_img_url=data.get("thumbnail_img_url"),
         )
 
         response_serializer = AdminExamCreateResponseSerializer(exam)
