@@ -40,8 +40,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
         read_only_fields = fields
 
     def get_elapsed_time(self, obj: ExamSubmission) -> int:
-        seconds = (obj.created_at - obj.started_at).total_seconds()
-        return max(0, int(seconds // 60))
+        return max(0, int((obj.created_at - obj.started_at).total_seconds()))
 
     def _answers_map(self, obj: ExamSubmission) -> dict[int, object]:
         normalized = normalize_answers_json(obj.answers_json)
