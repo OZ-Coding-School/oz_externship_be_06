@@ -64,9 +64,10 @@ class PostListSerializer(serializers.ModelSerializer[Post]):
         """
         N+1 문제를 방지하기 위해 Prefetch된 데이터를 메모리 상에서 조회합니다.
         """
-        # .all()을 사용하여 이미 Prefetch된 쿼리셋 캐시를 활용함으로써 추가 쿼리를 방지합니다.
         images = list(obj.images.all())
-        return images[0].img_url if images else None
+        if not images:
+            return None
+        return images[0].img_url
 
     def get_content_preview(self, obj: Post) -> str:
         """

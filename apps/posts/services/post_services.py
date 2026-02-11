@@ -8,6 +8,7 @@ from apps.posts.exceptions.post_exceptions import (
     PostPermissionDeniedException,
 )
 from apps.posts.models import Post, PostAttachment, PostImage
+from apps.qna.utils.content_parser import ContentParser
 from apps.users.models import User
 
 
@@ -32,8 +33,16 @@ class PostService:
 
         post: Post = Post.objects.create(author=user, category_id=category_id, title=title, content=content)
 
-        if images:
-            PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in images])
+        # if images:
+        #     PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in images])
+
+        if content:
+            # content에서 새 이미지 URL 리스트 추출 (중복 제거를 위해 Set 사용)
+            image_urls = set(ContentParser.extract_all_image_urls(post.content))
+
+            # 이미지 생성
+            if image_urls:
+                PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in image_urls])
 
         if attachments:
             PostAttachment.objects.bulk_create([PostAttachment(post=post, file_url=url) for url in attachments])
@@ -56,28 +65,35 @@ class PostService:
     @transaction.atomic
     def update_post(user: User, post: Post, **data: Any) -> Post:
         """
-        게시글 수정
-        - 요청자가 작성자인지 권한 검증 필요
-        - 전달된 데이터만 선택적 업데이트
+        게시글 수정 및 이미지 썸네일 동기화
         """
-
-        # 권한 검증 : 작성자 본인이 아니면 예외 발생
-        if post.author != user:  # 작성자(post.author) 요청자(user)
+        if post.author != user:
             raise PostPermissionDeniedException()
 
-        # 데이터 업데이트 및 변경된 필드 추적
+        # 1. 일반 필드 업데이트
         updated_fields = []
+        content_changed = False
         for attr, value in data.items():
             if hasattr(post, attr):
                 setattr(post, attr, value)
                 updated_fields.append(attr)
+                if attr == "content":
+                    content_changed = True
 
-        # DB 저장
         if updated_fields:
-            if "updated_at" not in updated_fields:
-                updated_fields.append("updated_at")
-
             post.save(update_fields=updated_fields)
+
+        # 2. 본문 변경 시 이미지 테이블 동기화
+        if content_changed:
+            # 본문에서 현재 이미지 URL들을 순서대로 추출
+            current_image_urls = ContentParser.extract_all_image_urls(post.content)  # 리스트 형태 (순서 유지)
+
+            # 실무형 로직: 기존 이미지를 모두 지우고 새로 생성하여 '첫 번째 이미지'의 순서를 보장함
+            # (만약 성능 최적화가 더 중요하다면 이전 답변의 Set 연산 방식을 유지하되 ID 순서를 관리해야 함)
+            post.images.all().delete()
+
+            if current_image_urls:
+                PostImage.objects.bulk_create([PostImage(post=post, img_url=url) for url in current_image_urls])
 
         return post
 
