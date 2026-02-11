@@ -49,7 +49,8 @@ class ExamAnswerSerializer(serializers.Serializer[Any]):
 class ExamSubmissionCreateSerializer(serializers.Serializer[Any]):
     # 쪽지시험 제출 API 요청 데이터 검증용 Serializer
     deployment_id = serializers.IntegerField()
-    started_at = serializers.DateTimeField()
+    # started_at은 서버에서 관리한다.
+    started_at = serializers.DateTimeField(required=False)
     cheating_count = serializers.IntegerField(default=0)
     answers = ExamAnswerSerializer(many=True)
 

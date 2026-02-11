@@ -98,7 +98,6 @@ class ExamSubmissionTest(APITestCase):
     def test_submission_exam_success(self) -> None:
         data = {
             "deployment_id": self.deployment.id,
-            "started_at": timezone.now().isoformat(),
             "cheating_count": 0,
             "answers": [
                 {
@@ -123,7 +122,6 @@ class ExamSubmissionTest(APITestCase):
     def test_submission_exam_invalid_type(self) -> None:
         data = {
             "deployment_id": self.deployment.id,
-            "started_at": timezone.now().isoformat(),
             "cheating_count": 0,
             "answers": [
                 {
@@ -148,7 +146,6 @@ class ExamSubmissionTest(APITestCase):
 
         data = {
             "deployment_id": self.deployment.id,
-            "started_at": timezone.now().isoformat(),
             "cheating_count": 0,
             "answers": [
                 {
@@ -173,7 +170,6 @@ class ExamSubmissionTest(APITestCase):
 
         data = {
             "deployment_id": self.deployment.id,
-            "started_at": timezone.now().isoformat(),
             "cheating_count": 0,
             "answers": [
                 {
@@ -195,7 +191,6 @@ class ExamSubmissionTest(APITestCase):
     def test_submission_exam_empty_answers(self) -> None:
         data = {
             "deployment_id": self.deployment.id,
-            "started_at": timezone.now().isoformat(),
             "cheating_count": 0,
             "answers": [],
         }
