@@ -1,10 +1,7 @@
-import json
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.qna.docs.api_response_examples import SuccessResponseExamples
 from apps.qna.models import QuestionCategory
 
 
