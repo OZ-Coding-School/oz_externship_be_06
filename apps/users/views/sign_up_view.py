@@ -71,10 +71,46 @@ class SignUpAPIView(APIView):
         )
 
 
-# 닉네임 중복 확인 api
-class SignupNicknameCheckAPIView(APIView):
-
+# 중복 확인 베이스 클래스
+class BaseDuplicateCheckAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class: type
+    field_name: str
+    error_message: str
+    success_message: str
+
+    def get_check_value(self, validated_data: dict) -> str:
+        return validated_data[self.field_name]
+
+    def post(self, request: Request) -> Response:
+        serializer = self.serializer_class(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"error_detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        value = self.get_check_value(serializer.validated_data)
+
+        if User.objects.filter(**{self.field_name: value}).exists():
+            return Response(
+                {"error_detail": self.error_message},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        return Response(
+            {"detail": self.success_message},
+            status=status.HTTP_200_OK,
+        )
+
+
+# 닉네임 중복 확인 api
+class SignupNicknameCheckAPIView(BaseDuplicateCheckAPIView):
+    serializer_class = SignupNicknameCheckSerializer
+    field_name = "nickname"
+    error_message = "이미 사용중인 닉네임 입니다"
+    success_message = "사용가능한 닉네임 입니다."
 
     @extend_schema(
         tags=["accounts"],
@@ -101,32 +137,15 @@ class SignupNicknameCheckAPIView(APIView):
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = SignupNicknameCheckSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(
-                {"error_detail": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        nickname = serializer.validated_data["nickname"]
-
-        if User.objects.filter(nickname=nickname).exists():
-            return Response(
-                {"error_detail": "이미 사용중인 닉네임 입니다"},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        return Response(
-            {"detail": "사용가능한 닉네임 입니다."},
-            status=status.HTTP_200_OK,
-        )
+        return super().post(request)
 
 
 # 이메일 중복 확인 api
-class SignupEmailCheckAPIView(APIView):
-
-    permission_classes = [AllowAny]
+class SignupEmailCheckAPIView(BaseDuplicateCheckAPIView):
+    serializer_class = SignupEmailCheckSerializer
+    field_name = "email"
+    error_message = "이미 사용중인 이메일입니다."
+    success_message = "사용가능한 이메일입니다."
 
     @extend_schema(
         tags=["accounts"],
@@ -146,32 +165,18 @@ class SignupEmailCheckAPIView(APIView):
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = SignupEmailCheckSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(
-                {"error_detail": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        email = serializer.validated_data["email"]
-
-        if User.objects.filter(email=email).exists():
-            return Response(
-                {"error_detail": "이미 사용중인 이메일입니다."},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        return Response(
-            {"detail": "사용가능한 이메일입니다."},
-            status=status.HTTP_200_OK,
-        )
+        return super().post(request)
 
 
 # 휴대폰 번호 중복 확인 api
-class SignupPhoneCheckAPIView(APIView):
+class SignupPhoneCheckAPIView(BaseDuplicateCheckAPIView):
+    serializer_class = SignupPhoneCheckSerializer
+    field_name = "phone_number"
+    error_message = "이미 사용중인 휴대폰 번호입니다."
+    success_message = "사용가능한 휴대폰 번호입니다."
 
-    permission_classes = [AllowAny]
+    def get_check_value(self, validated_data: dict) -> str:
+        return normalize_phone_number(validated_data["phone_number"])
 
     @extend_schema(
         tags=["accounts"],
@@ -191,23 +196,4 @@ class SignupPhoneCheckAPIView(APIView):
         },
     )
     def post(self, request: Request) -> Response:
-        serializer = SignupPhoneCheckSerializer(data=request.data)
-
-        if not serializer.is_valid():
-            return Response(
-                {"error_detail": serializer.errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        phone_number = normalize_phone_number(serializer.validated_data["phone_number"])
-
-        if User.objects.filter(phone_number=phone_number).exists():
-            return Response(
-                {"error_detail": "이미 사용중인 휴대폰 번호입니다."},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        return Response(
-            {"detail": "사용가능한 휴대폰 번호입니다."},
-            status=status.HTTP_200_OK,
-        )
+        return super().post(request)

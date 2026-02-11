@@ -34,7 +34,7 @@ class ChangePasswordAPITest(TestCase):
         self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
         response = self.api_client.post(
-            "/api/v1/accounts/change-password/",
+            "/api/v1/accounts/change-password",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "NewPass456@",
@@ -54,7 +54,7 @@ class ChangePasswordAPITest(TestCase):
         self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
         response = self.api_client.post(
-            "/api/v1/accounts/change-password/",
+            "/api/v1/accounts/change-password",
             data={
                 "old_password": "WrongPass123!",
                 "new_password": "NewPass456@",
@@ -70,7 +70,7 @@ class ChangePasswordAPITest(TestCase):
         self.api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
         response = self.api_client.post(
-            "/api/v1/accounts/change-password/",
+            "/api/v1/accounts/change-password",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "weak",
@@ -83,7 +83,7 @@ class ChangePasswordAPITest(TestCase):
 
     def test_change_password_unauthenticated(self) -> None:
         response = self.api_client.post(
-            "/api/v1/accounts/change-password/",
+            "/api/v1/accounts/change-password",
             data={
                 "old_password": "OldPass123!",
                 "new_password": "NewPass456@",
@@ -118,7 +118,7 @@ class FindPasswordAPITest(TestCase):
         save_email_token(email_token, self.user.email)
 
         response = self.client.post(
-            "/api/v1/accounts/find-password/",
+            "/api/v1/accounts/find-password",
             data={
                 "email_token": email_token,
                 "new_password": "NewPass456@",
@@ -135,7 +135,7 @@ class FindPasswordAPITest(TestCase):
 
     def test_find_password_invalid_token(self) -> None:
         response = self.client.post(
-            "/api/v1/accounts/find-password/",
+            "/api/v1/accounts/find-password",
             data={
                 "email_token": "invalid_token",
                 "new_password": "NewPass456@",
@@ -151,7 +151,7 @@ class FindPasswordAPITest(TestCase):
         save_email_token(email_token, self.user.email)
 
         response = self.client.post(
-            "/api/v1/accounts/find-password/",
+            "/api/v1/accounts/find-password",
             data={
                 "email_token": email_token,
                 "new_password": "weak",
@@ -185,7 +185,7 @@ class TokenRefreshAPITest(TestCase):
         refresh = RefreshToken.for_user(self.user)
 
         self.client.cookies["refresh_token"] = str(refresh)
-        response = self.client.post("/api/v1/accounts/me/refresh/")
+        response = self.client.post("/api/v1/accounts/me/refresh")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("access_token", response.json())
@@ -193,13 +193,13 @@ class TokenRefreshAPITest(TestCase):
 
     def test_token_refresh_invalid_token(self) -> None:
         self.client.cookies["refresh_token"] = "invalid_token"
-        response = self.client.post("/api/v1/accounts/me/refresh/")
+        response = self.client.post("/api/v1/accounts/me/refresh")
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.json()["error_detail"], "로그인 세션이 만료되었습니다.")
 
     def test_token_refresh_missing_cookie(self) -> None:
-        response = self.client.post("/api/v1/accounts/me/refresh/")
+        response = self.client.post("/api/v1/accounts/me/refresh")
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error_detail"], "refresh_token 쿠키가 없습니다.")

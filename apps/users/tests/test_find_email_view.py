@@ -51,7 +51,7 @@ class FindEmailAPITest(TestCase):
         save_sms_token(sms_token, "01012345678")
 
         response = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={
                 "name": "홍길동",
                 "sms_token": sms_token,
@@ -66,7 +66,7 @@ class FindEmailAPITest(TestCase):
 
     def test_find_email_invalid_token(self) -> None:
         response = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={
                 "name": "홍길동",
                 "sms_token": "invalid_token",
@@ -83,7 +83,7 @@ class FindEmailAPITest(TestCase):
         save_sms_token(sms_token, "01012345678")
 
         response = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={
                 "name": "존재하지않는사용자",
                 "sms_token": sms_token,
@@ -96,7 +96,7 @@ class FindEmailAPITest(TestCase):
 
     def test_find_email_missing_fields(self) -> None:
         response = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={},
             content_type="application/json",
         )
@@ -113,7 +113,7 @@ class FindEmailAPITest(TestCase):
 
         # 첫 번째 요청 - 성공
         response1 = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={
                 "name": "홍길동",
                 "sms_token": sms_token,
@@ -124,7 +124,7 @@ class FindEmailAPITest(TestCase):
 
         # 두 번째 요청 - 토큰 만료
         response2 = self.client.post(
-            "/api/v1/accounts/find-email/",
+            "/api/v1/accounts/find-email",
             data={
                 "name": "홍길동",
                 "sms_token": sms_token,
