@@ -42,7 +42,7 @@ class ChatbotSessionDeleteAPIView(APIView):
             )
         except ValidationError as exc:
             return Response(
-                {"error_detail": str(exc)},
+                {"error_detail": exc.message},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

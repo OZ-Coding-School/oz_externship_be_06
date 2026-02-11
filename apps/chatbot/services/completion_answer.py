@@ -37,11 +37,11 @@ def _build_chat_history(
     chat_history: List[Dict[str, Any]] = [
         {
             "role": "user",
-            "parts": [system_prompt],
+            "parts": [{"text": system_prompt}],
         },
         {
             "role": "model",
-            "parts": ["네, 알겠습니다."],
+            "parts": [{"text": "네, 알겠습니다."}],
         },
     ]
 
@@ -50,7 +50,7 @@ def _build_chat_history(
         chat_history.append(
             {
                 "role": role,
-                "parts": [h.content],
+                "parts": [{"text": h.content}],
             }
         )
 
