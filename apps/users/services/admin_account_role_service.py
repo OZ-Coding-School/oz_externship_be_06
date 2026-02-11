@@ -2,11 +2,8 @@ from apps.courses.models import Cohort, CohortStudent, Course
 from apps.courses.models.learning_coachs import LearningCoach
 from apps.courses.models.operation_managers import OperationManager
 from apps.courses.models.training_assistants import TrainingAssistant
+from apps.users.exceptions import AccountNotFoundError
 from apps.users.models import User
-
-
-class AccountNotFoundError(Exception):
-    """회원을 찾을 수 없을 때"""
 
 
 def update_account_role(

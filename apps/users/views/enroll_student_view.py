@@ -5,16 +5,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.exceptions import (
+    AlreadyEnrolledError,
+    CohortNotFoundError,
+    NotUserRoleError,
+)
 from apps.users.serializers.enroll_student_serializer import (
     EnrollStudentRequestSerializer,
     EnrollStudentResponseSerializer,
 )
-from apps.users.services.enroll_student_service import (
-    AlreadyEnrolledError,
-    CohortNotFoundError,
-    NotUserRoleError,
-    enroll_student,
-)
+from apps.users.services.enroll_student_service import enroll_student
 
 
 # 수강생 등록 신청

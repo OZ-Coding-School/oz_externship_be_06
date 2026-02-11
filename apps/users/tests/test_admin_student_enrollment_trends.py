@@ -447,10 +447,6 @@ class AdminStudentEnrollmentTrendsAPITest(TestCase):
         response = self.client.get(self.url, {"interval": "monthly"})
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.json().get("error_detail"),
-            "자격 인증 데이터가 제공되지 않았습니다.",
-        )
 
     def test_returns_403_for_normal_user(self) -> None:
         """일반 유저는 403을 받는다."""

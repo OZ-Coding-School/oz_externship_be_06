@@ -281,7 +281,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
         course_info = data["assigned_courses"][0]
 
         self.assertEqual(course_info["course"]["name"], "백엔드 부트캠프")
-        self.assertIsNone(course_info["cohort"])
+        self.assertNotIn("cohort", course_info)
 
     def test_lc_has_course_without_cohort(self) -> None:
         """러닝코치의 경우 담당 과정 목록만 포함된다 (기수 없음)."""
@@ -297,7 +297,7 @@ class AdminWithdrawalDetailAPITest(TestCase):
         course_info = data["assigned_courses"][0]
 
         self.assertEqual(course_info["course"]["name"], "백엔드 부트캠프")
-        self.assertIsNone(course_info["cohort"])
+        self.assertNotIn("cohort", course_info)
 
     def test_user_status_is_withdrew(self) -> None:
         """탈퇴한 유저의 상태는 WITHDREW이다."""

@@ -1,9 +1,6 @@
 from apps.exams.models.exam_submissions import ExamSubmission
+from apps.users.exceptions import StudentNotFoundError
 from apps.users.models import User
-
-
-class StudentNotFoundError(Exception):
-    """학생을 찾을 수 없을 때 발생."""
 
 
 # 학생의 과목별 점수 조회

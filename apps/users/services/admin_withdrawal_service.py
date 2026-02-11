@@ -1,18 +1,9 @@
-from typing import Any
-
 from django.db import transaction
 from django.db.models import Q, QuerySet
 
-from apps.courses.models import CohortStudent
-from apps.courses.models.learning_coachs import LearningCoach
-from apps.courses.models.operation_managers import OperationManager
-from apps.courses.models.training_assistants import TrainingAssistant
+from apps.users.exceptions import WithdrawalNotFoundError
 from apps.users.models import User, Withdrawal
-
-
-class WithdrawalNotFoundError(Exception):
-    """탈퇴 내역을 찾을 수 없을 때 발생."""
-
+from apps.users.services.assigned_courses_service import get_assigned_courses
 
 # role 파라미터 매핑
 ROLE_MAP = {
@@ -49,95 +40,6 @@ def get_withdrawal_list(
         queryset = queryset.order_by("id")
 
     return queryset
-
-
-# 수강생의 수강 과정-기수 목록을 반환
-def _get_assigned_courses_for_student(user: User) -> list[dict[str, Any]]:
-    cohort_students = CohortStudent.objects.filter(user=user).select_related("cohort__course")
-    return [
-        {
-            "course": {
-                "id": cs.cohort.course.id,
-                "name": cs.cohort.course.name,
-                "tag": cs.cohort.course.tag,
-            },
-            "cohort": {
-                "id": cs.cohort.id,
-                "number": cs.cohort.number,
-                "status": cs.cohort.status,
-                "start_date": cs.cohort.start_date,
-                "end_date": cs.cohort.end_date,
-            },
-        }
-        for cs in cohort_students
-    ]
-
-
-# 조교의 담당 과정-기수 목록을 반환
-def _get_assigned_courses_for_ta(user: User) -> list[dict[str, Any]]:
-    training_assistants = TrainingAssistant.objects.filter(user=user).select_related("cohort__course")
-    return [
-        {
-            "course": {
-                "id": ta.cohort.course.id,
-                "name": ta.cohort.course.name,
-                "tag": ta.cohort.course.tag,
-            },
-            "cohort": {
-                "id": ta.cohort.id,
-                "number": ta.cohort.number,
-                "status": ta.cohort.status,
-                "start_date": ta.cohort.start_date,
-                "end_date": ta.cohort.end_date,
-            },
-        }
-        for ta in training_assistants
-    ]
-
-
-# 운영매니저의 담당 과정 목록을 반환
-def _get_assigned_courses_for_om(user: User) -> list[dict[str, Any]]:
-    operation_managers = OperationManager.objects.filter(user=user).select_related("course")
-    return [
-        {
-            "course": {
-                "id": om.course.id,
-                "name": om.course.name,
-                "tag": om.course.tag,
-            },
-            "cohort": None,
-        }
-        for om in operation_managers
-    ]
-
-
-# 러닝코치의 담당 과정 목록을 반환
-def _get_assigned_courses_for_lc(user: User) -> list[dict[str, Any]]:
-    learning_coachs = LearningCoach.objects.filter(user=user).select_related("course")
-    return [
-        {
-            "course": {
-                "id": lc.course.id,
-                "name": lc.course.name,
-                "tag": lc.course.tag,
-            },
-            "cohort": None,
-        }
-        for lc in learning_coachs
-    ]
-
-
-# 유저 권한에 따라 다른 과정 목록을 반환
-def get_assigned_courses(user: User) -> list[dict[str, Any]]:
-    if user.role == User.Role.STUDENT:
-        return _get_assigned_courses_for_student(user)
-    elif user.role == User.Role.TA:
-        return _get_assigned_courses_for_ta(user)
-    elif user.role == User.Role.OM:
-        return _get_assigned_courses_for_om(user)
-    elif user.role == User.Role.LC:
-        return _get_assigned_courses_for_lc(user)
-    return []
 
 
 # 탈퇴내역 상세 정보 조회

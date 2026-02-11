@@ -1,34 +1,23 @@
-from typing import NoReturn
-
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.users.exceptions import AccountNotFoundError, AccountUpdateConflictError
 from apps.users.permissions import IsAdminStaff
 from apps.users.serializers.admin.admin_account_serializers import (
     AdminAccountUpdateRequestSerializer,
     AdminAccountUpdateResponseSerializer,
 )
-from apps.users.services.admin_account_service import (
-    AccountNotFoundError,
-    AccountUpdateConflictError,
-    update_account,
-)
+from apps.users.services.admin_account_service import update_account
 
 
 # 어드민 회원 정보 수정
 class AdminAccountUpdateAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_accounts"],

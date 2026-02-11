@@ -1,5 +1,3 @@
-from typing import NoReturn
-
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -29,11 +27,6 @@ from apps.users.services.admin_analytics_service import (
 class AdminSignupTrendsAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -106,11 +99,6 @@ class AdminWithdrawalTrendsAPIView(APIView):
 
         return response
 
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
-
     @extend_schema(
         tags=["admin_accounts"],
         summary="어드민 페이지 회원탈퇴 추세 분석 API",
@@ -174,11 +162,6 @@ class AdminStudentEnrollmentTrendsAPIView(APIView):
             response.data = {"error_detail": message}
 
         return response
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -249,11 +232,6 @@ class AdminWithdrawalReasonCountsAPIView(APIView):
             response.data = {"error_detail": message}
 
         return response
-
-    def permission_denied(self, request: Request, message: str | None = None, code: str | None = None) -> NoReturn:
-        if not request.user or not request.user.is_authenticated:
-            raise NotAuthenticated(detail="자격 인증 데이터가 제공되지 않았습니다.")
-        raise PermissionDenied(detail="권한이 없습니다.")
 
     @extend_schema(
         tags=["admin_accounts"],
