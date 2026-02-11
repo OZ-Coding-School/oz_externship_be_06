@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from django.db import transaction
 from rest_framework import status
 
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base import QnaBaseException
+from apps.qna.exceptions import QnaBaseException
 from apps.qna.models.answer import Answer
 
 
