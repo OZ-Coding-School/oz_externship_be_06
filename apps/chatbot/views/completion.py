@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.http import StreamingHttpResponse
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -18,6 +19,12 @@ from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 from apps.chatbot.serializers.completion import ChatbotCompletionCreateSerializer
 from apps.chatbot.services.completion_answer import generate_completion_answer
+from apps.chatbot.services.question_completion_policy import (
+    validate_user_prompt_policy as validate_question_policy,
+)
+from apps.chatbot.services.support_completion_policy import (
+    validate_user_prompt_policy as validate_support_policy,
+)
 from apps.users.models import User
 
 
@@ -78,6 +85,17 @@ class ChatbotCompletionCreateAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        try:
+            if session.question_id is not None:
+                validate_question_policy(session=session, content=message)
+            else:
+                validate_support_policy(session=session, content=message)
+        except ValidationError as exc:
+            return Response(
+                {"error_detail": exc.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         lock_key = f"chatbot:responding:{session.id}"
         if not cache.add(lock_key, "1", timeout=180):
             return Response(
@@ -86,7 +104,7 @@ class ChatbotCompletionCreateAPIView(APIView):
             )
 
         try:
-            ChatbotCompletions.objects.create(
+            user_completion = ChatbotCompletions.objects.create(
                 session=session,
                 content=message,
                 role=ChatbotCompletions.Role.USER,
@@ -115,6 +133,7 @@ class ChatbotCompletionCreateAPIView(APIView):
 
                 except Exception as exc:
                     print(f"DEBUG ERROR: {exc}")
+                    user_completion.delete()
                     yield sse(
                         json.dumps(
                             {"error_detail": "응답 생성 중 오류가 발생했습니다."},
