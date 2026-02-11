@@ -111,5 +111,5 @@ class LogoutAPIView(APIView):
     def post(self, request: Request) -> Response:
         response = Response({"detail": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         response.delete_cookie("refresh_token")
-        response.delete_cookie("access_token")  # 소셜 로그인 사용자용
+        response.delete_cookie("access_token")  # 토큰 재발급 시 설정된 쿠키 삭제
         return response
