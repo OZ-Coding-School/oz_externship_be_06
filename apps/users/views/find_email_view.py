@@ -14,7 +14,7 @@ from apps.users.utils.redis_utils import delete_sms_token, get_phone_by_token
 def mask_email(email: str) -> str:
     try:
         local, domain = email.split("@")
-        # 다중 TLD 처리 (예: .co.kr, .com.au)
+        # 다중 TLD 처리 (예: .co.kr, .com.au
         parts = domain.split(".")
         if len(parts) >= 3 and len(parts[-1]) == 2:
             # 국가 코드 TLD인 경우 (예: example.co.kr)
