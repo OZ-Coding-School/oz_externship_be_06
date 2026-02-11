@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.qna.models import Question, QuestionCategory, QuestionImage
+from apps.qna.tests.factories import create_student_user
 from apps.users.models import User
 
 
@@ -19,7 +20,7 @@ class QuestionUpdateAPITestResult(APITestCase):
         - 404 Not Found: 존재하지 않는 카테고리
     """
 
-    user: User
+    student_user: User
     other_user: User
     parent_category: QuestionCategory
     category: QuestionCategory
@@ -29,28 +30,9 @@ class QuestionUpdateAPITestResult(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 - 학생
-        cls.user = User.objects.create_user(
-            email="test@example.com",
-            password="password",
-            name="Test User",
-            nickname="test",
-            role="STUDENT",
-            phone_number="01012345678",
-            gender="MALE",
-            birthday="2000-01-01",
-        )
-        # 테스트용 유저 - 다른 학생
-        cls.other_user = User.objects.create_user(
-            email="other@example.com",
-            password="password",
-            name="Other User",
-            nickname="other",
-            role="STUDENT",
-            phone_number="01087654321",
-            gender="FEMALE",
-            birthday="2000-01-01",
-        )
+        # 테스트용 유저
+        cls.student_user = create_student_user()
+        cls.other_user = create_student_user()
 
         # 카테고리 생성 (depth=1을 만들기 위해 부모 카테고리 생성)
         cls.parent_category = QuestionCategory.objects.create(name="Programming")
@@ -59,15 +41,18 @@ class QuestionUpdateAPITestResult(APITestCase):
 
         # 질문 생성
         cls.question = Question.objects.create(
-            author=cls.user, title="Old Title", content="Old Content", category=cls.category
+            author=cls.student_user, title="Old Title", content="Old Content", category=cls.category
         )
 
         # URL
         cls.url = f"/api/v1/qna/questions/{cls.question.id}"
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_update_question_success(self) -> None:
-        """[성공] 질문 수정 성공 테스트"""
-        self.client.force_authenticate(user=self.user)
+        """[200] 질문 수정"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {
             "title": "New Title",
@@ -87,9 +72,12 @@ class QuestionUpdateAPITestResult(APITestCase):
         assert first_image is not None
         self.assertEqual(first_image.img_url, "http://example.com/image1.jpg")
 
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_update_question_missing_title(self) -> None:
-        """[실패] 필수 필드 누락 시 400 에러 테스트 (title 누락)"""
-        self.client.force_authenticate(user=self.user)
+        """[400] 필수 필드 누락 (title 누락)"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {"content": "New Content", "category_id": self.category.id}  # title 누락
 
@@ -98,8 +86,8 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertIn("error_detail", response.data)
 
     def test_update_question_missing_content(self) -> None:
-        """[실패] 필수 필드 누락 시 400 에러 테스트 (content 누락)"""
-        self.client.force_authenticate(user=self.user)
+        """[400] 필수 필드 누락 (content 누락)"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {"title": "New Title", "category_id": self.category.id}  # content 누락
 
@@ -108,8 +96,8 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertIn("error_detail", response.data)
 
     def test_update_question_missing_category_id(self) -> None:
-        """[실패] 필수 필드 누락 시 400 에러 테스트 (category_id 누락)"""
-        self.client.force_authenticate(user=self.user)
+        """[400] 필수 필드 누락 (category_id 누락)"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {"title": "New Title", "content": "New Content"}  # category_id 누락
 
@@ -118,8 +106,8 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertIn("error_detail", response.data)
 
     def test_update_question_invalid_category_id_type(self) -> None:
-        """[실패] 잘못된 데이터 타입 시 400 에러 테스트 (category_id가 문자열)"""
-        self.client.force_authenticate(user=self.user)
+        """[400] 잘못된 데이터 타입 (category_id가 문자열)"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {"title": "New Title", "content": "New Content", "category_id": "invalid"}  # 문자열
 
@@ -128,14 +116,14 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertIn("error_detail", response.data)
 
     def test_update_question_unauthorized(self) -> None:
-        """[실패] 인증되지 않은 사용자 401 에러 테스트"""
+        """[401] 인증되지 않은 사용자"""
         data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
 
         response = self.client.put(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_question_forbidden_not_author(self) -> None:
-        """[실패] 본인 질문이 아닌 경우 403 에러 테스트"""
+        """[403] 본인 질문이 아닌 경우"""
         self.client.force_authenticate(user=self.other_user)
 
         data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
@@ -144,8 +132,8 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_question_not_found(self) -> None:
-        """[실패] 존재하지 않는 질문 수정 시 404 에러 테스트"""
-        self.client.force_authenticate(user=self.user)
+        """[404] 존재하지 않는 질문 수정"""
+        self.client.force_authenticate(user=self.student_user)
 
         url = "/api/v1/qna/questions/99999"
         data = {"title": "New Title", "content": "New Content", "category_id": self.category.id}
@@ -154,8 +142,8 @@ class QuestionUpdateAPITestResult(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_question_invalid_category(self) -> None:
-        """[실패] 유효하지 않은 데이터로 수정 시 404 에러 테스트 (카테고리 없음)"""
-        self.client.force_authenticate(user=self.user)
+        """[404] 유효하지 않은 데이터로 수정 (카테고리 없음)"""
+        self.client.force_authenticate(user=self.student_user)
 
         data = {"title": "New Title", "content": "New Content", "category_id": 99999}  # 존재하지 않는 카테고리
 

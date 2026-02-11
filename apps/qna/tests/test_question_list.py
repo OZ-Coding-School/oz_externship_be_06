@@ -1,16 +1,18 @@
 from django.db import connection
-from django.test import Client, TestCase, override_settings
+from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
+from apps.qna.tests.factories import create_student_user
 from apps.users.models import User
 
 
 @override_settings(USE_QNA_MOCK=False)
-class QuestionListAPITest(TestCase):
+class QuestionListAPITest(APITestCase):
     """
     질문 목록 조회 API (GET) 테스트
     - 성공 케이스 (전체 목록, 필터링, 검색, 정렬, 페이지네이션)
@@ -24,7 +26,7 @@ class QuestionListAPITest(TestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    user: User
+    student_user: User
     category_fe: QuestionCategory
     category_react: QuestionCategory
     category_be: QuestionCategory
@@ -34,17 +36,8 @@ class QuestionListAPITest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 - 일반
-        cls.user = User.objects.create_user(
-            email="tester@ozcoding.com",
-            password="password123",
-            name="김테스터",
-            nickname="테스터",
-            role="USER",
-            gender="MALE",
-            birthday="1990-01-01",
-            is_active=True,
-        )
+        # 테스트용 유저
+        cls.student_user = create_student_user(nickname="테스터")
 
         # 테스트용 카테고리 생성 (계층형)
         cls.category_fe = QuestionCategory.objects.create(name="프론트엔드")
@@ -54,7 +47,7 @@ class QuestionListAPITest(TestCase):
         # 테스트용 질문
         # Q1: React 카테고리, 이미지 포함, 답변 없음, 조회수 10
         cls.q1 = Question.objects.create(
-            author=cls.user,
+            author=cls.student_user,
             category=cls.category_react,
             title="React Hooks 질문",
             content="![thumb](https://example.com/image.png) useEffect 사용법이 궁금해요.",
@@ -63,25 +56,23 @@ class QuestionListAPITest(TestCase):
 
         # Q2: 백엔드 카테고리, 답변 있음, 조회수 50
         cls.q2 = Question.objects.create(
-            author=cls.user,
+            author=cls.student_user,
             category=cls.category_be,
             title="Django ORM 성능 최적화",
             content="select_related와 prefetch_related의 차이는 무엇인가요?",
             view_count=50,
         )
         # Q2에 대한 답변 생성
-        Answer.objects.create(author=cls.user, question=cls.q2, content="답변입니다.")
+        Answer.objects.create(author=cls.student_user, question=cls.q2, content="답변입니다.")
 
         # URL
-        cls.url = reverse("question-list-create")
+        cls.url = reverse("questions")
 
-    def setUp(self) -> None:
-        # Django 내장 TestClient 초기화
-        self.client = Client()
-
-    # --- 성공 케이스 테스트 ---------------------
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_get_question_list_success(self) -> None:
-        """[성공] 전체 목록 조회 및 정렬(latest) 확인"""
+        """[200] 전체 목록 조회 및 정렬(latest)"""
         response = self.client.get(self.url)
         data = response.json()
 
@@ -92,7 +83,7 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data["results"][0]["id"], self.q2.id)
 
     def test_get_question_list_most_views_sort(self) -> None:
-        """[성공] 조회수순(most_views) 정렬 확인"""
+        """[200] 조회수순(most_views) 정렬"""
         response = self.client.get(self.url, {"sort": "most_views"})
         data = response.json()
 
@@ -101,7 +92,7 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data["results"][0]["view_count"], 50)
 
     def test_filter_by_category(self) -> None:
-        """[성공] 특정 카테고리 ID로 필터링 확인"""
+        """[200] 특정 카테고리 ID로 필터링"""
         response = self.client.get(self.url, {"category_id": self.category_be.id})
         data = response.json()
 
@@ -109,7 +100,7 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data["results"][0]["title"], "Django ORM 성능 최적화")
 
     def test_search_by_keyword(self) -> None:
-        """[성공] 검색어 입력 시 제목 또는 내용에서 검색 확인"""
+        """[200] 검색어 입력 시 제목 또는 내용에서 검색"""
         # 제목
         response_title = self.client.get(self.url, {"search_keyword": "Hooks"})
         data_title = response_title.json()
@@ -123,7 +114,7 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data_content["results"][0]["id"], self.q2.id)
 
     def test_filter_by_answer_status_waiting(self) -> None:
-        """[성공] answer_status가 'waiting'인 경우 답변이 없는 질문 반환 확인"""
+        """[200] answer_status가 'waiting'인 경우 답변이 없는 질문 반환"""
         response = self.client.get(self.url, {"answer_status": "waiting"})
         data = response.json()
 
@@ -132,7 +123,7 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data["results"][0]["id"], self.q1.id)
 
     def test_filter_by_answer_status_answered(self) -> None:
-        """[성공] answer_status가 'answered'인 경우 답변이 1개 이상인 질문 반환 확인"""
+        """[200] answer_status가 'answered'인 경우 답변이 1개 이상인 질문 반환"""
         response = self.client.get(self.url, {"answer_status": "answered"})
         data = response.json()
 
@@ -141,10 +132,12 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(data["results"][0]["id"], self.q2.id)
 
     def test_pagination_size(self) -> None:
-        """[성공] size 파라미터에 따라 반환되는 데이터 개수 조절 확인"""
+        """[200] size 파라미터에 따라 반환되는 데이터 개수 조절"""
         # 테스트를 위해 추가 데이터 생성
         for i in range(5):
-            Question.objects.create(author=self.user, category=self.category_be, title=f"추가 질문 {i}", content="내용")
+            Question.objects.create(
+                author=self.student_user, category=self.category_be, title=f"추가 질문 {i}", content="내용"
+            )
 
         response = self.client.get(self.url, {"size": 3})
         data = response.json()
@@ -153,7 +146,7 @@ class QuestionListAPITest(TestCase):
         self.assertIsNotNone(data["next"])  # 다음 페이지 링크 확인
 
     def test_content_parser_integration(self) -> None:
-        """[성공] 썸네일 URL이 올바르게 반환되는지 확인"""
+        """[200] 썸네일 URL이 올바르게 반환"""
         response = self.client.get(self.url)
         results = response.json()["results"]
 
@@ -161,16 +154,18 @@ class QuestionListAPITest(TestCase):
         q1_data = next(item for item in results if item["id"] == self.q1.id)
         self.assertEqual(q1_data["thumbnail_img_url"], "https://example.com/image.png")
 
-    # --- 404 Not Found ---------------------
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_filter_by_invalid_category_returns_404(self) -> None:
-        """[404] 존재하지 않는 카테고리 ID로 조회 시 404 반환 검증"""
+        """[404] 존재하지 않는 카테고리 ID로 조회"""
         response = self.client.get(self.url, {"category_id": 9999})
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_CATEGORY.value)
 
     def test_search_no_results_returns_empty_list(self) -> None:
-        """[200] 검색 결과가 전혀 없을 경우 200 OK와 빈 리스트 반환 검증"""
+        """[200] 검색 결과가 전혀 없을 경우 빈 리스트 반환"""
         response = self.client.get(self.url, {"search_keyword": "절대로없을법한검색어123"})
         data = response.json()
 
@@ -178,9 +173,9 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(len(data["results"]), 0)
 
     def test_filter_status_no_results_returns_empty_list(self) -> None:
-        """[200] 필터 조건에 부합하는 데이터가 없을 경우 200 OK와 빈 리스트 반환 검증"""
+        """[200] 필터 조건에 부합하는 데이터가 없을 경우 200 OK와 빈 리스트 반환"""
         # q1에 답변을 달아서 모든 질문을 'answered' 상태로 만듦
-        Answer.objects.create(author=self.user, question=self.q1, content="답변 추가")
+        Answer.objects.create(author=self.student_user, question=self.q1, content="답변 추가")
 
         # 'waiting' 상태를 조회하면 결과가 0건이지만 200 반환
         response = self.client.get(self.url, {"answer_status": "waiting"})
@@ -189,9 +184,8 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data["results"]), 0)
 
-    # --- 400 Bad Request ---------------------
     def test_invalid_sort_choice_returns_400(self) -> None:
-        """[400] 허용되지 않은 sort 옵션 입력 시 400 반환 검증 (ChoiceField 검증)"""
+        """[400] 허용되지 않은 sort 옵션 입력"""
         # 'popular'는 ChoiceField에 없음
         response = self.client.get(self.url, {"sort": "popular"})
 
@@ -200,30 +194,33 @@ class QuestionListAPITest(TestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_invalid_answer_status_choice_returns_400(self) -> None:
-        """[400] 허용되지 않은 answer_status 옵션 입력 시 400 반환 검증"""
+        """[400] 허용되지 않은 answer_status 옵션 입력"""
         response = self.client.get(self.url, {"answer_status": "pending"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_invalid_page_type_returns_400(self) -> None:
-        """[400] 숫자가 아닌 페이지 번호 입력 시 400 반환 검증(IntegerField 검증)"""
+        """[400] 숫자가 아닌 페이지 번호 입력"""
         response = self.client.get(self.url, {"page": "first_page"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_QUESTION_LIST.value)
 
     def test_page_out_of_range_returns_404(self) -> None:
-        """[404] 존재하지 않는 페이지 번호 요청 시 404 반환 검증"""
+        """[404] 존재하지 않는 페이지 번호 요청"""
         # 데이터는 2개(setup), size=10 default -> 2페이지는 없음
         response = self.client.get(self.url, {"page": 999})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         # DRF 기본 404 메시지 확인 (혹은 커스텀)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_PAGE.value)
 
+    # ==========================================================================
+    # 성능 테스트
+    # ==========================================================================
     def test_question_list_performance(self) -> None:
-        """[성공] 질문 목록 조회 시 발생하는 쿼리 수 검증"""
+        """[성능] 질문 목록 조회 시 발생하는 쿼리 수 검증"""
         # 추가 데이터 생성
         for i in range(5):
-            Question.objects.create(author=self.user, category=self.category_be, title=f"Q{i}", content="내용")
+            Question.objects.create(author=self.student_user, category=self.category_be, title=f"Q{i}", content="내용")
 
         # Query Expectation:
         # 1. Count query (Pagination)

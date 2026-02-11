@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.qna.models import Answer, QuestionCategory
+from apps.qna.tests.factories import create_admin_user, create_student_user
 from apps.users.models import User
 
 
@@ -33,26 +34,9 @@ class AdminCategoryListAPITest(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 - 스태프 (관리자)
-        cls.admin_user = User.objects.create_user(
-            email="admin@ozcoding.com",
-            password="password123",
-            name="관리자",
-            role="ADMIN",
-            gender="MALE",
-            birthday="1990-01-01",
-            is_active=True,
-        )
-        # 테스트용 유저 - 일반 (권한 없음)
-        cls.student_user = User.objects.create_user(
-            email="student@ozcoding.com",
-            password="password123",
-            name="수강생",
-            role="STUDENT",
-            gender="MALE",
-            birthday="1995-01-01",
-            is_active=True,
-        )
+        # 테스트용 유저
+        cls.admin_user = create_admin_user()
+        cls.student_user = create_student_user()
 
         # 카테고리 데이터 생성
         # 대분류 2개
@@ -74,7 +58,7 @@ class AdminCategoryListAPITest(APITestCase):
     # 성공 케이스
     # ==========================================================================
     def test_list_all_categories_success(self) -> None:
-        """[성공] 필터 없이 전체 목록 조회"""
+        """[200] 필터 없이 전체 목록 조회"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         res_data = response.json()
@@ -93,7 +77,7 @@ class AdminCategoryListAPITest(APITestCase):
         self.assertIn("child_categories", first_category)
 
     def test_filter_by_large_category(self) -> None:
-        """[성공] '대분류' 필터링 조회"""
+        """[200] '대분류' 필터링 조회"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url, {"category_type": "대분류"})
         res_data = response.json()
@@ -105,7 +89,7 @@ class AdminCategoryListAPITest(APITestCase):
             self.assertEqual(cat["category_type"], "대분류")
 
     def test_filter_by_medium_category(self) -> None:
-        """[성공] '중분류' 필터링 조회"""
+        """[200] '중분류' 필터링 조회"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url, {"category_type": "중분류"})
         res_data = response.json()
@@ -117,7 +101,7 @@ class AdminCategoryListAPITest(APITestCase):
             self.assertEqual(cat["category_type"], "중분류")
 
     def test_filter_by_small_category(self) -> None:
-        """[성공] '소분류' 필터링 조회"""
+        """[200] '소분류' 필터링 조회"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url, {"category_type": "소분류"})
         res_data = response.json()
@@ -129,7 +113,7 @@ class AdminCategoryListAPITest(APITestCase):
             self.assertEqual(cat["category_type"], "소분류")
 
     def test_search_by_keyword(self) -> None:
-        """[성공] 검색어(search_keyword)로 조회"""
+        """[200] 검색어(search_keyword)로 조회"""
         self.client.force_authenticate(user=self.admin_user)
         # "Django" 검색
         response = self.client.get(self.url, {"search_keyword": "Django"})
@@ -143,7 +127,7 @@ class AdminCategoryListAPITest(APITestCase):
     # 성공 케이스 - 페이지네이션 동작 확인
     # ==========================================================================
     def test_pagination_first_page(self) -> None:
-        """[성공] 첫 번째 페이지 조회"""
+        """[200] 첫 번째 페이지 조회"""
         # 기본 page_size는 20이므로 20개 이상의 카테고리 생성
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
@@ -159,7 +143,7 @@ class AdminCategoryListAPITest(APITestCase):
         self.assertEqual(len(res_data["categories"]), 10)
 
     def test_pagination_second_page(self) -> None:
-        """[성공] 두 번째 페이지 조회"""
+        """[200] 두 번째 페이지 조회"""
         # 기본 page_size 이상의 카테고리 생성
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
@@ -175,7 +159,7 @@ class AdminCategoryListAPITest(APITestCase):
         self.assertEqual(len(res_data["categories"]), 10)  # 2번째 페이지는 남은 11개
 
     def test_pagination_custom_page_size(self) -> None:
-        """[성공] 커스텀 page_size로 조회"""
+        """[200] 커스텀 page_size로 조회"""
         for i in range(25):
             QuestionCategory.objects.create(name=f"Category_{i:02d}")
 
@@ -193,7 +177,7 @@ class AdminCategoryListAPITest(APITestCase):
     # 성공 케이스 - 상속/계층 구조 응답 확인
     # ==========================================================================
     def test_response_hierarchy_info(self) -> None:
-        """[성공] 부모, 자식 카테고리 정보가 올바르게 내려오는지 확인"""
+        """[200] 부모, 자식 카테고리 정보가 올바르게 내려오는지 확인"""
         self.client.force_authenticate(user=self.admin_user)
 
         # 소분류(Django) 조회 -> 부모가 '웹프레임워크'여야 함
@@ -223,12 +207,12 @@ class AdminCategoryListAPITest(APITestCase):
     # 실패 케이스
     # ==========================================================================
     def test_list_unauthorized(self) -> None:
-        """[실패] 로그인하지 않은 경우 401"""
+        """[401] 로그인하지 않은 경우"""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_forbidden(self) -> None:
-        """[실패] 수강생이 요청한 경우 403"""
+        """[403] 수강생이 요청한 경우"""
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

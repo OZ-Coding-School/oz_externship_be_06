@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions.base import QnaBaseException
 from apps.qna.models import Question, QuestionCategory
+from apps.qna.tests.factories import create_general_user, create_student_user
 from apps.users.models import User
 
 
@@ -30,37 +31,21 @@ class QuestionCreateAPITest(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 - 학생
-        cls.student_user = User.objects.create_user(
-            email="student@ozcoding.com",
-            password="password123",
-            name="test1",
-            nickname="수강생",
-            role="STUDENT",
-            gender="MAIL",
-            birthday="1990-01-01",
-            is_active=True,
-        )
-        # 테스트용 유저 - 일반
-        cls.general_user = User.objects.create_user(
-            email="general@ozcoding.com",
-            password="password123",
-            name="test2",
-            nickname="일반유저",
-            role="USER",
-            gender="FEMAIL",
-            birthday="1995-05-05",
-            is_active=True,
-        )
+        # 테스트용 유저
+        cls.student_user = create_student_user()
+        cls.general_user = create_general_user()
 
         # 테스트용 카테고리 생성
         cls.category = QuestionCategory.objects.create(name="OZ_category")
 
         # URL
-        cls.url = reverse("question-list-create")
+        cls.url = reverse("questions")
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_create_question_success(self) -> None:
-        """[성공] 수강생 권한으로 유효한 데이터를 전송 시 질문 등록 확인"""
+        """[201] 수강생 권한으로 유효한 데이터로 질문 등록"""
         self.client.force_authenticate(user=self.student_user)
 
         data = {
@@ -77,8 +62,11 @@ class QuestionCreateAPITest(APITestCase):
         self.assertIn("question_id", res_data)
         self.assertTrue(Question.objects.filter(id=res_data["question_id"]).exists())
 
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_create_question_unauthorized(self) -> None:
-        """[실패] 로그인하지 않은 경우 (토큰이 없는 경우) 401 에러를 반환 검증"""
+        """[401] 로그인하지 않은 경우"""
         data = {"title": "비회원 질문", "content": "내용", "category_id": self.category.id}
 
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
@@ -87,7 +75,7 @@ class QuestionCreateAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED_QUESTION_CREATE.value)
 
     def test_create_question_forbidden(self) -> None:
-        """[실패] 수강생이 아닌 유저의 요청 시 403 에러 반환 검증"""
+        """[403] 수강생이 아닌 유저 요청"""
         self.client.force_authenticate(user=self.general_user)
 
         data = {"title": "일반인 질문", "content": "내용", "category_id": self.category.id}
@@ -98,7 +86,7 @@ class QuestionCreateAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_QUESTION_CREATE.value)
 
     def test_create_question_bad_request(self) -> None:
-        """[실패] 필수 데이터 누락 시 400 에러 반환 검증"""
+        """[400] 필수 데이터 누락"""
         self.client.force_authenticate(user=self.student_user)
 
         # 필수 필드인 title 누락
@@ -110,8 +98,11 @@ class QuestionCreateAPITest(APITestCase):
         self.assertEqual(response.status_code, QnaBaseException.status_code)
         self.assertEqual(res_data["error_detail"], ErrorMessages.INVALID_QUESTION_CREATE.value)
 
+    # ==========================================================================
+    # 성능 테스트
+    # ==========================================================================
     def test_create_question_performance(self) -> None:
-        """[성공] 질문 등록 시 발생하는 쿼리 수 검증"""
+        """[성능] 질문 등록 시 쿼리 수 검증"""
 
         self.client.force_authenticate(user=self.student_user)
         data = {
