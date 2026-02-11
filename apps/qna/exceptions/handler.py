@@ -50,10 +50,23 @@ _PERMISSION_ERROR_MAP: dict[tuple[str, str, bool], ErrorMessages] = {
     # 어드민 카테고리 목록 조회
     ("AdminCategoriesAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_LIST,
     ("AdminCategoriesAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_LIST,
-    # ---------- Admin Question & Answer -----------
-    # 어드민 답변 상세 조회
+    # 어드민 카테고리 삭제
+    ("AdminCategoryDeleteAPIView", "DELETE", True): ErrorMessages.UNAUTHORIZED_ADMIN_CATEGORY_DELETE,
+    ("AdminCategoryDeleteAPIView", "DELETE", False): ErrorMessages.FORBIDDEN_ADMIN_CATEGORY_DELETE,
+    # ---------- Admin Question -----------
+    # 어드민 질문 목록 조회
+    ("AdminQuestionListAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_LIST,
+    ("AdminQuestionListAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_QUESTION_LIST,
+    # 어드민 질문 상세 조회
     ("AdminQuestionDetailAPIView", "GET", True): ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DETAIL,
     ("AdminQuestionDetailAPIView", "GET", False): ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DETAIL,
+    # 어드민 질의응답 삭제
+    ("AdminQuestionDetailAPIView", "DELETE", True): ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DELETE,
+    ("AdminQuestionDetailAPIView", "DELETE", False): ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DELETE,
+    # ---------- Admin -----------
+    # [DELETE] Admin delete answer
+    ("AdminAnswerDeleteAPIView", "DELETE", True): ErrorMessages.UNAUTHORIZED_ADMIN_ANSWER_DELETE,
+    ("AdminAnswerDeleteAPIView", "DELETE", False): ErrorMessages.FORBIDDEN_ADMIN_ANSWER_DELETE,
 }
 
 # 기본 폴백 메시지
