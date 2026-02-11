@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 from typing import Any, Dict, Iterator, List, cast
 
 from django.conf import settings
@@ -9,11 +11,16 @@ from google import genai
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
 
+logger = logging.getLogger(__name__)
+
 
 def _get_genai_client() -> genai.Client:
     api_key = getattr(settings, "GEMINI_API_KEY", None)
     if not api_key:
         raise ValidationError("Gemini API 키가 설정되지 않았습니다.")
+
+    # GOOGLE_API_KEY가 동시에 설정되어 있으면 SDK가 GOOGLE_API_KEY를 우선 사용하므로 제거
+    os.environ.pop("GOOGLE_API_KEY", None)
 
     return genai.Client(api_key=api_key)
 
@@ -77,5 +84,5 @@ def generate_completion_answer(
                 yield chunk.text
 
     except Exception as exc:
-        print(f"Gemini API Error: {exc}")
+        logger.error("Gemini API Error: %s", exc, exc_info=True)
         raise ValidationError("AI 응답 생성에 실패했습니다.") from exc
