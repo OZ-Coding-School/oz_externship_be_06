@@ -102,7 +102,6 @@ class ExamSubmissionCreateAPIView(ExamsExceptionMixin, APIView):
         submission = submit_exam(
             user=request.user,  # type: ignore
             deployment_id=serializer.validated_data["deployment_id"],
-            started_at=serializer.validated_data["started_at"],
             cheating_count=serializer.validated_data["cheating_count"],
             answers=serializer.validated_data["answers"],
         )

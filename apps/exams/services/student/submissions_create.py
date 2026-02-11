@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Dict, List
 
 from django.db import transaction
@@ -17,7 +16,6 @@ def submit_exam(
     *,
     user: User,
     deployment_id: int,
-    started_at: datetime,
     cheating_count: int,
     answers: List[Dict[str, Any]],
 ) -> ExamSubmission:
@@ -38,9 +36,10 @@ def submit_exam(
         raise_error(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED)
 
     # 답안 저장
+    # started_at은 take_exam 시점에 서버에서 생성된 값을 유지한다.
+    # (클라이언트 전달 시간으로 받지 않음)
     submission.answers_json = normalize_answers_json(answers)
-    submission.started_at = started_at
     submission.cheating_count = cheating_count
-    submission.save(update_fields=["answers_json", "started_at", "cheating_count", "updated_at"])
+    submission.save(update_fields=["answers_json", "cheating_count", "updated_at"])
 
     return submission

@@ -41,7 +41,7 @@ class ExamSubmissionSerializer(serializers.ModelSerializer[ExamSubmission]):
 
     def get_elapsed_time(self, obj: ExamSubmission) -> int:
         seconds = (obj.created_at - obj.started_at).total_seconds()
-        return int(seconds // 60)
+        return max(0, int(seconds // 60))
 
     def _answers_map(self, obj: ExamSubmission) -> dict[int, object]:
         normalized = normalize_answers_json(obj.answers_json)
