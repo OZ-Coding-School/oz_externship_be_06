@@ -16,9 +16,9 @@ from apps.qna.views.question_views import (
 
 urlpatterns = [
     # Category
-    path("categories", CategoryTreeAPIView.as_view(), name="category-list"),
+    path("categories", CategoryTreeAPIView.as_view(), name="categories"),
     # Question
-    path("questions", QuestionCreateListAPIView.as_view(), name="question-list-create"),
+    path("questions", QuestionCreateListAPIView.as_view(), name="questions"),
     path("questions/<int:question_id>", QuestionDetailAPIView.as_view(), name="question-detail"),
     # Answer
     path("questions/<int:question_id>/ai-answer", AIAnswerGenerateAPIView.as_view(), name="ai-answer-generate"),
