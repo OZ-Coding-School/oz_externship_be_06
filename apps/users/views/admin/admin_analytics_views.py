@@ -1,3 +1,4 @@
+from django.core.cache import cache as django_cache
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.permissions import IsAdminStaff
+
+ANALYTICS_CACHE_TTL = 3600  # 1시간
 from apps.users.serializers.admin.admin_analytics_serializers import (
     AdminWithdrawalReasonCountsResponseSerializer,
     SignupTrendsRequestSerializer,
@@ -23,10 +26,34 @@ from apps.users.services.admin_analytics_service import (
 )
 
 
-# 회원가입 추세 분석
-class AdminSignupTrendsAPIView(APIView):
+# 어드민 분석 API의 공통 예외 처리를 담당하는 공통뷰
+class AdminAnalyticsBaseAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminStaff]
+
+    def handle_exception(self, exc: Exception) -> Response:
+        response = super().handle_exception(exc)
+
+        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
+            detail = response.data.get("detail")
+
+            if isinstance(detail, dict) and "error_detail" in detail:
+                message = detail["error_detail"]
+            else:
+                default_msg = (
+                    "자격 인증 데이터가 제공되지 않았습니다."
+                    if isinstance(exc, NotAuthenticated)
+                    else "권한이 없습니다."
+                )
+                message = detail if isinstance(detail, str) else default_msg
+
+            response.data = {"error_detail": message}
+
+        return response
+
+
+# 회원가입 추세 분석
+class AdminSignupTrendsAPIView(AdminAnalyticsBaseAPIView):
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -69,35 +96,19 @@ class AdminSignupTrendsAPIView(APIView):
         interval = serializer.validated_data["interval"]
         year = serializer.validated_data.get("year")
 
-        result = get_signup_trends(interval, year)
+        cache_key = f"signup_trends:{interval}:{year or 'all'}"
+        data = django_cache.get(cache_key)
 
-        response_serializer = SignupTrendsResponseSerializer(result)
-        return Response(response_serializer.data, status=200)
+        if data is None:
+            result = get_signup_trends(interval, year)
+            data = SignupTrendsResponseSerializer(result).data
+            django_cache.set(cache_key, data, timeout=ANALYTICS_CACHE_TTL)
+
+        return Response(data, status=200)
 
 
 # 회원 탈퇴 추세 분석 api
-class AdminWithdrawalTrendsAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminStaff]
-
-    def handle_exception(self, exc: Exception) -> Response:
-        response = super().handle_exception(exc)
-
-        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
-            detail = response.data.get("detail")
-
-            if isinstance(detail, dict) and "error_detail" in detail:
-                message = detail["error_detail"]
-            else:
-                default_msg = (
-                    "자격 인증 데이터가 제공되지 않았습니다."
-                    if isinstance(exc, NotAuthenticated)
-                    else "권한이 없습니다."
-                )
-                message = detail if isinstance(detail, str) else default_msg
-
-            response.data = {"error_detail": message}
-
-        return response
+class AdminWithdrawalTrendsAPIView(AdminAnalyticsBaseAPIView):
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -132,36 +143,19 @@ class AdminWithdrawalTrendsAPIView(APIView):
 
         interval = serializer.validated_data["interval"]
 
-        result = get_withdrawal_trends(interval)
+        cache_key = f"withdrawal_trends:{interval}"
+        data = django_cache.get(cache_key)
 
-        response_serializer = WithdrawalTrendsResponseSerializer(result)
-        return Response(response_serializer.data, status=200)
+        if data is None:
+            result = get_withdrawal_trends(interval)
+            data = WithdrawalTrendsResponseSerializer(result).data
+            django_cache.set(cache_key, data, timeout=ANALYTICS_CACHE_TTL)
+
+        return Response(data, status=200)
 
 
 # 수강등록 추세 분석 api
-class AdminStudentEnrollmentTrendsAPIView(APIView):
-
-    permission_classes = [IsAuthenticated, IsAdminStaff]
-
-    def handle_exception(self, exc: Exception) -> Response:
-        response = super().handle_exception(exc)
-
-        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
-            detail = response.data.get("detail")
-
-            if isinstance(detail, dict) and "error_detail" in detail:
-                message = detail["error_detail"]
-            else:
-                default_msg = (
-                    "자격 인증 데이터가 제공되지 않았습니다."
-                    if isinstance(exc, NotAuthenticated)
-                    else "권한이 없습니다."
-                )
-                message = detail if isinstance(detail, str) else default_msg
-
-            response.data = {"error_detail": message}
-
-        return response
+class AdminStudentEnrollmentTrendsAPIView(AdminAnalyticsBaseAPIView):
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -204,34 +198,18 @@ class AdminStudentEnrollmentTrendsAPIView(APIView):
         interval = serializer.validated_data["interval"]
         year = serializer.validated_data.get("year")
 
-        result = get_student_enrollment_trends(interval, year)
+        cache_key = f"enrollment_trends:{interval}:{year or 'all'}"
+        data = django_cache.get(cache_key)
 
-        response_serializer = StudentEnrollmentTrendsResponseSerializer(result)
-        return Response(response_serializer.data, status=200)
+        if data is None:
+            result = get_student_enrollment_trends(interval, year)
+            data = StudentEnrollmentTrendsResponseSerializer(result).data
+            django_cache.set(cache_key, data, timeout=ANALYTICS_CACHE_TTL)
+
+        return Response(data, status=200)
 
 
-class AdminWithdrawalReasonCountsAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminStaff]
-
-    def handle_exception(self, exc: Exception) -> Response:
-        response = super().handle_exception(exc)
-
-        if isinstance(exc, (NotAuthenticated, PermissionDenied)) and response is not None:
-            detail = response.data.get("detail")
-
-            if isinstance(detail, dict) and "error_detail" in detail:
-                message = detail["error_detail"]
-            else:
-                default_msg = (
-                    "자격 인증 데이터가 제공되지 않았습니다."
-                    if isinstance(exc, NotAuthenticated)
-                    else "권한이 없습니다."
-                )
-                message = detail if isinstance(detail, str) else default_msg
-
-            response.data = {"error_detail": message}
-
-        return response
+class AdminWithdrawalReasonCountsAPIView(AdminAnalyticsBaseAPIView):
 
     @extend_schema(
         tags=["admin_accounts"],
@@ -239,6 +217,12 @@ class AdminWithdrawalReasonCountsAPIView(APIView):
         responses={200: AdminWithdrawalReasonCountsResponseSerializer},
     )
     def get(self, request: Request) -> Response:
-        result = get_withdrawal_reason_counts()
-        serializer = AdminWithdrawalReasonCountsResponseSerializer(result)
-        return Response(serializer.data, status=200)
+        cache_key = "withdrawal_reason_counts"
+        data = django_cache.get(cache_key)
+
+        if data is None:
+            result = get_withdrawal_reason_counts()
+            data = AdminWithdrawalReasonCountsResponseSerializer(result).data
+            django_cache.set(cache_key, data, timeout=ANALYTICS_CACHE_TTL)
+
+        return Response(data, status=200)

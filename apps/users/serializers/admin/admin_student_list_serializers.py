@@ -60,36 +60,19 @@ class AdminStudentListSerializer(serializers.ModelSerializer[User]):
         return obj.role
 
     def get_in_progress_course(self, obj: User) -> dict[str, Any] | None:
-        # prefetch된 cohort_students에서 첫 번째 항목 사용
-        cohort_students = getattr(obj, "prefetched_cohort_students", None)
-        if cohort_students:
-            cs = cohort_students[0] if cohort_students else None
-            if cs:
-                return {
-                    "cohort": {
-                        "id": cs.cohort.id,
-                        "number": cs.cohort.number,
-                    },
-                    "course": {
-                        "id": cs.cohort.course.id,
-                        "name": cs.cohort.course.name,
-                        "tag": cs.cohort.course.tag,
-                    },
-                }
+        cohort_students = obj.cohort_students.all()
+        if not cohort_students:
+            return None
 
-        # prefetch가 없는 경우 직접 조회
-        cohort_student = obj.cohort_students.select_related("cohort__course").first()
-        if cohort_student:
-            return {
-                "cohort": {
-                    "id": cohort_student.cohort.id,
-                    "number": cohort_student.cohort.number,
-                },
-                "course": {
-                    "id": cohort_student.cohort.course.id,
-                    "name": cohort_student.cohort.course.name,
-                    "tag": cohort_student.cohort.course.tag,
-                },
-            }
-
-        return None
+        cs = cohort_students[0]
+        return {
+            "cohort": {
+                "id": cs.cohort.id,
+                "number": cs.cohort.number,
+            },
+            "course": {
+                "id": cs.cohort.course.id,
+                "name": cs.cohort.course.name,
+                "tag": cs.cohort.course.tag,
+            },
+        }

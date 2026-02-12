@@ -46,7 +46,16 @@ def get_withdrawal_list(
 def get_withdrawal_detail(withdrawal_id: int) -> Withdrawal:
 
     try:
-        return Withdrawal.objects.select_related("user").get(id=withdrawal_id)
+        return (
+            Withdrawal.objects.select_related("user")
+            .prefetch_related(
+                "user__cohort_students__cohort__course",
+                "user__assisted_cohorts__cohort__course",
+                "user__managed_courses__course",
+                "user__coached_courses__course",
+            )
+            .get(id=withdrawal_id)
+        )
     except Withdrawal.DoesNotExist as exc:
         raise WithdrawalNotFoundError from exc
 

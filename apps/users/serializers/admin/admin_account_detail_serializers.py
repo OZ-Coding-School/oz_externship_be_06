@@ -72,7 +72,7 @@ class AdminAccountDetailResponseSerializer(serializers.ModelSerializer[User]):
     def get_status(self, obj: User) -> str:
         if not obj.is_active:
             return "DEACTIVATED"
-        if hasattr(obj, "withdrawals") and obj.withdrawals.exists():
+        if hasattr(obj, "withdrawal") and obj.withdrawal is not None:
             return "WITHDREW"
         return "ACTIVATED"
 

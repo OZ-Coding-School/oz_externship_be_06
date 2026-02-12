@@ -10,31 +10,35 @@ from apps.users.models.enrollment import StudentEnrollmentRequest
 def accept_enrollments(enrollment_ids: list[int]) -> int:
 
     with transaction.atomic():
-        enrollments = StudentEnrollmentRequest.objects.filter(
-            id__in=enrollment_ids,
-            status=StudentEnrollmentRequest.Status.PENDING,
-        ).select_related("user", "cohort")
+        enrollments = list(
+            StudentEnrollmentRequest.objects.filter(
+                id__in=enrollment_ids,
+                status=StudentEnrollmentRequest.Status.PENDING,
+            ).select_related("user", "cohort")
+        )
 
-        count = 0
-        for enrollment in enrollments:
-            # 등록 요청 승인 처리
-            enrollment.status = StudentEnrollmentRequest.Status.APPROVED
-            enrollment.accepted_at = timezone.now()
-            enrollment.save()
+        if not enrollments:
+            return 0
 
-            # 유저 role 변경
-            user = enrollment.user
-            user.role = User.Role.STUDENT
-            user.save(update_fields=["role"])
+        enrollment_pks = [e.pk for e in enrollments]
+        user_ids = [e.user_id for e in enrollments]
 
-            # CohortStudent 생성 (이미 존재하지 않는 경우)
-            CohortStudent.objects.get_or_create(
-                user=user,
-                cohort=enrollment.cohort,
-            )
-            count += 1
+        # 등록 요청 일괄 승인
+        StudentEnrollmentRequest.objects.filter(pk__in=enrollment_pks).update(
+            status=StudentEnrollmentRequest.Status.APPROVED,
+            accepted_at=timezone.now(),
+        )
 
-    return count
+        # 유저 role 일괄 변경
+        User.objects.filter(id__in=user_ids).update(role=User.Role.STUDENT)
+
+        # CohortStudent 일괄 생성 - 이미 존재하면 무시!
+        CohortStudent.objects.bulk_create(
+            [CohortStudent(user=e.user, cohort=e.cohort) for e in enrollments],
+            ignore_conflicts=True,
+        )
+
+    return len(enrollments)
 
 
 # 수강생 등록 요청을 일괄 거절
