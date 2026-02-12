@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any, TypedDict
 
-from django.db.models import Count, Max, Min
+from django.db.models import Count, Max, Min, QuerySet
 from django.db.models.functions import TruncMonth, TruncYear
 
 from apps.courses.models.cohort_students import CohortStudent
@@ -14,76 +14,54 @@ class TrendItem(TypedDict):
     count: int
 
 
-def get_signup_trends(interval: str, year: int | None = None) -> dict[str, Any]:
+# 월별/연별 추세 집계 공통 로직
+def _aggregate_trends(
+    queryset: QuerySet,  # type: ignore[type-arg]
+    date_field: str,
+    interval: str,
+    year: int | None = None,
+) -> dict[str, Any]:
+
     today = date.today()
 
     if interval == "monthly":
-        # 특정 연도의 1~12월
         target_year = year if year else today.year
         from_date = date(target_year, 1, 1)
         to_date = date(target_year, 12, 31)
 
-        # 월별 집계
-        queryset = (
-            User.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncMonth("created_at"))
+        qs = (
+            queryset.filter(**{f"{date_field}__date__gte": from_date, f"{date_field}__date__lte": to_date})
+            .annotate(period=TruncMonth(date_field))
             .values("period")
             .annotate(count=Count("id"))
             .order_by("period")
         )
 
-        # 결과를 딕셔너리로 변환
-        period_counts: dict[str, int] = {}
-        for item in queryset:
-            period_str = item["period"].strftime("%Y-%m")
-            period_counts[period_str] = item["count"]
+        period_counts: dict[str, int] = {item["period"].strftime("%Y-%m"): item["count"] for item in qs}
 
-        # 1~12월 전체 항목 생성 (데이터 없는 월도 0으로 포함)
-        items: list[TrendItem] = []
-        for month in range(1, 13):
-            period_str = f"{target_year}-{month:02d}"
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
+        items: list[TrendItem] = [
+            {"period": f"{target_year}-{month:02d}", "count": period_counts.get(f"{target_year}-{month:02d}", 0)}
+            for month in range(1, 13)
+        ]
 
     else:
-        # yearly - 전체 데이터의 연도별 통계
-        # 가장 오래된 가입일 조회
-        oldest_date = User.objects.aggregate(oldest=Min("created_at"))["oldest"]
-
-        if oldest_date:
-            from_date = date(oldest_date.year, 1, 1)
-        else:
-            from_date = date(today.year, 1, 1)
-
+        oldest_date = queryset.aggregate(oldest=Min(date_field))["oldest"]
+        from_date = date(oldest_date.year, 1, 1) if oldest_date else date(today.year, 1, 1)
         to_date = date(today.year, 12, 31)
 
-        # 년별 집계
-        queryset = (
-            User.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncYear("created_at"))
+        qs = (
+            queryset.filter(**{f"{date_field}__date__gte": from_date, f"{date_field}__date__lte": to_date})
+            .annotate(period=TruncYear(date_field))
             .values("period")
             .annotate(count=Count("id"))
             .order_by("period")
         )
 
-        # 결과를 딕셔너리로 변환
-        period_counts = {}
-        for item in queryset:
-            period_str = str(item["period"].year)
-            period_counts[period_str] = item["count"]
+        period_counts = {str(item["period"].year): item["count"] for item in qs}
 
-        # 가장 오래된 연도부터 현재 연도까지 전체 항목 생성
-        items = []
-        current_year = from_date.year
-        while current_year <= today.year:
-            period_str = str(current_year)
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
-            current_year += 1
+        items = [
+            {"period": str(y), "count": period_counts.get(str(y), 0)} for y in range(from_date.year, today.year + 1)
+        ]
 
     total = sum(item["count"] for item in items)
 
@@ -94,164 +72,31 @@ def get_signup_trends(interval: str, year: int | None = None) -> dict[str, Any]:
         "total": total,
         "items": items,
     }
+
+
+def get_signup_trends(interval: str, year: int | None = None) -> dict[str, Any]:
+    return _aggregate_trends(User.objects.all(), "created_at", interval, year)
 
 
 def get_withdrawal_trends(interval: str) -> dict[str, Any]:
-    today = date.today()
-
-    period_counts: dict[str, int]
-    items: list[TrendItem]
-
-    if interval == "monthly":
-        target_year = today.year
-        from_date = date(target_year, 1, 1)
-        to_date = date(target_year, 12, 31)
-
-        queryset = (
-            Withdrawal.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncMonth("created_at"))
-            .values("period")
-            .annotate(count=Count("id"))
-            .order_by("period")
-        )
-
-        period_counts = {}
-        for item in queryset:
-            period_str = item["period"].strftime("%Y-%m")
-            period_counts[period_str] = item["count"]
-
-        items = []
-        for month in range(1, 13):
-            period_str = f"{target_year}-{month:02d}"
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
-
-    else:
-        oldest_date = Withdrawal.objects.aggregate(oldest=Min("created_at"))["oldest"]
-
-        if oldest_date:
-            from_date = date(oldest_date.year, 1, 1)
-        else:
-            from_date = date(today.year, 1, 1)
-
-        to_date = date(today.year, 12, 31)
-
-        queryset = (
-            Withdrawal.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncYear("created_at"))
-            .values("period")
-            .annotate(count=Count("id"))
-            .order_by("period")
-        )
-
-        period_counts = {}
-        for item in queryset:
-            period_str = str(item["period"].year)
-            period_counts[period_str] = item["count"]
-
-        items = []
-        current_year = from_date.year
-        while current_year <= today.year:
-            period_str = str(current_year)
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
-            current_year += 1
-
-    total = sum(item["count"] for item in items)
-
-    return {
-        "interval": interval,
-        "from_date": from_date,
-        "to_date": to_date,
-        "total": total,
-        "items": items,
-    }
+    return _aggregate_trends(Withdrawal.objects.all(), "created_at", interval)
 
 
-# 수강등록 추세 분석 - 수강생 전환 추세
 def get_student_enrollment_trends(interval: str, year: int | None = None) -> dict[str, Any]:
-
-    today = date.today()
-
-    period_counts: dict[str, int]
-    items: list[TrendItem]
-
-    if interval == "monthly":
-        target_year = year if year else today.year
-        from_date = date(target_year, 1, 1)
-        to_date = date(target_year, 12, 31)
-
-        queryset = (
-            CohortStudent.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncMonth("created_at"))
-            .values("period")
-            .annotate(count=Count("id"))
-            .order_by("period")
-        )
-
-        period_counts = {}
-        for item in queryset:
-            period_str = item["period"].strftime("%Y-%m")
-            period_counts[period_str] = item["count"]
-
-        items = []
-        for month in range(1, 13):
-            period_str = f"{target_year}-{month:02d}"
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
-
-    else:  # yearly
-        oldest_date = CohortStudent.objects.aggregate(oldest=Min("created_at"))["oldest"]
-
-        if oldest_date:
-            from_date = date(oldest_date.year, 1, 1)
-        else:
-            from_date = date(today.year, 1, 1)
-
-        to_date = date(today.year, 12, 31)
-
-        queryset = (
-            CohortStudent.objects.filter(
-                created_at__date__gte=from_date,
-                created_at__date__lte=to_date,
-            )
-            .annotate(period=TruncYear("created_at"))
-            .values("period")
-            .annotate(count=Count("id"))
-            .order_by("period")
-        )
-
-        period_counts = {}
-        for item in queryset:
-            period_str = str(item["period"].year)
-            period_counts[period_str] = item["count"]
-
-        items = []
-        current_year = from_date.year
-        while current_year <= today.year:
-            period_str = str(current_year)
-            items.append({"period": period_str, "count": period_counts.get(period_str, 0)})
-            current_year += 1
-
-    total = sum(item["count"] for item in items)
-
-    return {
-        "interval": interval,
-        "from_date": from_date,
-        "to_date": to_date,
-        "total": total,
-        "items": items,
-    }
+    return _aggregate_trends(CohortStudent.objects.all(), "created_at", interval, year)
 
 
 def get_withdrawal_reason_counts() -> dict[str, Any]:
-    total = Withdrawal.objects.count()
+    # count, min, max를 1쿼리로 통합 (기존 3쿼리 → 1쿼리)
+    aggregates = Withdrawal.objects.aggregate(
+        total=Count("id"),
+        oldest=Min("created_at"),
+        latest=Max("created_at"),
+    )
+    total = aggregates["total"]
+    from_date = aggregates["oldest"].date() if aggregates["oldest"] else None
+    to_date = aggregates["latest"].date() if aggregates["latest"] else None
+
     qs = Withdrawal.objects.values("reason").annotate(count=Count("id"))
 
     items = [
@@ -263,10 +108,6 @@ def get_withdrawal_reason_counts() -> dict[str, Any]:
         }
         for row in qs
     ]
-    oldest = Withdrawal.objects.aggregate(oldest=Min("created_at"))["oldest"]
-    from_date = oldest.date() if oldest else None
-    latest = Withdrawal.objects.aggregate(latest=Max("created_at"))["latest"]
-    to_date = latest.date() if latest else None
     return {
         "from_date": from_date,
         "to_date": to_date,

@@ -47,7 +47,16 @@ class AdminAccountDetailAPIView(APIView):
     )
     def get(self, request: Request, account_id: int) -> Response:
         try:
-            user = User.objects.get(id=account_id)
+            user = (
+                User.objects.select_related("withdrawal")
+                .prefetch_related(
+                    "cohort_students__cohort__course",
+                    "assisted_cohorts__cohort__course",
+                    "managed_courses__course",
+                    "coached_courses__course",
+                )
+                .get(id=account_id)
+            )
         except User.DoesNotExist:
             return Response(
                 {"error_detail": "사용자 정보를 찾을 수 없습니다."},

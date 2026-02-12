@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from apps.users.models import User
@@ -57,6 +58,22 @@ class MeUpdateResponseSerializer(serializers.ModelSerializer):  # type: ignore[t
 
 class ProfileImageUrlRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]
     profile_img_url = serializers.URLField(max_length=255)
+
+    def validate_profile_img_url(self, value: str) -> str:
+        custom_domain = getattr(settings, "AWS_S3_CUSTOM_DOMAIN", None)
+        bucket_name = getattr(settings, "AWS_S3_BUCKET_NAME", "")
+        region = getattr(settings, "AWS_S3_REGION", "")
+
+        allowed_prefixes = []
+        if custom_domain:
+            allowed_prefixes.append(f"https://{custom_domain}/")
+        if bucket_name and region:
+            allowed_prefixes.append(f"https://{bucket_name}.s3.{region}.amazonaws.com/")
+
+        if not any(value.startswith(prefix) for prefix in allowed_prefixes):
+            raise serializers.ValidationError("허용되지 않은 이미지 URL입니다.")
+
+        return value
 
 
 class ChangePhoneRequestSerializer(serializers.Serializer):  # type: ignore[type-arg]

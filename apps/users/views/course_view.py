@@ -1,3 +1,4 @@
+from django.core.cache import cache as django_cache
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,9 @@ from apps.users.services.course_service import (
     get_available_courses,
     get_enrolled_courses,
 )
+
+AVAILABLE_COURSES_CACHE_KEY = "available_courses"
+AVAILABLE_COURSES_CACHE_TTL = 300  # 5분
 
 
 # 수강신청 가능한 과정/기수 조회
@@ -34,9 +38,14 @@ class AvailableCoursesAPIView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
-        courses = get_available_courses()
-        serializer = AvailableCourseResponseSerializer(courses, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = django_cache.get(AVAILABLE_COURSES_CACHE_KEY)
+
+        if data is None:
+            courses = get_available_courses()
+            data = AvailableCourseResponseSerializer(courses, many=True).data
+            django_cache.set(AVAILABLE_COURSES_CACHE_KEY, data, timeout=AVAILABLE_COURSES_CACHE_TTL)
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 # 내 수강목록 조회

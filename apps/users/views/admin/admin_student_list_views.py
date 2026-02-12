@@ -21,7 +21,7 @@ class AdminStudentListAPIView(APIView):
     def get_queryset(self, request: Request) -> QuerySet[User]:
         queryset = (
             User.objects.filter(role=User.Role.STUDENT)
-            .select_related()
+            .select_related("withdrawal")
             .prefetch_related("cohort_students__cohort__course")
         )
 

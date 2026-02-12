@@ -1,3 +1,5 @@
+from typing import Literal
+
 from django.conf import settings
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
@@ -110,6 +112,21 @@ class LogoutAPIView(APIView):
     )
     def post(self, request: Request) -> Response:
         response = Response({"detail": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
-        response.delete_cookie("refresh_token")
-        response.delete_cookie("access_token")  # 토큰 재발급 시 설정된 쿠키 삭제
+
+        cookie_domain = getattr(settings, "COOKIE_DOMAIN", None)
+        samesite: Literal["Lax", "Strict", "None", False] = "None" if settings.COOKIE_SECURE else "Lax"
+
+        response.delete_cookie(
+            "refresh_token",
+            path="/",
+            domain=cookie_domain,
+            samesite=samesite,
+        )
+        response.delete_cookie(
+            "access_token",
+            path="/",
+            domain=cookie_domain,
+            samesite=samesite,
+        )
+
         return response

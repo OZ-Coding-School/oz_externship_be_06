@@ -18,8 +18,12 @@ def enroll_student(*, user: User, cohort_id: int) -> StudentEnrollmentRequest:
     except Cohort.DoesNotExist as exc:
         raise CohortNotFoundError("존재하지 않는 기수입니다.") from exc
 
-    # 중복 신청 확인
-    if StudentEnrollmentRequest.objects.filter(user=user, cohort=cohort).exists():
+    # 중복 신청 확인 (거절된 신청은 재신청 허용)
+    if (
+        StudentEnrollmentRequest.objects.filter(user=user, cohort=cohort)
+        .exclude(status=StudentEnrollmentRequest.Status.REJECTED)
+        .exists()
+    ):
         raise AlreadyEnrolledError("이미 해당 기수에 등록 신청하였습니다.")
 
     # 등록 신청 생성

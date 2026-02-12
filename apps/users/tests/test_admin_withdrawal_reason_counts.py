@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import Any
 
+from django.core.cache import cache as django_cache
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework import status
@@ -46,6 +47,7 @@ class AdminWithdrawalReasonCountsAPITest(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
+        django_cache.clear()
 
     def _auth_headers(self, user: User) -> Any:
         token = AccessToken.for_user(user)
