@@ -4,8 +4,7 @@ from rest_framework import serializers
 
 from apps.posts.models import PostComment
 from apps.posts.models.post import Post
-from apps.posts.models.post_images import PostImage
-from apps.qna.utils.content_parser import ContentParser
+from apps.core.utils.content_parser import ContentParser
 from apps.users.models import User
 
 

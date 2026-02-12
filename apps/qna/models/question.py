@@ -6,7 +6,7 @@ from django.db import models
 
 from apps.core.models import TimeStampModel
 from apps.qna.models.question_category import QuestionCategory
-from apps.qna.utils.content_parser import ContentParser
+from apps.core.utils.content_parser import ContentParser
 from apps.users.models import User
 
 
