@@ -41,7 +41,11 @@ class AdminUserListViewTest(APITestCase):
         cls.withdrawn_user = User.objects.create_user(
             email="withdrew@test.com", password="password123", nickname="withdrew", role="USER", birthday="1990-01-01"
         )
-        Withdrawal.objects.create(user=cls.withdrawn_user, reason="Test reason")
+        Withdrawal.objects.create(
+            user=cls.withdrawn_user,
+            reason=Withdrawal.Reason.OTHER,  # 또는 SERVICE_DISSATISFACTION 등
+            reason_detail="테스트용 탈퇴 계정",
+        )
 
         cls.url = reverse("admin-account-list")
 

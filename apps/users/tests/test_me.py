@@ -92,7 +92,7 @@ class MeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_withdrawal_success_204_and_user_inactive(self) -> None:
-        res = self.client.post(
+        res = self.client.delete(
             "/api/v1/accounts/withdrawal/",
             {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트 탈퇴"},
             format="json",
@@ -105,7 +105,7 @@ class MeAPITests(TestCase):
         self.assertTrue(Withdrawal.objects.filter(user=self.user).exists())
 
     def test_withdrawal_invalid_reason_400(self) -> None:
-        res = self.client.post(
+        res = self.client.delete(
             "/api/v1/accounts/withdrawal/",
             {"reason": "INVALID", "reason_detail": "테스트"},
             format="json",
@@ -113,9 +113,13 @@ class MeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_withdrawal_already_requested_400(self) -> None:
-        Withdrawal.objects.create(user=self.user, reason="SERVICE_DISSATISFACTION")
+        Withdrawal.objects.create(
+            user=self.user,
+            reason="SERVICE_DISSATISFACTION",
+            reason_detail="이미 탈퇴 신청된 상태",
+        )
 
-        res = self.client.post(
+        res = self.client.delete(
             "/api/v1/accounts/withdrawal/",
             {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트"},
             format="json",
@@ -128,7 +132,7 @@ class MeAPITests(TestCase):
     def test_withdrawal_unauthenticated_401(self) -> None:
         self.client.credentials()
 
-        res = self.client.post(
+        res = self.client.delete(
             "/api/v1/accounts/withdrawal/",
             {"reason": "PRIVACY_CONCERN", "reason_detail": "테스트"},
             format="json",

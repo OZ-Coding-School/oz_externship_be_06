@@ -30,11 +30,16 @@ class WithdrawalAPIView(APIView):
             401: OpenApiResponse(description="인증되지 않은 사용자"),
         },
     )
-    def post(self, request: Request) -> Response:
+    def delete(self, request: Request) -> Response:
         serializer = WithdrawalRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         data = serializer.validated_data
         assert isinstance(request.user, User)
-        withdraw_user(user=request.user, reason=data["reason"], reason_detail=data["reason_detail"])
+
+        withdraw_user(
+            user=request.user,
+            reason=data["reason"],
+            reason_detail=data["reason_detail"],
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
