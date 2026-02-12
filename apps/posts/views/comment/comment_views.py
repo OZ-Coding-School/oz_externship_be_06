@@ -19,9 +19,6 @@ from apps.posts.serializers.comment_serializers import (
 )
 from apps.posts.services.comment.comment_create_services import create_comment
 from apps.posts.services.comment.comment_delete_services import delete_comment
-from apps.posts.services.comment.comment_nickname_services import (
-    generate_comment_nickname,
-)
 from apps.posts.services.comment.comment_update_services import update_comment
 from apps.posts.utils.pagination import PostPagination
 from apps.posts.views.comment.comment_mixins import CommentExceptionHandlerMixin
@@ -219,28 +216,6 @@ class PostCommentDeleteAPIView(CommentExceptionHandlerMixin, generics.DestroyAPI
         delete_comment(request.user, comment)
 
         return Response({"detail": "댓글이 삭제되었습니다."}, status=status.HTTP_200_OK)
-
-    # 랜덤 닉네임 생성
-
-
-class CommentRandomNicknameAPIView(APIView):
-    """
-    댓글용 랜덤 닉네임을 반환하는 API
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        tags=["Comments"],
-        summary="댓글용 랜덤 닉네임 생성 API",
-        description="댓글 작성 시 사용할 랜덤 닉네임을 생성하여 반환합니다.",
-        responses={
-            200: inline_serializer(name="CommentNicknameResponse", fields={"nickname": serializers.CharField()})
-        },
-    )
-    def get(self, request: Request) -> Response:
-        nickname = generate_comment_nickname()
-        return Response({"nickname": nickname})
 
 
 class PostCommentListAPIView(CommentExceptionHandlerMixin, generics.ListAPIView[PostComment]):

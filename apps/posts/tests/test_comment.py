@@ -53,7 +53,6 @@ class PostCommentViewTest(APITestCase):
         cls.delete_url = reverse(
             "posts:post-comment-delete", kwargs={"post_id": cls.post.id, "comment_id": cls.comment.id}
         )
-        cls.nickname_url = reverse("posts:comment-nickname")
 
     def setUp(self) -> None:  # [2] 반환 타입 명시
         self.client.force_authenticate(user=self.user)
@@ -127,9 +126,3 @@ class PostCommentViewTest(APITestCase):
         self.client.force_authenticate(user=self.other_user)
         response = self.client.delete(self.delete_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_nickname_success(self) -> None:
-        """랜덤 닉네임 생성 (200)"""
-        response = self.client.get(self.nickname_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("nickname", response.data)
