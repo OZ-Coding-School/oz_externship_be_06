@@ -1,12 +1,11 @@
+from __future__ import annotations
+
 from rest_framework import serializers
 
 from apps.qna.models import Answer, AnswerComment
 from apps.qna.serializers.common import AuthorSerializer
 
 
-# ==============================================================================
-# Answer Serializers for Response
-# ==============================================================================
 class AnswerCommentSerializer(serializers.ModelSerializer[AnswerComment]):
     """
     답변 댓글 상세 정보 시리얼라이저

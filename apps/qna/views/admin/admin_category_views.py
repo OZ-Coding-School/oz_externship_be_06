@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from rest_framework import status
@@ -8,6 +10,7 @@ from rest_framework.response import Response
 from apps.core.utils.permissions import IsStaffRole
 from apps.qna.docs.schemas_admin_category import (
     ADMIN_CATEGORY_CREATE_SCHEMA,
+    ADMIN_CATEGORY_DELETE_SCHEMA,
     ADMIN_CATEGORY_LIST_SCHEMA,
 )
 from apps.qna.serializers.admin.category.request import (
@@ -16,6 +19,7 @@ from apps.qna.serializers.admin.category.request import (
 )
 from apps.qna.serializers.admin.category.response import (
     AdminCategoryCreateResponseSerializer,
+    AdminCategoryDeleteResponseSerializer,
     AdminCategoryListResponseSerializer,
 )
 from apps.qna.services.admin.category.command import AdminCategoryCommandService
@@ -26,19 +30,20 @@ from apps.qna.views.base_view import QnaBaseAPIView
 
 class AdminCategoriesAPIView(QnaBaseAPIView):
     """
-    어드민 카테고리 등록 & 목록 조회 API View
+    /api/v1/admin/qna/categories
+    [POST] 카테고리 등록
+    [GET] 카테고리 목록 조회
     """
 
-    def get_permissions(self) -> list[Any]:
-        return [IsAuthenticated(), IsStaffRole()]
-
-    serializer_class = {
+    serializer_classes = {
         "POST": AdminCategoryCreateSerializer,
         "GET": AdminCategoryListQuerySerializer,
     }
 
-    # 카테고리 등록
-    # [POST] /api/v1/admin/qna/categories
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), IsStaffRole()]
+
+    # [POST] 카테고리 등록
     @ADMIN_CATEGORY_CREATE_SCHEMA
     def post(self, request: Request) -> Response:
         request_serializer = AdminCategoryCreateSerializer(data=request.data)
@@ -49,15 +54,34 @@ class AdminCategoriesAPIView(QnaBaseAPIView):
         response_serializer = AdminCategoryCreateResponseSerializer(category)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-    # 카테고리 목록 조회
-    # [GET] /api/v1/admin/qna/categories
+    # [GET] 카테고리 목록 조회
     @ADMIN_CATEGORY_LIST_SCHEMA
     def get(self, request: Request) -> Response:
         query_serializer = AdminCategoryListQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        category_list = AdminCategoryQueryService.get_category_list(data=query_serializer.validated_data)
+        category_list = AdminCategoryQueryService.get_category_list(filters=query_serializer.validated_data)
 
         return Paginator.get_paginated_data_response(
             queryset=category_list, request=request, serializer_class=AdminCategoryListResponseSerializer, view=self
         )
+
+
+class AdminCategoryDeleteAPIView(QnaBaseAPIView):
+    """
+    /api/v1/admin/qna/categories/{category_id}
+    [DELETE] 어드민 카테고리 삭제
+    """
+
+    serializer_classes = {"DELETE": None}
+
+    def get_permissions(self) -> list[Any]:
+        return [IsAuthenticated(), IsStaffRole()]
+
+    # [DELETE] 어드민 카테고리 삭제
+    @ADMIN_CATEGORY_DELETE_SCHEMA
+    def delete(self, request: Request, category_id: int) -> Response:
+        delete_summary = AdminCategoryCommandService.delete_category(category_id=category_id)
+
+        response_serializer = AdminCategoryDeleteResponseSerializer(delete_summary)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)

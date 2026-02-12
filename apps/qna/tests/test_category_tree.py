@@ -1,14 +1,11 @@
-import json
-
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APITestCase
 
-from apps.qna.docs.api_response_examples import SuccessResponseExamples
 from apps.qna.models import QuestionCategory
 
 
-class CategoryTreeAPITest(TestCase):
+class CategoryTreeAPITest(APITestCase):
     """
     카테고리 계층 구조 조회 API (GET) 테스트
     - 성공 케이스 (권한 있는 유저)
@@ -35,10 +32,13 @@ class CategoryTreeAPITest(TestCase):
         cls.cat_orm = QuestionCategory.objects.create(name="ORM", parent=cls.cat_django)
 
         # URL
-        cls.url = reverse("category-list")
+        cls.url = reverse("categories")
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_get_category_tree_success(self) -> None:
-        """[성공] 실제 DB 데이터를 기반으로 전체 트리 구조를 반환하는지 확인"""
+        """[200] 실제 DB 데이터를 기반으로 전체 트리 구조 반환"""
         response = self.client.get(self.url)
         data = response.json()
 
@@ -47,7 +47,7 @@ class CategoryTreeAPITest(TestCase):
         self.assertEqual(len(data["categories"]), 2)
 
     def test_category_tree_recursive_nesting(self) -> None:
-        """[성공] 데이터가 대 > 중 > 소 순서로 재귀적으로 중첩되어 있는지 확인"""
+        """[200] 데이터가 대 > 중 > 소 순서로 재귀적으로 중첩되어 있는지 확인"""
         response = self.client.get(self.url)
         data = response.json()
 
@@ -67,7 +67,7 @@ class CategoryTreeAPITest(TestCase):
         self.assertEqual(orm["subcategories"], [])
 
     def test_get_category_tree_empty(self) -> None:
-        """[성공] 데이터가 없을 경우 빈 리스트 반환 확인"""
+        """[200] 데이터가 없을 경우 빈 리스트 반환"""
         QuestionCategory.objects.all().delete()
         response = self.client.get(self.url)
         self.assertEqual(response.json()["categories"], [])

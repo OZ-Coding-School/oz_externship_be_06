@@ -18,6 +18,13 @@ from apps.qna.models import (
     QuestionCategory,
     QuestionImage,
 )
+from apps.qna.tests.factories import (
+    create_admin_user,
+    create_lc_user,
+    create_om_user,
+    create_student_user,
+    create_ta_user,
+)
 from apps.users.models import User
 
 
@@ -25,8 +32,14 @@ from apps.users.models import User
 class AdminQuestionDetailAPITest(APITestCase):
     """
     어드민 질문 상세 조회 API (GET) 테스트
-    - 성공 케이스 (기본 조회, 답변 없는 질문, 다양한 역할)
-    - 실패 케이스 (401, 403, 404)
+    - 성공 케이스
+        - 200 OK: 기본 조회 (질문/이미지/답변 데이터)
+        - 200 OK: 답변이 없는 질문 조회
+        - 200 OK: 다양한 역할별 작성자 정보 검증
+    - 실패 케이스
+        - 401 Unauthorized: 로그인하지 않은 유저
+        - 403 Forbidden: STUDENT 유저 접근
+        - 404 Not Found: 존재하지 않는 question_id
     """
 
     course: Course
@@ -61,64 +74,19 @@ class AdminQuestionDetailAPITest(APITestCase):
             end_date="2025-06-30",
         )
 
-        # 테스트용 유저 - 어드민
-        cls.admin_user = User.objects.create_user(
-            email="admin@example.com",
-            password="password",
-            nickname="관리자",
-            name="Admin",
-            role="ADMIN",
-            gender="MALE",
-            birthday="1990-01-01",
-            is_active=True,
-        )
-        # 테스트용 유저 - 수강생
-        cls.student_user = User.objects.create_user(
-            email="student@example.com",
-            password="password",
-            nickname="수강생",
-            name="Student",
-            role="STUDENT",
-            gender="MALE",
-            birthday="2000-01-01",
-            is_active=True,
-        )
+        # 테스트용 유저
+        cls.admin_user = create_admin_user()
+
+        cls.student_user = create_student_user()
         CohortStudent.objects.create(user=cls.student_user, cohort=cls.cohort)
-        # 테스트용 유저 - TA
-        cls.ta_user = User.objects.create_user(
-            email="ta@example.com",
-            password="password",
-            nickname="조교님",
-            name="TA",
-            role="TA",
-            gender="FEMALE",
-            birthday="1998-01-01",
-            is_active=True,
-        )
+
+        cls.ta_user = create_ta_user()
         TrainingAssistant.objects.create(user=cls.ta_user, cohort=cls.cohort)
-        # 테스트용 유저 - LC
-        cls.lc_user = User.objects.create_user(
-            email="lc@example.com",
-            password="password",
-            nickname="코치님",
-            name="LC",
-            role="LC",
-            gender="MALE",
-            birthday="1985-01-01",
-            is_active=True,
-        )
+
+        cls.lc_user = create_lc_user()
         LearningCoach.objects.create(user=cls.lc_user, course=cls.course)
-        # 테스트용 유저 - OM
-        cls.om_user = User.objects.create_user(
-            email="om@example.com",
-            password="password",
-            nickname="매니저님",
-            name="OM",
-            role="OM",
-            gender="FEMALE",
-            birthday="1988-01-01",
-            is_active=True,
-        )
+
+        cls.om_user = create_om_user()
         OperationManager.objects.create(user=cls.om_user, course=cls.course)
 
         # 카테고리 계층 생성 (대 > 중 > 소)
@@ -155,8 +123,11 @@ class AdminQuestionDetailAPITest(APITestCase):
         # URL
         cls.url = reverse("admin-qna-question-detail", kwargs={"question_id": cls.question.id})
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_admin_question_detail_success(self) -> None:
-        """[성공] 어드민이 상세 조회 → 응답 필드 전체 검증"""
+        """[200] 어드민이 상세 조회 → 응답 필드 전체 검증"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         data = response.json()
@@ -183,7 +154,7 @@ class AdminQuestionDetailAPITest(APITestCase):
         self.assertEqual(len(data["answers"]), 5)
 
     def test_admin_question_detail_no_answers(self) -> None:
-        """[성공] 답변 없는 질문 → has_answer=false, answers=[]"""
+        """[200] 답변 없는 질문 → has_answer=false, answers=[]"""
         empty_q = Question.objects.create(
             author=self.student_user, category=self.cat_depth1, title="답변없는 질문", content="내용"
         )
@@ -198,7 +169,7 @@ class AdminQuestionDetailAPITest(APITestCase):
         self.assertEqual(data["answers"], [])
 
     def test_admin_question_detail_role_titles(self) -> None:
-        """[성공] 다양한 역할의 답변 작성자 role_title, course_generation 검증"""
+        """[200] 다양한 역할의 답변 작성자 role_title, course_generation 검증"""
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(self.url)
         data = response.json()
@@ -232,15 +203,18 @@ class AdminQuestionDetailAPITest(APITestCase):
         self.assertEqual(admin_author["role_title"], "관리자")
         self.assertEqual(admin_author["course_generation"], "")
 
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_admin_question_detail_unauthorized(self) -> None:
-        """[실패] 401 Unauthorized - 비로그인"""
+        """[401] 비로그인"""
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED_ADMIN_QUESTION_DETAIL.value)
 
     def test_admin_question_detail_forbidden_student(self) -> None:
-        """[실패] 403 Forbidden - STUDENT 접근"""
+        """[403] STUDENT 접근"""
         self.client.force_authenticate(user=self.student_user)
         response = self.client.get(self.url)
 
@@ -248,7 +222,7 @@ class AdminQuestionDetailAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ADMIN_QUESTION_DETAIL.value)
 
     def test_admin_question_detail_not_found(self) -> None:
-        """[실패] 404 Not Found - 존재하지 않는 question_id"""
+        """[404] 존재하지 않는 question_id"""
         url = reverse("admin-qna-question-detail", kwargs={"question_id": 99999})
         self.client.force_authenticate(user=self.admin_user)
         response = self.client.get(url)

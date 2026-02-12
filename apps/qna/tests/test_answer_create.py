@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
+from apps.qna.tests.factories import create_general_user, create_student_user
 from apps.users.models import User
 
 
@@ -23,37 +24,22 @@ class AnswerCreateAPITest(APITestCase):
     - 성능 테스트 (쿼리 수 검증)
     """
 
-    student: User
-    regular_user: User
+    student_user: User
+    general_user: User
     category: QuestionCategory
     question: Question
     url: str
 
     @classmethod
     def setUpTestData(cls) -> None:
-        # 테스트용 유저 - 학생
-        cls.student = User.objects.create_user(
-            email="student@ozcoding.com",
-            password="password",
-            nickname="학생",
-            role="STUDENT",
-            birthday="2000-01-01",
-            is_active=True,
-        )
-        # 테스트용 유저 - 일반
-        cls.regular_user = User.objects.create_user(
-            email="user@ozcoding.com",
-            password="password",
-            nickname="일반유저",
-            role="USER",
-            birthday="2000-01-01",
-            is_active=True,
-        )
+        # 테스트용 유저
+        cls.student_user = create_student_user()
+        cls.general_user = create_general_user()
 
         # Base Data
         cls.category = QuestionCategory.objects.create(name="Python")
         cls.question = Question.objects.create(
-            author=cls.student,
+            author=cls.student_user,
             category=cls.category,
             title="질문입니다",
             content="내용",
@@ -62,9 +48,12 @@ class AnswerCreateAPITest(APITestCase):
         # URL
         cls.url = reverse("answer-create", kwargs={"question_id": cls.question.id})
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_create_answer_success(self) -> None:
-        """[성공] 수강생 계정으로 답변 등록 성공 검증"""
-        self.client.force_authenticate(user=self.student)
+        """[201] 수강생 계정으로 답변 등록"""
+        self.client.force_authenticate(user=self.student_user)
 
         data: dict[str, object] = {"content": "답변입니다.", "image_urls": ["https://example.com/img1.png"]}
 
@@ -74,13 +63,16 @@ class AnswerCreateAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn("answer_id", res_data)
         self.assertEqual(res_data["question_id"], self.question.id)
-        self.assertEqual(res_data["author_id"], self.student.id)
+        self.assertEqual(res_data["author_id"], self.student_user.id)
 
         # DB Verification
         self.assertTrue(Answer.objects.filter(id=res_data["answer_id"]).exists())
 
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_create_answer_unauthorized(self) -> None:
-        """[실패] 비로그인 상태로 요청 시 401 반환 검증"""
+        """[401] 비로그인 상태로 요청"""
         data = {"content": "답변"}
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
 
@@ -88,8 +80,8 @@ class AnswerCreateAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.UNAUTHORIZED_ANSWER_CREATE.value)
 
     def test_create_answer_forbidden(self) -> None:
-        """[실패] 허용되지 않은 Role(USER)로 요청 시 403 반환 검증"""
-        self.client.force_authenticate(user=self.regular_user)
+        """[403] 허용되지 않은 Role(USER)로 요청"""
+        self.client.force_authenticate(user=self.general_user)
 
         data = {"content": "답변"}
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
@@ -98,8 +90,8 @@ class AnswerCreateAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.FORBIDDEN_ANSWER_CREATE.value)
 
     def test_create_answer_not_found(self) -> None:
-        """[실패] 존재하지 않는 질문 ID로 요청 시 404 반환 검증"""
-        self.client.force_authenticate(user=self.student)
+        """[404] 존재하지 않는 질문 ID로 요청"""
+        self.client.force_authenticate(user=self.student_user)
 
         invalid_url = reverse("answer-create", kwargs={"question_id": 99999})
         data = {"content": "답변"}
@@ -109,8 +101,8 @@ class AnswerCreateAPITest(APITestCase):
         self.assertEqual(response.json()["error_detail"], ErrorMessages.NOT_FOUND_QUESTION.value)
 
     def test_create_answer_invalid_input(self) -> None:
-        """[실패] 필수 필드(content) 누락 시 400 반환 검증"""
-        self.client.force_authenticate(user=self.student)
+        """[400] 필수 필드(content) 누락"""
+        self.client.force_authenticate(user=self.student_user)
 
         data: dict[str, object] = {"image_urls": []}  # content missing
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
@@ -119,9 +111,12 @@ class AnswerCreateAPITest(APITestCase):
         # Serializer's default_error_message is INVALID_ANSWER_CREATE
         self.assertEqual(response.json()["error_detail"], ErrorMessages.INVALID_ANSWER_CREATE.value)
 
+    # ==========================================================================
+    # 성능 테스트
+    # ==========================================================================
     def test_create_answer_performance(self) -> None:
-        """[성공] 답변 등록 시 쿼리 수 검증"""
-        self.client.force_authenticate(user=self.student)
+        """[성능] 답변 등록 시 쿼리 수 검증"""
+        self.client.force_authenticate(user=self.student_user)
         data: dict[str, object] = {
             "content": "답변입니다.",
             "image_urls": ["https://example.com/1.png", "https://example.com/2.png"],

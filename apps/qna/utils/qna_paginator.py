@@ -11,7 +11,7 @@ from rest_framework.serializers import Serializer
 
 from apps.core.utils.pagination import SimplePagePagination
 from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base import QnaBaseException
+from apps.qna.exceptions import QnaBaseException
 
 
 class QnaPagination(SimplePagePagination):
@@ -54,9 +54,29 @@ class AdminCategoryPagination(SimplePagePagination):
         )
 
 
-class QnaBaseListPaginator:
+class AdminQuestionPagination(SimplePagePagination):
     """
-    QnA, QnA-Admin Base 페이지네이션 응답 빌더
+    어드민 질의응답 목록 조회를 위한 페이지네이션
+    """
+
+    def get_paginated_response(self, data: List[Any]) -> Response:
+        if self.page is None or self.request is None:
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "page": self.page.number,
+                "size": self.get_page_size(self.request),
+                "total_count": self.page.paginator.count,
+                "questions": data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class QnaBasePaginator:
+    """
+    QnA, QnA-Admin 페이지네이션 응답 빌더
     """
 
     pagination_class: Type[BasePagination] = QnaPagination
@@ -86,13 +106,19 @@ class QnaBaseListPaginator:
             raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_PAGE, status_code=status.HTTP_404_NOT_FOUND)
 
 
-class QuestionListPaginator(QnaBaseListPaginator):
+class QuestionListPaginator(QnaBasePaginator):
     """일반 유저용 질문 목록 페이지네이터"""
 
     pagination_class = QnaPagination
 
 
-class AdminCategoryListPaginator(QnaBaseListPaginator):
+class AdminQuestionListPaginator(QnaBasePaginator):
+    """어드민용 질의응답 목록 페이지네이터"""
+
+    pagination_class = AdminQuestionPagination
+
+
+class AdminCategoryListPaginator(QnaBasePaginator):
     """어드민용 카테고리 목록 페이지네이터"""
 
     pagination_class = AdminCategoryPagination

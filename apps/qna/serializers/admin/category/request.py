@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from rest_framework import serializers
@@ -6,13 +8,12 @@ from apps.qna.constants import CATEGORY_LABELS, ErrorMessages
 
 
 # ==============================================================================
-# [POST] Admin Category - Create
+# [POST] Admin Category
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
     """
     어드민 카테고리 등록 요청 시리얼라이저
-
     - category_type: 카테고리 계층 (대분류, 중분류, 소분류)
     - name: 카테고리 이름
     - parent_id: 부모 카테고리 ID (중분류, 소분류의 경우 필수)
@@ -54,12 +55,12 @@ class AdminCategoryCreateSerializer(serializers.Serializer[Any]):
 
 
 # ==============================================================================
-# [GET] Admin Category List - Read
+# [GET] Admin Category List
 # /api/v1/admin/qna/categories
 # ==============================================================================
 class AdminCategoryListQuerySerializer(serializers.Serializer[Any]):
     """
-    어드민 카테고리 목록 조회 쿼리 파라미터 검증 시리얼라이저
+    어드민 카테고리 목록 조회 요청 시리얼라이저
     """
 
     page = serializers.IntegerField(required=False, default=1, min_value=1)

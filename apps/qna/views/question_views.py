@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, cast
 
 from rest_framework import status
@@ -69,10 +71,10 @@ class QuestionCreateListAPIView(QnaBaseAPIView):
         query_serializer = QuestionQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
 
-        queryset = QuestionQueryService.get_question_list(query_serializer.validated_data)
+        queryset_list = QuestionQueryService.get_question_list(filters=query_serializer.validated_data)
 
         return Paginator.get_paginated_data_response(
-            queryset=queryset, request=request, serializer_class=QuestionListSerializer, view=self
+            queryset=queryset_list, request=request, serializer_class=QuestionListSerializer, view=self
         )
 
 

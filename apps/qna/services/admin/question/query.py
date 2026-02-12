@@ -1,15 +1,51 @@
-from django.db.models import Prefetch
+from __future__ import annotations
+
+from typing import Any
+
+from django.db.models import Prefetch, QuerySet
 from rest_framework import status
 
-from apps.qna.constants import ErrorMessages
-from apps.qna.exceptions.base import QnaBaseException
+from apps.qna.constants import SORT_CHOICES, ErrorMessages
+from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Answer, Question
+from apps.qna.services.base_question_query import BaseQuestionQueryService
 
 
-class AdminQuestionQueryService:
+class AdminQuestionQueryService(BaseQuestionQueryService):
     """
-    어드민 질문 데이터 조회(Read) 로직 처리 서비스
+    - get_question_list: 질문 목록 조회
+        _apply_category_filter
+        _apply_search_filter
+        _apply_status_filter
+        _apply_sorting
+    - get_question_detail: 질문 상세 조회
     """
+
+    @staticmethod
+    def get_question_list(filters: dict[str, Any]) -> QuerySet[Question]:
+        """
+        검색, 필터링, 정렬 로직을 수행하고 질문 목록을 반환
+        - Args:
+            filters (dict):
+                검색어(search_keyword),
+                카테고리(category_id),
+                답변상태(answer_status),
+                정렬(sort)
+        - Returns:
+            QuerySet[Question]: 필터링된 질문 QuerySet
+            or []: 어떤 값도 필터링 되지 않았을때
+        - Raises:
+            QnaBaseException: 카테고리 id가 존재하지 않을 경우 (404)
+        """
+        queryset = Question.objects.select_related("author", "category__parent__parent")
+
+        # 카테고리 필터
+        queryset = AdminQuestionQueryService._apply_category_filter(queryset, filters.get("category_id"))
+        queryset = AdminQuestionQueryService._apply_search_filter(queryset, filters.get("search_keyword"))
+        queryset = AdminQuestionQueryService._apply_status_filter(queryset, filters.get("answer_status"))
+        queryset = AdminQuestionQueryService._apply_sorting(queryset, filters.get("sort", SORT_CHOICES[0]))
+
+        return queryset
 
     @staticmethod
     def get_question_detail(question_id: int) -> Question:

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from apps.qna.utils.model_types import User
 
 

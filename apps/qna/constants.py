@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from enum import Enum
 
+DEFAULT_CATEGORY = "일반 질문"
 CATEGORY_LABELS = ("대분류", "중분류", "소분류")
+
 ANSWER_STATUS_CHOICES = ("waiting", "answered")
 SORT_CHOICES = ("latest", "oldest", "most_views")
 

@@ -4,10 +4,22 @@ from rest_framework.test import APITestCase
 
 from apps.qna.constants import ErrorMessages
 from apps.qna.models import Answer, Question, QuestionCategory
+from apps.qna.tests.factories import create_student_user
 from apps.users.models import User
 
 
 class AnswerAdoptTest(APITestCase):
+    """
+    답변 채택 API (POST) 테스트
+    - 성공 케이스
+        - 본인이 작성한 질문의 답변 채택
+    - 실패 케이스
+        - 401 Unauthorized: 로그인하지 않은 유저
+        - 403 Forbidden: 본인이 작성한 질문이 아닌 경우
+        - 404 Not Found: 존재하지 않는 답변
+        - 409 Conflict: 이미 채택된 답변이 존재
+    - 성능 테스트 (쿼리 수 검증)
+    """
 
     author: User
     answerer: User
@@ -20,38 +32,11 @@ class AnswerAdoptTest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         # 테스트용 유저 - 질문 작성자 (수강생)
-        cls.author = User.objects.create_user(
-            email="author@example.com",
-            password="password!@#",
-            name="작성자",
-            nickname="author",
-            phone_number="010-1111-2222",
-            gender="MALE",
-            birthday="2000-01-01",
-            role="STUDENT",
-        )
+        cls.author = create_student_user()
         # 테스트용 유저 - 답변 작성자 (다른 수강생)
-        cls.answerer = User.objects.create_user(
-            email="answerer@example.com",
-            password="password!@#",
-            name="답변자",
-            nickname="answerer",
-            phone_number="010-3333-4444",
-            gender="FEMALE",
-            birthday="2000-02-02",
-            role="STUDENT",
-        )
+        cls.answerer = create_student_user()
         # 테스트용 유저 - 제3자 (권한 없는 유저)
-        cls.other_user = User.objects.create_user(
-            email="other@example.com",
-            password="password!@#",
-            name="제3자",
-            nickname="other",
-            phone_number="010-5555-6666",
-            gender="MALE",
-            birthday="2000-03-03",
-            role="STUDENT",
-        )
+        cls.other_user = create_student_user()
 
         # 카테고리 생성
         cls.category = QuestionCategory.objects.create(name="Django", parent=None)
@@ -70,10 +55,11 @@ class AnswerAdoptTest(APITestCase):
     def setUp(self) -> None:
         self.client.force_authenticate(user=self.author)
 
+    # ==========================================================================
+    # 성공 케이스
+    # ==========================================================================
     def test_adopt_answer_success(self) -> None:
-        """
-        [성공] 본인이 작성한 질문의 답변을 채택 (200 OK)
-        """
+        """[200] 본인이 작성한 질문의 답변 채택"""
         response = self.client.post(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -85,10 +71,11 @@ class AnswerAdoptTest(APITestCase):
         self.answer.refresh_from_db()
         self.assertTrue(self.answer.is_adopted)
 
+    # ==========================================================================
+    # 실패 케이스
+    # ==========================================================================
     def test_adopt_answer_unauthorized(self) -> None:
-        """
-        [실패] 로그인하지 않은 사용자 (401 Unauthorized)
-        """
+        """[401] 로그인하지 않은 사용자"""
         self.client.force_authenticate(user=None)
         response = self.client.post(self.url)
 
@@ -96,9 +83,7 @@ class AnswerAdoptTest(APITestCase):
         self.assertEqual(response.data["error_detail"], ErrorMessages.UNAUTHORIZED_ANSWER_ADOPT.value)
 
     def test_adopt_answer_forbidden(self) -> None:
-        """
-        [실패] 본인이 작성한 질문이 아닐 경우 (403 Forbidden)
-        """
+        """[403] 본인이 작성한 질문이 아닌 경우"""
         self.client.force_authenticate(user=self.other_user)
         response = self.client.post(self.url)
 
@@ -106,9 +91,7 @@ class AnswerAdoptTest(APITestCase):
         self.assertEqual(response.data["error_detail"], ErrorMessages.FORBIDDEN_ANSWER_ADOPT.value)
 
     def test_adopt_answer_not_found(self) -> None:
-        """
-        [실패] 존재하지 않는 답변 ID (404 Not Found)
-        """
+        """[404] 존재하지 않는 답변 ID"""
         url = reverse("answer-adopt", kwargs={"answer_id": 99999})
         response = self.client.post(url)
 
@@ -116,9 +99,7 @@ class AnswerAdoptTest(APITestCase):
         self.assertEqual(response.data["error_detail"], ErrorMessages.NOT_FOUND_QUESTION_OR_ANSWER.value)
 
     def test_adopt_answer_conflict(self) -> None:
-        """
-        [실패] 이미 채택된 답변이 존재할 경우 (409 Conflict)
-        """
+        """[409] 이미 채택된 답변 존재"""
         # 먼저 채택 성공
         self.answer.is_adopted = True
         self.answer.save()
@@ -130,9 +111,11 @@ class AnswerAdoptTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.data["error_detail"], ErrorMessages.ALREADY_EXISTS_ANSWER_ADOPT.value)
 
+    # ==========================================================================
+    # 성능 테스트
+    # ==========================================================================
     def test_performance_query_count(self) -> None:
-        """
-        [Performance] 쿼리 수 검증
+        """[성능] 쿼리 수 검증
         1. transaction.atomic SAVEPOINT
         2. Answer 조회 (select_for_update)
         3. 이미 채택된 답변 존재 확인 (Answer filter exists)

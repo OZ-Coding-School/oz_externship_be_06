@@ -13,6 +13,7 @@ from apps.qna.serializers.admin.category.request import (
 )
 from apps.qna.serializers.admin.category.response import (
     AdminCategoryCreateResponseSerializer,
+    AdminCategoryDeleteResponseSerializer,
     AdminCategoryListResponseSerializer,
 )
 
@@ -82,6 +83,45 @@ ADMIN_CATEGORY_LIST_SCHEMA = extend_schema(
             description="Forbidden",
             response=ErrorResponseSerializer,
             examples=[ErrorResponseExamples.ADMIN_CATEGORY_LIST_403],
+        ),
+    },
+)
+
+
+ADMIN_CATEGORY_DELETE_SCHEMA = extend_schema(
+    tags=["admin_qna"],
+    summary="어드민 카테고리 삭제 API",
+    description=ApiDescriptions.ADMIN_CATEGORY_DELETE,
+    responses={
+        200: OpenApiResponse(
+            description="OK",
+            response=AdminCategoryDeleteResponseSerializer,
+            examples=[SuccessResponseExamples.ADMIN_CATEGORY_DELETE],
+        ),
+        400: OpenApiResponse(
+            description="Bad Request",
+            response=ErrorResponseSerializer,
+            examples=[ErrorResponseExamples.ADMIN_CATEGORY_DELETE_400],
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized",
+            response=ErrorResponseSerializer,
+            examples=[ErrorResponseExamples.ADMIN_CATEGORY_DELETE_401],
+        ),
+        403: OpenApiResponse(
+            description="Forbidden",
+            response=ErrorResponseSerializer,
+            examples=[ErrorResponseExamples.ADMIN_CATEGORY_DELETE_403],
+        ),
+        404: OpenApiResponse(
+            description="Not Found",
+            response=ErrorResponseSerializer,
+            examples=[ErrorResponseExamples.ADMIN_CATEGORY_DELETE_404],
+        ),
+        409: OpenApiResponse(
+            description="Conflict",
+            response=ErrorResponseSerializer,
+            examples=[ErrorResponseExamples.ADMIN_CATEGORY_DELETE_409],
         ),
     },
 )

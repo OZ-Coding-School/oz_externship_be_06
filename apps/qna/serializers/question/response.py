@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from rest_framework import serializers
 
 from apps.qna.models import Question, QuestionImage
@@ -27,7 +29,7 @@ class QuestionCreateResponseSerializer(serializers.Serializer[Question]):
 # ==============================================================================
 class QuestionListSerializer(serializers.ModelSerializer[Question]):
     """
-    질의응답 목록 조회 카드 형태 항목 시리얼라이저
+    질의응답 목록 조회 응답 시리얼라이저
     """
 
     category = QuestionCategoryListSerializer(read_only=True)
