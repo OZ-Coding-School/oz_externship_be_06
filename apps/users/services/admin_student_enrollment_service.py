@@ -32,11 +32,19 @@ def accept_enrollments(enrollment_ids: list[int]) -> int:
         # 유저 role 일괄 변경
         User.objects.filter(id__in=user_ids).update(role=User.Role.STUDENT)
 
-        # CohortStudent 일괄 생성 - 이미 존재하면 무시!
-        CohortStudent.objects.bulk_create(
-            [CohortStudent(user=e.user, cohort=e.cohort) for e in enrollments],
-            ignore_conflicts=True,
+        # CohortStudent 일괄 생성 - 이미 존재하면 무시
+        existing_pairs = set(
+            CohortStudent.objects.filter(
+                user_id__in=user_ids,
+            ).values_list("user_id", "cohort_id")
         )
+        new_cohort_students = [
+            CohortStudent(user=e.user, cohort=e.cohort)
+            for e in enrollments
+            if (e.user_id, e.cohort_id) not in existing_pairs
+        ]
+        if new_cohort_students:
+            CohortStudent.objects.bulk_create(new_cohort_students)
 
     return len(enrollments)
 
