@@ -18,7 +18,8 @@ from apps.posts.services.comment.comment_update_services import update_comment
 
 class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
     """
-    댓글에 태그된 사용자 정보를 반환하는 시리얼라이저입니다.
+    댓글 내 태그된 개별 사용자 정보를 직렬화하는 시리얼라이저입니다.
+    PostCommentTag 모델의 정보를 클라이언트가 필요한 유저 정보로 변환합니다.
     """
 
     id = serializers.IntegerField(source="tagged_user.id")  # 태그된 사용자의 PK
@@ -31,20 +32,20 @@ class TaggedUserSerializer(serializers.ModelSerializer[PostCommentTag]):
 
 class PostCommentListSerializer(serializers.ModelSerializer[PostComment]):
     """
-    댓글 목록을 조회할 때 사용하는 시리얼라이저입니다.
+    게시글의 댓글 목록을 조회할 때 사용되는 시리얼라이저입니다.
+    기본 댓글 정보와 함께 작성자 정보 및 태그된 유저 목록을 포함합니다.
     """
 
-    author = PostAuthorSerializer(read_only=True)  # 댓글 작성자 정보
-    tagged_users = serializers.SerializerMethodField()  # 태그된 사용자 목록
+    author = PostAuthorSerializer(read_only=True)  # 댓글 작성자 정보 (ID, 닉네임, 프로필)
+
+    # 태그된 유저 목록 처리:
+    # - source="tags": PostComment 모델의 'tags' related_name을 참조합니다.
+    # - many=True: 여러 명의 유저가 태그될 수 있음을 나타냅니다.
+    tagged_users = TaggedUserSerializer(source="tags", many=True, read_only=True)
 
     class Meta:
         model = PostComment
         fields = ("id", "author", "tagged_users", "content", "created_at", "updated_at")
-
-    def get_tagged_users(self, obj: PostComment) -> Any:
-        # 댓글에 태그된 사용자 목록을 반환합니다.
-        tags = obj.tags.all()
-        return TaggedUserSerializer(tags, many=True).data
 
 
 class PostCommentCreateSerializer(serializers.Serializer[PostComment]):

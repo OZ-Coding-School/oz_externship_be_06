@@ -43,7 +43,7 @@ class PostCommentUpdateAPIView(CommentBaseView, APIView):
         return comment_id
 
     @extend_schema(
-        tags=["Comments"],
+        tags=["posts"],
         summary="댓글 수정 API",
         responses={
             200: inline_serializer(
