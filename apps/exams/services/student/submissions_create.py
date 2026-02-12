@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from django.db import transaction
+from django.utils import timezone
 
 from apps.exams.constants import ErrorMessages
 from apps.exams.error_map import raise_error
@@ -36,10 +37,10 @@ def submit_exam(
         raise_error(ErrorMessages.SUBMISSION_ALREADY_SUBMITTED)
 
     # 답안 저장
-    # started_at은 take_exam 시점에 서버에서 생성된 값을 유지한다.
-    # (클라이언트 전달 시간으로 받지 않음)
+    now = timezone.now()
+    submission.created_at = now
     submission.answers_json = normalize_answers_json(answers)
     submission.cheating_count = cheating_count
-    submission.save(update_fields=["answers_json", "cheating_count", "updated_at"])
+    submission.save(update_fields=["answers_json", "cheating_count", "created_at", "updated_at"])
 
     return submission
