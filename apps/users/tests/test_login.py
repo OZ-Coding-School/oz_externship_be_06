@@ -69,7 +69,11 @@ class LoginAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_withdrawal_account_403(self) -> None:
-        Withdrawal.objects.create(user=self.user, reason="SERVICE_DISSATISFACTION")
+        Withdrawal.objects.create(
+            user=self.user,
+            reason="SERVICE_DISSATISFACTION",
+            reason_detail="테스트용 탈퇴",
+        )
 
         res = self.client.post(
             self.url,

@@ -495,7 +495,11 @@ class KakaoLoginViewTests(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
         )
-        Withdrawal.objects.create(user=withdrawn_user, reason="SERVICE_DISSATISFACTION")
+        Withdrawal.objects.create(
+            user=withdrawn_user,
+            reason="SERVICE_DISSATISFACTION",
+            reason_detail="소셜 로그인 테스트용 탈퇴",
+        )
         SocialUser.objects.create(
             user=withdrawn_user,
             provider=SocialUser.Provider.KAKAO,
@@ -641,7 +645,11 @@ class NaverLoginViewTests(TestCase):
             gender=User.Gender.MALE,
             birthday=date(1990, 1, 1),
         )
-        Withdrawal.objects.create(user=withdrawn_user, reason="SERVICE_DISSATISFACTION")
+        Withdrawal.objects.create(
+            user=withdrawn_user,
+            reason="SERVICE_DISSATISFACTION",
+            reason_detail="소셜 로그인 테스트용 탈퇴",
+        )
         SocialUser.objects.create(
             user=withdrawn_user,
             provider=SocialUser.Provider.NAVER,

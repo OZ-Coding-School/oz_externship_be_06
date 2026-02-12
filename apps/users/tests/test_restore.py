@@ -38,6 +38,8 @@ class RestoreAPITest(TestCase):
         )
         Withdrawal.objects.create(
             user=user,
+            reason="OTHER",
+            reason_detail="복구 테스트용",
             due_date=date.today() + timedelta(days=7),
         )
 
