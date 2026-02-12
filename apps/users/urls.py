@@ -33,7 +33,6 @@ from apps.users.views.social_login_view import (
     NaverLoginStartAPIView,
 )
 from apps.users.views.token_refresh_view import TokenRefreshAPIView
-from apps.users.views.withdrawal_view import WithdrawalAPIView
 
 urlpatterns = [
     # 회원가입
@@ -68,7 +67,6 @@ urlpatterns = [
     path("available-courses/", AvailableCoursesAPIView.as_view(), name="available-courses"),
     path("me/enrolled-courses/", EnrolledCoursesAPIView.as_view(), name="enrolled-courses"),
     # 탈퇴/복구
-    path("withdrawal/", WithdrawalAPIView.as_view(), name="withdrawal"),
     path("restore/", RestoreAPIView.as_view(), name="restore"),
     # 소셜 로그인
     path("social-login/kakao", KakaoLoginStartAPIView.as_view(), name="kakao-login-start"),
