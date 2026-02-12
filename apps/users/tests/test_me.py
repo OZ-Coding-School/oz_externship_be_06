@@ -17,7 +17,7 @@ class MeAPITests(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.url = "/api/v1/accounts/me"
+        cls.url = "/api/v1/accounts/me/"
 
         cls.user = User.objects.create_user(
             email="me_test@example.com",

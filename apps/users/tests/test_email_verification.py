@@ -8,7 +8,7 @@ from apps.users.utils.redis_utils import save_email_code
 
 class SendEmailVerificationAPIViewTest(TestCase):
     def setUp(self) -> None:
-        self.url = "/api/v1/accounts/verification/send-email"
+        self.url = "/api/v1/accounts/verification/send-email/"
 
     @patch("apps.users.views.email_verification_view.send_mail")
     def test_send_email_verification_success(self, mock_send_mail: MagicMock) -> None:
@@ -38,7 +38,7 @@ class SendEmailVerificationAPIViewTest(TestCase):
 
 class VerifyEmailAPIViewTest(TestCase):
     def setUp(self) -> None:
-        self.url = "/api/v1/accounts/verification/verify-email"
+        self.url = "/api/v1/accounts/verification/verify-email/"
         self.email = "test@example.com"
         self.code = "ABC123"
         save_email_code(self.email, self.code)
