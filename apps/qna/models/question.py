@@ -5,8 +5,8 @@ from typing import Optional
 from django.db import models
 
 from apps.core.models import TimeStampModel
-from apps.qna.models.question_category import QuestionCategory
 from apps.core.utils.content_parser import ContentParser
+from apps.qna.models.question_category import QuestionCategory
 from apps.users.models import User
 
 

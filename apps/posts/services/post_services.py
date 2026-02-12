@@ -3,12 +3,12 @@ from typing import Any, List, Optional
 from django.db import transaction
 from django.db.models import F
 
+from apps.core.utils.content_parser import ContentParser
 from apps.posts.exceptions.post_exceptions import (
     PostNotFoundException,
     PostPermissionDeniedException,
 )
 from apps.posts.models import Post, PostAttachment, PostImage
-from apps.core.utils.content_parser import ContentParser
 from apps.users.models import User
 
 
