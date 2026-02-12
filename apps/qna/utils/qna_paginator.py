@@ -74,7 +74,7 @@ class AdminQuestionPagination(SimplePagePagination):
         )
 
 
-class QnaListPaginator:
+class QnaBasePaginator:
     """
     QnA, QnA-Admin 페이지네이션 응답 빌더
     """
@@ -106,19 +106,19 @@ class QnaListPaginator:
             raise QnaBaseException(detail=ErrorMessages.NOT_FOUND_PAGE, status_code=status.HTTP_404_NOT_FOUND)
 
 
-class QuestionListPaginator(QnaListPaginator):
+class QuestionListPaginator(QnaBasePaginator):
     """일반 유저용 질문 목록 페이지네이터"""
 
     pagination_class = QnaPagination
 
 
-class AdminQuestionListPaginator(QnaListPaginator):
+class AdminQuestionListPaginator(QnaBasePaginator):
     """어드민용 질의응답 목록 페이지네이터"""
 
     pagination_class = AdminQuestionPagination
 
 
-class AdminCategoryListPaginator(QnaListPaginator):
+class AdminCategoryListPaginator(QnaBasePaginator):
     """어드민용 카테고리 목록 페이지네이터"""
 
     pagination_class = AdminCategoryPagination
