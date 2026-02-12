@@ -3,6 +3,8 @@ from typing import Any
 
 from rest_framework import exceptions, serializers, status
 
+from apps.core.constants import ALLOWED_IMAGE_EXTENSIONS
+
 
 class PresignedUrlRequestSerializer(serializers.Serializer[Any]):
     """
@@ -13,10 +15,9 @@ class PresignedUrlRequestSerializer(serializers.Serializer[Any]):
 
     def validate_file_name(self, value: str) -> str:
         """파일 확장자 검증 (jpg, jpeg, png, gif)"""
-        allowed_extensions = {".jpg", ".jpeg", ".png", ".gif"}
         _, ext = os.path.splitext(value.lower())
 
-        if ext not in allowed_extensions:
+        if ext not in ALLOWED_IMAGE_EXTENSIONS:
             error = exceptions.APIException(detail={"error_detail": "지원하지 않는 파일 형식입니다."})
             error.status_code = status.HTTP_400_BAD_REQUEST
             raise error

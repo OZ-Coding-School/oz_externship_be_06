@@ -5,10 +5,10 @@ from typing import Any
 from django.db import transaction
 from rest_framework import status
 
+from apps.core.utils.content_parser import ContentParser
 from apps.qna.constants import ErrorMessages
 from apps.qna.exceptions import QnaBaseException
 from apps.qna.models import Question, QuestionCategory, QuestionImage
-from apps.qna.utils.content_parser import ContentParser
 from apps.qna.utils.model_types import User
 
 # ==============================================================================
