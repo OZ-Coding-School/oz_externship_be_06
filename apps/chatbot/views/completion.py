@@ -18,7 +18,10 @@ from apps.chatbot.constants.question_prompts import QUESTION_SYSTEM_PROMPT
 from apps.chatbot.constants.support_prompts import SUPPORT_FULL_PROMPT
 from apps.chatbot.models.chatbot_completions import ChatbotCompletions
 from apps.chatbot.models.chatbot_session import ChatbotSession
-from apps.chatbot.serializers.completion import ChatbotCompletionCreateSerializer
+from apps.chatbot.serializers.completion import (
+    ChatbotCompletionCreateSerializer,
+    ChatbotCompletionListSerializer,
+)
 from apps.chatbot.services.completion_answer import generate_completion_answer
 from apps.chatbot.services.question_completion_policy import (
     validate_user_prompt_policy as validate_question_policy,
@@ -26,6 +29,7 @@ from apps.chatbot.services.question_completion_policy import (
 from apps.chatbot.services.support_completion_policy import (
     validate_user_prompt_policy as validate_support_policy,
 )
+from apps.core.utils.pagination import ChatbotCompletionCursorPagination
 from apps.users.models import User
 
 logger = logging.getLogger(__name__)
@@ -41,6 +45,35 @@ class ChatbotCompletionCreateAPIView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["chatbot"],
+        summary="AI 챗봇 대화내역 조회 API",
+        description="세션의 대화 내역을 커서 기반 페이지네이션으로 조회합니다.",
+        responses={
+            200: ChatbotCompletionListSerializer(many=True),
+            401: OpenApiResponse(description="로그인한 사용자만 조회할 수 있습니다."),
+            404: OpenApiResponse(description="챗봇 세션이 존재하지 않습니다."),
+        },
+    )
+    def get(self, request: Request, session_id: int) -> Response:
+        user = cast(User, request.user)
+
+        try:
+            session = ChatbotSession.objects.get(id=session_id, user=user)
+        except ChatbotSession.DoesNotExist:
+            return Response(
+                {"error_detail": "챗봇 세션이 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        completions = ChatbotCompletions.objects.filter(session=session)
+
+        paginator = ChatbotCompletionCursorPagination()
+        paginated = paginator.paginate_queryset(completions, request)
+        serializer = ChatbotCompletionListSerializer(paginated, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     @extend_schema(
         tags=["chatbot"],
