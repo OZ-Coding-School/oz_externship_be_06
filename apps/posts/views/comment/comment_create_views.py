@@ -42,7 +42,7 @@ class PostCommentCreateAPIView(CommentBaseView, generics.CreateAPIView[PostComme
         return ctx
 
     @extend_schema(
-        tags=["Comments"],
+        tags=["posts"],
         summary="커뮤니티 게시글 댓글 작성 API",
         request=PostCommentCreateSerializer,
         responses={

@@ -15,7 +15,7 @@ class PostComment(TimeStampModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="post_comments", verbose_name="작성자"
     )
     post = models.ForeignKey("posts.Post", on_delete=models.CASCADE, related_name="comments", verbose_name="게시글")
-    content = models.CharField(max_length=300, null=False, verbose_name="내용")
+    content = models.CharField(max_length=500, null=False, verbose_name="내용")
 
     class Meta:
         db_table = "post_comment"

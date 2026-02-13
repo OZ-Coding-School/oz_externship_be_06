@@ -38,7 +38,7 @@ class PostCommentDeleteAPIView(CommentBaseView, APIView):
         return comment_id
 
     @extend_schema(
-        tags=["Comments"],
+        tags=["posts"],
         summary="댓글 삭제 API",
         responses={
             200: inline_serializer(name="PostCommentDelete200", fields={"detail": serializers.CharField()}),
