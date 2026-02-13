@@ -20,6 +20,13 @@ class ChatbotSessionCursorPagination(CursorPagination):
     cursor_query_param = "cursor"
 
 
+class ChatbotCompletionCursorPagination(CursorPagination):
+    page_size = 10
+    ordering = "-created_at"
+    cursor_query_param = "cursor"
+    page_size_query_param = "page_size"
+
+
 class AdminExamPagination(PageNumberPagination):
     page_query_param = "page"
     page_size_query_param = "size"
