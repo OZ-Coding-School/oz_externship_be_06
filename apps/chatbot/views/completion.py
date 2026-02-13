@@ -23,13 +23,13 @@ from apps.chatbot.serializers.completion import (
     ChatbotCompletionListSerializer,
 )
 from apps.chatbot.services.completion_answer import generate_completion_answer
-from apps.core.utils.pagination import ChatbotCompletionCursorPagination
 from apps.chatbot.services.question_completion_policy import (
     validate_user_prompt_policy as validate_question_policy,
 )
 from apps.chatbot.services.support_completion_policy import (
     validate_user_prompt_policy as validate_support_policy,
 )
+from apps.core.utils.pagination import ChatbotCompletionCursorPagination
 from apps.users.models import User
 
 logger = logging.getLogger(__name__)
